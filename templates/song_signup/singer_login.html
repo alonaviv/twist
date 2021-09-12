@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h1>Singer Login</h1>
+<div class="centered_container border form_styling">
+<form method="POST" class="form-group">
+    {% if messages %}
+  {% for message in messages %}
+  <div class="error_message">
+    {{ message }}
+  </div>
+  {% endfor %}
+  {% endif %}
+  <ul>
+	{% csrf_token %}
+	{{ form.as_ul }}
+    <button type="submit">Sign Up</button>
+  </ul>
+</form>
+</div>
+
+{% endblock %}

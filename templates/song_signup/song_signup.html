@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h1>Song Signup</h1>
+<div>Hello {{user.first_name}} {{user.last_name}}. <br> What song would you like to sing? </div>
+<div class="centered_container border form_styling">
+<form method="POST" class="form-group">
+    {% if messages %}
+  {% for message in messages %}
+  <div class="error_message">
+    {{ message }}
+  </div>
+  {% endfor %}
+  {% endif %}
+  <ul>
+	{% csrf_token %}
+	{{ form.as_ul }}
+    <button type="submit">I want to sing!</button>
+  </ul>
+</form>
+</div>
+
+<div>Not {{user.first_name}} {{user.last_name}}? Click <a href="{% url 'switch_singer' %}">here</a></div>
+
+
+
+{% endblock %}
