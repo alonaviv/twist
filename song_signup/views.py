@@ -11,6 +11,19 @@ def _name_to_username(first_name, last_name):
     return f'{first_name.lower()}_{last_name.lower()}'
 
 
+def assign_song_priorities():
+    singers = User.objects.all()
+    priority = 1
+    for song in SongRequest.objects.filter(performance_time=None).order_by('song_name'):
+        song.priority = priority
+        song.save()
+        priority += 1
+
+    for song in SongRequest.objects.exclude(performance_time=None):
+        song.priority = -1
+        song.save()
+
+
 def song_signup(request):
     current_user = request.user
 
@@ -25,10 +38,12 @@ def song_signup(request):
             musical = form.cleaned_data['musical']
             additional_singers = form.cleaned_data['additional_singers']
             song_request = SongRequest(song_name=song_name, musical=musical, singer=current_user)
+            song_request.priority = 0
             try:
                 song_request.save()
                 song_request.additional_singers.set(additional_singers)
                 song_request.save()
+                assign_song_priorities()
                 return HttpResponse("You are all signed up!")
 
             except IntegrityError:
@@ -55,14 +70,14 @@ def singer_login(request, is_switching):
 
             if already_logged_in:
                 try:
-                    user = User.objects.get(first_name=first_name, last_name=last_name)
+                    singer = User.objects.get(first_name=first_name, last_name=last_name)
                 except User.DoesNotExist:
                     messages.error(request, "The name that you logged in with previously does not match your current "
                                             "name.\nCould there be a typo somewhere?")
                     return render(request, 'song_signup/singer_login.html', {'form': form})
             else:
                 try:
-                    user = User.objects.create_user(
+                    singer = User.objects.create_user(
                         _name_to_username(first_name, last_name),
                         first_name=first_name,
                         last_name=last_name
@@ -72,7 +87,7 @@ def singer_login(request, is_switching):
                                    "Did you already login with us tonight? If so, check the box below.")
                     return render(request, 'song_signup/singer_login.html', {'form': form})
 
-            login(request, user)
+            login(request, singer)
             return redirect('song_signup')
 
     else:

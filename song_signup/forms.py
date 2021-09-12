@@ -1,8 +1,7 @@
 from django.contrib.auth.models import User
 from django.forms import (
-    Form, CharField, BooleanField, ModelMultipleChoiceField, CheckboxSelectMultiple
+    Form, CharField, BooleanField, ModelMultipleChoiceField
 )
-from easy_select2 import Select2Multiple
 
 
 class SingerForm(Form):
@@ -20,5 +19,4 @@ class SongRequestForm(Form):
     song_name = CharField(max_length=50)
     musical = CharField(max_length=50)
     additional_singers = ModelMultipleChoiceField(queryset=None,
-                                                  widget=CheckboxSelectMultiple,
                                                   required=False)
