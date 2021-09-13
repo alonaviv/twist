@@ -22,6 +22,9 @@
 </div>
 
 <div>Not {{user.first_name}} {{user.last_name}}? Click <a href="{% url 'switch_singer' %}">here</a></div>
+
+{% if song_lineup %}
+
 <br>
 <hr>
 
@@ -31,6 +34,8 @@
   <li>{{ song.song_name }}</li>
 </ul>
 {% endfor %}
+
+{% endif %}
 
 
 
