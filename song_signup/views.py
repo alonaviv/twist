@@ -1,10 +1,11 @@
 from datetime import datetime, timezone
 from itertools import cycle
+
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.models import User, Group
 from django.db import IntegrityError
-from django.shortcuts import render, redirect, HttpResponse
+from django.shortcuts import render, redirect
 
 from .forms import SingerForm, SongRequestForm
 from .models import SongRequest
@@ -17,7 +18,7 @@ def _name_to_username(first_name, last_name):
 def get_all_songs(singer):
     songs_as_main_singer = singer.songrequest_set.all()
     songs_as_additional_singer = singer.songs.all()
-    return songs_as_main_singer | songs_as_additional_singer
+    return (songs_as_main_singer | songs_as_additional_singer).distinct()
 
 
 def get_all_songs_performed(singer):
@@ -99,7 +100,8 @@ def song_signup(request):
                 existing_song = SongRequest.objects.get(song_name=song_name, musical=musical)
                 if current_user in existing_song.additional_singers.all():
                     song_lineup = get_all_songs(current_user).filter(performance_time=None)
-                    messages.error(request, f"Apparently {existing_song.singer} has already signed you up for this song")
+                    messages.error(request,
+                                   f"Apparently {existing_song.singer} has already signed you up for this song")
                     return render(request, 'song_signup/song_signup.html', {'form': form, 'song_lineup': song_lineup})
             except SongRequest.DoesNotExist:
                 pass

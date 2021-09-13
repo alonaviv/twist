@@ -25,6 +25,10 @@ class SongRequest(Model):
     def was_performed(self):
         return bool(self.performance_time)
 
+    @property
+    def all_singers(self):
+        return User.objects.filter(pk=self.singer.pk) | self.additional_singers.all()
+
     def __str__(self):
         return f"Song request: {self.song_name} by {self.singer}"
 
