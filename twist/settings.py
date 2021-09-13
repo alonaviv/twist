@@ -80,7 +80,7 @@ WSGI_APPLICATION = 'twist.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'twist_db',
+        'NAME': 'twistdb',
         'USER': 'postgres',
         'PASSWORD': '76697421',
         'HOST': 'localhost',

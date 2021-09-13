@@ -22,6 +22,16 @@
 </div>
 
 <div>Not {{user.first_name}} {{user.last_name}}? Click <a href="{% url 'switch_singer' %}">here</a></div>
+<br>
+<hr>
+
+<div>You are already signed up for {{ song_lineup|length }} songs:</div>
+{% for song in song_lineup %}
+<ul>
+  <li>{{ song.song_name }}</li>
+</ul>
+{% endfor %}
+
 
 
 

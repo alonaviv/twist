@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from itertools import cycle
 from django.contrib import messages
 from django.contrib.auth import login
@@ -32,9 +32,9 @@ def get_how_long_waiting(singer):
     ordered_songs_performed = get_all_songs_performed(singer).order_by('-performance_time')
 
     if ordered_songs_performed:
-        time_waiting = datetime.now() - datetime.combine(datetime.now(), ordered_songs_performed[0].performance_time)
+        time_waiting = datetime.now(timezone.utc) - ordered_songs_performed[0].performance_time
     else:
-        time_waiting = datetime.utcnow() - singer.date_joined.replace(tzinfo=None)
+        time_waiting = datetime.now(timezone.utc) - singer.date_joined
 
     return time_waiting.total_seconds()
 
@@ -111,7 +111,9 @@ def song_signup(request):
     else:
         form = SongRequestForm(request=request)
 
-    return render(request, 'song_signup/song_signup.html', {'form': form})
+    song_lineup = get_all_songs(current_user).filter(performance_time=None)
+
+    return render(request, 'song_signup/song_signup.html', {'form': form, 'song_lineup': song_lineup})
 
 
 def singer_login(request, is_switching):
