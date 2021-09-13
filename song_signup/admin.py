@@ -9,6 +9,7 @@ from .views import assign_song_priorities
 def set_performed(modeladmin, request, queryset):
     for song in queryset:
         song.performance_time = datetime.now()
+        song.priority = -1
         song.save()
 
     assign_song_priorities()

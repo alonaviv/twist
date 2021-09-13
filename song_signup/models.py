@@ -22,6 +22,9 @@ class SongRequest(Model):
     def was_performed(self):
         return bool(self.performance_time)
 
+    def __str__(self):
+        return f"Song request: {self.song_name} by {self.singer}"
+
     class Meta:
         unique_together = ('song_name', 'musical', 'singer')
         ordering = ['priority']
