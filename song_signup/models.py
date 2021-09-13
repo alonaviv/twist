@@ -14,7 +14,7 @@ class SongRequest(Model):
     performance_time = DateTimeField(default=None, null=True)
     singer = ForeignKey(User, on_delete=CASCADE)
     additional_singers = ManyToManyField(User, blank=True, related_name='songs')
-    priority = IntegerField()
+    priority = IntegerField("Queue Order")
 
     def get_additional_singers(self):
         return ", ".join([str(singer) for singer in self.additional_singers.all()])

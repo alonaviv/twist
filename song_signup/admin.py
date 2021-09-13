@@ -25,7 +25,9 @@ def set_not_performed(modeladmin, request, queryset):
 
 
 set_performed.short_description = 'Mark song as performed'
+set_performed.allowed_permissions = ['change']
 set_not_performed.short_description = 'Mark song as not performed'
+set_not_performed.allowed_permissions = ['change']
 
 
 class NotYetPerformedFilter(admin.SimpleListFilter):

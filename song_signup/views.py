@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from itertools import cycle
 from django.contrib import messages
 from django.contrib.auth import login
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.db import IntegrityError
 from django.shortcuts import render, redirect, HttpResponse
 
@@ -151,13 +151,16 @@ def singer_login(request, is_switching):
                     singer = User.objects.create_user(
                         _name_to_username(first_name, last_name),
                         first_name=first_name,
-                        last_name=last_name
+                        last_name=last_name,
+                        is_staff=True
                     )
                 except IntegrityError:
                     messages.error(request, "The name that you're trying to login with already exists.\n"
                                             "Did you already login with us tonight? If so, check the box below.")
                     return render(request, 'song_signup/singer_login.html', {'form': form})
 
+            group = Group.objects.get(name='singers')
+            group.user_set.add(singer)
             login(request, singer)
             return redirect('song_signup')
 
