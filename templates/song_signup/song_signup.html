@@ -37,7 +37,11 @@
 <div><u>Songs you're signed up for:</u></div>
 <ol>
 {% for song in song_lineup %}
-  <li>{{ song.song_name }}</li>
+  <li>{{ song.song_name }}&nbsp; &nbsp; <a href="{% url 'delete_song_request' song.pk %}"
+                               onclick="return confirm('Are you sure you want to remove {{song.song_name}} from the queue?')">
+      <i
+          class="fas fa-times" style="color:red;"></i></a>
+  </li>
 {% endfor %}
 </ol>
 

@@ -168,3 +168,9 @@ def singer_login(request, is_switching):
         form = SingerForm()
 
     return render(request, 'song_signup/singer_login.html', {'form': form})
+
+
+def delete_song_request(request, song_pk):
+    SongRequest.objects.filter(pk=song_pk).delete()
+
+    return redirect('song_signup')
