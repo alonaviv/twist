@@ -30,12 +30,16 @@
 <br>
 <hr>
 
-<div>You are already signed up for {{ song_lineup|length }} songs:</div>
+<div> According to the current lineup, you have {{song_lineup.0.priority}} songs to go until you're called up for
+  <u>{{song_lineup.0.song_name}}</u>.
+</div>
+<br>
+<div>Songs you're signed up for:</div>
+<ol>
 {% for song in song_lineup %}
-<ul>
   <li>{{ song.song_name }}</li>
-</ul>
 {% endfor %}
+</ol>
 
 {% endif %}
 
