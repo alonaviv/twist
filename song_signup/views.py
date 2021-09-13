@@ -94,6 +94,16 @@ def song_signup(request):
             song_name = form.cleaned_data['song_name']
             musical = form.cleaned_data['musical']
             additional_singers = form.cleaned_data['additional_singers']
+
+            try:
+                existing_song = SongRequest.objects.get(song_name=song_name, musical=musical)
+                if current_user in existing_song.additional_singers.all():
+                    song_lineup = get_all_songs(current_user).filter(performance_time=None)
+                    messages.error(request, f"Apparently {existing_song.singer} has already signed you up for this song")
+                    return render(request, 'song_signup/song_signup.html', {'form': form, 'song_lineup': song_lineup})
+            except SongRequest.DoesNotExist:
+                pass
+
             song_request = SongRequest(song_name=song_name, musical=musical, singer=current_user)
             song_request.priority = 0
 
@@ -105,8 +115,9 @@ def song_signup(request):
                 return render(request, 'song_signup/signed_up.html')
 
             except IntegrityError:
+                song_lineup = get_all_songs(current_user).filter(performance_time=None)
                 messages.error(request, "You already signed up with this song tonight.")
-                return render(request, 'song_signup/song_signup.html', {'form': form})
+                return render(request, 'song_signup/song_signup.html', {'form': form, 'song_lineup': song_lineup})
 
     else:
         form = SongRequestForm(request=request)

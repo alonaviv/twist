@@ -7,9 +7,11 @@
 <form method="POST" class="form-group">
     {% if messages %}
   {% for message in messages %}
-  <div class="error_message">
+  <br>
+  <div class="error_message" style="color:red;">
     {{ message }}
   </div>
+  <br>
   {% endfor %}
   {% endif %}
   <ul>

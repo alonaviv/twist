@@ -1,15 +1,15 @@
-from django.contrib.auth.models import User
 from django.db.models import (
-    Model, CharField, DateTimeField, ForeignKey, CASCADE, ManyToManyField, IntegerField, TimeField
+    Model, CharField, DateTimeField, ForeignKey, CASCADE, ManyToManyField, IntegerField,
 )
 from django.contrib.auth.models import User
+from django.contrib.postgres.fields import CITextField
 
 User.add_to_class("__str__", lambda self: f'{self.first_name} {self.last_name}')
 
 
 class SongRequest(Model):
-    song_name = CharField(max_length=50)
-    musical = CharField(max_length=50)
+    song_name = CITextField(max_length=50)
+    musical = CITextField(max_length=50)
     request_time = DateTimeField(auto_now_add=True)
     performance_time = DateTimeField(default=None, null=True)
     singer = ForeignKey(User, on_delete=CASCADE)
