@@ -39,7 +39,7 @@
 {% for song in song_lineup %}
   <li>{{ song.song_name }}
     {% if song.additional_singers.all %}
-      (together with {% for singer in song.all_singers %}{% if singer.pk !=  user.pk %}{{ singer }}{% if not forloop.last %},&nbsp;{% endif %}{% endif %}{% endfor %}){% endif %}
+      (together with {% for singer in song.all_singers %}{% if singer.pk !=  user.pk %}{{ singer }}{% if not forloop.last and song.all_singers.forloop.counter.pk != user.pk %},&nbsp;{% endif %}{% endif %}{% endfor %}){% endif %}
 
     &nbsp; &nbsp; <a href="{% url 'delete_song_request' song.pk %}"
                                onclick="return confirm('Are you sure you want to remove {{song.song_name}} from the queue?')">
