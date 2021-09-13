@@ -82,6 +82,15 @@ def assign_song_priorities():
             song.save()
 
 
+def get_pending_songs_and_other_singers(user):
+    songs_dict = {}
+
+    for song in get_all_songs(user).filter(performance_time=None):
+        songs_dict[song] = song.all_singers.all().exclude(pk=user.pk)
+
+    return songs_dict
+
+
 def song_signup(request):
     current_user = request.user
 
@@ -126,7 +135,7 @@ def song_signup(request):
 
     song_lineup = get_all_songs(current_user).filter(performance_time=None)
 
-    return render(request, 'song_signup/song_signup.html', {'form': form, 'song_lineup': song_lineup})
+    return render(request, 'song_signup/song_signup.html', {'form': form, 'song_lineup': get_pending_songs_and_other_singers(current_user)})
 
 
 def singer_login(request, is_switching):
