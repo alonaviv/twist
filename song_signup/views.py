@@ -102,7 +102,7 @@ def song_signup(request):
                 song_request.additional_singers.set(additional_singers)
                 song_request.save()
                 assign_song_priorities()
-                return HttpResponse("You are all signed up!")
+                return render(request, 'song_signup/signed_up.html')
 
             except IntegrityError:
                 messages.error(request, "You already signed up with this song tonight.")

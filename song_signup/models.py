@@ -1,7 +1,10 @@
 from django.contrib.auth.models import User
 from django.db.models import (
-    Model, CharField, TimeField, ForeignKey, CASCADE, ManyToManyField, IntegerField
+    Model, CharField, DateTimeField, ForeignKey, CASCADE, ManyToManyField, IntegerField, TimeField
 )
+from django.contrib.auth.models import User
+
+User.add_to_class("__str__", lambda self: f'{self.first_name} {self.last_name}')
 
 
 class SongRequest(Model):
