@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from itertools import cycle
 
 from django.contrib import messages
-from django.contrib.auth import login
+from django.contrib.auth import login, logout
 from django.contrib.auth.models import User, Group
 from django.db import IntegrityError
 from django.shortcuts import render, redirect
@@ -157,6 +157,10 @@ def singer_login(request, is_switching):
                     messages.error(request, "The name that you logged in with previously does not match your current "
                                             "name.\nCould there be a typo somewhere?")
                     return render(request, 'song_signup/singer_login.html', {'form': form})
+                else:
+                    if singer.is_superuser:
+                        logout(request)
+                        return redirect('admin:index')
             else:
                 try:
                     singer = User.objects.create_user(
