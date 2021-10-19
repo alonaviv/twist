@@ -1,7 +1,7 @@
 from datetime import datetime, timezone, timedelta
 import pytz
-
 from django.contrib import admin
+from django.contrib.auth.models import User
 
 from .models import SongRequest
 from .views import assign_song_priorities
@@ -67,5 +67,12 @@ class SongRequestAdmin(admin.ModelAdmin):
         return (obj.request_time + timedelta(hours=get_hours_difference_from_utc())).strftime("%H:%M %p")
     get_request_time.short_description = 'Request Time'
 
+
+class MyUserAdmin(admin.ModelAdmin):
+    list_display = ['username', 'date_joined', 'is_staff', 'is_superuser']
+
+
+admin.site.unregister(User)
+admin.site.register(User, MyUserAdmin)
 
 admin.site.register(SongRequest, SongRequestAdmin)
