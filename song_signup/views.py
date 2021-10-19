@@ -76,12 +76,9 @@ def assign_song_priorities():
     logger.info(f"DONE PRIORITISING SINGERS: Singers priority is {prioritized_singers}")
 
     while songs_of_singers_dict:
-        logger.info(f"* Staring singer cycle with {songs_of_singers_dict.keys()}")
+        logger.info(f"* Staring singer cycle with {prioritized_singers}")
         singers_that_got_a_song = []
         for singer_username in prioritized_singers:
-            if singer_username not in songs_of_singers_dict:
-                continue
-
             # If a singer already got a song in this cycle (because he's singing with someone else), skipping this cycle
             if singer_username in singers_that_got_a_song:
                 logger.info(f"Skipping {singer_username} as they already have a song in this cycle")
@@ -89,7 +86,7 @@ def assign_song_priorities():
 
             if not songs_of_singers_dict[singer_username]:
                 logger.debug(f"{singer_username} doesn't have songs left. Removing from cycle")
-                del songs_of_singers_dict[singer_username]
+                prioritized_singers.remove(singer_username)
                 continue
 
             song = songs_of_singers_dict[singer_username].pop()
