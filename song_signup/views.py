@@ -1,5 +1,5 @@
+import logging
 from datetime import datetime, timezone
-from itertools import cycle
 
 from django.contrib import messages
 from django.contrib.auth import login, logout
@@ -9,9 +9,6 @@ from django.shortcuts import render, redirect
 
 from .forms import SingerForm, SongRequestForm
 from .models import SongRequest
-
-import logging
-
 
 logger = logging.getLogger(__name__)
 
@@ -103,7 +100,8 @@ def assign_song_priorities():
                     singers_that_got_a_song.extend([singer.username for singer in song.additional_singers.all()])
                     break
                 else:
-                    logger.debug(f"The song for {singer_username} ({song}) was already chosen, moving to singer's next song")
+                    logger.debug(
+                        f"The song for {singer_username} ({song}) was already chosen, moving to singer's next song")
 
     logger.info("========== END PRIORITISING PROCESS ======")
 
@@ -119,6 +117,7 @@ def get_pending_songs_and_other_singers(user):
 
 def song_signup(request):
     current_user = request.user
+    song_lineup = get_all_songs(current_user).filter(performance_time=None)
 
     if not current_user.is_authenticated:
         return redirect('singer_login')
@@ -137,7 +136,10 @@ def song_signup(request):
                     song_lineup = get_all_songs(current_user).filter(performance_time=None)
                     messages.error(request,
                                    f"Apparently {existing_song.singer} has already signed you up for this song")
-                    return render(request, 'song_signup/song_signup.html', {'form': form, 'song_lineup': song_lineup})
+                    return render(request, 'song_signup/song_signup.html', {
+                        'form': form, 'song_lineup': song_lineup,
+                        'song_lineup_with_singers': get_pending_songs_and_other_singers(current_user)
+                    })
             except SongRequest.DoesNotExist:
                 pass
 
@@ -149,19 +151,27 @@ def song_signup(request):
                 song_request.additional_singers.set(additional_singers)
                 song_request.save()
                 assign_song_priorities()
-                return render(request, 'song_signup/signed_up.html')
+                return render(request, 'song_signup/signed_up.html', {
+                    'song_lineup_with_singers': get_pending_songs_and_other_singers(current_user),
+                    'song_lineup': song_lineup
+                })
 
             except IntegrityError:
-                song_lineup = get_all_songs(current_user).filter(performance_time=None)
                 messages.error(request, "You already signed up with this song tonight.")
-                return render(request, 'song_signup/song_signup.html', {'form': form, 'song_lineup': song_lineup})
+                return render(request, 'song_signup/song_signup.html', {
+                    'form': form,
+                    'song_lineup_with_singers': get_pending_songs_and_other_singers(current_user),
+                    'song_lineup': song_lineup
+                })
 
     else:
         form = SongRequestForm(request=request)
 
-    song_lineup = get_all_songs(current_user).filter(performance_time=None)
-
-    return render(request, 'song_signup/song_signup.html', {'form': form, 'song_lineup': get_pending_songs_and_other_singers(current_user)})
+    return render(request, 'song_signup/song_signup.html', {
+        'form': form,
+        'song_lineup_with_singers': get_pending_songs_and_other_singers(current_user),
+        'song_lineup': song_lineup
+    })
 
 
 def singer_login(request, is_switching):

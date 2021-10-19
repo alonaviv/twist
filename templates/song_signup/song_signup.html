@@ -36,7 +36,7 @@
 <br>
 <div><u>Songs you're signed up for:</u></div>
 <ol>
-{% for song, singers in song_lineup.items %}
+{% for song, singers in song_lineup_with_singers.items %}
   <li>{{ song.song_name }}
     {% if singers.all %}
     (Together with {{ singers.all|join:", " }})
@@ -56,9 +56,12 @@
 
 <br>
 <div>
-  <a href="{{request.hostname}}/admin/song_signup/songrequest">View entire song
-    queue</a>
+    <h2>
+  <a href="{{request.hostname}}/admin/song_signup/songrequest">Check out the songs we'll be hearing next
+    </a>
+    </h2>
 </div>
+ <br>
 
 
 {% endblock %}
