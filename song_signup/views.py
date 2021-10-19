@@ -83,6 +83,7 @@ def assign_song_priorities():
 
             # If a singer already got a song in this cycle (because he's singing with someone else), skipping this cycle
             if singer_username in singers_that_got_a_song:
+                logger.info(f"Skipping {singer_username} as they already have a song in this cycle")
                 continue
 
             if not songs_of_singers_dict[singer_username]:
