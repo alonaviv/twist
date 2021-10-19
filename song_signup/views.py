@@ -95,7 +95,7 @@ def assign_song_priorities():
                 logger.debug(f"Dealing with {singer_username}: Setting priority of {song} to {current_priority}")
                 current_priority += 1
                 song.save()
-                singers_that_got_a_song.append(singer_username)
+                singers_that_got_a_song.extend([singer.username for singer in song.additional_singers.all()])
 
     logger.info("========== END PRIORITISING PROCESS ======")
 
