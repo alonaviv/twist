@@ -1,9 +1,10 @@
 from datetime import datetime, timezone, timedelta
+
 import pytz
 from django.contrib import admin
 from django.contrib.auth.models import User
 
-from .models import SongRequest
+from .models import SongRequest, AllowsVideoModel
 from .views import assign_song_priorities
 
 
@@ -65,14 +66,27 @@ class SongRequestAdmin(admin.ModelAdmin):
 
     def get_request_time(self, obj):
         return (obj.request_time + timedelta(hours=get_hours_difference_from_utc())).strftime("%H:%M %p")
+
     get_request_time.short_description = 'Request Time'
 
 
-class MyUserAdmin(admin.ModelAdmin):
-    list_display = ['username', 'date_joined', 'is_staff', 'is_superuser']
+class CustomUserInline(admin.StackedInline):
+    model = AllowsVideoModel
+    can_delete = False
+    verbose_name_plural = 'Custom Users'
+
+
+class CustomUserAdmin(admin.ModelAdmin):
+    inlines = (CustomUserInline,)
+    list_display = ['username', 'date_joined', 'is_superuser', 'allows_posting_videos']
+
+    def allows_posting_videos(self, obj):
+        return obj.allowsvideomodel.allows_posting_videos
+
+    allows_posting_videos.boolean = True
 
 
 admin.site.unregister(User)
-admin.site.register(User, MyUserAdmin)
+admin.site.register(User, CustomUserAdmin)
 
 admin.site.register(SongRequest, SongRequestAdmin)

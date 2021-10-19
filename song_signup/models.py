@@ -1,10 +1,15 @@
-from django.db.models import (
-    Model, CharField, DateTimeField, ForeignKey, CASCADE, ManyToManyField, IntegerField,
-)
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import CITextField
+from django.db.models import (
+    Model, DateTimeField, ForeignKey, CASCADE, ManyToManyField, IntegerField, BooleanField, OneToOneField
+)
 
 User.add_to_class("__str__", lambda self: f'{self.first_name} {self.last_name}')
+
+
+class AllowsVideoModel(Model):
+    user = OneToOneField(User, on_delete=CASCADE, )
+    allows_posting_videos = BooleanField()
 
 
 class SongRequest(Model):

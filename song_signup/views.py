@@ -8,7 +8,7 @@ from django.db import IntegrityError
 from django.shortcuts import render, redirect
 
 from .forms import SingerForm, SongRequestForm
-from .models import SongRequest
+from .models import SongRequest, AllowsVideoModel
 
 logger = logging.getLogger(__name__)
 
@@ -185,6 +185,7 @@ def singer_login(request, is_switching):
             first_name = form.cleaned_data['first_name']
             last_name = form.cleaned_data['last_name']
             already_logged_in = form.cleaned_data['i_already_logged_in_tonight']
+            allows_posting_videos = form.cleaned_data['allows_posting_videos']
 
             if already_logged_in:
                 try:
@@ -205,6 +206,7 @@ def singer_login(request, is_switching):
                         last_name=last_name,
                         is_staff=True
                     )
+                    AllowsVideoModel.objects.create(user=singer, allows_posting_videos=allows_posting_videos)
                 except IntegrityError:
                     messages.error(request, "The name that you're trying to login with already exists.\n"
                                             "Did you already login with us tonight? If so, check the box below.")
