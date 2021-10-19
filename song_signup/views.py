@@ -89,13 +89,18 @@ def assign_song_priorities():
                 prioritized_singers.remove(singer_username)
                 continue
 
-            song = songs_of_singers_dict[singer_username].pop()
-            if not SongRequest.objects.get(pk=song.pk).priority:
-                song.priority = current_priority
-                logger.debug(f"Dealing with {singer_username}: Setting priority of {song} to {current_priority}")
-                current_priority += 1
-                song.save()
-                singers_that_got_a_song.extend([singer.username for singer in song.additional_singers.all()])
+            # Pop songs until we get a song that hasn't been assigned yet
+            while songs_of_singers_dict[singer_username]:
+                song = songs_of_singers_dict[singer_username].pop()
+                if not SongRequest.objects.get(pk=song.pk).priority:
+                    song.priority = current_priority
+                    logger.debug(f"Dealing with {singer_username}: Setting priority of {song} to {current_priority}")
+                    current_priority += 1
+                    song.save()
+                    singers_that_got_a_song.extend([singer.username for singer in song.additional_singers.all()])
+                    break
+                else:
+                    logger.debug(f"The song for {singer_username} ({song}) was already chosen, moving to singer's next song")
 
     logger.info("========== END PRIORITISING PROCESS ======")
 
