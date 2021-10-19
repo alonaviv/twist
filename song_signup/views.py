@@ -75,7 +75,7 @@ def assign_song_priorities():
                                                                 reverse=True)]
     logger.info(f"DONE PRIORITISING SINGERS: Singers priority is {prioritized_singers}")
 
-    while songs_of_singers_dict:
+    while prioritized_singers:
         logger.info(f"* Staring singer cycle with {prioritized_singers}")
         singers_that_got_a_song = []
         for singer_username in prioritized_singers:
