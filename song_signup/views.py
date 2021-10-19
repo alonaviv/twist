@@ -52,12 +52,13 @@ def get_singers_next_songs(singer):
 
 def calculate_singer_priority(singer):
     priority = pow(4, 1 / (get_num_songs_performed(singer) + 1)) * get_how_long_waiting(singer)
-    logger.debug(f"Priority of {singer} is {priority}. Num songs performed: {get_num_songs_performed(singer)}."
-                 f"how long waiting: {get_how_long_waiting(singer)}")
+    logger.debug(f"Priority of {singer} is {priority}. Num songs performed: {get_num_songs_performed(singer)}. "
+                 f"How long waiting: {get_how_long_waiting(singer)}")
     return priority
 
 
 def assign_song_priorities():
+    logger.info(" =====  START PRIORITISING PROCESS ========")
     current_priority = 1
     singer_queryset = User.objects.all()
 
@@ -72,7 +73,7 @@ def assign_song_priorities():
 
     prioritized_singers = [singer.username for singer in sorted(singer_queryset, key=lambda singer: singer.priority,
                                                                 reverse=True)]
-    logger.info("DONE PRIORITISING SINGERS: Singers priority is", prioritized_singers)
+    logger.info(f"DONE PRIORITISING SINGERS: Singers priority is {prioritized_singers}")
 
     while songs_of_singers_dict:
         singers_that_got_a_song = []
@@ -95,6 +96,8 @@ def assign_song_priorities():
                 current_priority += 1
                 song.save()
                 singers_that_got_a_song.append(singer_username)
+
+    logger.info("========== END PRIORITISING PROCESS ======")
 
 
 def get_pending_songs_and_other_singers(user):

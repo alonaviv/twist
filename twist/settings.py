@@ -30,6 +30,30 @@ ALLOWED_HOSTS = ['192.168.0.111', 'localhost', '127.0.0.1']
 DOMAIN = 'http://localhost:8000'
 
 
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'simple': {
+            'format': '{levelname}: {message}',
+            'style': '{',
+        }
+    },
+    'handlers': {
+        'file': {
+            'class': 'logging.FileHandler',
+            'level': 'DEBUG',
+            'filename': '/var/log/twist-logs/debug.log',
+            'formatter': 'simple'
+        },
+    },
+    'root': {
+        'handlers': ['file'],
+        'level': 'DEBUG',
+    },
+}
+
+
 # Application definition
 
 INSTALLED_APPS = [
