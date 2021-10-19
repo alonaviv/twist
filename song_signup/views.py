@@ -110,7 +110,7 @@ def get_pending_songs_and_other_singers(user):
     songs_dict = {}
 
     for song in get_all_songs(user).filter(performance_time=None):
-        songs_dict[song] = song.all_singers.all().exclude(pk=user.pk)
+        songs_dict[song] = song.all_singers.all().exclude(pk=user.pk).order_by('first_name', 'last_name')
 
     return songs_dict
 

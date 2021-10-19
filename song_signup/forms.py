@@ -14,7 +14,7 @@ class SongRequestForm(Form):
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop("request")
         super().__init__(*args, **kwargs)
-        self.fields['additional_singers'].queryset = User.objects.all().exclude(pk=self.request.user.pk)
+        self.fields['additional_singers'].queryset = User.objects.all().exclude(pk=self.request.user.pk).order_by('first_name', 'last_name')
 
     song_name = CharField(max_length=50)
     musical = CharField(max_length=50)
