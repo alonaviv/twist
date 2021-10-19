@@ -76,6 +76,7 @@ def assign_song_priorities():
     logger.info(f"DONE PRIORITISING SINGERS: Singers priority is {prioritized_singers}")
 
     while songs_of_singers_dict:
+        logger.info("* Staring singer cycle")
         singers_that_got_a_song = []
         for singer_username in prioritized_singers:
             if singer_username not in songs_of_singers_dict:
