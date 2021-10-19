@@ -43,7 +43,7 @@ LOGGING = {
         'file': {
             'class': 'logging.FileHandler',
             'level': 'DEBUG',
-            'filename': '/var/log/twist-logs/debug.log',
+            'filename': '/Users/alona/twist/twist-logs/debug.log',
             'formatter': 'simple'
         },
     },
