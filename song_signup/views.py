@@ -57,7 +57,7 @@ def calculate_singer_priority(singer):
 def assign_song_priorities():
     logger.info(" =====  START PRIORITISING PROCESS ========")
     current_priority = 1
-    singer_queryset = User.objects.all()
+    singer_queryset = User.objects.filter(is_superuser=False)  # Superusers don't need to be given priority
 
     songs_of_singers_dict = dict()
     for singer in singer_queryset:
