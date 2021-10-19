@@ -41,7 +41,11 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'song_signup.apps.SongSignupConfig',
     'easy_select2',
+    'dbbackup'
 ]
+
+DBBACKUP_STORAGE = 'django.core.files.storage.FileSystemStorage'
+DBBACKUP_STORAGE_OPTIONS = {'location': '/my/backup/dir/'}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
