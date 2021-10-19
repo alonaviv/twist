@@ -41,7 +41,8 @@ def get_how_long_waiting(singer):
 
 
 def get_singers_next_songs(singer):
-    return list(get_all_songs(singer).filter(performance_time=None).order_by('request_time'))
+    # I'm using reverse request time, since we will eventually pop from the end of the list to get the earliest song.
+    return list(get_all_songs(singer).filter(performance_time=None).order_by('-request_time'))
 
 
 def calculate_singer_priority(singer):
