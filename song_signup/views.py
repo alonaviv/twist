@@ -10,6 +10,11 @@ from django.shortcuts import render, redirect
 from .forms import SingerForm, SongRequestForm
 from .models import SongRequest
 
+import logging
+
+
+logger = logging.getLogger(__name__)
+
 
 def _name_to_username(first_name, last_name):
     return f'{first_name.lower()}_{last_name.lower()}'
@@ -46,41 +51,50 @@ def get_singers_next_songs(singer):
 
 
 def calculate_singer_priority(singer):
-    return pow(4, 1 / (get_num_songs_performed(singer) + 1)) * get_how_long_waiting(singer)
+    priority = pow(4, 1 / (get_num_songs_performed(singer) + 1)) * get_how_long_waiting(singer)
+    logger.debug(f"Priority of {singer} is {priority}. Num songs performed: {get_num_songs_performed(singer)}."
+                 f"how long waiting: {get_how_long_waiting(singer)}")
+    return priority
 
 
 def assign_song_priorities():
     current_priority = 1
     singer_queryset = User.objects.all()
 
-    singers_dict = dict()
+    songs_of_singers_dict = dict()
     for singer in singer_queryset:
         singer.priority = calculate_singer_priority(singer)
         next_songs = get_singers_next_songs(singer)
         for song in next_songs:
             song.priority = 0
             song.save()
-        singers_dict[singer.username] = next_songs
+        songs_of_singers_dict[singer.username] = next_songs
 
     prioritized_singers = [singer.username for singer in sorted(singer_queryset, key=lambda singer: singer.priority,
                                                                 reverse=True)]
-    print("Singer priority is", prioritized_singers)
-    for singer_username in cycle(prioritized_singers):
-        if not singers_dict:
-            break
+    logger.info("DONE PRIORITISING SINGERS: Singers priority is", prioritized_singers)
 
-        if singer_username not in singers_dict:
-            continue
+    while songs_of_singers_dict:
+        singers_that_got_a_song = []
+        for singer_username in prioritized_singers:
+            if singer_username not in songs_of_singers_dict:
+                continue
 
-        if not singers_dict[singer_username]:
-            del singers_dict[singer_username]
-            continue
+            # If a singer already got a song in this cycle (because he's singing with someone else), skipping this cycle
+            if singer_username in singers_that_got_a_song:
+                continue
 
-        song = singers_dict[singer_username].pop()
-        if not SongRequest.objects.get(pk=song.pk).priority:
-            song.priority = current_priority
-            current_priority += 1
-            song.save()
+            if not songs_of_singers_dict[singer_username]:
+                del songs_of_singers_dict[singer_username]
+                continue
+
+            song = songs_of_singers_dict[singer_username].pop()
+            if not SongRequest.objects.get(pk=song.pk).priority:
+                song.priority = current_priority
+                logger.debug(f"Dealing with {singer_username}: Setting priority of {song} to {current_priority}")
+                current_priority += 1
+                song.save()
+                singers_that_got_a_song.append(singer_username)
 
 
 def get_pending_songs_and_other_singers(user):
