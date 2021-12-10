@@ -3,27 +3,53 @@
 {% block content %}
 
 <h1>Song Signup</h1>
-<div>Hello {{user.first_name}} {{user.last_name}}. <br> What song would you like to sing? </div>
-<div class="centered_container border form_styling">
-<form method="POST" class="form-group">
-    {% if messages %}
-  {% for message in messages %}
-  <br>
-  <div class="error_message" style="color:red;">
-    {{ message }}
-  </div>
-  <br>
-  {% endfor %}
-  {% endif %}
-  <ul>
-	{% csrf_token %}
-	{{ form.as_ul }}
-    <button type="submit">I want to sing!</button>
-  </ul>
-</form>
-</div>
+{% load feature_flags %}
+{% flag_enabled 'CAN_SIGNUP' as can_signup %}
 
-<div>Not {{user.first_name}} {{user.last_name}}? Click <a href="{% url 'switch_singer' %}">here</a></div>
+
+{% if can_signup %}
+<div>Hello {{user.first_name}} {{user.last_name}}, </div>
+<div>
+    <div>What song would you like to sing? <br>Choose any Broadway/Disney song (Really anything!)<br><br>
+    * You can sign up as many times as you like, and our nifty system will place you according to how much you've already sung and how long you've been waiting)</div>
+    <div class="centered_container border form_styling">
+    <form method="POST" class="form-group">
+        {% if messages %}
+    {% for message in messages %}
+    <br>
+    <div class="error_message" style="color:red;">
+        {{ message }}
+    </div>
+    <br>
+    {% endfor %}
+    {% endif %}
+    <ul>
+        {% csrf_token %}
+        {{ form.as_ul }}
+        <button type="submit">I want to sing!</button>
+    </ul>
+    </form>
+    </div>
+<div>
+
+<hr>
+<br>
+<div>
+Have you already signed up to our <a href="https://chat.whatsapp.com/La9NtdsfoXC0xKnCVjTdIw">WhatsApp broadcast group</a>? Get updates about our next events, and nothing else (we promise!)
+<br><br>
+You're also invited to join our <a href="https://www.facebook.com/broadwaywithatwist">Facebook group</a> in order to see vidoes from tonight (only of singers that agreed to be uploaded of course.) If you post videos yourself, please tag us!
+<div>
+
+{% else %}
+<div>
+Sorry - we're nearing the end of the evening, and so we've closed the signup for new songs. <br><br>
+Don't leave without signing up to our <a href="https://chat.whatsapp.com/La9NtdsfoXC0xKnCVjTdIw">WhatsApp broadcast group</a> in order to get (only) updates about our next event!
+<br><br>
+You're also invited to join our <a href="https://www.facebook.com/broadwaywithatwist">Facebook group</a> in order to see vidoes from tonight (only of singers that agreed to be uploaded of course.) If you post vidoes yourself, please tag us!
+</div>
+{% endif %}
+
+
 
 {% if song_lineup %}
 
@@ -56,12 +82,14 @@
 
 <br>
 <div>
-    <h2>
-  <a href="{{request.hostname}}/admin/song_signup/songrequest">Check out the songs we'll be hearing next
-    </a>
-    </h2>
+  <a href="{{request.hostname}}/admin/song_signup/songrequest">Check out the songs we'll be hearing next</a>
 </div>
- <br>
+ <br><br><br>
+ <hr>
+
+<div>
+    Not {{user.first_name}} {{user.last_name}}? Click <a href="{% url 'switch_singer' %}">here</a>
+</div>
 
 
 {% endblock %}

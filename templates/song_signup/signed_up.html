@@ -2,43 +2,16 @@
 
 {% block content %}
 
-<h1>You are all signed up! Your turn is coming up just {{song_lineup.0.priority}} songs from now. Can't wait to hear you sing :)</h1>
+<h1>You are all signed up! Your turn should be coming up about {{song_lineup.0.priority}} songs from now (this might change if someone who has sung less than you signs up.)</h1>
 <br>
-<h2>In the meantime, why not sign up to our <a href="https://chat.whatsapp.com/La9NtdsfoXC0xKnCVjTdIw">WhatsApp broadcast group </a> and get updated about our next events? We promise that there will be nothing there aside from letting you know when our next event is happening.</h2>
-<br>
-<h2>You're also invited to join our <a href="https://www.facebook.com/broadwaywithatwist">Facebook group</a> in order to see vidoes from tonight (only of singers that agreed to be uploaded of course.)</h2>
-<br>
-<h2><a href="{% url 'song_signup' %}">Sign up for another song</a></h2>
+<h2>* If you chose a song from a book floating around, please bring it up to our pianist - it'll be faster than looking it up on the iPad</h2>
 
-<br>
+<h2>* If your song is too high, too low, too fast or too slow for you, feel free to stop and tell us - we'll adjust it. The keyboard can easily transpose to different keys.</h2>
 
-<div><u>Songs you're signed up for:</u></div>
-<ol>
-{% for song, singers in song_lineup_with_singers.items %}
-  <li>{{ song.song_name }}
-    {% if singers.all %}
-    (Together with {{ singers.all|join:", " }})
-    {% endif %}
+<br><br>
+<h2>We can't wait to hear you sing!</h2>
 
-    &nbsp; &nbsp; <a href="{% url 'delete_song_request' song.pk %}"
-                               onclick="return confirm('Are you sure you want to remove {{song.song_name}} from the queue?')">
-      <i
-          class="fas fa-times" style="color:red;"></i></a>
-  </li>
-{% endfor %}
-</ol>
-
-
-<br>
-<div>
-    <h2>
-  <a href="{{request.hostname}}/admin/song_signup/songrequest">Check out the songs we'll be hearing next
-    </a>
-    </h2>
-</div>
-
-<br>
-
+<h2><a href="{% url 'song_signup' %}">Go back</a></h2>
 
 
 {% endblock %}

@@ -1,9 +1,17 @@
 {% extends 'admin/change_list.html' %}
 
+
 {% block object-tools-items %}
             {{ block.super }}
             <li>
-                <a href="google.com">Reset Priorities</a>
+                {% load feature_flags %}
+                {% flag_enabled 'CAN_SIGNUP' as can_signup %}
+                {% if can_signup %}
+                <a href="{% url 'disable_signup' %}">Stop Additional Signups</a>
+                {% else %}
+                <a href="{% url 'enable_signup' %}">Allow More Signups</a>
+                {% endif %}
+
             </li>
             <li>
                 <a href="{% url 'reset_database' %}">Reset Database</a>

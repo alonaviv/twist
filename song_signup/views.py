@@ -11,6 +11,7 @@ from django.core.management import call_command
 
 from .forms import SingerForm, SongRequestForm
 from .models import SongRequest, AllowsVideoModel
+from flags.state import enable_flag, disable_flag
 
 logger = logging.getLogger(__name__)
 
@@ -235,4 +236,18 @@ def reset_database(request):
     call_command('dbbackup')
     call_command('reset_db')
     return HttpResponseRedirect('/admin/song_signup/songrequest')
+
+
+def enable_signup(request):
+    enable_flag('CAN_SIGNUP')
+    return HttpResponseRedirect('/admin/song_signup/songrequest')
+
+
+def disable_signup(request):
+    disable_flag('CAN_SIGNUP')
+    return HttpResponseRedirect('/admin/song_signup/songrequest')
+
+
+
+
 

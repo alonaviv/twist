@@ -29,6 +29,9 @@ DEBUG = True
 ALLOWED_HOSTS = ['192.168.0.111', 'localhost', '127.0.0.1']
 DOMAIN = 'http://localhost:8000'
 
+FLAGS = {
+    'CAN_SIGNUP': []
+}
 
 LOGGING = {
     'version': 1,
@@ -65,7 +68,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'song_signup.apps.SongSignupConfig',
     'easy_select2',
-    'dbbackup'
+    'dbbackup',
+    'flags'
 ]
 
 DBBACKUP_STORAGE = 'django.core.files.storage.FileSystemStorage'
