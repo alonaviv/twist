@@ -7,11 +7,11 @@
 {% flag_enabled 'CAN_SIGNUP' as can_signup %}
 
 
+<div>Hello {{user.first_name}} {{user.last_name}}, <br><br></vr></div>
 {% if can_signup %}
-<div>Hello {{user.first_name}} {{user.last_name}}, </div>
 <div>
     <div>What song would you like to sing? <br>Choose any Broadway/Disney song (Really anything!)<br><br>
-    * You can sign up as many times as you like, and our nifty system will place you according to how much you've already sung and how long you've been waiting)</div>
+    </div>
     <div class="centered_container border form_styling">
     <form method="POST" class="form-group">
         {% if messages %}
@@ -30,6 +30,9 @@
     </ul>
     </form>
     </div>
+    <div>
+    * You can sign up as many times as you like, and our nifty system will call you according to how much you've already sung and how long you've been waiting)
+    <br><br></div>
 <div>
 
 <hr>
@@ -42,7 +45,7 @@ You're also invited to join our <a href="https://www.facebook.com/broadwaywithat
 
 {% else %}
 <div>
-Sorry - we're nearing the end of the evening, and so we've closed the signup for new songs. <br><br>
+Sorry - we're nearing the end of the evening, and so we've closed the signup for new songs. <br><br><hr>
 Don't leave without signing up to our <a href="https://chat.whatsapp.com/La9NtdsfoXC0xKnCVjTdIw">WhatsApp broadcast group</a> in order to get (only) updates about our next event!
 <br><br>
 You're also invited to join our <a href="https://www.facebook.com/broadwaywithatwist">Facebook group</a> in order to see vidoes from tonight (only of singers that agreed to be uploaded of course.) If you post vidoes yourself, please tag us!

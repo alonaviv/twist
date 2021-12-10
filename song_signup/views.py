@@ -156,7 +156,8 @@ def song_signup(request):
                 assign_song_priorities()
                 return render(request, 'song_signup/signed_up.html', {
                     'song_lineup_with_singers': get_pending_songs_and_other_singers(current_user),
-                    'song_lineup': song_lineup
+                    'song_lineup': song_lineup,
+                    'song_request': song_request,
                 })
 
             except IntegrityError:

@@ -2,16 +2,24 @@
 
 {% block content %}
 
-<h1>You are all signed up! Your turn should be coming up about {{song_lineup.0.priority}} songs from now (this might change if someone who has sung less than you signs up.)</h1>
-<br>
-<h2>* If you chose a song from a book floating around, please bring it up to our pianist - it'll be faster than looking it up on the iPad</h2>
-
-<h2>* If your song is too high, too low, too fast or too slow for you, feel free to stop and tell us - we'll adjust it. The keyboard can easily transpose to different keys.</h2>
-
+<div>
+<h3>You are all signed up with {{song_request.song_name}}! </h3>
+</div>
+<div>
+Your turn should be coming up about {{song_lineup.0.priority}} songs from now (this might change if someone who has sung less than you signs up.)
+<div>
+<br><hr><br>
+<div>
+* If you chose a song from a book floating around, please bring it up to our pianist - it'll be faster than looking it up on the iPad.
 <br><br>
-<h2>We can't wait to hear you sing!</h2>
+* If your song is too high, too low, too fast or too slow for you, feel free to stop and tell us - we'll adjust it. The keyboard can easily transpose to different keys.
+</div>
+<br><br>
+<div>
+We can't wait to hear you sing!
+<div>
 
-<h2><a href="{% url 'song_signup' %}">Go back</a></h2>
+<a href="{% url 'song_signup' %}">Go back</a>
 
 
 {% endblock %}
