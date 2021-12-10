@@ -69,6 +69,7 @@ class SongRequestAdmin(admin.ModelAdmin):
         return (obj.request_time + timedelta(hours=get_hours_difference_from_utc())).strftime("%H:%M %p")
 
     get_request_time.short_description = 'Request Time'
+    get_request_time.admin_order_field = 'request_time'
 
 
 class CustomUserInline(admin.StackedInline):
