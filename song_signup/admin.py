@@ -60,6 +60,7 @@ class SongRequestAdmin(admin.ModelAdmin):
     )
     list_filter = (NotYetPerformedFilter,)
     actions = [set_performed, set_not_performed]
+    change_list_template = "admin/song_request_changelist.html"
 
     def has_delete_permission(self, request, obj=None):
         return False

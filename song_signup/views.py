@@ -5,7 +5,9 @@ from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.models import User, Group
 from django.db import IntegrityError
+from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
+from django.core.management import call_command
 
 from .forms import SingerForm, SongRequestForm
 from .models import SongRequest, AllowsVideoModel
@@ -227,3 +229,10 @@ def delete_song_request(request, song_pk):
     SongRequest.objects.filter(pk=song_pk).delete()
 
     return redirect('song_signup')
+
+
+def reset_database(request):
+    call_command('dbbackup')
+    call_command('reset_db')
+    return HttpResponseRedirect('/admin/song_signup/songrequest')
+
