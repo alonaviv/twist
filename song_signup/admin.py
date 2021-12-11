@@ -56,8 +56,8 @@ def get_hours_difference_from_utc():
 
 class SongRequestAdmin(admin.ModelAdmin):
     list_display = (
-        'priority', 'singer', 'get_additional_singers', 'song_name', 'musical', 'get_request_time', 'performance_time',
-        'get_initial_signup'
+        'priority', 'singer', 'get_additional_singers', 'song_name', 'musical', 'get_request_time',
+        'get_performance_time', 'get_initial_signup'
     )
     list_filter = (NotYetPerformedFilter,)
     actions = [set_performed, set_not_performed]
@@ -77,6 +77,12 @@ class SongRequestAdmin(admin.ModelAdmin):
 
     get_initial_signup.short_description = 'Initial Signup'
     get_initial_signup.admin_order_field = 'singer__date_joined'
+
+    def get_performance_time(self, obj):
+        return obj.performance_time.strftime("%H:%M %p")
+
+    get_performance_time.short_description = 'Performance Time'
+    get_performance_time.admin_order_field = 'performance_time'
 
 
 class CustomUserInline(admin.StackedInline):
