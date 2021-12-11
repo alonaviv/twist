@@ -7,7 +7,7 @@ from django.forms import (
 class SingerForm(Form):
     first_name = CharField(max_length=20)
     last_name = CharField(max_length=30)
-    allows_posting_videos = BooleanField(initial=False, required=False, label="I'm OK with uploading videos of me to the Facebook page")
+    allows_posting_videos = BooleanField(initial=True, required=False, label="I'm OK with uploading videos of me to the Facebook page")
     i_already_logged_in_tonight = BooleanField(initial=False, required=False)
 
 
