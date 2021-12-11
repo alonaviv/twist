@@ -17,6 +17,8 @@
 
             </li>
             <li>
-                <a href="{% url 'reset_database' %}">Reset Database</a>
+                <a href="{% url 'reset_database' %}"
+                   onclick="return confirm('Are you sure you want to erase the entire database?')">Reset
+                    Database</a>
             </li>
 {% endblock %}
