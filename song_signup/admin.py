@@ -1,8 +1,9 @@
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 
 import pytz
 from django.contrib import admin
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 from .models import SongRequest, AllowsVideoModel
 from .views import assign_song_priorities
@@ -47,13 +48,6 @@ class NotYetPerformedFilter(admin.SimpleListFilter):
             return queryset.all()
 
 
-def get_hours_difference_from_utc():
-    utc = datetime.now(timezone.utc)
-    ist = datetime.now(pytz.timezone('Israel'))
-    delta = ist.replace(tzinfo=None) - utc.replace(tzinfo=None)
-    return int(delta.total_seconds() // 3600)
-
-
 class SongRequestAdmin(admin.ModelAdmin):
     list_display = (
         'priority', 'singer', 'get_additional_singers', 'song_name', 'musical', 'get_request_time',
@@ -67,19 +61,24 @@ class SongRequestAdmin(admin.ModelAdmin):
         return False
 
     def get_request_time(self, obj):
-        return (obj.request_time + timedelta(hours=get_hours_difference_from_utc())).strftime("%H:%M %p")
+        return obj.request_time.astimezone(timezone.get_current_timezone()).strftime("%H:%M %p")
 
     get_request_time.short_description = 'Request Time'
     get_request_time.admin_order_field = 'request_time'
 
     def get_initial_signup(self, obj):
-        return obj.singer.date_joined.strftime("%H:%M %p")
+        if not obj.singer.is_superuser:
+            return obj.singer.date_joined.astimezone(timezone.get_current_timezone()).strftime("%H:%M %p")
 
     get_initial_signup.short_description = 'Initial Signup'
     get_initial_signup.admin_order_field = 'singer__date_joined'
 
     def get_performance_time(self, obj):
-        return obj.performance_time.strftime("%H:%M %p")
+        if obj.performance_time:
+            return obj.performance_time.astimezone(timezone.get_current_timezone()).strftime("%H:%M %p")
+
+        else:
+            return None
 
     get_performance_time.short_description = 'Performance Time'
     get_performance_time.admin_order_field = 'performance_time'
