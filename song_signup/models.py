@@ -16,10 +16,10 @@ class SongRequest(Model):
     song_name = CITextField(max_length=50)
     musical = CITextField(max_length=50)
     request_time = DateTimeField(auto_now_add=True)
-    performance_time = DateTimeField(default=None, null=True)
+    performance_time = DateTimeField(default=None, null=True, blank=True)
     singer = ForeignKey(User, on_delete=CASCADE)
     additional_singers = ManyToManyField(User, blank=True, related_name='songs')
-    priority = IntegerField("Queue Order")
+    priority = IntegerField("Queue Order", blank=True, default=0)
 
     def get_additional_singers(self):
         return ", ".join([str(singer) for singer in self.additional_singers.all()])

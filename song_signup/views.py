@@ -249,6 +249,12 @@ def disable_signup(request):
     return HttpResponseRedirect('/admin/song_signup/songrequest')
 
 
+def recalculate_priorities(request):
+    assign_song_priorities()
+    return HttpResponseRedirect('/admin/song_signup/songrequest')
+
+
+
 
 
 

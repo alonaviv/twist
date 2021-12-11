@@ -4,6 +4,9 @@
 {% block object-tools-items %}
             {{ block.super }}
             <li>
+                <a href="{% url 'recalculate_priorities' %}">Recalulate</a>
+            </li>
+            <li>
                 {% load feature_flags %}
                 {% flag_enabled 'CAN_SIGNUP' as can_signup %}
                 {% if can_signup %}
