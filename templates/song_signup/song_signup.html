@@ -7,94 +7,106 @@
 {% flag_enabled 'CAN_SIGNUP' as can_signup %}
 
 
-<div>Hello {{user.first_name}} {{user.last_name}}, <br><br></vr></div>
+<div>Hello {{user.first_name}} {{user.last_name}}, <br><br></vr>
+</div>
 {% if can_signup %}
 <div>
     <div>What song would you like to sing? <br>Choose any Broadway/Disney song (Really anything!)<br><br>
     </div>
     <div class="centered_container border form_styling">
-    <form method="POST" class="form-group">
-        {% if messages %}
-    {% for message in messages %}
-    <br>
-    <div class="error_message" style="color:red;">
-        {{ message }}
-    </div>
-    <br>
-    {% endfor %}
-    {% endif %}
-    <ul>
-        {% csrf_token %}
-        {{ form.as_ul }}
-        <button type="submit">I want to sing!</button>
-    </ul>
-    </form>
+        <form method="POST" class="form-group">
+            {% if messages %}
+            {% for message in messages %}
+            <br>
+            <div class="error_message" style="color:red;">
+                {{ message }}
+            </div>
+            <br>
+            {% endfor %}
+            {% endif %}
+            <ul>
+                {% csrf_token %}
+                {{ form.as_ul }}
+                <button type="submit">I want to sing!</button>
+            </ul>
+        </form>
     </div>
     <div>
-    * You can sign up as many times as you like, and our nifty system will call you according to how much you've already sung and how long you've been waiting)
-    <br>
-    * You can sign up to sing a duet with us as well, our names are Shani Wahrman and Alon Aviv
-    <br><br></div>
-<div>
+        * You can sign up as many times as you like, and our nifty system will call you according to how much you've
+        already sung and how long you've been waiting)
+        <br>
+        * You can sign up to sing a duet with us as well, our names are Shani Wahrman and Alon Aviv
+        <br><br>
+    </div>
+    <div>
 
-<hr>
-<br>
-<div>
-Have you already signed up to our <a href="https://chat.whatsapp.com/La9NtdsfoXC0xKnCVjTdIw">WhatsApp broadcast group</a>? Get updates about our next events, and nothing else (we promise!)
-<br><br>
-You're also invited to join our <a href="https://www.facebook.com/broadwaywithatwist">Facebook group</a> in order to see vidoes from tonight (only of singers that agreed to be uploaded of course.) If you post videos yourself, please tag us!
-<div>
+        <hr>
+        <br>
+        <div>
+            Have you already signed up to our <a href="https://chat.whatsapp.com/La9NtdsfoXC0xKnCVjTdIw">WhatsApp
+                broadcast group</a>? Get updates about our next events, and nothing else (we promise!)
+            <br><br>
+            You're also invited to join our <a href="https://www.facebook.com/broadwaywithatwist">Facebook group</a> in
+            order to see vidoes from tonight (only of singers that agreed to be uploaded of course.) If you post videos
+            yourself, please tag us!
+            <div>
 
-{% else %}
-<div>
-Sorry - we're nearing the end of the evening, and so we've closed the signup for new songs. <br><br><hr>
-Don't leave without signing up to our <a href="https://chat.whatsapp.com/La9NtdsfoXC0xKnCVjTdIw">WhatsApp broadcast group</a> in order to get (only) updates about our next event!
-<br><br>
-You're also invited to join our <a href="https://www.facebook.com/broadwaywithatwist">Facebook group</a> in order to see vidoes from tonight (only of singers that agreed to be uploaded of course.) If you post vidoes yourself, please tag us!
-</div>
-{% endif %}
-
-
-
-{% if song_lineup %}
-
-<br>
-<hr>
-
-<div> According to the current lineup, you have {{song_lineup.0.priority}} songs to go until you're called up for
-  <u>{{song_lineup.0.song_name}}</u>.
-</div>
-<br>
-<div><u>Songs you're signed up for:</u></div>
-<ol>
-{% for song, singers in song_lineup_with_singers.items %}
-  <li>{{ song.song_name }}
-    {% if singers.all %}
-    (Together with {{ singers.all|join:", " }})
-    {% endif %}
-
-    &nbsp; &nbsp; <a href="{% url 'delete_song_request' song.pk %}"
-                               onclick="return confirm('Are you sure you want to remove {{song.song_name}} from the queue?')">
-      <i
-          class="fas fa-times" style="color:red;"></i></a>
-  </li>
-{% endfor %}
-</ol>
+                {% else %}
+                <div>
+                    Sorry - we're nearing the end of the evening, and so we've closed the signup for new songs. <br><br>
+                    <hr>
+                    Don't leave without signing up to our <a
+                        href="https://chat.whatsapp.com/La9NtdsfoXC0xKnCVjTdIw">WhatsApp broadcast group</a> in order to
+                    get (only) updates about our next event!
+                    <br><br>
+                    You're also invited to join our <a href="https://www.facebook.com/broadwaywithatwist">Facebook
+                        group</a> in order to see vidoes from tonight (only of singers that agreed to be uploaded of
+                    course.) If you post vidoes yourself, please tag us!
+                </div>
+                {% endif %}
 
 
-{% endif %}
+
+                {% if song_lineup %}
+
+                <br>
+                <hr>
+
+                <div> According to the current lineup, you have {{song_lineup.0.priority}} songs to go until you're
+                    called up for
+                    <u>{{song_lineup.0.song_name}}</u>.
+                </div>
+                <br>
+                <div><u>Songs you're signed up for:</u></div>
+                <ol>
+                    {% for song, singers in song_lineup_with_singers.items %}
+                    <li>{{ song.song_name }}
+                        {% if singers.all %}
+                        (Together with {{ singers.all|join:", " }})
+                        {% endif %}
+
+                        &nbsp; &nbsp; <a href="{% url 'delete_song_request' song.pk %}"
+                            onclick="return confirm('Are you sure you want to remove {{song.song_name}} from the queue?')">
+                            <i class="fas fa-times" style="color:red;"></i></a>
+                    </li>
+                    {% endfor %}
+                </ol>
 
 
-<br>
-<div>
-  <a href="{{request.hostname}}/admin/song_signup/songrequest">Check out the songs we'll be hearing next</a>
-</div>
- <br><br><br>
- <hr>
-
-<div>
-    Not {{user.first_name}} {{user.last_name}}? Click <a href="{% url 'switch_singer' %}">here</a>
-</div>
+                {% endif %}
 
 
-{% endblock %}
+                <br>
+                <div>
+                    <a href="{{request.hostname}}/admin/song_signup/songrequest">Check out the songs we'll be hearing
+                        next</a>
+                </div>
+                <br><br><br>
+                <hr>
+
+                <div>
+                    Not {{user.first_name}} {{user.last_name}}? Click <a href="{% url 'switch_singer' %}">here</a>
+                </div>
+
+
+                {% endblock %}

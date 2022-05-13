@@ -1,0 +1,22 @@
+{
+  "name": "twist",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "sass": "node-sass -w ui-design/scss/ -o ui-design/static/css/ --recursive"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alonaviv/twist.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/alonaviv/twist/issues"
+  },
+  "homepage": "https://github.com/alonaviv/twist#readme",
+  "dependencies": {
+    "node-sass": "^7.0.1"
+  }
+}
