@@ -66,74 +66,77 @@ nav{
 }
 
 #navbar {
+    position: fixed;
     background: #333;
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 5rem 15rem;
-    // z-index: 2;
     top: 0;
     left: 0;
     width: 100%;
     height: $navbar-height;
+    transition: all 0.4s ease;
+    z-index: 0;
 
     .logo{ 
         color: $primary-color;
         font-family: 'Anton', sans-serif;
         font-size: 30rem;
         letter-spacing: 1.5rem;
+        transition: inherit;
 
     }
 
-    #hamburger-wrapper{
-        width: 30rem;
-        padding: 5rem;
-        position: fixed;
-        z-index: 100;
-        top: $navbar-height/3;
-        right: $navbar-height/3;
-        height: inherit;
+}
 
-        #hamburger{
+#hamburger-wrapper{
+    width: 30rem;
+    padding: 5rem;
+    position: fixed;
+    z-index: 10;
+    top: $navbar-height/3;
+    right: $navbar-height/3;
+
+    #hamburger{
+        width: 100%;
+        height: 2.5rem;
+        background-color: $primary-color;
+        position: relative;
+        transition: transform 0.3s ease;
+
+
+        &::before{
+            position: absolute;
+            content: '';
+            top: -7rem;
             width: 100%;
-            height: 2.5rem;
-            background-color: $primary-color;
-            position: relative;
-            transition: transform 0.3s ease;
+            height: 100%;
+            background: inherit;
+            transition: inherit;
 
+        }
+        &::after{
+            position: absolute;
+            content: '';
+            top: 7rem;
+            width: 100%;
+            height: 100%;
+            background: inherit;
+            transition: inherit;
+        }
+
+        &.close{
+            transform: rotate(-45deg);
+            background-color: #000;
 
             &::before{
-                position: absolute;
-                content: '';
-                top: -7rem;
-                width: 100%;
-                height: 100%;
-                background: inherit;
-                transition: transform 0.3s ease;
-
+                top: 0;
             }
             &::after{
-                position: absolute;
-                content: '';
-                top: 7rem;
-                width: 100%;
-                height: 100%;
-                background: inherit;
-                transition: transform 0.3s ease;
-            }
-
-            &.close{
-                transform: rotate(-45deg);
-                background-color: #000;
-
-                &::before{
-                    top: 0;
-                }
-                &::after{
-                    top: 0;
-                    transform: rotate(90deg);
-                }
+                top: 0;
+                transform: rotate(90deg);
             }
         }
     }
-}
+    }

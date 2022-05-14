@@ -49,6 +49,7 @@ nav {
         font-weight: 900; }
 
 #navbar {
+  position: fixed;
   background: #333;
   display: flex;
   justify-content: space-between;
@@ -57,50 +58,53 @@ nav {
   top: 0;
   left: 0;
   width: 100%;
-  height: 50rem; }
+  height: 50rem;
+  transition: all 0.4s ease;
+  z-index: 0; }
   #navbar .logo {
     color: #00C575;
     font-family: 'Anton', sans-serif;
     font-size: 30rem;
-    letter-spacing: 1.5rem; }
-  #navbar #hamburger-wrapper {
-    width: 30rem;
-    padding: 5rem;
-    position: fixed;
-    z-index: 100;
-    top: 16.66667rem;
-    right: 16.66667rem;
-    height: inherit; }
-    #navbar #hamburger-wrapper #hamburger {
+    letter-spacing: 1.5rem;
+    transition: inherit; }
+
+#hamburger-wrapper {
+  width: 30rem;
+  padding: 5rem;
+  position: fixed;
+  z-index: 10;
+  top: 16.66667rem;
+  right: 16.66667rem; }
+  #hamburger-wrapper #hamburger {
+    width: 100%;
+    height: 2.5rem;
+    background-color: #00C575;
+    position: relative;
+    transition: transform 0.3s ease; }
+    #hamburger-wrapper #hamburger::before {
+      position: absolute;
+      content: '';
+      top: -7rem;
       width: 100%;
-      height: 2.5rem;
-      background-color: #00C575;
-      position: relative;
-      transition: transform 0.3s ease; }
-      #navbar #hamburger-wrapper #hamburger::before {
-        position: absolute;
-        content: '';
-        top: -7rem;
-        width: 100%;
-        height: 100%;
-        background: inherit;
-        transition: transform 0.3s ease; }
-      #navbar #hamburger-wrapper #hamburger::after {
-        position: absolute;
-        content: '';
-        top: 7rem;
-        width: 100%;
-        height: 100%;
-        background: inherit;
-        transition: transform 0.3s ease; }
-      #navbar #hamburger-wrapper #hamburger.close {
-        transform: rotate(-45deg);
-        background-color: #000; }
-        #navbar #hamburger-wrapper #hamburger.close::before {
-          top: 0; }
-        #navbar #hamburger-wrapper #hamburger.close::after {
-          top: 0;
-          transform: rotate(90deg); }
+      height: 100%;
+      background: inherit;
+      transition: inherit; }
+    #hamburger-wrapper #hamburger::after {
+      position: absolute;
+      content: '';
+      top: 7rem;
+      width: 100%;
+      height: 100%;
+      background: inherit;
+      transition: inherit; }
+    #hamburger-wrapper #hamburger.close {
+      transform: rotate(-45deg);
+      background-color: #000; }
+      #hamburger-wrapper #hamburger.close::before {
+        top: 0; }
+      #hamburger-wrapper #hamburger.close::after {
+        top: 0;
+        transform: rotate(90deg); }
 
 :root {
   font-size: 6.25%; }
