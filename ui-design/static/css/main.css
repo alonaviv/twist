@@ -5,14 +5,59 @@ nav {
 #menu-wrapper {
   position: fixed;
   visibility: hidden;
-  transform: translateX(100vw); }
+  top: 0;
+  width: 0;
+  z-index: 1; }
+  #menu-wrapper.extend {
+    visibility: visible; }
+    #menu-wrapper.extend #overlay {
+      transform: translateX(0);
+      opacity: 1; }
+    #menu-wrapper.extend #menu {
+      transform: translateX(0);
+      opacity: 1; }
+  #menu-wrapper #overlay {
+    background-color: #00b3c5;
+    height: 100vh;
+    width: 100vw;
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform: translateX(100vw);
+    opacity: 0;
+    transition: all 0.3s ease; }
+  #menu-wrapper #menu {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 100vw;
+    padding: 50rem 40rem;
+    opacity: 0;
+    transition: all 0.3s ease;
+    transform: translateX(50vw); }
+    #menu-wrapper #menu #menu-content {
+      color: #000; }
+      #menu-wrapper #menu #menu-content h2 {
+        text-align: center;
+        padding-bottom: 50rem;
+        font-size: 40rem;
+        font-weight: 900; }
+      #menu-wrapper #menu #menu-content li {
+        margin: 20rem 0;
+        font-size: 30rem;
+        font-weight: 900; }
 
 #navbar {
   background: #333;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 5rem 15rem; }
+  padding: 5rem 15rem;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 50rem; }
   #navbar .logo {
     color: #00C575;
     font-family: 'Anton', sans-serif;
@@ -20,26 +65,42 @@ nav {
     letter-spacing: 1.5rem; }
   #navbar #hamburger-wrapper {
     width: 30rem;
-    padding: 5rem; }
-    #navbar #hamburger-wrapper #hamburger-bun {
+    padding: 5rem;
+    position: fixed;
+    z-index: 100;
+    top: 16.66667rem;
+    right: 16.66667rem;
+    height: inherit; }
+    #navbar #hamburger-wrapper #hamburger {
       width: 100%;
       height: 2.5rem;
       background-color: #00C575;
-      position: relative; }
-      #navbar #hamburger-wrapper #hamburger-bun::before {
+      position: relative;
+      transition: transform 0.3s ease; }
+      #navbar #hamburger-wrapper #hamburger::before {
         position: absolute;
         content: '';
         top: -7rem;
         width: 100%;
         height: 100%;
-        background: inherit; }
-      #navbar #hamburger-wrapper #hamburger-bun::after {
+        background: inherit;
+        transition: transform 0.3s ease; }
+      #navbar #hamburger-wrapper #hamburger::after {
         position: absolute;
         content: '';
         top: 7rem;
         width: 100%;
         height: 100%;
-        background: inherit; }
+        background: inherit;
+        transition: transform 0.3s ease; }
+      #navbar #hamburger-wrapper #hamburger.close {
+        transform: rotate(-45deg);
+        background-color: #000; }
+        #navbar #hamburger-wrapper #hamburger.close::before {
+          top: 0; }
+        #navbar #hamburger-wrapper #hamburger.close::after {
+          top: 0;
+          transform: rotate(90deg); }
 
 :root {
   font-size: 6.25%; }
@@ -60,4 +121,10 @@ ul {
   list-style: none; }
 
 a {
-  text-decoration: none; }
+  text-decoration: none;
+  color: inherit; }
+
+main {
+  position: absolute;
+  top: 50rem;
+  z-index: -1; }
