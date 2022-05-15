@@ -1,44 +1,126 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="static/css/main.css">
-    <title>Broadway With A Twist</title>
-</head>
-<body>
-    <nav>
-        <div id="hamburger-wrapper">
-            <div id="hamburger"></div>
-        </div>
-        <div id="menu-wrapper">
-            <div id="overlay"></div>
-            <div id="menu">
-                <div id="menu-content">
-                    <h2>Hi Alon!<br> Ready to Sing?</h2>
+
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="static/css/main.css">
+        <script src="https://kit.fontawesome.com/4078bed46b.js" crossorigin="anonymous"></script>
+        <title>Broadway With a Twist</title>
+    </head>
+
+    <body>
+        <nav>
+            <div id="hamburger-wrapper">
+                <div id="hamburger"></div>
+            </div>
+            <div id="menu-wrapper">
+                <div id="overlay"></div>
+                <div id="menu">
+                    <div id="menu-content">
+                        <h2>Hi Alon!</h2>
+                        <h3>Ready to Sing?</h3>
+                        <ul>
+                            <li><a href="#">Manage Songs</a></li>
+                            <li><a href="#">Lineup</a></li>
+                            <li><a href="#">Tip Us!</a></li>
+                            <li><a href="#">FAQ</a></li>
+                            <li><a href="#">Logout</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div id="navbar">
+                <div class="logo">
+                    <p>BWT</p>
+                </div>
+            </div>
+
+        </nav>
+        <main>
+            <div id="now-singing-wrapper">
+                <div id="now-singing">
+                    <div class="container">
+                        <h2>Now Performing:</h2>
+                        <div class="headliner">
+                            <p>Noah E Abramowitz</p>
+                        </div>
+                        <div class="current-song">
+                            <p>Lorem ipsum dolor sit</p>
+                        </div>
+                        <div class="up-next">
+                            <p>(Coming up next - Ella Ben Emanuel with Lorem ipsum dolor sit amet)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="dashboard-wrapper" class="light-card">
+                <div id="dashboard">
+                    <div>
+                        <p>Your next song:</p>
+                        <p>Lorem ipsum dolor sit amet</p>
+                    </div>
+                    <div>
+                        <p id="expand-tips">>> A few tips</p>
+                        <a href="#manage-sonts" class="btn btn-inverted">Manage Songs</a>
+                    </div>
+                </div>
+                <div id="tips" class="expand">
                     <ul>
-                        <li><a href="#">Manage Songs</a></li>
-                        <li><a href="#">Lineup</a></li>
-                        <li><a href="#">Tip Us!</a></li>
-                        <li><a href="#">FAQ</a></li>
-                        <li><a href="#">Logout</a></li>
+                        <li>Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolorum, dolores!</li>
+                        <li>Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolorum, dolores!</li>
+                        <li>Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolorum, dolores!</li>
+                        <li>Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolorum, dolores!</li>
+                        <li>Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolorum, dolores!</li>
                     </ul>
                 </div>
             </div>
-        </div>
-        <div id="navbar">
-            <div class="logo"><p>BWT</p></div>
-        </div>
+            <div id="whatsapp" class="flex-card dark-card">
+                <div class="row">
+                    <div class="column larger">
+                        <div class="column-1">
+                            <h3>When's next time??</h3>
+                            <p>Join our spam-free broadcast for future event alerts - and nothing else!</p>
+                        </div>
+                    </div>
+                    <div class="column smaller">
+                        <div class="column-2">
+                            <a href="https://chat.whatsapp.com/La9NtdsfoXC0xKnCVjTdIw"><i class="fa-brands fa-whatsapp fa-5x"></i></a>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+            <div id="tip-us" class="flex-card secondary-card">
+                <div class="row reverse">
+                    <div class="column larger">
+                        <div class="column-1">
+                            <h3>Tip and make us smile</h3>
+                            <p>Feel like showing some love?</p>
+                        </div>
+                    </div>
+                    <div class="column smaller">
+                        <div class="column-2">
+                            <a href="#tip-us">
+                                <img src="static/img/main/bit.png" id="bit-img"></a>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+            </div>
+            <footer>
+                <div class="container">
+                    <div id="footer-links">
+                        <a href="https://www.facebook.com/broadwaywithatwist"><i class="fa-brands fa-facebook fa-2x"></i></a>
+                        <a href="https://chat.whatsapp.com/La9NtdsfoXC0xKnCVjTdIw"><i class="fa-brands fa-whatsapp fa-2x"></i></a>
+                    </div>
+                    <p>Copyright &copy; 2022 - Broadway With a Twist</p>
+            </footer>
+        </main>
 
-    </nav>
-    <main>
-        <h1>Heading</h1>
-        <p>
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Consequuntur adipisci a veritatis architecto sint ad omnis maxime corrupti laboriosam, est placeat neque cum officiis cumque, asperiores ea nulla libero quos impedit blanditiis eum? Beatae voluptas voluptates ipsam quaerat! Debitis reiciendis praesentium consequatur rem esse omnis a culpa aperiam ullam autem id mollitia similique corrupti quos, maxime cumque ratione explicabo. Dolorem odio in, excepturi delectus rerum quidem quaerat mollitia fuga, iure maiores inventore labore esse autem consectetur amet fugit ullam ad sint numquam voluptates provident ea incidunt, sit fugiat! Commodi, atque neque qui perferendis accusantium nobis saepe aut doloribus magnam blanditiis iusto sequi dolorum non et amet nisi exercitationem sit, praesentium consequuntur ea assumenda? Sint aliquam accusamus cupiditate necessitatibus eveniet, praesentium deserunt, tempora error nemo cumque quisquam, provident culpa sunt accusantium eos maxime cum iure dolorum doloremque tempore placeat numquam et velit? Aperiam earum delectus, numquam fugit aut excepturi eligendi at similique beatae ipsum! Architecto labore in ab reiciendis debitis eaque, aut non est dicta perferendis placeat cupiditate a culpa. Nam vero saepe nesciunt voluptate fugiat eaque rem magnam mollitia reiciendis, velit, autem dolorum animi ullam sit deleniti veritatis obcaecati eveniet quo quae sed quisquam laudantium amet. Tempore ullam necessitatibus est non officia esse possimus unde ducimus commodi accusamus ipsa et quisquam voluptatem ipsum, minus alias inventore voluptatum corrupti! Debitis expedita, excepturi maxime ea blanditiis suscipit non laborum modi voluptatem placeat, nihil deleniti illo neque dolorum dolores incidunt, qui voluptatum temporibus ratione voluptas! Aut, vitae? Provident rerum ut illum magni similique inventore ratione quo doloribus omnis. Nihil laboriosam eum veritatis cum, labore officia asperiores obcaecati iusto molestiae, incidunt est iste aliquid minus, ipsa maiores eos corrupti cupiditate quam consequuntur? Laborum adipisci quidem quis labore harum perferendis dolores rem quibusdam, sint doloribus nisi dolore. Amet adipisci quisquam eum iusto quasi rerum corporis nulla, ut ullam ducimus? Ipsa beatae nam delectus sequi repellendus magni maxime omnis a libero nemo iure alias vero laborum nostrum sit rem amet adipisci similique eveniet, totam earum ab perspiciatis distinctio error? Officia rem quo similique fugit aspernatur facilis placeat ad accusantium consectetur dolorem. In ad culpa nesciunt reprehenderit facere earum itaque eum vero praesentium dolore assumenda modi illo cum corrupti magnam sapiente maxime qui incidunt, eligendi dolor! Incidunt omnis, voluptatum distinctio eligendi aut delectus officiis facere tenetur laborum totam, voluptatem sint consectetur saepe soluta, necessitatibus quaerat ut nobis pariatur debitis porro quis rerum reiciendis. Consequatur quae vel sequi itaque autem incidunt voluptate cupiditate enim doloribus atque placeat quisquam laborum architecto maiores neque omnis, quidem veritatis perferendis sint, quam natus ab inventore dignissimos? Laborum quasi minus expedita sapiente incidunt soluta quas, recusandae quam maxime aliquid, sint asperiores veniam architecto in ipsa facilis praesentium porro saepe eligendi! Vero officia ducimus recusandae ipsum officiis optio delectus est quod et. Quaerat at repellendus nisi corrupti qui est doloremque ipsum. Architecto mollitia quisquam cum autem nostrum eum odio soluta dignissimos corporis beatae velit rem distinctio, commodi facere nulla explicabo vel! Ad enim necessitatibus unde doloremque aliquam blanditiis, numquam, asperiores consectetur libero, esse cumque.
-        </p>
-    </main>
 
-    <script src="static/js/app.js"></script>
-</body>
+
+        <script src="static/js/app.js"></script>
+    </body>
+
 </html>

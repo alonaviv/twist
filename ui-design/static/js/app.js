@@ -31,20 +31,39 @@ function toggleMenu() {
         hamburger.classList.add('close');
         menuWrapper.classList.add('extend')
         menu.style.transitionDelay = '0.1s'; 
-        // navbar.style.backgroundColor = getRGBA(navbar, 0);
-        // logo.style.color = getRGBA(logo, 0, 'color');
-        // navbar.style.position = 'static';
         showMenu = true;
     } else{
         hamburger.classList.remove('close');
         menuWrapper.classList.remove('extend');
         menu.style.transitionDelay = '0s'; 
         navbar.style.position = 'fixed';
-        // navbar.style.backgroundColor = getRGBA(navbar, 1);
-        // logo.style.color = getRGBA(logo, 1, 'color');
         showMenu = false;
 
     }
     
 }
+
+// Open up dashboard tips
+const tips = document.getElementById('tips');
+const dashboardWrapper = document.getElementById("dashboard-wrapper");
+expandTips = false;
+const originalHeight = window.getComputedStyle(dashboardWrapper).height;
+
+document.getElementById("expand-tips").addEventListener('click', toggleTips);
+
+function toggleTips(){
+    if (!expandTips) {
+        tips.style.transform = "scaleY(1)";
+        dashboardWrapper.style.height = "60vh";
+        expandTips = true;
+    } else {
+        tips.style.transform = "scaleY(0)";
+        dashboardWrapper.style.height = originalHeight;
+        expandTips = false;
+    }
+
+}
+
+
+
 

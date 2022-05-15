@@ -1,4 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Anton&family=Dosis:wght@200&family=Open+Sans&family=Roboto:ital,wght@0,400;1,300&display=swap');
 
 nav{
     position: relative;
@@ -25,7 +24,7 @@ nav{
 
 
     #overlay{
-        background-color: $secondary-color;
+        background-color: rgba($primary-color, 0.95);
         height: 100vh;
         width: 100vw;
         position: absolute;
@@ -51,11 +50,15 @@ nav{
         #menu-content{
             color: set-text-color($secondary-color);
             h2 {
-                text-align: center;
-                padding-bottom: 50rem;
                 font-size: 40rem;
                 font-weight: 900;
             }
+            h3{
+                font-size: 25rem;
+                margin-bottom: 50rem;
+            }
+
+
             li{
                 margin: 20rem 0;
                 font-size: 30rem;
@@ -67,7 +70,7 @@ nav{
 
 #navbar {
     position: fixed;
-    background: #333;
+    background: $dark-bg;
     display: flex;
     justify-content: space-between;
     align-items: center;

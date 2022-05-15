@@ -1,8 +1,93 @@
 // Set Text Color
 @function set-text-color($color) {
-    @if(lightness($color) > 30) {
-        @return(#000);
-    } @else {
-        @return #fff;
+  @if (lightness($color) > 30) {
+    @return (#000);
+  } @else {
+    @return #fff;
+  }
+}
+
+// General
+.container {
+  width: 100vw;
+  padding: 0 20rem;
+  margin: auto;
+  overflow: hidden;
+  height: 100%;
+}
+
+.hidden {
+  display: none;
+}
+
+.flex-card {
+  .row {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+    height: 100%;
+
+    &.reverse {
+      flex-direction: row-reverse;
     }
+  }
+
+  .column {
+    display: flex;
+    flex-direction: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+
+    &.smaller {
+      width: 25%;
+    }
+
+    &.larger {
+      width: 65%;
+    }
+  }
+
+  //Wrapper for content inside each column
+  .column-1,
+  .column-2 {
+    height: 100%;
+    width: 100%;
+    padding: 10rem;
+  }
+}
+
+// Coloring and items
+.btn {
+  background-color: $primary-color;
+  color: set-text-color($primary-color);
+  display: inline-block;
+  padding: 7rem;
+  border-radius: 10rem;
+  border: none;
+
+  &.btn-inverted {
+    background-color: $dark-bg;
+    color: $primary-color;
+  }
+
+  &.btn-secondary-inverted {
+    background-color: $dark-bg;
+    color: $secondary-color;
+  }
+}
+
+.dark-card {
+  background-color: $dark-bg;
+  color: $primary-color;
+}
+
+.light-card {
+  background-color: $primary-color;
+  color: set-text-color($primary-color);
+}
+
+.secondary-card {
+  background-color: $secondary-color;
+  color: set-text-color($secondary-color);
 }
