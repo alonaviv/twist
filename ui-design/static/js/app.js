@@ -54,7 +54,7 @@ document.getElementById("expand-tips").addEventListener('click', toggleTips);
 function toggleTips(){
     if (!expandTips) {
         tips.style.transform = "scaleY(1)";
-        dashboardWrapper.style.height = "60vh";
+        dashboardWrapper.style.height = "65vh";
         expandTips = true;
     } else {
         tips.style.transform = "scaleY(0)";
@@ -63,6 +63,20 @@ function toggleTips(){
     }
 
 }
+
+
+// Just for UI viewing - toggling the dashboard
+const btn = document.getElementById('manage-songs-btn');
+const dashboard = document.getElementById('dashboard');
+const noSong = document.getElementById('no-song');
+
+btn.addEventListener('click', () =>{
+    if (noSong.classList.contains('hidden')) {
+    noSong.classList.remove('hidden');
+    dashboard.classList.add('hidden');
+    }
+});
+
 
 
 
