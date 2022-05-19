@@ -22,7 +22,8 @@
                         <h2>Hi Alon!</h2>
                         <h3>Ready to Sing?</h3>
                         <ul>
-                            <li><a href="#">Manage Songs</a></li>
+                            <li><a href="manage-songs.html">Manage Songs</a></li>
+                            <li class="hidden"><a href="index.html">Home</a></li>
                             <li><a href="#">Lineup</a></li>
                             <li><a href="#">Tip Us!</a></li>
                             <li><a href="#">FAQ</a></li>
@@ -33,12 +34,14 @@
             </div>
             <div id="navbar">
                 <div class="logo">
-                    <p>BWT</p>
+                    <a href="index.html">
+                        <p>BWT</p>
+                    </a>
                 </div>
             </div>
 
         </nav>
-        <main>
+        <main class="nested-footer">
             <div id="now-singing-wrapper">
                 <div id="now-singing">
                     <div class="container">
@@ -55,6 +58,11 @@
                     </div>
                 </div>
             </div>
+            <div id="song-added" class="third-card hidden">
+                <div class="container">
+                    <p>Success! You're signed up to sing <span class="song-name">Lorem ipsum dolor, sit amet consectetur adipisicing</span><br>Can't wait to see you up there!</p>
+                </div>
+            </div>
             <div id="dashboard-wrapper" class="dark-card">
                 <div id="dashboard">
                     <div>
@@ -62,8 +70,8 @@
                         <p>Lorem ipsum dolor sit amet</p>
                     </div>
                     <div>
-                        <p id="expand-tips">>> A few tips</p>
-                        <a href="#manage-songs" class="btn" id="manage-songs-btn">Manage Songs</a>
+                        <p id="expand-tips">>> Helpful tips</p>
+                        <a href="manage-songs.html" class="btn" id="manage-songs-btn">Manage Songs</a>
                     </div>
                 </div>
                 <div id="no-song" class="hidden">
@@ -72,7 +80,7 @@
                         <p>You're not signed up for any songs :(</p>
                     </div>
                     <div>
-                        <a href="#manage-songs" class="btn" id="manage-songs-btn">I want to sing!</a>
+                        <a href="manage-songs.html" class="btn" id="manage-songs-btn">I want to sing!</a>
                     </div>
                 </div>
                 <div id="tips" class="expand">
@@ -117,25 +125,24 @@
                     </div>
                 </div>
             </div>
-            </div>
-            <footer>
-                <div class="container">
-                    <div id="copywrite-wrapper">
-                        <p>Copyright &copy; 2022 - Broadway With a Twist</p>
-                    </div>
-                    <div id="footer-links">
-                        <a href="https://www.facebook.com/broadwaywithatwist"><i
-                                class="fa-brands fa-facebook fa-2x"></i></a>
-                        <a href="https://chat.whatsapp.com/La9NtdsfoXC0xKnCVjTdIw"><i
-                                class="fa-brands fa-whatsapp fa-2x"></i></a>
-                    </div>
+        <footer>
+            <div class="container dark-card">
+                <div id="copywrite-wrapper">
+                    <p>Copyright &copy; 2022 - Broadway With a Twist</p>
                 </div>
-            </footer>
+                <div id="footer-links">
+                    <a href="https://www.facebook.com/broadwaywithatwist"><i
+                            class="fa-brands fa-facebook fa-2x"></i></a>
+                    <a href="https://chat.whatsapp.com/La9NtdsfoXC0xKnCVjTdIw"><i
+                            class="fa-brands fa-whatsapp fa-2x"></i></a>
+                </div>
+            </div>
+        </footer>
         </main>
 
 
 
-        <script src="static/js/app.js"></script>
+        <script src="static/js/index.js"></script>
     </body>
 
 </html>

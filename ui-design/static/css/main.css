@@ -60,6 +60,13 @@
   background-color: #00b3c5;
   color: #000; }
 
+.third-card {
+  background-color: #ffff50;
+  color: #000; }
+
+.with-scroll {
+  overflow: scroll; }
+
 nav {
   position: relative; }
 
@@ -192,13 +199,12 @@ nav {
     left: 0;
     height: 100%;
     width: 100%;
-    padding: 50rem 0;
-    margin: auto;
+    margin: 5% auto;
     z-index: 2; }
     #login-hero #login-wrapper #login-title {
       margin-bottom: 15vh;
       font-family: 'Oleo Script Swash Caps', cursive;
-      font-size: 18px; }
+      font-size: 25px; }
     #login-hero #login-wrapper #login-form-wrapper {
       padding: 10rem 40rem; }
       #login-hero #login-wrapper #login-form-wrapper h3 {
@@ -216,7 +222,9 @@ nav {
             height: 40rem;
             border: #333 2px solid;
             border-radius: 5px;
-            background: #333; }
+            background: #333;
+            color: #fff;
+            font-size: 18px; }
             #login-hero #login-wrapper #login-form-wrapper form .form-control input::placeholder {
               color: #fff;
               font-size: 18px; }
@@ -247,22 +255,23 @@ nav {
                 background-color: #333; }
                 #login-hero #login-wrapper #login-form-wrapper form .checkboxes .checkbox input[type="checkbox"]:checked::before {
                   content: "\2713";
-                  display: block;
+                  display: inline-block;
                   text-align: center;
-                  color: yellow;
+                  color: #ffff3d;
                   position: absolute;
-                  left: 5rem;
+                  left: 10%;
+                  top: 0;
                   font-size: 20px; }
             #login-hero #login-wrapper #login-form-wrapper form .checkboxes .checkbox label {
               font-size: 18px; }
 
 @keyframes pulsate {
   0% {
-    box-shadow: 0px 0px 15px 8px yellow; }
+    box-shadow: 0px 0px 15px 1px #ffff3d; }
   50% {
-    box-shadow: 0px 0px 15px 6px yellow; }
+    box-shadow: 0px 0px 15px 3px #ffff3d; }
   100% {
-    box-shadow: 0px 0px 15px 8px yellow; } }
+    box-shadow: 0px 0px 15px 1px #ffff3d; } }
         #login-hero #login-wrapper #login-form-wrapper form .btn[type="submit"] {
           margin: 20rem 0;
           width: 90%;
@@ -271,132 +280,185 @@ nav {
           color: #fff;
           font-size: 18rem;
           animation-name: pulsate;
-          animation-duration: 2s;
+          animation-duration: 1.5s;
           animation-iteration-count: infinite;
           animation-fill-mode: backwards;
-          animation-delay: 2s;
           animation-timing-function: ease-in; }
 
-:root {
-  font-size: 6.25%; }
+#manage-songs-wrapper {
+  height: 100%;
+  background: #00C575; }
 
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0; }
-
-body {
-  max-width: 100%;
-  font-size: 16rem;
-  font-family: "Roboto", sans-serif;
-  background: #fff;
-  color: #333;
-  line-height: 1.6; }
-
-a {
-  text-decoration: none;
-  color: inherit; }
-
-main {
-  position: absolute;
-  top: 8vh;
-  left: 0;
-  z-index: -1;
+#song-list-wrapper {
+  height: 27vh;
   width: 100%;
-  overflow: hidden; }
-  main #now-singing-wrapper {
-    background: url("../img/main/mic.jpeg") center center/cover;
-    height: 40vh;
+  background: #00b3c5;
+  color: #000;
+  border: solid #000 3rem; }
+  #song-list-wrapper .container {
+    overflow: scroll;
+    height: 100%;
     width: 100%;
-    position: relative; }
-    main #now-singing-wrapper::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      height: 100%;
-      width: 100%;
-      background: rgba(0, 0, 0, 0.6);
-      z-index: 1;
-      text-align: center; }
-    main #now-singing-wrapper #now-singing {
-      z-index: 2;
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      padding: 3% 0;
-      color: #fff; }
-      main #now-singing-wrapper #now-singing .container {
+    padding: 5% 5%; }
+    #song-list-wrapper .container .fa-arrows-up-down {
+      margin-left: 30rem; }
+    #song-list-wrapper .container ul {
+      width: 100%; }
+      #song-list-wrapper .container ul li {
         display: flex;
         flex-direction: column;
-        justify-content: center;
-        align-items: center; }
-        main #now-singing-wrapper #now-singing .container h2 {
-          display: block;
-          text-align: center;
-          font-size: 30rem;
-          font-weight: 300; }
-        main #now-singing-wrapper #now-singing .container .headliner {
-          text-align: center;
+        margin: 5% 0; }
+        #song-list-wrapper .container ul li .song-wrapper {
+          display: flex;
+          width: 100%;
+          justify-content: space-between;
           font-size: 20rem;
-          font-weight: 500; }
-        main #now-singing-wrapper #now-singing .container .current-song {
-          display: block;
-          text-align: center;
-          line-height: 1;
-          margin-bottom: 5%;
-          font-weight: 200;
-          font-size: 16rem; }
-        main #now-singing-wrapper #now-singing .container .up-next {
-          display: block;
-          margin-top: 20%;
-          font-size: 15rem;
-          color: #f4f4f4;
-          font-weight: 500; }
-  main #dashboard-wrapper {
-    height: 22vh;
-    transition: all 0.3s ease; }
-    main #dashboard-wrapper #dashboard {
-      padding: 7% 5%;
-      width: 100%;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-around; }
-      main #dashboard-wrapper #dashboard p:first-child {
-        font-weight: 500; }
-      main #dashboard-wrapper #dashboard div:last-child {
-        padding-top: 5%;
-        display: flex;
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: center; }
-    main #dashboard-wrapper #no-song {
-      padding: 5% 5%;
-      width: 100%;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between; }
-      main #dashboard-wrapper #no-song div:last-child {
-        padding-top: 3%;
-        display: flex;
-        flex-direction: row-reverse;
-        justify-content: space-between;
-        align-items: center;
+          padding-bottom: 3%; }
+          #song-list-wrapper .container ul li .song-wrapper .fa-xmark {
+            font-size: 25rem;
+            margin-left: 5%;
+            padding-top: 4rem;
+            color: #c51200; }
+          #song-list-wrapper .container ul li .song-wrapper .fa-star {
+            margin-right: 3%;
+            padding-top: 6rem; }
+          #song-list-wrapper .container ul li .song-wrapper .song-name {
+            display: inline-block;
+            width: 100%;
+            font-weight: 500; }
+
+#add-song-wrapper {
+  background: #00C575;
+  color: #000;
+  height: 57vh;
+  width: 100%;
+  padding: 3% 7%; }
+  #add-song-wrapper #add-song-text {
+    font-size: 14rem;
+    margin-bottom: 5%; }
+  #add-song-wrapper form {
+    width: 100%; }
+    #add-song-wrapper form .form-control {
+      margin-bottom: 15rem; }
+      #add-song-wrapper form .form-control input {
+        width: 100%;
+        padding: 4rem;
+        height: 40rem;
+        border: #333 2px solid;
+        border-radius: 5px;
+        background: #333;
+        color: #fff;
+        font-size: 18px; }
+        #add-song-wrapper form .form-control input::placeholder {
+          color: #fff;
+          font-size: 18px; }
+      #add-song-wrapper form .form-control select {
         margin-top: 10rem;
-        margin-bottom: 10rem; }
-    main #dashboard-wrapper #tips {
-      margin-top: 1%;
-      transform: scaleY(0);
-      height: 0;
-      transition: inherit; }
-      main #dashboard-wrapper #tips ul {
-        margin: 0 10% 10% 10%; }
-        main #dashboard-wrapper #tips ul li:last-child {
-          margin-bottom: 5%; }
+        margin-bottom: 10rem;
+        width: 100%;
+        height: 30rem;
+        padding: 4rem;
+        background: #333;
+        color: #fff;
+        font-size: 14px; }
+
+#now-singing-wrapper {
+  background: url("../img/main/mic.jpeg") center center/cover;
+  height: 40vh;
+  width: 100%;
+  position: relative; }
+  #now-singing-wrapper::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 1;
+    text-align: center; }
+  #now-singing-wrapper #now-singing {
+    z-index: 2;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    padding: 3% 0; }
+    #now-singing-wrapper #now-singing .container {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center; }
+      #now-singing-wrapper #now-singing .container h2 {
+        display: block;
+        text-align: center;
+        font-size: 30rem;
+        font-weight: 300;
+        color: #fff; }
+      #now-singing-wrapper #now-singing .container .headliner {
+        text-align: center;
+        font-size: 20rem;
+        font-weight: 500;
+        color: #ffff50; }
+    #now-singing-wrapper #now-singing .current-song {
+      display: block;
+      text-align: center;
+      line-height: 1;
+      margin-bottom: 5%;
+      font-weight: 200;
+      font-size: 16rem;
+      color: #ffff50; }
+    #now-singing-wrapper #now-singing .up-next {
+      display: block;
+      margin-top: 20%;
+      font-size: 15rem;
+      font-weight: 500;
+      color: #fff; }
+
+#dashboard-wrapper {
+  height: 22vh;
+  transition: all 0.3s ease;
+  color: #00C575; }
+  #dashboard-wrapper #dashboard {
+    padding: 7% 5%;
+    width: 100%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around; }
+    #dashboard-wrapper #dashboard p:first-child {
+      font-weight: 500; }
+    #dashboard-wrapper #dashboard div:last-child {
+      padding-top: 5%;
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center; }
+  #dashboard-wrapper #no-song {
+    padding: 5% 5%;
+    width: 100%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; }
+    #dashboard-wrapper #no-song div:last-child {
+      padding-top: 3%;
+      display: flex;
+      flex-direction: row-reverse;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10rem;
+      margin-bottom: 10rem; }
+  #dashboard-wrapper #tips {
+    margin-top: 1%;
+    transform: scaleY(0);
+    height: 0;
+    transition: inherit; }
+    #dashboard-wrapper #tips ul {
+      margin: 0 10% 10% 10%; }
+      #dashboard-wrapper #tips ul li:last-child {
+        margin-bottom: 5%; }
 
 #whatsapp {
   height: 12vh;
@@ -414,11 +476,11 @@ main {
     padding-left: 40%; }
     #whatsapp .column-2 #no-spam {
       position: absolute;
-      left: 70%;
-      top: 28%;
+      left: 73%;
+      top: 24%;
       z-index: 10;
       font-size: 13rem;
-      transform: rotate(-45deg);
+      transform: rotate(-47deg);
       font-weight: 500; }
 
 #tip-us {
@@ -448,10 +510,47 @@ main {
         margin: auto;
         border-radius: 10rem; }
 
+#song-added {
+  padding: 20rem 0; }
+  #song-added .song-name {
+    font-weight: 500; }
+
+:root {
+  font-size: 6.25%; }
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0; }
+
+body {
+  max-width: 100%;
+  font-size: 16rem;
+  font-family: "Roboto", sans-serif;
+  background: #fff;
+  color: #333;
+  line-height: 1.6; }
+
+a {
+  text-decoration: none;
+  color: inherit; }
+
+main {
+  position: absolute;
+  top: 8vh;
+  left: 0;
+  z-index: -1;
+  width: 100%;
+  height: 84vh; }
+  main.nested-footer {
+    height: 92vh; }
+
 footer {
   width: 100%;
-  height: 8vh;
-  background-color: #f3c9bd; }
+  height: 8vh; }
+  footer.regular {
+    position: absolute;
+    bottom: 0; }
   footer .container {
     display: flex;
     justify-content: space-between;

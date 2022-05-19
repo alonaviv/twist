@@ -1,9 +1,11 @@
 // Colors
 $primary-color: #00C575;
 $secondary-color: #00b3c5;
+$third-color: rgb(255, 255, 80);
 $dark-bg: #333;
 $light-bg: #f3c9bd;
-$login: yellow;
+$login: rgb(255, 255, 61);
+$complimentery-secondary: #c51200;
 
 // Spacing
 $navbar-height: 8vh;
@@ -14,3 +16,8 @@ $now-singing-height: 40vh;
 $dashboard-height: 22vh;
 $wa-banner-height: 12vh;
 $paybox-banner-height: 10vh;
+
+
+// Manage songs
+$song-list-height: 27vh;
+$add-song-height: 57vh;  

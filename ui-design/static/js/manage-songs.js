@@ -1,3 +1,4 @@
+
 // Toggle menu with hamburger
 
 const hamburger = document.getElementById('hamburger');
@@ -42,42 +43,3 @@ function toggleMenu() {
     }
     
 }
-
-// Open up dashboard tips
-const tips = document.getElementById('tips');
-const dashboardWrapper = document.getElementById("dashboard-wrapper");
-expandTips = false;
-const originalHeight = window.getComputedStyle(dashboardWrapper).height;
-
-document.getElementById("expand-tips").addEventListener('click', toggleTips);
-
-function toggleTips(){
-    if (!expandTips) {
-        tips.style.transform = "scaleY(1)";
-        dashboardWrapper.style.height = "65vh";
-        expandTips = true;
-    } else {
-        tips.style.transform = "scaleY(0)";
-        dashboardWrapper.style.height = originalHeight;
-        expandTips = false;
-    }
-
-}
-
-
-// Just for UI viewing - toggling the dashboard
-const btn = document.getElementById('manage-songs-btn');
-const dashboard = document.getElementById('dashboard');
-const noSong = document.getElementById('no-song');
-
-btn.addEventListener('click', () =>{
-    if (noSong.classList.contains('hidden')) {
-    noSong.classList.remove('hidden');
-    dashboard.classList.add('hidden');
-    }
-});
-
-
-
-
-
