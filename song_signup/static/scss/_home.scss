@@ -51,6 +51,7 @@
       display: block;
       text-align: center;
       line-height: 1;
+      margin-top: 2%;
       margin-bottom: 5%;
       font-weight: 200;
       font-size: 16rem;
@@ -73,15 +74,17 @@
   color: $primary-color;
 
   #dashboard {
-    padding: 7% 5%;
+    padding: 5% 5%;
     width: 100%;
     overflow: hidden;
     display: flex;
     flex-direction: column;
     justify-content: space-around;
 
-    p:first-child {
-      font-weight: 500;
+
+    #user-next-song{
+        margin-top: 1%;
+        font-weight: 500;
     }
 
     div:last-child {

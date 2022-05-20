@@ -405,6 +405,7 @@ nav {
       display: block;
       text-align: center;
       line-height: 1;
+      margin-top: 2%;
       margin-bottom: 5%;
       font-weight: 200;
       font-size: 16rem;
@@ -421,13 +422,14 @@ nav {
   transition: all 0.3s ease;
   color: #00C575; }
   #dashboard-wrapper #dashboard {
-    padding: 7% 5%;
+    padding: 5% 5%;
     width: 100%;
     overflow: hidden;
     display: flex;
     flex-direction: column;
     justify-content: space-around; }
-    #dashboard-wrapper #dashboard p:first-child {
+    #dashboard-wrapper #dashboard #user-next-song {
+      margin-top: 1%;
       font-weight: 500; }
     #dashboard-wrapper #dashboard div:last-child {
       padding-top: 5%;

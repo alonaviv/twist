@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block content %}
+<nav>
+    <div id="hamburger-wrapper">
+        <div id="hamburger"></div>
+    </div>
+    <div id="menu-wrapper">
+        <div id="overlay"></div>
+        <div id="menu">
+            <div id="menu-content">
+                <h2>Hi {{ user.first_name }}!</h2>
+                <h3>Ready to Sing?</h3>
+                <ul>
+                    <li><a href="manage-songs.html">Manage Songs</a></li>
+                    <li class="hidden"><a href="index.html">Home</a></li>
+                    <li><a href="#">Lineup</a></li>
+                    <li><a href="#">Tip Us!</a></li>
+                    <li><a href="#">FAQ</a></li>
+                    <li><a href="{% url "logout" %}">Logout</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div id="navbar">
+        <div class="logo">
+            <a href="{% url 'home' %}">
+                <p>BWT</p>
+            </a>
+        </div>
+    </div>
+
+</nav>
+<main class="nested-footer">
+    <div id="now-singing-wrapper">
+        <div id="now-singing">
+            <div class="container">
+                <h2>Now Performing:</h2>
+                <div class="headliner">
+                    <p></p>
+                </div>
+                <div class="current-song">
+                    <p></p>
+                </div>
+                <div class="up-next">
+                    <p>(Coming up next - <span id="next-singer"></span> with <span id="next-song"></span>)</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="song-added" class="third-card hidden">
+        <div class="container">
+            <p>Success! You're signed up to sing <span class="song-name">Lorem ipsum dolor, sit amet consectetur
+                    adipisicing</span><br>Can't wait to see you up there!</p>
+        </div>
+    </div>
+    <div id="dashboard-wrapper" class="dark-card">
+        <div id="dashboard">
+            <div>
+                <p>Your next song:</p>
+                <p id="user-next-song"></p>
+            </div>
+            <div>
+                <p id="expand-tips">>> Helpful tips</p>
+                <a href="manage-songs.html" class="btn" id="manage-songs-btn">Manage Songs</a>
+            </div>
+        </div>
+        <div id="no-song">
+            <div>
+                <h3>Oh No!</h3>
+                <p>You're not signed up for any songs :(</p>
+            </div>
+            <div>
+                <a href="manage-songs.html" class="btn" id="manage-songs-btn">I want to sing!</a>
+            </div>
+        </div>
+        <div id="tips" class="expand">
+            <ul>
+                <li>Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolorum, dolores!</li>
+                <li>Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolorum, dolores!</li>
+                <li>Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolorum, dolores!</li>
+                <li>Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolorum, dolores!</li>
+                <li>Last one</li>
+            </ul>
+        </div>
+    </div>
+    <div id="whatsapp" class="flex-card light-card">
+        <div class="row">
+            <div class="column larger">
+                <div class="column-1">
+                    <h3>When's next time??</h3>
+                    <p>Stay informed in our broadcast</p>
+                </div>
+            </div>
+            <div class="column smaller">
+                <div class="column-2">
+                    <div id="no-spam">No Spam!</div>
+                    <a href="https://chat.whatsapp.com/La9NtdsfoXC0xKnCVjTdIw"><i
+                            class="fa-brands fa-whatsapp fa-3x"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="tip-us" class="flex-card secondary-card">
+        <div class="row reverse">
+            <div class="column larger">
+                <div class="column-1">
+                    <h3>Tip and make us smile</h3>
+                </div>
+            </div>
+            <div class="column smaller">
+                <div class="column-2">
+                    <a href="#tip-us">
+                        <img src="{% static "img/main/bit.png" %}" id="bit-img"></a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer>
+        <div class="container dark-card">
+            <div id="copywrite-wrapper">
+                <p>Copyright &copy; 2022 - Broadway With a Twist</p>
+            </div>
+            <div id="footer-links">
+                <a href="https://www.%facebook.com/broadwaywithatwist"><i class="fa-brands fa-facebook fa-2x"></i></a>
+                <a href="https://chat.whatsapp.com/La9NtdsfoXC0xKnCVjTdIw"><i
+                        class="fa-brands fa-whatsapp fa-2x"></i></a>
+            </div>
+        </div>
+    </footer>
+</main>
+
+<script src="{% static "js/home.js" %}"></script>
+<script src="{% static "js/navbar.js" %}"></script>
+
+{% endblock %}

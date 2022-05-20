@@ -25,6 +25,11 @@ SECRET_KEY = '10ux=r^ftgae13@(-5m(&z7dcjy4c7c%xffs2+o2gw)ab9p4&@'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+TEMPLATE_DEBUG = True
+
+INTERNAL_IPS = [
+    "127.0.0.1",
+]
 
 ALLOWED_HOSTS = ['192.168.0.111', 'localhost', '127.0.0.1']
 DOMAIN = 'http://localhost:8000'
@@ -69,7 +74,8 @@ INSTALLED_APPS = [
     'song_signup.apps.SongSignupConfig',
     'easy_select2',
     'dbbackup',
-    'flags'
+    'flags',
+    "debug_toolbar",
 ]
 
 DBBACKUP_STORAGE = 'django.core.files.storage.FileSystemStorage'
@@ -77,6 +83,7 @@ DBBACKUP_STORAGE_OPTIONS = {'location': './db_backups'}
 
 MIDDLEWARE = [
     'song_signup.middleware.timezone_middleware.TimezoneMiddleware',
+    # "debug_toolbar.middleware.DebugToolbarMiddleware",
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',

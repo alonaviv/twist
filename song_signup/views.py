@@ -2,15 +2,18 @@ import logging
 from datetime import datetime, timezone
 
 from django.contrib import messages
-from django.contrib.auth import login, logout
+from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.contrib.auth.models import User, Group
 from django.db import IntegrityError
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import render, redirect
 from django.core.management import call_command
+from numpy import blackman
 
 from .forms import SingerForm, SongRequestForm
-from .models import SongRequest, AllowsVideoModel
+from django.forms.models import model_to_dict
+from django.core import serializers
+from .models import SongRequest, NoUpload
 from flags.state import enable_flag, disable_flag
 
 logger = logging.getLogger(__name__)
@@ -117,56 +120,80 @@ def get_pending_songs_and_other_singers(user):
 
     return songs_dict
 
+def home(request):
+    return render(request, 'song_signup/home.html')
+
+
+def dashboard_data(request):
+    try:
+        current_song = SongRequest.objects.get(priority=1).basic_data
+    except SongRequest.DoesNotExist:
+        current_song = None
+
+    try:
+        next_song = SongRequest.objects.get(priority=2).basic_data
+    except SongRequest.DoesNotExist:
+        next_song = None
+
+    user_next_songs = get_singers_next_songs(request.user)
+    user_next_song = user_next_songs[-1].basic_data if user_next_songs else None
+
+
+    return JsonResponse(
+        {
+        "current_song": current_song,
+        "next_song": next_song,
+        "user_next_song": user_next_song
+        })
+    
+
 
 def song_signup(request):
     current_user = request.user
     song_lineup = get_all_songs(current_user).filter(performance_time=None)
 
     if not current_user.is_authenticated:
-        return redirect('singer_login')
-
+        return redirect('login')
+    
     if request.method == 'POST':
-        form = SongRequestForm(request.POST, request=request)
+        song_name = request.POST['song_name']
+        musical = request.POST['musical']
+        additional_singers = request.POST['additional_singers']
 
-        if form.is_valid():
-            song_name = form.cleaned_data['song_name']
-            musical = form.cleaned_data['musical']
-            additional_singers = form.cleaned_data['additional_singers']
-
-            try:
-                existing_song = SongRequest.objects.get(song_name=song_name, musical=musical)
-                if current_user in existing_song.additional_singers.all():
-                    song_lineup = get_all_songs(current_user).filter(performance_time=None)
-                    messages.error(request,
-                                   f"Apparently {existing_song.singer} has already signed you up for this song")
-                    return render(request, 'song_signup/song_signup.html', {
-                        'form': form, 'song_lineup': song_lineup,
-                        'song_lineup_with_singers': get_pending_songs_and_other_singers(current_user)
-                    })
-            except SongRequest.DoesNotExist:
-                pass
-
-            song_request = SongRequest(song_name=song_name, musical=musical, singer=current_user)
-            song_request.priority = 0
-
-            try:
-                song_request.save()
-                song_request.additional_singers.set(additional_singers)
-                song_request.save()
-                assign_song_priorities()
-                return render(request, 'song_signup/signed_up.html', {
-                    'song_lineup_with_singers': get_pending_songs_and_other_singers(current_user),
-                    'song_lineup': song_lineup,
-                    'song_request': song_request,
-                })
-
-            except IntegrityError:
-                messages.error(request, "You already signed up with this song tonight.")
+        try:
+            existing_song = SongRequest.objects.get(song_name=song_name, musical=musical)
+            if current_user in existing_song.additional_singers.all():
+                song_lineup = get_all_songs(current_user).filter(performance_time=None)
+                messages.error(request,
+                                f"Apparently {existing_song.singer} has already signed you up for this song")
                 return render(request, 'song_signup/song_signup.html', {
-                    'form': form,
-                    'song_lineup_with_singers': get_pending_songs_and_other_singers(current_user),
-                    'song_lineup': song_lineup
+                    'form': form, 'song_lineup': song_lineup,
+                    'song_lineup_with_singers': get_pending_songs_and_other_singers(current_user)
                 })
+        except SongRequest.DoesNotExist:
+            pass
+
+        song_request = SongRequest(song_name=song_name, musical=musical, singer=current_user)
+        song_request.priority = 0
+
+        try:
+            song_request.save()
+            song_request.additional_singers.set(additional_singers)
+            song_request.save()
+            assign_song_priorities()
+            return render(request, 'song_signup/signed_up.html', {
+                'song_lineup_with_singers': get_pending_songs_and_other_singers(current_user),
+                'song_lineup': song_lineup,
+                'song_request': song_request,
+            })
+
+        except IntegrityError:
+            messages.error(request, "You already signed up with this song tonight.")
+            return render(request, 'song_signup/song_signup.html', {
+                'form': form,
+                'song_lineup_with_singers': get_pending_songs_and_other_singers(current_user),
+                'song_lineup': song_lineup
+            })
 
     else:
         form = SongRequestForm(request=request)
@@ -177,54 +204,50 @@ def song_signup(request):
         'song_lineup': song_lineup
     })
 
+def logout(request):
+    auth_logout(request)
+    return redirect('login')
 
-def singer_login(request, is_switching):
-    if request.user.is_authenticated and not request.user.is_anonymous and not is_switching:
-        return redirect('song_signup')
+
+def login(request):
+    # This is the root endpoint. If already logged in, go straight to home. 
+    if request.user.is_authenticated and not request.user.is_anonymous:
+        return redirect('home')
 
     if request.method == 'POST':
-        form = SingerForm(request.POST)
+        first_name = request.POST['first-name'].capitalize()
+        last_name = request.POST['last-name'].capitalize()
+        logged_in = request.POST.get('logged-in') == 'on'
+        no_image_upload = request.POST.get('no-upload') == 'on'
 
-        if form.is_valid():
-            first_name = form.cleaned_data['first_name']
-            last_name = form.cleaned_data['last_name']
-            already_logged_in = form.cleaned_data['i_already_logged_in_tonight']
-            allows_posting_videos = form.cleaned_data['allows_posting_videos']
+        if logged_in:
+            try:
+                singer = User.objects.get(first_name=first_name, last_name=last_name)
+            except User.DoesNotExist:
+                messages.error(request, "The name that you logged in with previously does not match your current "
+                                        "name.\nCould there be a typo somewhere?")
+                return render(request, 'song_signup/login.html')
+                
+        else:
+            try:
+                singer = User.objects.create_user(
+                    _name_to_username(first_name, last_name),
+                    first_name=first_name,
+                    last_name=last_name,
+                    is_staff=True
+                )
+                NoUpload.objects.create(user=singer, no_image_upload=no_image_upload)
+            except IntegrityError:
+                messages.error(request, "The name that you're trying to login with already exists.\n"
+                                        "Did you already login with us tonight? If so, check the box below.")
+                return render(request, 'song_signup/login.html')
 
-            if already_logged_in:
-                try:
-                    singer = User.objects.get(first_name=first_name, last_name=last_name)
-                except User.DoesNotExist:
-                    messages.error(request, "The name that you logged in with previously does not match your current "
-                                            "name.\nCould there be a typo somewhere?")
-                    return render(request, 'song_signup/singer_login.html', {'form': form})
-                else:
-                    if singer.is_superuser:
-                        logout(request)
-                        return redirect('admin:index')
-            else:
-                try:
-                    singer = User.objects.create_user(
-                        _name_to_username(first_name, last_name),
-                        first_name=first_name,
-                        last_name=last_name,
-                        is_staff=True
-                    )
-                    AllowsVideoModel.objects.create(user=singer, allows_posting_videos=allows_posting_videos)
-                except IntegrityError:
-                    messages.error(request, "The name that you're trying to login with already exists.\n"
-                                            "Did you already login with us tonight? If so, check the box below.")
-                    return render(request, 'song_signup/singer_login.html', {'form': form})
+        group = Group.objects.get(name='singers')
+        group.user_set.add(singer)
+        auth_login(request, singer)
+        return redirect('home')
 
-            group = Group.objects.get(name='singers')
-            group.user_set.add(singer)
-            login(request, singer)
-            return redirect('song_signup')
-
-    else:
-        form = SingerForm()
-
-    return render(request, 'song_signup/singer_login.html', {'form': form})
+    return render(request, 'song_signup/login.html')
 
 
 def delete_song_request(request, song_pk):

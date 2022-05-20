@@ -5,7 +5,7 @@ from django.contrib import admin
 from django.contrib.auth.models import User
 from django.utils import timezone
 
-from .models import SongRequest, AllowsVideoModel
+from .models import SongRequest, NoUpload
 from .views import assign_song_priorities
 
 
@@ -85,19 +85,19 @@ class SongRequestAdmin(admin.ModelAdmin):
 
 
 class CustomUserInline(admin.StackedInline):
-    model = AllowsVideoModel
+    model = NoUpload
     can_delete = False
     verbose_name_plural = 'Custom Users'
 
 
 class CustomUserAdmin(admin.ModelAdmin):
     inlines = (CustomUserInline,)
-    list_display = ['username', 'date_joined', 'is_superuser', 'allows_posting_videos']
+    list_display = ['username', 'date_joined', 'is_superuser', 'no_image_upload']
 
-    def allows_posting_videos(self, obj):
-        return obj.allowsvideomodel.allows_posting_videos
+    def no_image_upload(self, obj):
+        return obj.noupload.no_image_upload
 
-    allows_posting_videos.boolean = True
+    no_image_upload.boolean = True
 
 
 admin.site.unregister(User)

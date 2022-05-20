@@ -7,9 +7,9 @@ from django.db.models import (
 User.add_to_class("__str__", lambda self: f'{self.first_name} {self.last_name}')
 
 
-class AllowsVideoModel(Model):
+class NoUpload(Model):
     user = OneToOneField(User, on_delete=CASCADE, )
-    allows_posting_videos = BooleanField()
+    no_image_upload = BooleanField()
 
 
 class SongRequest(Model):
@@ -36,6 +36,11 @@ class SongRequest(Model):
 
     def __str__(self):
         return f"Song request: {self.song_name} by {self.singer}"
+    
+    @property
+    def basic_data(self):
+        return {'name': self.song_name, 'singer': str(self.singer)}
+
 
     class Meta:
         unique_together = ('song_name', 'musical', 'singer')
