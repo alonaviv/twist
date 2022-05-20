@@ -3,36 +3,9 @@
 {% load static %}
 
 {% block content %}
-<nav>
-    <div id="hamburger-wrapper">
-        <div id="hamburger"></div>
-    </div>
-    <div id="menu-wrapper">
-        <div id="overlay"></div>
-        <div id="menu">
-            <div id="menu-content">
-                <h2>Hi {{ user.first_name }}!</h2>
-                <h3>Ready to Sing?</h3>
-                <ul>
-                    <li><a href="manage-songs.html">Manage Songs</a></li>
-                    <li class="hidden"><a href="index.html">Home</a></li>
-                    <li><a href="#">Lineup</a></li>
-                    <li><a href="#">Tip Us!</a></li>
-                    <li><a href="#">FAQ</a></li>
-                    <li><a href="{% url "logout" %}">Logout</a></li>
-                </ul>
-            </div>
-        </div>
-    </div>
-    <div id="navbar">
-        <div class="logo">
-            <a href="{% url 'home' %}">
-                <p>BWT</p>
-            </a>
-        </div>
-    </div>
 
-</nav>
+{% include "partials/_navbar.html" with current="home" %}
+
 <main class="nested-footer">
     <div id="now-singing-wrapper">
         <div id="now-singing">

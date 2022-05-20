@@ -1,0 +1,36 @@
+<nav>
+    <div id="hamburger-wrapper">
+        <div id="hamburger"></div>
+    </div>
+    <div id="menu-wrapper">
+        <div id="overlay"></div>
+        <div id="menu">
+            <div id="menu-content">
+                <h2>Hi {{ user.first_name }}!</h2>
+                <h3>Ready to Sing?</h3>
+                <ul>
+                    <li {% if current == 'manage-songs' %} class="hidden" {% endif %}>
+                        <a href="manage-songs.html">Manage Songs</a>
+                    </li>
+                    <li {% if current == 'home' %} class="hidden" {% endif %}>
+                        <a href="index.html">Home</a>
+                    </li>
+                    <li><a href="#">Lineup</a></li>
+                    <li {% if current == 'tip-us' %} class="hidden" {% endif %}>
+                        <a href="#">Tip Us!</a></li>
+                    <li {% if current == 'faq' %} class="hidden" {% endif %}>
+                        <a href="#">FAQ</a></li>
+                    <li><a href="{% url "logout" %}">Logout</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div id="navbar">
+        <div class="logo">
+            <a href="{% url 'home' %}">
+                <p>BWT</p>
+            </a>
+        </div>
+    </div>
+
+</nav>
