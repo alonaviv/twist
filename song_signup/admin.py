@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 
 from .models import SongRequest, NoUpload
-from .views import assign_song_priorities
+from .views import _assign_song_priorities
 
 
 def set_performed(modeladmin, request, queryset):
@@ -15,7 +15,7 @@ def set_performed(modeladmin, request, queryset):
         song.priority = -1
         song.save()
 
-    assign_song_priorities()
+    _assign_song_priorities()
 
 
 def set_not_performed(modeladmin, request, queryset):
@@ -23,7 +23,7 @@ def set_not_performed(modeladmin, request, queryset):
         song.performance_time = None
         song.save()
 
-    assign_song_priorities()
+    _assign_song_priorities()
 
 
 set_performed.short_description = 'Mark song as performed'
@@ -92,7 +92,7 @@ class CustomUserInline(admin.StackedInline):
 
 class CustomUserAdmin(admin.ModelAdmin):
     inlines = (CustomUserInline,)
-    list_display = ['username', 'date_joined', 'is_superuser', 'no_image_upload']
+    list_display = ['id', 'username', 'date_joined', 'is_superuser', 'no_image_upload']
 
     def no_image_upload(self, obj):
         return obj.noupload.no_image_upload

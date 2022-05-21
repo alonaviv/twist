@@ -13,8 +13,8 @@ class NoUpload(Model):
 
 
 class SongRequest(Model):
-    song_name = CITextField(max_length=50)
-    musical = CITextField(max_length=50)
+    song_name = CITextField(max_length=50, null=False, blank=False)
+    musical = CITextField(max_length=50, null=False, blank=False)
     request_time = DateTimeField(auto_now_add=True)
     performance_time = DateTimeField(default=None, null=True, blank=True)
     singer = ForeignKey(User, on_delete=CASCADE)

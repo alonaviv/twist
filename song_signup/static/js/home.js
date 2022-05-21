@@ -7,7 +7,6 @@ const originalHeight = window.getComputedStyle(dashboardWrapper).height;
 document.getElementById("expand-tips").addEventListener("click", toggleTips);
 
 function toggleTips() {
-  console.log("HEllo");
   if (!expandTips) {
     tips.style.transform = "scaleY(1)";
     dashboardWrapper.style.height = "65vh";
@@ -66,4 +65,10 @@ function populateNowSinging() {
         noSongElem.classList.remove("hidden");
       }
     });
+}
+
+// If new song added banner is on page - remove it after a few seconds
+const songAddedElem = document.getElementById('song-added');
+if (songAddedElem) {
+    setTimeout(() => songAddedElem.style.display = 'none', 5000);
 }

@@ -4,8 +4,9 @@ from datetime import datetime, timezone
 from django.contrib import messages
 from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.contrib.auth.models import User, Group
+from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
-from django.http import HttpResponseRedirect, JsonResponse
+from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
 from django.core.management import call_command
 from numpy import blackman
@@ -16,6 +17,8 @@ from django.core import serializers
 from .models import SongRequest, NoUpload
 from flags.state import enable_flag, disable_flag
 
+from titlecase import titlecase
+
 logger = logging.getLogger(__name__)
 
 
@@ -23,22 +26,22 @@ def _name_to_username(first_name, last_name):
     return f'{first_name.lower()}_{last_name.lower()}'
 
 
-def get_all_songs(singer):
+def _get_all_songs(singer):
     songs_as_main_singer = singer.songrequest_set.all()
     songs_as_additional_singer = singer.songs.all()
     return (songs_as_main_singer | songs_as_additional_singer).distinct()
 
 
-def get_all_songs_performed(singer):
-    return get_all_songs(singer).exclude(performance_time=None)
+def _get_all_songs_performed(singer):
+    return _get_all_songs(singer).exclude(performance_time=None)
 
 
-def get_num_songs_performed(singer):
-    return get_all_songs_performed(singer).count()
+def _get_num_songs_performed(singer):
+    return _get_all_songs_performed(singer).count()
 
 
-def get_how_long_waiting(singer):
-    ordered_songs_performed = get_all_songs_performed(singer).order_by('-performance_time')
+def _get_how_long_waiting(singer):
+    ordered_songs_performed = _get_all_songs_performed(singer).order_by('-performance_time')
 
     if ordered_songs_performed:
         time_waiting = datetime.now(timezone.utc) - ordered_songs_performed[0].performance_time
@@ -48,27 +51,27 @@ def get_how_long_waiting(singer):
     return time_waiting.total_seconds()
 
 
-def get_singers_next_songs(singer):
+def _get_singers_next_songs(singer):
     # I'm using reverse request time, since we will eventually pop from the end of the list to get the earliest song.
-    return list(get_all_songs(singer).filter(performance_time=None).order_by('-request_time'))
+    return list(_get_all_songs(singer).filter(performance_time=None).order_by('-request_time'))
 
 
-def calculate_singer_priority(singer):
-    priority = pow(4, 1 / (get_num_songs_performed(singer) + 1)) * get_how_long_waiting(singer)
-    logger.debug(f"Priority of {singer} is {priority}. Num songs performed: {get_num_songs_performed(singer)}. "
-                 f"How long waiting: {get_how_long_waiting(singer)}")
+def _calculate_singer_priority(singer):
+    priority = pow(4, 1 / (_get_num_songs_performed(singer) + 1)) * _get_how_long_waiting(singer)
+    logger.debug(f"Priority of {singer} is {priority}. Num songs performed: {_get_num_songs_performed(singer)}. "
+                 f"How long waiting: {_get_how_long_waiting(singer)}")
     return priority
 
 
-def assign_song_priorities():
+def _assign_song_priorities():
     logger.info(" =====  START PRIORITISING PROCESS ========")
     current_priority = 1
     singer_queryset = User.objects.filter(is_superuser=False)  # Superusers don't need to be given priority
 
     songs_of_singers_dict = dict()
     for singer in singer_queryset:
-        singer.priority = calculate_singer_priority(singer)
-        next_songs = get_singers_next_songs(singer)
+        singer.priority = _calculate_singer_priority(singer)
+        next_songs = _get_singers_next_songs(singer)
         for song in next_songs:
             song.priority = 0
             song.save()
@@ -112,16 +115,21 @@ def assign_song_priorities():
     logger.info("========== END PRIORITISING PROCESS ======")
 
 
-def get_pending_songs_and_other_singers(user):
-    songs_dict = {}
+def _get_pending_songs_and_other_singers(user):
+    songs_dict = []
 
-    for song in get_all_songs(user).filter(performance_time=None):
-        songs_dict[song] = song.all_singers.all().exclude(pk=user.pk).order_by('first_name', 'last_name')
+    for song in _get_all_songs(user).filter(performance_time=None):
+        additional_singers = [str(singer) for singer in song.additional_singers.all().exclude(pk=user.pk).order_by('first_name', 'last_name')]
+
+        additional_singers_text = ', '.join(additional_singers[:-2] + [" and ".join(additional_singers[-2:])])
+        songs_dict.append({'name': song.song_name, 'singers': additional_singers_text,
+         'primary_singer': str(song.singer), 'user_song': song.singer == user, 'pk': song.pk})
 
     return songs_dict
 
-def home(request):
-    return render(request, 'song_signup/home.html')
+@login_required(login_url='login')
+def home(request, new_song=None):
+    return render(request, 'song_signup/home.html', {"new_song": new_song})
 
 
 def dashboard_data(request):
@@ -135,7 +143,7 @@ def dashboard_data(request):
     except SongRequest.DoesNotExist:
         next_song = None
 
-    user_next_songs = get_singers_next_songs(request.user)
+    user_next_songs = _get_singers_next_songs(request.user)
     user_next_song = user_next_songs[-1].basic_data if user_next_songs else None
 
 
@@ -145,64 +153,64 @@ def dashboard_data(request):
         "next_song": next_song,
         "user_next_song": user_next_song
         })
+
+
+def _sanitize_string(name, title=False):
+    sanitized =  ' '.join(word.capitalize() for word in name.split())
+    return titlecase(sanitized) if title else sanitized
     
 
-
-def song_signup(request):
+def add_song_request(request):
     current_user = request.user
-    song_lineup = get_all_songs(current_user).filter(performance_time=None)
-
-    if not current_user.is_authenticated:
-        return redirect('login')
+    error = None
     
     if request.method == 'POST':
-        song_name = request.POST['song_name']
-        musical = request.POST['musical']
-        additional_singers = request.POST['additional_singers']
+        song_name = _sanitize_string(request.POST['song-name'], title=True)
+        musical = _sanitize_string(request.POST['musical'], title=True)
+        additional_singers = request.POST.getlist('additional-singers')
 
         try:
-            existing_song = SongRequest.objects.get(song_name=song_name, musical=musical)
-            if current_user in existing_song.additional_singers.all():
-                song_lineup = get_all_songs(current_user).filter(performance_time=None)
-                messages.error(request,
-                                f"Apparently {existing_song.singer} has already signed you up for this song")
-                return render(request, 'song_signup/song_signup.html', {
-                    'form': form, 'song_lineup': song_lineup,
-                    'song_lineup_with_singers': get_pending_songs_and_other_singers(current_user)
-                })
+            song_request = SongRequest.objects.get(song_name=song_name, musical=musical)
+            if current_user in song_request.additional_singers.all():
+                return JsonResponse({"error": f"Apparently, {song_request.singer} already signed you up for this song"}, status=400)
+            elif song_request.singer == current_user:
+                return JsonResponse({"error": "You already signed up with this song tonight"}, status=400)
+
         except SongRequest.DoesNotExist:
-            pass
+            song_request = SongRequest(song_name=song_name, musical=musical, singer=current_user)
+            song_request.priority = 0
 
-        song_request = SongRequest(song_name=song_name, musical=musical, singer=current_user)
-        song_request.priority = 0
-
-        try:
             song_request.save()
-            song_request.additional_singers.set(additional_singers)
-            song_request.save()
-            assign_song_priorities()
-            return render(request, 'song_signup/signed_up.html', {
-                'song_lineup_with_singers': get_pending_songs_and_other_singers(current_user),
-                'song_lineup': song_lineup,
-                'song_request': song_request,
-            })
+            try:
+                song_request.additional_singers.set(additional_singers)
+                song_request.save()
+            except Exception:
+                song_request.delete()
+                raise
 
-        except IntegrityError:
-            messages.error(request, "You already signed up with this song tonight.")
-            return render(request, 'song_signup/song_signup.html', {
-                'form': form,
-                'song_lineup_with_singers': get_pending_songs_and_other_singers(current_user),
-                'song_lineup': song_lineup
-            })
+            _assign_song_priorities()
 
-    else:
-        form = SongRequestForm(request=request)
-
-    return render(request, 'song_signup/song_signup.html', {
-        'form': form,
-        'song_lineup_with_singers': get_pending_songs_and_other_singers(current_user),
-        'song_lineup': song_lineup
+    return JsonResponse({
+        'requested_song': song_request.song_name,
     })
+
+
+def get_current_songs(request):
+    return JsonResponse({'current_songs': _get_pending_songs_and_other_singers(request.user)})
+
+def get_song(request, song_pk):
+    try:
+        song_request = SongRequest.objects.get(pk=song_pk)
+    except SongRequest.DoesNotExist:
+        return JsonResponse({'error': f"Song with ID {song_pk} does not exist, and cannot be deleted"}, status=403)
+
+    return JsonResponse({"name": song_request.song_name})
+    
+
+@login_required(login_url='login')
+def manage_songs(request):
+    other_singers = User.objects.all().exclude(pk=request.user.pk)
+    return render(request, 'song_signup/manage_songs.html', {'other_singers': other_singers})
 
 def logout(request):
     auth_logout(request)
@@ -215,8 +223,8 @@ def login(request):
         return redirect('home')
 
     if request.method == 'POST':
-        first_name = request.POST['first-name'].capitalize()
-        last_name = request.POST['last-name'].capitalize()
+        first_name = _sanitize_string(request.POST['first-name'])
+        last_name = _sanitize_string(request.POST['last-name'])
         logged_in = request.POST.get('logged-in') == 'on'
         no_image_upload = request.POST.get('no-upload') == 'on'
 
@@ -250,31 +258,30 @@ def login(request):
     return render(request, 'song_signup/login.html')
 
 
-def delete_song_request(request, song_pk):
+def delete_song(request, song_pk):
     SongRequest.objects.filter(pk=song_pk).delete()
-
-    return redirect('song_signup')
+    return HttpResponse()
 
 
 def reset_database(request):
     call_command('dbbackup')
     call_command('reset_db')
-    return HttpResponseRedirect('/admin/song_signup/songrequest')
+    return HttpResponse()
 
 
 def enable_signup(request):
     enable_flag('CAN_SIGNUP')
-    return HttpResponseRedirect('/admin/song_signup/songrequest')
+    return HttpResponse()
 
 
 def disable_signup(request):
     disable_flag('CAN_SIGNUP')
-    return HttpResponseRedirect('/admin/song_signup/songrequest')
+    return HttpResponse()
 
 
 def recalculate_priorities(request):
-    assign_song_priorities()
-    return HttpResponseRedirect('/admin/song_signup/songrequest')
+    _assign_song_priorities()
+    return HttpResponse()
 
 
 

@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block content %}
+
+{% include "partials/_navbar.html" with current="manage-songs" %}
+<main class="with-scroll">
+    <div id="manage-songs-wrapper">
+        <div id="song-list-wrapper">
+            <div class="container">
+                <h1>Current selections<i class="fa-solid fa-arrows-up-down"></i></h1>
+                <ul id="song-list"></ul>
+            </div>
+        </div>
+        <div id="add-song-wrapper">
+            <h2>Choose your next song!</h2>
+            <p id="add-song-text">Pick literally anything in the Broadway or Disney style (seriously, try us)
+                and come up to sing!</p>
+            <div id="new-song-form-wrapper">
+                <form action="" id="new-song-form">
+                    {% csrf_token %}
+                    <div class="form-control">
+                        <input type="text" name="song-name" id="song-name" placeholder="Song Name" required>
+                    </div>
+                    <div class="form-control">
+                        <input type="text" name="musical" id="musical" placeholder="Where's it from?" required>
+                    </div>
+                    <div class="form-control">
+                        <label for="additional singers">Anyone else singing this with you?<br>Shani and Alon are
+                            always available 🙂</label>
+                        <select name="additional-singers" id="additional-singers" multiple>
+                            {% for singer in other_singers %}
+                            <option value="{{ singer.id }}">{{ singer }}</option>
+                            {% endfor %}
+                        </select>
+                        <input type="submit" value="To the stage!" class="btn">
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+
+{% include "partials/_footer.html"  %}
+
+<script src="{% static "js/manage-songs.js" %}"></script>
+<script src="{% static "js/navbar.js" %}"></script>
+        
+{% endblock %}

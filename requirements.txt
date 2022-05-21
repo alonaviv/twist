@@ -1,5 +1,5 @@
 appnope==0.1.0
-asgiref==3.2.10
+asgiref==3.5.2
 attrs==20.3.0
 backcall==0.2.0
 beautifulsoup4==4.9.3
@@ -9,9 +9,10 @@ cffi==1.14.4
 cssselect2==0.4.1
 decorator==4.4.2
 defusedxml==0.6.0
-Django==3.1.2
+Django==3.2.13
 django-crispy-forms==1.9.2
 django-dbbackup==3.3.0
+django-debug-toolbar==3.4.0
 django-easy-select2==1.5.7
 django-email-verification==0.0.7
 django-flags==5.0.9
@@ -59,8 +60,10 @@ six==1.15.0
 soupsieve==2.0.1
 sqlparse==0.4.1
 tinycss2==1.1.0
+titlecase==2.3
 toml==0.10.2
 traitlets==5.0.5
+typing_extensions==4.2.0
 unicode==2.8
 Unidecode==1.2.0
 wcwidth==0.2.5

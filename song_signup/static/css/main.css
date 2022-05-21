@@ -537,6 +537,9 @@ a {
   text-decoration: none;
   color: inherit; }
 
+input:focus {
+  outline: none; }
+
 main {
   position: absolute;
   top: 8vh;

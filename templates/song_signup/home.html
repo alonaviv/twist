@@ -23,12 +23,13 @@
             </div>
         </div>
     </div>
-    <div id="song-added" class="third-card hidden">
+    {% if new_song != None %}
+    <div id="song-added" class="third-card">
         <div class="container">
-            <p>Success! You're signed up to sing <span class="song-name">Lorem ipsum dolor, sit amet consectetur
-                    adipisicing</span><br>Can't wait to see you up there!</p>
+            <p>Success! You're signed up to sing <span class="song-name">{{ new_song }}</span><br>Can't wait to see you up there!</p>
         </div>
     </div>
+    {% endif %}
     <div id="dashboard-wrapper" class="dark-card">
         <div id="dashboard">
             <div>
@@ -37,7 +38,7 @@
             </div>
             <div>
                 <p id="expand-tips">>> Helpful tips</p>
-                <a href="manage-songs.html" class="btn" id="manage-songs-btn">Manage Songs</a>
+                <a href="{% url 'manage_songs' %}" class="btn" id="manage-songs-btn">Manage Songs</a>
             </div>
         </div>
         <div id="no-song">
@@ -46,7 +47,7 @@
                 <p>You're not signed up for any songs :(</p>
             </div>
             <div>
-                <a href="manage-songs.html" class="btn" id="manage-songs-btn">I want to sing!</a>
+                <a href="{% url 'manage_songs' %}" class="btn" id="manage-songs-btn">I want to sing!</a>
             </div>
         </div>
         <div id="tips" class="expand">
