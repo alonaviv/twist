@@ -162,7 +162,6 @@ def _sanitize_string(name, title=False):
 
 def add_song_request(request):
     current_user = request.user
-    error = None
     
     if request.method == 'POST':
         song_name = _sanitize_string(request.POST['song-name'], title=True)
@@ -272,6 +271,7 @@ def login(request):
 
 def delete_song(request, song_pk):
     SongRequest.objects.filter(pk=song_pk).delete()
+    _assign_song_priorities()
     return HttpResponse()
 
 
