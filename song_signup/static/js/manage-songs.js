@@ -8,12 +8,12 @@ setInterval(populateSongList, 10000);
 function populateSongList() {
   fetch("/get_current_songs")
     .then((response) => response.json())
-      .then((data) => {
-        if (data.current_songs.length > 0) {
-            songListWrapper.classList.remove("hidden");
-        } else {
-            songListWrapper.classList.add("hidden");
-        }
+    .then((data) => {
+      if (data.current_songs.length > 0) {
+        songListWrapper.classList.remove("hidden");
+      } else {
+        songListWrapper.classList.add("hidden");
+      }
       const lis = data.current_songs.map((song) => {
         const li = document.createElement("li");
         li.innerHTML = `
@@ -40,7 +40,7 @@ function populateSongList() {
       songListUl.replaceChildren(...lis);
       setDeletelinks();
     })
-    .catch(error => console.error(error));
+    .catch((error) => console.error(error));
 }
 
 newSongForm.addEventListener("submit", (e) => {
@@ -55,7 +55,7 @@ newSongForm.addEventListener("submit", (e) => {
       }
       window.location.replace(`/home/${data.requested_song}`);
     })
-    .catch(error => alert(error));
+    .catch((error) => alert(error));
 });
 
 function setDeletelinks() {
@@ -76,7 +76,33 @@ function setDeletelinks() {
       confirm(`Are you sure you want to remove ${data.name}?`);
       fetch(`/delete_song/${songPK}`)
         .then(() => populateSongList())
-        .catch(error => console.error(error));
+        .catch((error) => console.error(error));
     });
   });
 }
+
+// Disable signup if server says so
+const signupsDisabledBanner = document.getElementById("singups-disabled");
+
+const formFields = newSongForm.querySelectorAll("input, select");
+function checkDisableSignup() {
+  fetch("/signup_disabled")
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.result) {
+        signupsDisabledBanner.classList.remove("hidden");
+        formFields.forEach((field) => {
+          field.disabled = true;
+          field.style.background = "#666";
+        });
+      } else {
+        signupsDisabledBanner.classList.add("hidden");
+        formFields.forEach((field) => {
+          field.disabled = false;
+          field.style.background = "#333";
+        });
+      }
+    });
+}
+
+setInterval(checkDisableSignup, 10);

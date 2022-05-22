@@ -1,7 +1,6 @@
 import logging
 from datetime import datetime, timezone
 
-from django.contrib import messages
 from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.decorators import login_required
@@ -15,7 +14,7 @@ from .forms import SingerForm, SongRequestForm
 from django.forms.models import model_to_dict
 from django.core import serializers
 from .models import SongRequest, NoUpload
-from flags.state import enable_flag, disable_flag
+from flags.state import enable_flag, disable_flag, flag_disabled
 
 from titlecase import titlecase
 
@@ -293,6 +292,10 @@ def disable_signup(request):
     disable_flag('CAN_SIGNUP')
     return redirect('admin/song_signup/songrequest')
 
+
+def signup_disabled(request):
+    return JsonResponse({"result": flag_disabled('CAN_SIGNUP')})
+    
 
 def recalculate_priorities(request):
     _assign_song_priorities()

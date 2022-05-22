@@ -18,5 +18,6 @@ urlpatterns = [
     path('reset_database', views.reset_database, name='reset_database'),
     path('enable_signup', views.enable_signup, name='enable_signup'),
     path('disable_signup', views.disable_signup, name='disable_signup'),
+    path('signup_disabled', views.signup_disabled, name='signup_disabled'),
     path('recalculate_priorities', views.recalculate_priorities, name='recalculate_priorities'),
 ]

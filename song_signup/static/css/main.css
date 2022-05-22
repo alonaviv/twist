@@ -342,7 +342,17 @@ nav {
   color: #000;
   height: 57vh;
   width: 100%;
-  padding: 3% 7%; }
+  padding: 3% 7%;
+  position: relative; }
+  #add-song-wrapper #singups-disabled {
+    color: #ffff50;
+    transform: rotate(-45deg);
+    position: absolute;
+    right: 12%;
+    top: 12%;
+    font-weight: 500;
+    font-size: 50rem;
+    text-decoration: underline; }
   #add-song-wrapper #add-song-text {
     font-size: 14rem;
     margin-bottom: 5%; }

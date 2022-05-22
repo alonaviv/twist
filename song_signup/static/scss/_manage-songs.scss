@@ -1,6 +1,6 @@
-#manage-songs-wrapper{
-    height: 100%;
-    background: $primary-color;
+#manage-songs-wrapper {
+  height: 100%;
+  background: $primary-color;
 }
 
 #song-list-wrapper {
@@ -60,6 +60,18 @@
   height: $add-song-height;
   width: 100%;
   padding: 3% 7%;
+  position: relative;
+
+  #singups-disabled {
+    color: $third-color;
+    transform: rotate(-45deg);
+    position: absolute;
+    right: 12%;
+    top: 12%;
+    font-weight: 500;
+    font-size: 50rem;
+    text-decoration: underline;
+  }
 
   #add-song-text {
     font-size: 14rem;
