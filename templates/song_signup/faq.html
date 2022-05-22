@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block content %}
+
+{% include "partials/_navbar.html" with current="faq" %}
+<main class="with-scroll">
+    <div id="faq-wrapper">
+        <div id="faq">
+            <h1>So how does this work?</h1>
+            <ul>
+                <li>
+                    <div class="question"><i class="fa-solid fa-star"></i><p>Lorem ipsum dolor sit amet?</p></div>
+                    <div class="answer">Lorem ipsum dolor sit, amet consectetur adipisicing elit. Ipsa, velit! Ut fuga voluptatibus veniam eveniet?</div>
+                </li>
+                <li>
+                    <div class="question"><i class="fa-solid fa-star"></i><p>Lorem ipsum dolor sit amet?</p></div>
+                    <div class="answer">Lorem ipsum dolor sit, amet consectetur adipisicing elit. Ipsa, velit! Ut fuga voluptatibus veniam eveniet?</div>
+                </li>
+                <li>
+                    <div class="question"><i class="fa-solid fa-star"></i><p>Lorem ipsum dolor sit amet?</p></div>
+                    <div class="answer">Lorem ipsum dolor sit, amet consectetur adipisicing elit. Ipsa, velit! Ut fuga voluptatibus veniam eveniet?</div>
+                </li>
+                <li>
+                    <div class="question"><i class="fa-solid fa-star"></i><p>Lorem ipsum dolor sit amet?</p></div>
+                    <div class="answer">Lorem ipsum dolor sit, amet consectetur adipisicing elit. Ipsa, velit! Ut fuga voluptatibus veniam eveniet?</div>
+                </li>
+                <li>
+                    <div class="question"><i class="fa-solid fa-star"></i><p>Lorem ipsum dolor sit amet?</p></div>
+                    <div class="answer">Lorem ipsum dolor sit, amet consectetur adipisicing elit. Ipsa, velit! Ut fuga voluptatibus veniam eveniet?</div>
+                </li>
+            </ul>
+        </div>
+    </div>
+</main>
+
+{% include "partials/_footer.html"  %}
+
+<script src="{% static "js/navbar.js" %}"></script>
+        
+{% endblock %}

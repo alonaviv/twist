@@ -1,0 +1,30 @@
+#faq-wrapper {
+  background: $primary-color;
+  padding: 20rem 15rem;
+
+  #faq {
+    h1 {
+      margin-bottom: 15rem;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0 15rem;
+      li {
+          margin-bottom: 20rem;
+        .question {
+          margin-bottom: 7rem;
+          p {
+            display: inline;
+            font-size: 18rem;
+            font-weight: 500;
+          }
+
+          i {
+            margin-right: 5rem;
+          }
+        }
+      }
+    }
+  }
+}

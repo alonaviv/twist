@@ -1,0 +1,36 @@
+#tip-wrapper{
+    padding: 20rem 0;
+    background: $primary-color;
+    min-height: 100%;
+    text-align: center;
+
+    #paybox{
+        padding-top: 50rem;
+        img{
+            height: 100rem;
+            width: 300rem;
+            background-color: #333;
+            border-radius: 5px;
+        }
+        p{
+            margin-bottom: 5rem;
+            font-size: 25rem;
+            font-weight: 500;
+        }
+    }
+
+    #bit{
+        margin-top: 50rem;
+        p{
+            font-size: 25rem;
+            font-weight: 500;
+
+            strong{
+                font-style: italic;
+                font-weight: 500;
+            }
+            
+        }
+
+    }
+}

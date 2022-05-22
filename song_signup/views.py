@@ -227,6 +227,12 @@ def logout(request):
     auth_logout(request)
     return redirect('login')
 
+def faq(request):
+    return render(request, 'song_signup/faq.html')
+
+def tip_us(request):
+    return render(request, 'song_signup/tip_us.html')
+
 
 def login(request):
     # This is the root endpoint. If already logged in, go straight to home. 
@@ -243,9 +249,7 @@ def login(request):
             try:
                 singer = User.objects.get(first_name=first_name, last_name=last_name)
             except User.DoesNotExist:
-                messages.error(request, "The name that you logged in with previously does not match your current "
-                                        "name.\nCould there be a typo somewhere?")
-                return render(request, 'song_signup/login.html')
+                return JsonResponse({'error': "The name that you logged in with previously does not match your current one"}, status=400)
                 
         else:
             try:
@@ -257,14 +261,13 @@ def login(request):
                 )
                 NoUpload.objects.create(user=singer, no_image_upload=no_image_upload)
             except IntegrityError:
-                messages.error(request, "The name that you're trying to login with already exists.\n"
-                                        "Did you already login with us tonight? If so, check the box below.")
-                return render(request, 'song_signup/login.html')
+                return JsonResponse({'error': "The name that you're trying to login with already exists.\n"
+                                        "Did you already login with us tonight? If so, check the box below."}, status=400)
 
         group = Group.objects.get(name='singers')
         group.user_set.add(singer)
         auth_login(request, singer)
-        return redirect('home')
+        return HttpResponse()
 
     return render(request, 'song_signup/login.html')
 

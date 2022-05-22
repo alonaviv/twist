@@ -1,5 +1,7 @@
 {% extends 'base.html' %}
 
+{% load static %}
+
 {% block content %}
 
 <div id="login-hero">
@@ -7,26 +9,10 @@
         <div id="login-title">
             <h1>Broadway<br>With a Twist</h1>
         </div>
-        {% if messages %}
-        {% for message in messages %}
-        <div id="message" class="container">
-            <div class="alert alert-{{ message.tags }} alert-dismissible text-center" role="alert">
-                <button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span></button>
-                <strong>
-                    {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
-                    Error:
-                    {% else %}
-                    {{ message.tags|title }}
-                    {% endif %}
-                </strong>
-                {{ message }}
-            </div>
-        </div>
-        {% endfor %}
-        {% endif %}
         <div id="login-form-wrapper">
+            <div id="form-messages"></div>
             <h3>Let's get this party started!</h3>
-            <form action="{% url 'login' %}" method="POST" id="login-form">
+            <form action="" method="POST" id="login-form">
                {% csrf_token %}
 
                 <div class="form-control">
@@ -50,4 +36,7 @@
         </div>
     </div>
 </div>
+
+
+<script src="{% static "js/login.js" %}"></script>
 {% endblock %}

@@ -3,9 +3,12 @@ from . import views
 
 urlpatterns = [
     path('', views.login, name='login'),
+    path('login', views.login, name='login'),
     path('home', views.home, name='home'),
     path('home/<str:new_song>', views.home, name='home'),
     path('dashboard_data', views.dashboard_data, name='dashboard_data'),
+    path('faq', views.faq, name='faq'),
+    path('tip_us', views.tip_us, name='tip_us'),
     path('logout', views.logout, name='logout'),
     path('manage_songs', views.manage_songs, name='manage_songs'),
     path('add_song_request', views.add_song_request, name='add_song_request'),

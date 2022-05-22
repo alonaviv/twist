@@ -30,12 +30,24 @@
 
     #login-title {
       margin-bottom: 15vh;
-      font-family: 'Oleo Script Swash Caps', cursive;
+      font-family: "Oleo Script Swash Caps", cursive;
       font-size: 25px;
     }
 
     #login-form-wrapper {
       padding: 10rem 40rem;
+      position: relative;
+
+      #form-messages {
+        position: absolute;
+        width: 100%;
+        top: -80rem;
+        left: 0;
+        padding: 0 15rem;
+        text-align: center;
+        color: $third-color;
+        font-weight: 500;
+      }
 
       h3 {
         margin-bottom: 30rem;
@@ -58,11 +70,10 @@
             background: #333;
             color: #fff;
             font-size: 18px;
-            &::placeholder{
-                color: #fff;
-                font-size: 18px;
+            &::placeholder {
+              color: #fff;
+              font-size: 18px;
             }
-
           }
         }
 
@@ -81,7 +92,7 @@
             align-items: center;
 
             input[type="checkbox"] {
-              margin-right: 20rem; 
+              margin-right: 20rem;
               appearance: none;
               height: 25rem;
               width: 25rem;
@@ -118,7 +129,7 @@
             box-shadow: 0px 0px 15px 1px $login;
           }
           50% {
-            box-shadow: 0px 0px 15px 3px $login
+            box-shadow: 0px 0px 15px 3px $login;
           }
           100% {
             box-shadow: 0px 0px 15px 1px $login;
@@ -132,7 +143,7 @@
           background-color: #555;
           color: #fff;
           font-size: 18rem;
-        //   box-shadow:  0px 15px 8px $login;
+          //   box-shadow:  0px 15px 8px $login;
           animation-name: pulsate;
           animation-duration: 1.5s;
           animation-iteration-count: infinite;

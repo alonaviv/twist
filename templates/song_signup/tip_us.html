@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block content %}
+
+{% include "partials/_navbar.html" with current="tip-us" %}
+<main>
+    <div id="tip-wrapper">
+        <h1>Tip Us?</h1>
+        <h2>Aww you're too kind 😊</h2>
+        <div class="container" id="paybox">
+            <p>Preferred method</p>
+            <a href="https://payboxapp.page.link/mQn8eyuTyUGt5kre6"><img src="{% static "img/main/paybox.png" %}"></a>
+        </div>
+        <div class="container" id="bit">
+            <p>Or you can tip us by <strong>Bit</strong> to 054-2467309</p>
+        </div>
+    </div>
+
+</main>
+
+
+{% include "partials/_footer.html"  %}
+
+<script src="{% static "js/navbar.js" %}"></script>
+        
+{% endblock %}

@@ -3,6 +3,7 @@
 
 {% block object-tools-items %}
             {{ block.super }}
+            {% if request.user.is_superuser %}
             <li>
                 <a href="{% url 'recalculate_priorities' %}">Recalulate</a>
             </li>
@@ -21,4 +22,5 @@
                    onclick="return confirm('Are you sure you want to erase the entire database?')">Reset
                     Database</a>
             </li>
+            {% endif %}
 {% endblock %}

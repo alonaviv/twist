@@ -50,7 +50,7 @@ class NotYetPerformedFilter(admin.SimpleListFilter):
 
 class SongRequestAdmin(admin.ModelAdmin):
     list_display = (
-        'priority', 'singer', 'get_additional_singers', 'song_name', 'musical', 'get_request_time',
+        'priority', 'song_name', 'musical', 'singer', 'get_additional_singers', 'get_request_time',
         'get_performance_time', 'get_initial_signup'
     )
     list_filter = (NotYetPerformedFilter,)
