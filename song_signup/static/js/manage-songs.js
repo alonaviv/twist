@@ -1,6 +1,6 @@
 const newSongForm = document.getElementById("new-song-form");
-
 const songListUl = document.getElementById("song-list");
+songListWrapper = document.getElementById("song-list-wrapper");
 
 window.addEventListener("DOMContentLoaded", populateSongList);
 setInterval(populateSongList, 10000);
@@ -8,7 +8,12 @@ setInterval(populateSongList, 10000);
 function populateSongList() {
   fetch("/get_current_songs")
     .then((response) => response.json())
-    .then((data) => {
+      .then((data) => {
+        if (data.current_songs.length > 0) {
+            songListWrapper.classList.remove("hidden");
+        } else {
+            songListWrapper.classList.add("hidden");
+        }
       const lis = data.current_songs.map((song) => {
         const li = document.createElement("li");
         li.innerHTML = `
@@ -35,7 +40,7 @@ function populateSongList() {
       songListUl.replaceChildren(...lis);
       setDeletelinks();
     })
-    .catch((error) => alert(`Error connecting to server: ${error}`));
+    .catch(error => console.error(error));
 }
 
 newSongForm.addEventListener("submit", (e) => {
@@ -50,7 +55,7 @@ newSongForm.addEventListener("submit", (e) => {
       }
       window.location.replace(`/home/${data.requested_song}`);
     })
-    .catch((error) => alert(error));
+    .catch(error => alert(error));
 });
 
 function setDeletelinks() {
@@ -71,7 +76,7 @@ function setDeletelinks() {
       confirm(`Are you sure you want to remove ${data.name}?`);
       fetch(`/delete_song/${songPK}`)
         .then(() => populateSongList())
-        .catch((error) => alert(error));
+        .catch(error => console.error(error));
     });
   });
 }

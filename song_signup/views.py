@@ -209,8 +209,20 @@ def get_song(request, song_pk):
 
 @login_required(login_url='login')
 def manage_songs(request):
-    other_singers = User.objects.all().exclude(pk=request.user.pk)
-    return render(request, 'song_signup/manage_songs.html', {'other_singers': other_singers})
+    class HostSinger:
+        def __init__(self, user_obj):
+            self.name = user_obj.first_name
+            self.id = user_obj.id
+        
+        def __str__(self):
+            return self.name
+    
+
+    alon = HostSinger(User.objects.get(username='alon_aviv'))
+    shani = HostSinger(User.objects.get(username='shani_wahrman'))
+
+    other_singers = User.objects.all().exclude(pk=request.user.pk).exclude(pk=alon.id).exclude(pk=shani.id).order_by('first_name')
+    return render(request, 'song_signup/manage_songs.html', {'other_singers': [shani,  alon] + list(other_singers)})
 
 def logout(request):
     auth_logout(request)
@@ -266,22 +278,22 @@ def delete_song(request, song_pk):
 def reset_database(request):
     call_command('dbbackup')
     call_command('reset_db')
-    return HttpResponse()
+    return redirect('admin/song_signup/songrequest')
 
 
 def enable_signup(request):
     enable_flag('CAN_SIGNUP')
-    return HttpResponse()
+    return redirect('admin/song_signup/songrequest')
 
 
 def disable_signup(request):
     disable_flag('CAN_SIGNUP')
-    return HttpResponse()
+    return redirect('admin/song_signup/songrequest')
 
 
 def recalculate_priorities(request):
     _assign_song_priorities()
-    return HttpResponse()
+    return redirect('admin/song_signup/songrequest')
 
 
 
