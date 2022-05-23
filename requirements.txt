@@ -29,6 +29,7 @@ ipdb==0.13.4
 ipython==7.18.1
 ipython-genutils==0.2.0
 jedi==0.17.2
+livereload==2.6.3
 Logbook==1.5.3
 mock==1.0.1
 numpy==1.19.4
@@ -62,6 +63,7 @@ sqlparse==0.4.1
 tinycss2==1.1.0
 titlecase==2.3
 toml==0.10.2
+tornado==6.1
 traitlets==5.0.5
 typing_extensions==4.2.0
 unicode==2.8
