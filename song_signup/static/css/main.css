@@ -352,14 +352,18 @@ nav {
     top: 12%;
     font-weight: 500;
     font-size: 50rem;
-    text-decoration: underline; }
+    text-decoration: underline;
+    transition: all 2s ease;
+    opacity: 0;
+    pointer-events: none; }
   #add-song-wrapper #add-song-text {
     font-size: 14rem;
     margin-bottom: 5%; }
   #add-song-wrapper form {
     width: 100%; }
     #add-song-wrapper form .form-control {
-      margin-bottom: 15rem; }
+      margin-bottom: 15rem;
+      transition: all 2s ease; }
       #add-song-wrapper form .form-control input {
         width: 100%;
         padding: 4rem;
@@ -368,7 +372,8 @@ nav {
         border-radius: 5px;
         background: #333;
         color: #fff;
-        font-size: 18px; }
+        font-size: 18px;
+        transition: inherit; }
         #add-song-wrapper form .form-control input::placeholder {
           color: #fff;
           font-size: 18px; }
@@ -380,7 +385,8 @@ nav {
         padding: 4rem;
         background: #333;
         color: #fff;
-        font-size: 14px; }
+        font-size: 14px;
+        transition: inherit; }
 
 #now-singing-wrapper {
   background: url("../img/main/mic.jpeg") center center/cover;

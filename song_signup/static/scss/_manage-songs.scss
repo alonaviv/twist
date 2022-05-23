@@ -71,7 +71,11 @@
     font-weight: 500;
     font-size: 50rem;
     text-decoration: underline;
+    transition: all 2s ease;
+    opacity: 0;
+    pointer-events: none;
   }
+  
 
   #add-song-text {
     font-size: 14rem;
@@ -83,6 +87,7 @@
 
     .form-control {
       margin-bottom: 15rem;
+      transition: all 2s ease;
 
       input {
         width: 100%;
@@ -97,6 +102,8 @@
           color: #fff;
           font-size: 18px;
         }
+        transition: inherit;
+
       }
 
       select {
@@ -108,6 +115,7 @@
         background: #333;
         color: #fff;
         font-size: 14px;
+        transition: inherit;
       }
     }
   }

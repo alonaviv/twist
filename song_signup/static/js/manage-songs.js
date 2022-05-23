@@ -90,13 +90,13 @@ function checkDisableSignup() {
     .then((response) => response.json())
     .then((data) => {
       if (data.result) {
-        signupsDisabledBanner.classList.remove("hidden");
+        signupsDisabledBanner.style.opacity = "1";
         formFields.forEach((field) => {
           field.disabled = true;
           field.style.background = "#666";
         });
       } else {
-        signupsDisabledBanner.classList.add("hidden");
+        signupsDisabledBanner.style.opacity = "0";
         formFields.forEach((field) => {
           field.disabled = false;
           field.style.background = "#333";
@@ -105,4 +105,4 @@ function checkDisableSignup() {
     });
 }
 
-setInterval(checkDisableSignup, 10);
+setInterval(checkDisableSignup, 10000);
