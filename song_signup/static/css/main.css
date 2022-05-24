@@ -236,7 +236,7 @@ nav {
             color: #fff;
             font-size: 18px; }
             #login-hero #login-wrapper #login-form-wrapper form .form-control input::placeholder {
-              color: #fff;
+              color: #aaa;
               font-size: 18px; }
         #login-hero #login-wrapper #login-form-wrapper form .checkboxes {
           margin-top: 20rem;
@@ -375,7 +375,7 @@ nav {
         font-size: 18px;
         transition: inherit; }
         #add-song-wrapper form .form-control input::placeholder {
-          color: #fff;
+          color: #aaa;
           font-size: 18px; }
       #add-song-wrapper form .form-control select {
         margin-top: 10rem;
