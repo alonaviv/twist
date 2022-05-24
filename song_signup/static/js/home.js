@@ -1,3 +1,13 @@
+
+// In order to prevent flickering, disable entire body until promise is complete
+async function loadWait(promiseCallback) {
+    document.body.style.display = 'none';
+    await promiseCallback();
+    document.body.style.display = 'block';
+
+}
+
+
 // Open up dashboard tips
 const tips = document.getElementById("tips");
 const dashboardWrapper = document.getElementById("dashboard-wrapper");
@@ -29,10 +39,10 @@ const dashboardElem = document.getElementById("dashboard");
 const noSongElem = document.getElementById("no-song");
 
 setInterval(populateNowSinging, 1000);
-window.addEventListener("DOMContentLoaded", populateNowSinging);
+window.addEventListener("DOMContentLoaded", loadWait(populateNowSinging));
 
 function populateNowSinging() {
-  fetch("/dashboard_data")
+  return fetch("/dashboard_data")
     .then((response) => response.json())
     .then((data) => {
       const currentSongData = data.current_song;

@@ -2,14 +2,23 @@ const newSongForm = document.getElementById("new-song-form");
 const songListUl = document.getElementById("song-list");
 songListWrapper = document.getElementById("song-list-wrapper");
 
-window.addEventListener("DOMContentLoaded", populateSongList);
+window.addEventListener("DOMContentLoaded", loadWait(populateSongList));
 setInterval(populateSongList, 10000);
 
+// In order to prevent flickering, disable entire body until promise is complete
+async function loadWait(promiseCallback) {
+    document.body.style.display = 'none';
+    await promiseCallback();
+    document.body.style.display = 'block';
+
+}
+
 function populateSongList() {
-  fetch("/get_current_songs")
+  return fetch("/get_current_songs")
     .then((response) => response.json())
     .then((data) => {
       if (data.current_songs.length > 0) {
+        songListWrapper.classList.remove("hideonpageload");
         songListWrapper.classList.remove("hidden");
       } else {
         songListWrapper.classList.add("hidden");
@@ -59,27 +68,27 @@ newSongForm.addEventListener("submit", (e) => {
 });
 
 function setDeletelinks() {
-    const deleteSongLinks = document.querySelectorAll(".delete-song");
-    deleteSongLinks.forEach((link) => {
-        link.addEventListener("click", async (e) => {
-            e.preventDefault();
+  const deleteSongLinks = document.querySelectorAll(".delete-song");
+  deleteSongLinks.forEach((link) => {
+    link.addEventListener("click", async (e) => {
+      e.preventDefault();
 
-            const songPK = e.currentTarget.id;
-            const response = await fetch(`/get_song/${songPK}`);
-            const data = await response.json();
+      const songPK = e.currentTarget.id;
+      const response = await fetch(`/get_song/${songPK}`);
+      const data = await response.json();
 
-            if (!response.ok) {
-                alert(`Error: ${data.error}`);
-                return;
-            }
+      if (!response.ok) {
+        alert(`Error: ${data.error}`);
+        return;
+      }
 
-            if (confirm(`Are you sure you want to remove ${data.name}?`)) {
-                fetch(`/delete_song/${songPK}`)
-                    .then(() => populateSongList())
-                    .catch((error) => console.error(error));
-            }
-        });
+      if (confirm(`Are you sure you want to remove ${data.name}?`)) {
+        fetch(`/delete_song/${songPK}`)
+          .then(() => populateSongList())
+          .catch((error) => console.error(error));
+      }
     });
+  });
 }
 
 // Disable signup if server says so
