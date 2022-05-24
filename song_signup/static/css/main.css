@@ -213,7 +213,7 @@ nav {
         width: 100%;
         top: -80rem;
         left: 0;
-        padding: 0 15rem;
+        padding: 0 7%;
         text-align: center;
         color: #ffff50;
         font-weight: 500; }
@@ -599,7 +599,7 @@ body {
   max-width: 100%;
   font-size: 16rem;
   font-family: "Roboto", sans-serif;
-  background: #fff;
+  background: #00C575;
   color: #333;
   line-height: 1.6; }
 

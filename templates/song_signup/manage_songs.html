@@ -21,8 +21,9 @@
             <p id="add-song-text">Pick literally anything in the Broadway or Disney style (seriously, try us)
                 and come up to sing!</p>
             <div id="new-song-form-wrapper">
-                <form action="" id="new-song-form">
+                <form action="" id="new-song-form" autocomplete="off">
                     {% csrf_token %}
+                    <input autocomplete="false" name="hidden" type="text" style="display:none;">
                     <div class="form-control">
                         <input type="text" name="song-name" id="song-name" placeholder="Song Name" required>
                     </div>

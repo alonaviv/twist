@@ -59,26 +59,27 @@ newSongForm.addEventListener("submit", (e) => {
 });
 
 function setDeletelinks() {
-  const deleteSongLinks = document.querySelectorAll(".delete-song");
-  deleteSongLinks.forEach((link) => {
-    link.addEventListener("click", async (e) => {
-      e.preventDefault();
+    const deleteSongLinks = document.querySelectorAll(".delete-song");
+    deleteSongLinks.forEach((link) => {
+        link.addEventListener("click", async (e) => {
+            e.preventDefault();
 
-      const songPK = e.currentTarget.id;
-      const response = await fetch(`/get_song/${songPK}`);
-      const data = await response.json();
+            const songPK = e.currentTarget.id;
+            const response = await fetch(`/get_song/${songPK}`);
+            const data = await response.json();
 
-      if (!response.ok) {
-        alert(`Error: ${data.error}`);
-        return;
-      }
+            if (!response.ok) {
+                alert(`Error: ${data.error}`);
+                return;
+            }
 
-      confirm(`Are you sure you want to remove ${data.name}?`);
-      fetch(`/delete_song/${songPK}`)
-        .then(() => populateSongList())
-        .catch((error) => console.error(error));
+            if (confirm(`Are you sure you want to remove ${data.name}?`)) {
+                fetch(`/delete_song/${songPK}`)
+                    .then(() => populateSongList())
+                    .catch((error) => console.error(error));
+            }
+        });
     });
-  });
 }
 
 // Disable signup if server says so
@@ -106,3 +107,4 @@ function checkDisableSignup() {
 }
 
 setInterval(checkDisableSignup, 10000);
+window.addEventListener("DOMContentLoaded", checkDisableSignup);
