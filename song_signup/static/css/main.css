@@ -40,7 +40,11 @@
   display: inline-block;
   padding: 7rem;
   border-radius: 10rem;
-  border: none; }
+  border: none;
+  width: 130rem;
+  height: 40rem;
+  text-align: center;
+  font-size: 16rem; }
   .btn.btn-inverted {
     background-color: #333;
     color: #00C575; }
@@ -72,6 +76,7 @@ nav {
 
 #menu-wrapper {
   position: fixed;
+  height: 100%;
   visibility: hidden;
   top: 0;
   width: 0;
@@ -204,7 +209,9 @@ nav {
     #login-hero #login-wrapper #login-title {
       margin-bottom: 15vh;
       font-family: "Oleo Script Swash Caps", cursive;
-      font-size: 25px; }
+      font-size: 25px;
+      color: #ccc;
+      text-shadow: 7rem 5rem 30rem #ffff3d; }
     #login-hero #login-wrapper #login-form-wrapper {
       padding: 10rem 40rem;
       position: relative; }
@@ -311,7 +318,7 @@ nav {
     width: 100%;
     padding: 5% 5%; }
     #song-list-wrapper .container .fa-arrows-up-down {
-      margin-left: 30rem; }
+      margin-left: 15%; }
     #song-list-wrapper .container ul {
       width: 100%; }
       #song-list-wrapper .container ul li {
@@ -346,7 +353,7 @@ nav {
   position: relative; }
   #add-song-wrapper #singups-disabled {
     color: #ffff50;
-    transform: rotate(-45deg);
+    transform: rotate(-15deg);
     position: absolute;
     right: 12%;
     top: 12%;
@@ -361,10 +368,14 @@ nav {
     margin-bottom: 5%; }
   #add-song-wrapper form {
     width: 100%; }
+    #add-song-wrapper form #submit-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center; }
     #add-song-wrapper form .form-control {
       margin-bottom: 15rem;
       transition: all 2s ease; }
-      #add-song-wrapper form .form-control input {
+      #add-song-wrapper form .form-control input[type=text] {
         width: 100%;
         padding: 4rem;
         height: 40rem;
@@ -374,7 +385,7 @@ nav {
         color: #fff;
         font-size: 18px;
         transition: inherit; }
-        #add-song-wrapper form .form-control input::placeholder {
+        #add-song-wrapper form .form-control input[type=text]::placeholder {
           color: #aaa;
           font-size: 18px; }
       #add-song-wrapper form .form-control select {
@@ -390,7 +401,7 @@ nav {
 
 #now-singing-wrapper {
   background: url("../img/main/mic.jpeg") center center/cover;
-  height: 40vh;
+  height: 44vh;
   width: 100%;
   position: relative; }
   #now-singing-wrapper::before {
@@ -419,12 +430,12 @@ nav {
       #now-singing-wrapper #now-singing .container h2 {
         display: block;
         text-align: center;
-        font-size: 30rem;
+        font-size: 36rem;
         font-weight: 300;
         color: #fff; }
       #now-singing-wrapper #now-singing .container .headliner {
         text-align: center;
-        font-size: 20rem;
+        font-size: 24rem;
         font-weight: 500;
         color: #ffff50; }
     #now-singing-wrapper #now-singing .current-song {
@@ -439,9 +450,10 @@ nav {
     #now-singing-wrapper #now-singing .up-next {
       display: block;
       margin-top: 20%;
-      font-size: 15rem;
+      font-size: 16rem;
       font-weight: 500;
-      color: #fff; }
+      color: #fff;
+      text-align: center; }
 
 #dashboard-wrapper {
   height: 22vh;
@@ -489,14 +501,21 @@ nav {
         margin-bottom: 5%; }
 
 #whatsapp {
-  height: 12vh;
-  position: relative; }
+  height: 11vh;
+  position: relative;
+  padding: 5rem 10rem; }
   #whatsapp .larger {
     width: 70%; }
   #whatsapp .smaller {
     width: 30%; }
   #whatsapp i {
     color: #f4f4f4; }
+  #whatsapp .column-1 {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center; }
   #whatsapp .column-2 {
     display: flex;
     justify-content: center;
@@ -504,15 +523,15 @@ nav {
     padding-left: 40%; }
     #whatsapp .column-2 #no-spam {
       position: absolute;
-      left: 73%;
-      top: 24%;
+      left: 72%;
+      top: 25%;
       z-index: 10;
       font-size: 13rem;
       transform: rotate(-47deg);
       font-weight: 500; }
 
 #tip-us {
-  height: 10vh; }
+  height: 11vh; }
   #tip-us .larger {
     width: 70%; }
   #tip-us .smaller {
@@ -526,20 +545,18 @@ nav {
     display: flex;
     justify-items: center;
     align-items: center; }
-    #tip-us .column-2 a {
-      display: block;
-      display: flex;
-      justify-items: center;
-      align-items: center; }
-      #tip-us .column-2 a #bit-img {
-        object-fit: cover;
-        width: 60%;
-        height: 40%;
-        margin: auto;
-        border-radius: 10rem; }
+    #tip-us .column-2 img {
+      object-fit: cover;
+      height: auto;
+      width: 75%;
+      margin-left: 10%; }
 
 #song-added {
-  padding: 20rem 0; }
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 10rem 0; }
   #song-added .song-name {
     font-weight: 500; }
 
@@ -570,16 +587,25 @@ nav {
   #tip-wrapper #paybox {
     padding-top: 50rem; }
     #tip-wrapper #paybox img {
-      height: 100rem;
-      width: 300rem;
+      height: 80rem;
+      width: 250rem;
       background-color: #333;
       border-radius: 5px; }
     #tip-wrapper #paybox p {
-      margin-bottom: 5rem;
+      margin-bottom: 10rem;
       font-size: 25rem;
       font-weight: 500; }
   #tip-wrapper #bit {
     margin-top: 50rem; }
+    #tip-wrapper #bit div {
+      display: flex;
+      justify-content: center;
+      width: 100%; }
+      #tip-wrapper #bit div #bit-img {
+        margin-left: 10rem;
+        width: 40rem;
+        height: auto;
+        border-radius: 5rem; }
     #tip-wrapper #bit p {
       font-size: 25rem;
       font-weight: 500; }
@@ -595,11 +621,14 @@ nav {
   padding: 0;
   margin: 0; }
 
+html {
+  height: 100%; }
+
 body {
   max-width: 100%;
   font-size: 16rem;
   font-family: "Roboto", sans-serif;
-  background: #fff;
+  background: #333;
   color: #333;
   line-height: 1.6; }
 
@@ -614,17 +643,17 @@ main {
   position: absolute;
   top: 8vh;
   left: 0;
-  z-index: -1;
+  z-index: -2;
   width: 100%;
-  height: 84vh; }
+  height: 88vh; }
   main.nested-footer {
     height: 92vh; }
 
 footer {
   width: 100%;
-  height: 8vh; }
+  height: 4vh; }
   footer.regular {
-    position: absolute;
+    position: fixed;
     bottom: 0; }
   footer .container {
     display: flex;
@@ -635,11 +664,14 @@ footer {
       display: flex;
       justify-content: flex-start;
       text-align: center;
-      font-size: 12rem; }
+      font-size: 10.666rem; }
     footer .container #footer-links {
+      height: 100%;
       display: flex;
       flex-direction: row;
       justify-content: center;
       align-items: center; }
       footer .container #footer-links i {
+        height: 100%;
+        width: auto;
         margin: 0 10rem; }

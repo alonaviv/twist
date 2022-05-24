@@ -12,6 +12,13 @@ class NoUpload(Model):
     no_image_upload = BooleanField()
 
 
+class GroupSongRequest(Model):
+    song_name = CITextField(max_length=50, null=False, blank=False)
+    musical = CITextField(max_length=50, null=False, blank=False)
+    requested_by = ForeignKey(User, on_delete=CASCADE)
+    request_time = DateTimeField(auto_now_add=True)
+
+
 class SongRequest(Model):
     song_name = CITextField(max_length=50, null=False, blank=False)
     musical = CITextField(max_length=50, null=False, blank=False)

@@ -34,11 +34,15 @@
                         <label for="additional singers">Anyone else singing this with you?<br>Shani and Alon are
                             always available 🙂</label>
                         <select name="additional-singers" id="additional-singers" multiple>
+                            <option value="group-song">Everyone! (Request group song)</option>
                             {% for singer in other_singers %}
                             <option value="{{ singer.id }}">{{ singer }}</option>
                             {% endfor %}
                         </select>
-                        <input type="submit" value="To the stage!" class="btn">
+                    </div>
+                    <div class="form-control" id="submit-wrapper">
+                            <input type="submit" value="To the stage!" class="btn btn-inverted">
+                    </div>
                 </form>
             </div>
         </div>

@@ -24,11 +24,19 @@
         </div>
     </div>
     {% if new_song != None %}
-    <div id="song-added" class="third-card">
-        <div class="container">
-            <p>Success! You're signed up to sing <span class="song-name">{{ new_song }}</span><br>Can't wait to see you up there!</p>
+        {% if is_group_song %}
+        <div id="song-added" class="third-card">
+            <div class="container">
+                <p>Thanks for suggesting <span class="song-name">{{ new_song }}</span> as a group song. We'll try to work it in during the evening!</p>
+            </div>
         </div>
-    </div>
+        {% else %}
+        <div id="song-added" class="third-card">
+            <div class="container">
+                <p>Success! You're signed up to sing<br><span class="song-name">{{ new_song }}</span><br>Can't wait to see you up there!</p>
+            </div>
+        </div>
+        {% endif %}
     {% endif %}
     <div id="dashboard-wrapper" class="dark-card">
         <div id="dashboard">
@@ -60,47 +68,50 @@
             </ul>
         </div>
     </div>
-    <div id="whatsapp" class="flex-card light-card">
-        <div class="row">
-            <div class="column larger">
-                <div class="column-1">
-                    <h3>When's next time??</h3>
-                    <p>Stay informed in our broadcast</p>
+    <a href="https://chat.whatsapp.com/La9NtdsfoXC0xKnCVjTdIw">
+        <div id="whatsapp" class="flex-card light-card">
+            <div class="row">
+                <div class="column larger">
+                    <div class="column-1">
+                        <h3>When's next time??</h3>
+                        <p>Stay informed in our broadcast</p>
+                    </div>
                 </div>
-            </div>
-            <div class="column smaller">
-                <div class="column-2">
-                    <div id="no-spam">No Spam!</div>
-                    <a href="https://chat.whatsapp.com/La9NtdsfoXC0xKnCVjTdIw"><i
-                            class="fa-brands fa-whatsapp fa-3x"></i></a>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div id="tip-us" class="flex-card secondary-card">
-        <div class="row reverse">
-            <div class="column larger">
-                <div class="column-1">
-                    <h3>Tip and make us smile</h3>
-                </div>
-            </div>
-            <div class="column smaller">
-                <div class="column-2">
-                    <a href="{% url 'tip_us' %}">
-                        <img src="{% static "img/main/bit.png" %}" id="bit-img"></a>
+                <div class="column smaller">
+                    <div class="column-2">
+                        <div id="no-spam">No Spam!</div>
+                        <i
+                                class="fa-brands fa-whatsapp fa-3x"></i>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    </a>
+    <a href="{% url 'tip_us' %}">
+        <div id="tip-us" class="flex-card secondary-card">
+            <div class="row reverse">
+                <div class="column larger">
+                    <div class="column-1">
+                        <h3>Tip and make us smile</h3>
+                    </div>
+                </div>
+                <div class="column smaller">
+                    <div class="column-2">
+                        <img src="{% static 'img/main/tip-icon.png' %}" alt="">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </a>
     <footer>
         <div class="container dark-card">
             <div id="copywrite-wrapper">
                 <p>Copyright &copy; 2022 - Broadway With a Twist</p>
             </div>
             <div id="footer-links">
-                <a href="https://www.%facebook.com/broadwaywithatwist"><i class="fa-brands fa-facebook fa-2x"></i></a>
+                <a href="https://www.%facebook.com/broadwaywithatwist"><i class="fa-brands fa-facebook"></i></a>
                 <a href="https://chat.whatsapp.com/La9NtdsfoXC0xKnCVjTdIw"><i
-                        class="fa-brands fa-whatsapp fa-2x"></i></a>
+                        class="fa-brands fa-whatsapp"></i></a>
             </div>
         </div>
     </footer>

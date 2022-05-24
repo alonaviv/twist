@@ -7,13 +7,13 @@
     #paybox{
         padding-top: 50rem;
         img{
-            height: 100rem;
-            width: 300rem;
+            height: 80rem;
+            width: 250rem;
             background-color: #333;
             border-radius: 5px;
         }
         p{
-            margin-bottom: 5rem;
+            margin-bottom: 10rem;
             font-size: 25rem;
             font-weight: 500;
         }
@@ -21,7 +21,18 @@
 
     #bit{
         margin-top: 50rem;
-        p{
+        div{
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            #bit-img{
+                margin-left: 10rem;
+                width: 40rem;
+                height: auto;
+                border-radius: 5rem;
+            }
+        }
+        p {
             font-size: 25rem;
             font-weight: 500;
 
@@ -29,8 +40,8 @@
                 font-style: italic;
                 font-weight: 500;
             }
-            
-        }
 
+        }
+            
     }
 }

@@ -7,10 +7,9 @@ setInterval(populateSongList, 10000);
 
 // In order to prevent flickering, disable entire body until promise is complete
 async function loadWait(promiseCallback) {
-    document.body.style.display = 'none';
-    await promiseCallback();
-    document.body.style.display = 'block';
-
+  document.body.style.display = "none";
+  await promiseCallback();
+  document.body.style.display = "block";
 }
 
 function populateSongList() {
@@ -62,7 +61,7 @@ newSongForm.addEventListener("submit", (e) => {
       if (!response.ok) {
         throw Error(data.error);
       }
-      window.location.replace(`/home/${data.requested_song}`);
+        window.location.replace(`/home/${data.requested_song}?group_song=${data.group_song}`);
     })
     .catch((error) => alert(error));
 });

@@ -5,7 +5,7 @@ from django.contrib import admin
 from django.contrib.auth.models import User
 from django.utils import timezone
 
-from .models import SongRequest, NoUpload
+from .models import SongRequest, NoUpload, GroupSongRequest
 from .views import _assign_song_priorities
 
 
@@ -46,6 +46,20 @@ class NotYetPerformedFilter(admin.SimpleListFilter):
             return queryset.filter(performance_time=None)
         else:
             return queryset.all()
+
+
+class GroupSongRequestAdmin(admin.ModelAdmin):
+    list_display = (
+        'song_name', 'musical', 'requested_by', 'get_request_time',
+    )
+
+    def get_request_time(self, obj):
+        return obj.request_time.astimezone(timezone.get_current_timezone()).strftime("%H:%M %p")
+
+    get_request_time.short_description = 'Request Time'
+    get_request_time.admin_order_field = 'request_time'
+
+    ordering = ['request_time']
 
 
 class SongRequestAdmin(admin.ModelAdmin):
@@ -104,3 +118,4 @@ admin.site.unregister(User)
 admin.site.register(User, CustomUserAdmin)
 
 admin.site.register(SongRequest, SongRequestAdmin)
+admin.site.register(GroupSongRequest, GroupSongRequestAdmin)

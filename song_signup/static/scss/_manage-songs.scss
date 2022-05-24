@@ -17,7 +17,7 @@
     padding: 5% 5%;
 
     .fa-arrows-up-down {
-      margin-left: 30rem;
+      margin-left: 15%;
     }
     ul {
       width: 100%;
@@ -64,7 +64,7 @@
 
   #singups-disabled {
     color: $third-color;
-    transform: rotate(-45deg);
+    transform: rotate(-15deg);
     position: absolute;
     right: 12%;
     top: 12%;
@@ -85,11 +85,17 @@
   form {
     width: 100%;
 
+    #submit-wrapper{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
     .form-control {
       margin-bottom: 15rem;
       transition: all 2s ease;
 
-      input {
+      input[type=text] {
         width: 100%;
         padding: 4rem;
         height: 40rem;

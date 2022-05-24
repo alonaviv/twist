@@ -13,7 +13,7 @@ from numpy import blackman
 from .forms import SingerForm, SongRequestForm
 from django.forms.models import model_to_dict
 from django.core import serializers
-from .models import SongRequest, NoUpload
+from .models import GroupSongRequest, SongRequest, NoUpload
 from flags.state import enable_flag, disable_flag, flag_disabled
 
 from titlecase import titlecase
@@ -118,17 +118,25 @@ def _get_pending_songs_and_other_singers(user):
     songs_dict = []
 
     for song in _get_all_songs(user).filter(performance_time=None):
-        additional_singers = [str(singer) for singer in song.additional_singers.all().exclude(pk=user.pk).order_by('first_name', 'last_name')]
+        additional_singers = [str(singer) for singer in
+                              song.additional_singers.all().exclude(pk=user.pk).order_by('first_name', 'last_name')]
 
         additional_singers_text = ', '.join(additional_singers[:-2] + [" and ".join(additional_singers[-2:])])
-        songs_dict.append({'name': song.song_name, 'singers': additional_singers_text,
-         'primary_singer': str(song.singer), 'user_song': song.singer == user, 'pk': song.pk})
+        songs_dict.append({
+                              'name': song.song_name, 'singers': additional_singers_text,
+                              'primary_singer': str(song.singer), 'user_song': song.singer == user, 'pk': song.pk
+                          })
 
     return songs_dict
 
+
 @login_required(login_url='login')
 def home(request, new_song=None):
-    return render(request, 'song_signup/home.html', {"new_song": new_song})
+    is_group_song = request.GET.get('group_song') == 'true'
+    return render(request, 'song_signup/home.html', {
+        "new_song": new_song,
+        "is_group_song": is_group_song
+    })
 
 
 def dashboard_data(request):
@@ -145,32 +153,36 @@ def dashboard_data(request):
     user_next_songs = _get_singers_next_songs(request.user)
     user_next_song = user_next_songs[-1].basic_data if user_next_songs else None
 
-
     return JsonResponse(
         {
-        "current_song": current_song,
-        "next_song": next_song,
-        "user_next_song": user_next_song
+            "current_song": current_song,
+            "next_song": next_song,
+            "user_next_song": user_next_song
         })
 
 
 def _sanitize_string(name, title=False):
-    sanitized =  ' '.join(word.capitalize() for word in name.split())
+    sanitized = ' '.join(word.capitalize() for word in name.split())
     return titlecase(sanitized) if title else sanitized
-    
+
 
 def add_song_request(request):
     current_user = request.user
-    
+
     if request.method == 'POST':
         song_name = _sanitize_string(request.POST['song-name'], title=True)
         musical = _sanitize_string(request.POST['musical'], title=True)
         additional_singers = request.POST.getlist('additional-singers')
 
+        if 'group-song' in additional_singers:
+            GroupSongRequest.objects.create(song_name=song_name, musical=musical, requested_by=current_user)
+            return JsonResponse({'requested_song': song_name, 'group_song': True})
+
         try:
             song_request = SongRequest.objects.get(song_name=song_name, musical=musical)
             if current_user in song_request.additional_singers.all():
-                return JsonResponse({"error": f"Apparently, {song_request.singer} already signed you up for this song"}, status=400)
+                return JsonResponse({"error": f"Apparently, {song_request.singer} already signed you up for this song"},
+                                    status=400)
             elif song_request.singer == current_user:
                 return JsonResponse({"error": "You already signed up with this song tonight"}, status=400)
 
@@ -190,11 +202,13 @@ def add_song_request(request):
 
     return JsonResponse({
         'requested_song': song_request.song_name,
+        'group_song': False
     })
 
 
 def get_current_songs(request):
     return JsonResponse({'current_songs': _get_pending_songs_and_other_singers(request.user)})
+
 
 def get_song(request, song_pk):
     try:
@@ -203,7 +217,7 @@ def get_song(request, song_pk):
         return JsonResponse({'error': f"Song with ID {song_pk} does not exist, and cannot be deleted"}, status=403)
 
     return JsonResponse({"name": song_request.song_name})
-    
+
 
 @login_required(login_url='login')
 def manage_songs(request):
@@ -211,23 +225,26 @@ def manage_songs(request):
         def __init__(self, user_obj):
             self.name = user_obj.first_name
             self.id = user_obj.id
-        
+
         def __str__(self):
             return self.name
-    
 
     alon = HostSinger(User.objects.get(username='alon_aviv'))
     shani = HostSinger(User.objects.get(username='shani_wahrman'))
 
-    other_singers = User.objects.all().exclude(pk=request.user.pk).exclude(pk=alon.id).exclude(pk=shani.id).order_by('first_name')
-    return render(request, 'song_signup/manage_songs.html', {'other_singers': [shani,  alon] + list(other_singers)})
+    other_singers = User.objects.all().exclude(pk=request.user.pk).exclude(pk=alon.id).exclude(pk=shani.id).order_by(
+        'first_name')
+    return render(request, 'song_signup/manage_songs.html', {'other_singers': [shani, alon] + list(other_singers)})
+
 
 def logout(request):
     auth_logout(request)
     return redirect('login')
 
+
 def faq(request):
     return render(request, 'song_signup/faq.html')
+
 
 def tip_us(request):
     return render(request, 'song_signup/tip_us.html')
@@ -248,8 +265,10 @@ def login(request):
             try:
                 singer = User.objects.get(first_name=first_name, last_name=last_name)
             except User.DoesNotExist:
-                return JsonResponse({'error': "The name that you logged in with previously does not match your current one"}, status=400)
-                
+                return JsonResponse(
+                    {'error': "The name that you logged in with previously does not match your current one"},
+                    status=400)
+
         else:
             try:
                 singer = User.objects.create_user(
@@ -260,8 +279,10 @@ def login(request):
                 )
                 NoUpload.objects.create(user=singer, no_image_upload=no_image_upload)
             except IntegrityError:
-                return JsonResponse({'error': "The name that you're trying to login with already exists.\n"
-                                        "Did you already login with us tonight? If so, check the box below."}, status=400)
+                return JsonResponse({
+                                        'error': "The name that you're trying to login with already exists.\n"
+                                                 "Did you already login with us tonight? If so, check the box below."
+                                    }, status=400)
 
         group = Group.objects.get(name='singers')
         group.user_set.add(singer)
@@ -295,14 +316,8 @@ def disable_signup(request):
 
 def signup_disabled(request):
     return JsonResponse({"result": flag_disabled('CAN_SIGNUP')})
-    
+
 
 def recalculate_priorities(request):
     _assign_song_priorities()
     return redirect('admin/song_signup/songrequest')
-
-
-
-
-
-
