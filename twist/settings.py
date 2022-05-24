@@ -31,7 +31,7 @@ INTERNAL_IPS = [
     "127.0.0.1",
 ]
 
-ALLOWED_HOSTS = ['192.168.0.111', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['192.168.1.111', 'localhost', '127.0.0.1', '77.124.168.72']
 DOMAIN = 'http://localhost:8000'
 
 FLAGS = {
@@ -71,12 +71,12 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'livereload',
     'django.contrib.staticfiles',
     'song_signup.apps.SongSignupConfig',
     'easy_select2',
     'dbbackup',
     'flags',
-    'livereload'
 ]
 
 DBBACKUP_STORAGE = 'django.core.files.storage.FileSystemStorage'
