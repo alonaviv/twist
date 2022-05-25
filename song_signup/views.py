@@ -25,10 +25,13 @@ def _name_to_username(first_name, last_name):
     return f'{first_name.lower()}_{last_name.lower()}'
 
 
-def _get_all_songs(singer):
+def _get_all_songs(singer, include_additional=False):
     songs_as_main_singer = singer.songrequest_set.all()
     songs_as_additional_singer = singer.songs.all()
-    return (songs_as_main_singer | songs_as_additional_singer).distinct()
+    if include_additional:
+        return (songs_as_main_singer | songs_as_additional_singer).distinct()
+    else:
+        return songs_as_main_singer
 
 
 def _get_all_songs_performed(singer):
@@ -50,9 +53,9 @@ def _get_how_long_waiting(singer):
     return time_waiting.total_seconds()
 
 
-def _get_singers_next_songs(singer):
+def _get_singers_next_songs(singer, include_additional=False):
     # I'm using reverse request time, since we will eventually pop from the end of the list to get the earliest song.
-    return list(_get_all_songs(singer).filter(performance_time=None).order_by('-request_time'))
+    return list(_get_all_songs(singer, include_additional).filter(performance_time=None).order_by('-request_time'))
 
 
 def _calculate_singer_priority(singer):
@@ -105,7 +108,7 @@ def _assign_song_priorities():
                     logger.debug(f"Dealing with {singer_username}: Setting priority of {song} to {current_priority}")
                     current_priority += 1
                     song.save()
-                    singers_that_got_a_song.extend([singer.username for singer in song.additional_singers.all()])
+                    singers_that_got_a_song.append(singer_username)
                     break
                 else:
                     logger.debug(
@@ -117,7 +120,7 @@ def _assign_song_priorities():
 def _get_pending_songs_and_other_singers(user):
     songs_dict = []
 
-    for song in _get_all_songs(user).filter(performance_time=None):
+    for song in _get_all_songs(user, include_additional=True).filter(performance_time=None):
         additional_singers = [str(singer) for singer in
                               song.additional_singers.all().exclude(pk=user.pk).order_by('first_name', 'last_name')]
 
@@ -150,7 +153,7 @@ def dashboard_data(request):
     except SongRequest.DoesNotExist:
         next_song = None
 
-    user_next_songs = _get_singers_next_songs(request.user)
+    user_next_songs = _get_singers_next_songs(request.user, include_additional=True)
     user_next_song = user_next_songs[-1].basic_data if user_next_songs else None
 
     return JsonResponse(
