@@ -131,7 +131,7 @@
 #whatsapp {
   height: $wa-banner-height;
   position: relative;
-  padding: 5rem 10rem;
+  
 
   .larger {
     width: 70%;
@@ -147,15 +147,12 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
-    align-items: center;
-    text-align: center;
   }
 
   .column-2 {
     display: flex;
-    justify-content: center;
+    justify-content: flex-end;
     align-items: center;
-    padding-left: 40%;
 
     #no-spam {
       position: absolute;
@@ -165,6 +162,7 @@
       font-size: 13rem;
       transform: rotate(-47deg);
       font-weight: 500;
+      color: #fff;
     }
   }
 }
@@ -180,9 +178,8 @@
 
   .column-1 {
     display: flex;
-    justify-content: center;
+    justify-content: flex-end;
     align-items: center;
-    text-align: center;
   }
 
   .column-2 {
@@ -193,8 +190,7 @@
     img {
       object-fit: cover;
       height: auto;
-      width: 75%;
-      margin-left: 10%;
+      width: 65%;
     }
   }
 }
