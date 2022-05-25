@@ -608,6 +608,11 @@ nav {
       #tip-wrapper #bit p strong {
         font-style: italic;
         font-weight: 500; }
+  #tip-wrapper #cash {
+    margin-top: 30rem; }
+    #tip-wrapper #cash p {
+      font-size: 20rem;
+      font-weight: 500; }
 
 :root {
   font-size: 6.25%; }
