@@ -498,6 +498,8 @@ nav {
     transition: inherit; }
     #dashboard-wrapper #tips ul {
       margin: 0 10% 10% 10%; }
+      #dashboard-wrapper #tips ul li {
+        margin-top: 5%; }
       #dashboard-wrapper #tips ul li:last-child {
         margin-bottom: 5%; }
 

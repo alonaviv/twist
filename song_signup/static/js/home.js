@@ -19,7 +19,7 @@ document.getElementById("expand-tips").addEventListener("click", toggleTips);
 function toggleTips() {
   if (!expandTips) {
     tips.style.transform = "scaleY(1)";
-    dashboardWrapper.style.height = "65vh";
+    dashboardWrapper.style.height = "75vh";
     expandTips = true;
   } else {
     tips.style.transform = "scaleY(0)";
