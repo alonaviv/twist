@@ -9,9 +9,6 @@
 @import "faq";
 @import "tip-us";
 
-:root {
-  font-size: 6.25%;
-}
 
 * {
   box-sizing: border-box;
@@ -25,7 +22,6 @@ html{
 
 body {
   max-width: 100%;
-  font-size: 16rem;
   font-family: "Roboto", sans-serif;
   background: #333;
   color: #333;
@@ -74,7 +70,7 @@ footer {
       display: flex;
       justify-content: flex-start;
       text-align: center;
-      font-size: 10.666rem;
+      font-size: 10.666px;
     }
 
     #footer-links {

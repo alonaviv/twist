@@ -1,7 +1,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Anton&family=Oleo+Script+Swash+Caps&family=Roboto:ital,wght@0,300;0,400;0,500;1,300&display=swap");
 .container {
   width: 100vw;
-  padding: 0 20rem;
+  padding: 0 20px;
   margin: auto;
   overflow: hidden;
   height: 100%; }
@@ -14,7 +14,7 @@
   justify-content: space-around;
   width: 100%;
   height: 100%;
-  padding: 5rem 10rem; }
+  padding: 5px 10px; }
   .flex-card .row.reverse {
     flex-direction: row-reverse; }
 
@@ -33,19 +33,19 @@
 .flex-card .column-2 {
   height: 100%;
   width: 100%;
-  padding: 10rem; }
+  padding: 10px; }
 
 .btn {
   background-color: #00C575;
   color: #000;
   display: inline-block;
-  padding: 7rem;
-  border-radius: 10rem;
+  padding: 7px;
+  border-radius: 10px;
   border: none;
-  width: 130rem;
-  height: 40rem;
+  width: 130px;
+  height: 40px;
   text-align: center;
-  font-size: 16rem; }
+  font-size: 16px; }
   .btn.btn-inverted {
     background-color: #333;
     color: #00C575; }
@@ -106,21 +106,21 @@ nav {
     left: 0;
     height: 100vh;
     width: 100vw;
-    padding: 50rem 40rem;
+    padding: 50px 40px;
     opacity: 0;
     transition: all 0.3s ease;
     transform: translateX(50vw); }
     #menu-wrapper #menu #menu-content {
       color: #000; }
       #menu-wrapper #menu #menu-content h2 {
-        font-size: 40rem;
+        font-size: 40px;
         font-weight: 900; }
       #menu-wrapper #menu #menu-content h3 {
-        font-size: 25rem;
-        margin-bottom: 50rem; }
+        font-size: 25px;
+        margin-bottom: 50px; }
       #menu-wrapper #menu #menu-content li {
-        margin: 20rem 0;
-        font-size: 30rem;
+        margin: 20px 0;
+        font-size: 30px;
         font-weight: 900; }
 
 #navbar {
@@ -129,7 +129,7 @@ nav {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 5rem 15rem;
+  padding: 5px 15px;
   top: 0;
   left: 0;
   width: 100%;
@@ -139,27 +139,27 @@ nav {
   #navbar .logo {
     color: #00C575;
     font-family: 'Anton', sans-serif;
-    font-size: 30rem;
-    letter-spacing: 1.5rem;
+    font-size: 30px;
+    letter-spacing: 1.5px;
     transition: inherit; }
 
 #hamburger-wrapper {
-  width: 30rem;
-  padding: 5rem;
+  width: 30px;
+  padding: 5px;
   position: fixed;
   z-index: 10;
   top: 2.66667vh;
   right: 2.66667vh; }
   #hamburger-wrapper #hamburger {
     width: 100%;
-    height: 2.5rem;
+    height: 2.5px;
     background-color: #00C575;
     position: relative;
     transition: transform 0.3s ease; }
     #hamburger-wrapper #hamburger::before {
       position: absolute;
       content: '';
-      top: -7rem;
+      top: -7px;
       width: 100%;
       height: 100%;
       background: inherit;
@@ -167,7 +167,7 @@ nav {
     #hamburger-wrapper #hamburger::after {
       position: absolute;
       content: '';
-      top: 7rem;
+      top: 7px;
       width: 100%;
       height: 100%;
       background: inherit;
@@ -212,32 +212,32 @@ nav {
       font-family: "Oleo Script Swash Caps", cursive;
       font-size: 25px;
       color: #ccc;
-      text-shadow: 7rem 5rem 30rem #ffff3d; }
+      text-shadow: 7px 5px 30px #ffff3d; }
     #login-hero #login-wrapper #login-form-wrapper {
-      padding: 10rem 40rem;
+      padding: 10px 40px;
       position: relative; }
       #login-hero #login-wrapper #login-form-wrapper #form-messages {
         position: absolute;
         width: 100%;
-        top: -80rem;
+        top: -80px;
         left: 0;
         padding: 0 7%;
         text-align: center;
         color: #ffff50;
         font-weight: 500; }
       #login-hero #login-wrapper #login-form-wrapper h3 {
-        margin-bottom: 30rem;
-        font-size: 20rem;
+        margin-bottom: 30px;
+        font-size: 20px;
         font-weight: 900;
-        letter-spacing: 1rem; }
+        letter-spacing: 1px; }
       #login-hero #login-wrapper #login-form-wrapper form {
         width: 100%; }
         #login-hero #login-wrapper #login-form-wrapper form .form-control {
-          margin-bottom: 15rem; }
+          margin-bottom: 15px; }
           #login-hero #login-wrapper #login-form-wrapper form .form-control input {
             width: 100%;
-            padding: 4rem;
-            height: 40rem;
+            padding: 4px;
+            height: 40px;
             border: #333 2px solid;
             border-radius: 5px;
             background: #333;
@@ -247,22 +247,22 @@ nav {
               color: #aaa;
               font-size: 18px; }
         #login-hero #login-wrapper #login-form-wrapper form .checkboxes {
-          margin-top: 20rem;
+          margin-top: 20px;
           display: flex;
           flex-direction: column;
           justify-content: center;
           align-items: flex-start;
           width: 150%; }
           #login-hero #login-wrapper #login-form-wrapper form .checkboxes .checkbox {
-            margin-bottom: 20rem;
+            margin-bottom: 20px;
             width: 100%;
             display: flex;
             align-items: center; }
             #login-hero #login-wrapper #login-form-wrapper form .checkboxes .checkbox input[type="checkbox"] {
-              margin-right: 20rem;
+              margin-right: 20px;
               appearance: none;
-              height: 25rem;
-              width: 25rem;
+              height: 25px;
+              width: 25px;
               border: 1px solid black;
               border-radius: 4px;
               background-color: #aaa;
@@ -291,12 +291,12 @@ nav {
   100% {
     box-shadow: 0px 0px 15px 1px #ffff3d; } }
         #login-hero #login-wrapper #login-form-wrapper form .btn[type="submit"] {
-          margin: 20rem 0;
+          margin: 20px 0;
           width: 90%;
-          height: 40rem;
+          height: 40px;
           background-color: #555;
           color: #fff;
-          font-size: 18rem;
+          font-size: 18px;
           animation-name: pulsate;
           animation-duration: 1.5s;
           animation-iteration-count: infinite;
@@ -312,7 +312,7 @@ nav {
   width: 100%;
   background: #00b3c5;
   color: #000;
-  border: solid #000 3rem; }
+  border: solid #000 3px; }
   #song-list-wrapper .container {
     overflow: scroll;
     height: 100%;
@@ -330,16 +330,16 @@ nav {
           display: flex;
           width: 100%;
           justify-content: space-between;
-          font-size: 20rem;
+          font-size: 20px;
           padding-bottom: 3%; }
           #song-list-wrapper .container ul li .song-wrapper .fa-xmark {
-            font-size: 25rem;
+            font-size: 25px;
             margin-left: 5%;
-            padding-top: 4rem;
+            padding-top: 4px;
             color: #c51200; }
           #song-list-wrapper .container ul li .song-wrapper .fa-star {
             margin-right: 3%;
-            padding-top: 6rem; }
+            padding-top: 6px; }
           #song-list-wrapper .container ul li .song-wrapper .song-name {
             display: inline-block;
             width: 100%;
@@ -359,13 +359,13 @@ nav {
     right: 12%;
     top: 12%;
     font-weight: 500;
-    font-size: 50rem;
+    font-size: 50px;
     text-decoration: underline;
     transition: all 2s ease;
     opacity: 0;
     pointer-events: none; }
   #add-song-wrapper #add-song-text {
-    font-size: 14rem;
+    font-size: 14px;
     margin-bottom: 5%; }
   #add-song-wrapper form {
     width: 100%; }
@@ -374,12 +374,12 @@ nav {
       justify-content: center;
       align-items: center; }
     #add-song-wrapper form .form-control {
-      margin-bottom: 15rem;
+      margin-bottom: 15px;
       transition: all 2s ease; }
       #add-song-wrapper form .form-control input[type=text] {
         width: 100%;
-        padding: 4rem;
-        height: 40rem;
+        padding: 4px;
+        height: 40px;
         border: #333 2px solid;
         border-radius: 5px;
         background: #333;
@@ -390,11 +390,11 @@ nav {
           color: #aaa;
           font-size: 18px; }
       #add-song-wrapper form .form-control select {
-        margin-top: 10rem;
-        margin-bottom: 10rem;
+        margin-top: 10px;
+        margin-bottom: 10px;
         width: 100%;
-        height: 30rem;
-        padding: 4rem;
+        height: 30px;
+        padding: 4px;
         background: #333;
         color: #fff;
         font-size: 14px;
@@ -431,12 +431,12 @@ nav {
       #now-singing-wrapper #now-singing .container h2 {
         display: block;
         text-align: center;
-        font-size: 36rem;
+        font-size: 36px;
         font-weight: 300;
         color: #fff; }
       #now-singing-wrapper #now-singing .container .headliner {
         text-align: center;
-        font-size: 24rem;
+        font-size: 24px;
         font-weight: 500;
         color: #ffff50; }
     #now-singing-wrapper #now-singing .current-song {
@@ -446,12 +446,12 @@ nav {
       margin-top: 2%;
       margin-bottom: 5%;
       font-weight: 200;
-      font-size: 16rem;
+      font-size: 16px;
       color: #ffff50; }
     #now-singing-wrapper #now-singing .up-next {
       display: block;
       margin-top: 20%;
-      font-size: 16rem;
+      font-size: 16px;
       font-weight: 500;
       color: #fff;
       text-align: center; }
@@ -489,8 +489,8 @@ nav {
       flex-direction: row-reverse;
       justify-content: space-between;
       align-items: center;
-      margin-top: 10rem;
-      margin-bottom: 10rem; }
+      margin-top: 10px;
+      margin-bottom: 10px; }
   #dashboard-wrapper #tips {
     margin-top: 1%;
     transform: scaleY(0);
@@ -525,7 +525,7 @@ nav {
       left: 72%;
       top: 25%;
       z-index: 10;
-      font-size: 13rem;
+      font-size: 13px;
       transform: rotate(-47deg);
       font-weight: 500;
       color: #fff; }
@@ -554,70 +554,67 @@ nav {
   justify-content: center;
   align-items: center;
   text-align: center;
-  padding: 10rem 0; }
+  padding: 10px 0; }
   #song-added .song-name {
     font-weight: 500; }
 
 #faq-wrapper {
   background: #00C575;
-  padding: 20rem 15rem; }
+  padding: 20px 15px; }
   #faq-wrapper #faq h1 {
-    margin-bottom: 15rem; }
+    margin-bottom: 15px; }
   #faq-wrapper #faq ul {
     list-style: none;
-    padding: 0 15rem; }
+    padding: 0 15px; }
     #faq-wrapper #faq ul li {
-      margin-bottom: 20rem; }
+      margin-bottom: 20px; }
       #faq-wrapper #faq ul li .question {
-        margin-bottom: 7rem; }
+        margin-bottom: 7px; }
         #faq-wrapper #faq ul li .question p {
           display: inline;
-          font-size: 18rem;
+          font-size: 18px;
           font-weight: 500; }
         #faq-wrapper #faq ul li .question i {
-          margin-right: 5rem; }
+          margin-right: 5px; }
 
 #tip-wrapper {
-  padding: 20rem 0;
+  padding: 20px 0;
   background: #00C575;
   min-height: 100%;
   text-align: center; }
   #tip-wrapper #paybox {
-    padding-top: 50rem; }
+    padding-top: 50px; }
     #tip-wrapper #paybox img {
-      height: 80rem;
-      width: 250rem;
+      height: 80px;
+      width: 250px;
       background-color: #333;
       border-radius: 5px; }
     #tip-wrapper #paybox p {
-      margin-bottom: 10rem;
-      font-size: 25rem;
+      margin-bottom: 10px;
+      font-size: 25px;
       font-weight: 500; }
   #tip-wrapper #bit {
-    margin-top: 50rem; }
+    margin-top: 50px; }
     #tip-wrapper #bit div {
       display: flex;
       justify-content: center;
       width: 100%; }
       #tip-wrapper #bit div #bit-img {
-        margin-left: 10rem;
-        width: 40rem;
+        margin-left: 10px;
+        width: 40px;
         height: auto;
-        border-radius: 5rem; }
+        border-radius: 5px; }
     #tip-wrapper #bit p {
-      font-size: 25rem;
+      font-size: 25px;
       font-weight: 500; }
       #tip-wrapper #bit p strong {
         font-style: italic;
         font-weight: 500; }
   #tip-wrapper #cash {
-    margin-top: 30rem; }
+    margin-top: 30px; }
     #tip-wrapper #cash p {
-      font-size: 20rem;
+      font-size: 20px;
       font-weight: 500; }
-
-:root {
-  font-size: 6.25%; }
 
 * {
   box-sizing: border-box;
@@ -629,7 +626,6 @@ html {
 
 body {
   max-width: 100%;
-  font-size: 16rem;
   font-family: "Roboto", sans-serif;
   background: #333;
   color: #333;
@@ -667,7 +663,7 @@ footer {
       display: flex;
       justify-content: flex-start;
       text-align: center;
-      font-size: 10.666rem; }
+      font-size: 10.666px; }
     footer .container #footer-links {
       height: 100%;
       width: 12%;

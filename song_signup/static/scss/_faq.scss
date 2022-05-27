@@ -1,27 +1,27 @@
 #faq-wrapper {
   background: $primary-color;
-  padding: 20rem 15rem;
+  padding: 20px 15px;
 
   #faq {
     h1 {
-      margin-bottom: 15rem;
+      margin-bottom: 15px;
     }
 
     ul {
       list-style: none;
-      padding: 0 15rem;
+      padding: 0 15px;
       li {
-          margin-bottom: 20rem;
+          margin-bottom: 20px;
         .question {
-          margin-bottom: 7rem;
+          margin-bottom: 7px;
           p {
             display: inline;
-            font-size: 18rem;
+            font-size: 18px;
             font-weight: 500;
           }
 
           i {
-            margin-right: 5rem;
+            margin-right: 5px;
           }
         }
       }
