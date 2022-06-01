@@ -2,21 +2,16 @@ import logging
 from datetime import datetime, timezone
 
 from django.contrib.auth import login as auth_login, logout as auth_logout
-from django.contrib.auth.models import User, Group
 from django.contrib.auth.decorators import login_required
-from django.db import IntegrityError
-from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
-from django.shortcuts import render, redirect
+from django.contrib.auth.models import Group
 from django.core.management import call_command
-from numpy import blackman
-
-from .forms import SingerForm, SongRequestForm
-from django.forms.models import model_to_dict
-from django.core import serializers
-from .models import GroupSongRequest, SongRequest, NoUpload
+from django.db import IntegrityError
+from django.http import JsonResponse, HttpResponse
+from django.shortcuts import render, redirect
 from flags.state import enable_flag, disable_flag, flag_disabled
-
 from titlecase import titlecase
+
+from .models import GroupSongRequest, SongRequest, Singer
 
 logger = logging.getLogger(__name__)
 
@@ -68,7 +63,7 @@ def _calculate_singer_priority(singer):
 def _assign_song_priorities():
     logger.info(" =====  START PRIORITISING PROCESS ========")
     current_priority = 1
-    singer_queryset = User.objects.filter(is_superuser=False)  # Superusers don't need to be given priority
+    singer_queryset = Singer.objects.filter(is_superuser=False)  # Superusers don't need to be given priority
 
     songs_of_singers_dict = dict()
     for singer in singer_queryset:
@@ -126,9 +121,9 @@ def _get_pending_songs_and_other_singers(user):
 
         additional_singers_text = ', '.join(additional_singers[:-2] + [" and ".join(additional_singers[-2:])])
         songs_dict.append({
-                              'name': song.song_name, 'singers': additional_singers_text,
-                              'primary_singer': str(song.singer), 'user_song': song.singer == user, 'pk': song.pk
-                          })
+            'name': song.song_name, 'singers': additional_singers_text,
+            'primary_singer': str(song.singer), 'user_song': song.singer == user, 'pk': song.pk
+        })
 
     return songs_dict
 
@@ -232,10 +227,10 @@ def manage_songs(request):
         def __str__(self):
             return self.name
 
-    alon = HostSinger(User.objects.get(username='alon_aviv'))
-    shani = HostSinger(User.objects.get(username='shani_wahrman'))
+    alon = HostSinger(Singer.objects.get(username='alon_aviv'))
+    shani = HostSinger(Singer.objects.get(username='shani_wahrman'))
 
-    other_singers = User.objects.all().exclude(pk=request.user.pk).exclude(pk=alon.id).exclude(pk=shani.id).order_by(
+    other_singers = Singer.objects.all().exclude(pk=request.user.pk).exclude(pk=alon.id).exclude(pk=shani.id).order_by(
         'first_name')
     return render(request, 'song_signup/manage_songs.html', {'other_singers': [shani, alon] + list(other_singers)})
 
@@ -266,26 +261,26 @@ def login(request):
 
         if logged_in:
             try:
-                singer = User.objects.get(first_name=first_name, last_name=last_name)
-            except User.DoesNotExist:
+                singer = Singer.objects.get(first_name=first_name, last_name=last_name)
+            except Singer.DoesNotExist:
                 return JsonResponse(
                     {'error': "The name that you logged in with previously does not match your current one"},
                     status=400)
 
         else:
             try:
-                singer = User.objects.create_user(
+                singer = Singer.objects.create_user(
                     _name_to_username(first_name, last_name),
                     first_name=first_name,
                     last_name=last_name,
-                    is_staff=True
+                    is_staff=True,
+                    no_image_upload=no_image_upload
                 )
-                NoUpload.objects.create(user=singer, no_image_upload=no_image_upload)
             except IntegrityError:
                 return JsonResponse({
-                                        'error': "The name that you're trying to login with already exists.\n"
-                                                 "Did you already login with us tonight? If so, check the box below."
-                                    }, status=400)
+                    'error': "The name that you're trying to login with already exists.\n"
+                             "Did you already login with us tonight? If so, check the box below."
+                }, status=400)
 
         group = Group.objects.get(name='singers')
         group.user_set.add(singer)
@@ -322,5 +317,5 @@ def signup_disabled(request):
 
 
 def recalculate_priorities(request):
-    _assign_song_priorities()
+    SongRequest.objects.calculate_positions()
     return redirect('admin/song_signup/songrequest')

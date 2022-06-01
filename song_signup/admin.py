@@ -1,18 +1,17 @@
 from datetime import datetime, timezone
 
-import pytz
 from django.contrib import admin
-from django.contrib.auth.models import User
 from django.utils import timezone
 
-from .models import SongRequest, NoUpload, GroupSongRequest
+from .models import SongRequest, Singer, GroupSongRequest
 from .views import _assign_song_priorities
 
 
 def set_performed(modeladmin, request, queryset):
+    # TODO: Reset priorities for remaining songs after this
     for song in queryset:
         song.performance_time = datetime.now()
-        song.priority = -1
+        song.priority = None
         song.save()
 
     _assign_song_priorities()
@@ -48,6 +47,7 @@ class NotYetPerformedFilter(admin.SimpleListFilter):
             return queryset.all()
 
 
+@admin.register(GroupSongRequest)
 class GroupSongRequestAdmin(admin.ModelAdmin):
     list_display = (
         'song_name', 'musical', 'requested_by', 'get_request_time',
@@ -62,10 +62,11 @@ class GroupSongRequestAdmin(admin.ModelAdmin):
     ordering = ['request_time']
 
 
+@admin.register(SongRequest)
 class SongRequestAdmin(admin.ModelAdmin):
     list_display = (
-        'priority', 'song_name', 'musical', 'singer', 'get_additional_singers', 'get_request_time',
-        'get_performance_time', 'get_initial_signup'
+        'position', 'cycle', 'singer', 'song_name', 'musical', 'duet_partner', 'priority',
+        'get_performance_time', 'get_request_time', 'get_initial_signup'
     )
     list_filter = (NotYetPerformedFilter,)
     actions = [set_performed, set_not_performed]
@@ -98,24 +99,7 @@ class SongRequestAdmin(admin.ModelAdmin):
     get_performance_time.admin_order_field = 'performance_time'
 
 
-class CustomUserInline(admin.StackedInline):
-    model = NoUpload
-    can_delete = False
-    verbose_name_plural = 'Custom Users'
-
-
-class CustomUserAdmin(admin.ModelAdmin):
-    inlines = (CustomUserInline,)
-    list_display = ['id', 'username', 'date_joined', 'is_superuser', 'no_image_upload']
-
-    def no_image_upload(self, obj):
-        return obj.noupload.no_image_upload
-
-    no_image_upload.boolean = True
-
-
-admin.site.unregister(User)
-admin.site.register(User, CustomUserAdmin)
-
-admin.site.register(SongRequest, SongRequestAdmin)
-admin.site.register(GroupSongRequest, GroupSongRequestAdmin)
+@admin.register(Singer)
+class SingerAdmin(admin.ModelAdmin):
+    list_display = ['username', 'cy1_position', 'cy2_position', 'cy3_position',
+                    'date_joined', 'is_superuser', 'no_image_upload']
