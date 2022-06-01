@@ -41,16 +41,17 @@ class Singer(AbstractUser):
             self.cy3_position and next(ordered_requests_iter, None)
         )
 
-    def add_to_cycle(self):
+    def add_to_cycle(self, song_request):
         """
         When a singer adds its first song request, the user is added to a single cycle.x
         If the first cycle isn't full - adds to the first cycle.
         If the first cycle is full, adds to the second cycle - copying one more singer from the first cycle after him.
         If the second cycle is full, adds to the third cycle.
+        Returns True if singer was added to a cycle
         """
         # Superusers don't participate in this game
-        if self.is_superuser:
-            return
+        if self.is_superuser or any([self.cy1_position, self.cy2_position, self.cy3_position]):
+            return False
 
         if not Singer.cycles.cy1_full():
             self.cy1_position = Singer.cycles.next_pos_cy1()
@@ -58,10 +59,18 @@ class Singer(AbstractUser):
         elif not Singer.cycles.cy2_full():
             self.cy2_position = Singer.cycles.next_pos_cy2()
             self.save()
-            Singer.cycles.clone_singer_cy1_to_cy2()
+
+            duet_partner = song_request.duet_partner
+            if duet_partner and duet_partner.cy2_position is None:
+                duet_partner.cy2_position = Singer.cycles.next_pos_cy2()
+                duet_partner.save()
+
+            Singer.cycles.clone_singer_cy1_to_cy2(song_request)
         else:
             self.cy3_position = Singer.cycles.next_pos_cy3()
             self.save()
+
+        return True
 
     def __str__(self):
         return f'{self.first_name} {self.last_name}'
@@ -161,10 +170,10 @@ class SongRequest(Model):
 # Add singer to cycle when his first request is created for the first time
 @receiver(signals.post_save, sender=SongRequest)
 def after_create_songrequest(sender, instance, created, *args, **kwargs):
-    if created and instance.is_first_request:
-        instance.singer.add_to_cycle()
-        if instance.duet_partner:
-            instance.duet_partner.add_to_cycle()
+    if created:
+        added = instance.singer.add_to_cycle(instance)
+        if added and instance.duet_partner:
+            instance.duet_partner.add_to_cycle(instance)
 
 
 # Recalculate position of all requests on change

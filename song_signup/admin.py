@@ -73,6 +73,7 @@ class SongRequestAdmin(admin.ModelAdmin):
     change_list_template = "admin/song_request_changelist.html"
 
     def has_delete_permission(self, request, obj=None):
+        return True
         return False
 
     def get_request_time(self, obj):
@@ -103,3 +104,6 @@ class SongRequestAdmin(admin.ModelAdmin):
 class SingerAdmin(admin.ModelAdmin):
     list_display = ['username', 'cy1_position', 'cy2_position', 'cy3_position',
                     'date_joined', 'is_superuser', 'no_image_upload']
+
+    #TODO Remove
+    list_editable = ('cy1_position', 'cy2_position', 'cy3_position')

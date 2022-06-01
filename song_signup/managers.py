@@ -3,7 +3,7 @@ from django.db.models import Manager
 
 
 # TODO: Put in some config
-FIRST_CYCLE_LEN = 3
+FIRST_CYCLE_LEN = 5
 
 
 class SongRequestManager(Manager):
@@ -43,16 +43,17 @@ class CycleManager(UserManager):
         """
         return not self.cy1().filter(cy2_position__isnull=True).exists()
 
-    def clone_singer_cy1_to_cy2(self):
+    def clone_singer_cy1_to_cy2(self, song_request):
         """
-        When a new singer is added to cycle2, we copy after him a singer in cycle1, according to
-        the order.
+        When a new singer is added to cycle2, following a song request, we copy after him a singer in cycle1,
+        according to the order.
         If in Cycle one there are ABC (with a max of 3): After XYZ join in that order cycle 2 will look like this:
         XAYBZC.
         This method takes the next singer in cy1, that hasn't been cloned yet to cy2, and clones him into the last
         place.
         """
         next_cy1_singer = self.cy1().filter(cy2_position__isnull=True).order_by('cy1_position').first()
-        if next_cy1_singer:
+        if next_cy1_singer and next_cy1_singer.cy2_position is None:
             next_cy1_singer.cy2_position = self.next_pos_cy2()
             next_cy1_singer.save()
+
