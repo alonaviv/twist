@@ -26,9 +26,6 @@ class Singer(AbstractUser):
         """
         return self.songs.order_by('performance_time', 'priority')  # These fields are mutually exclusive
 
-    def has_duet_in_cycle(self, cy_num):
-        SongRequest.objects.filter(cycle=cy_num, duet_partner=self).exists()
-
     @property
     def songs_per_cycle(self):
         """
@@ -52,10 +49,10 @@ class Singer(AbstractUser):
         If the second cycle is full, adds to the third cycle.
         """
         # Superusers don't participate in this game
-        if self.is_superuser or any([self.cy1_position, self.cy2_position, self.cy3_position]):
+        if self.is_superuser:
             return
 
-        if not Singer.cycles.cy1_full() and not self.has_duet_in_cycle(1):
+        if not Singer.cycles.cy1_full():
             self.cy1_position = Singer.cycles.next_pos_cy1()
             self.save()
         elif not Singer.cycles.cy2_full():
@@ -65,10 +62,6 @@ class Singer(AbstractUser):
         else:
             self.cy3_position = Singer.cycles.next_pos_cy3()
             self.save()
-
-    @property
-    def songs_incl_duets(self):
-        return self.songs.all() | self.duet_songs.all()
 
     def __str__(self):
         return f'{self.first_name} {self.last_name}'
@@ -118,10 +111,10 @@ class SongRequest(Model):
     def was_performed(self):
         return bool(self.performance_time)
 
-    # @property
-    # def is_first_request(self):
-    #     return self.singer.songs_incl_duets.all().order_by('request_time').first() == self or \
-    #             (self.duet_partner and self.duet_partner.songs_incl_duets.all().order_by('request_time').first())
+    @property
+    def is_first_request(self):
+        return self.singer.songs.all().order_by('request_time').first() == self or \
+                (self.duet_partner and self.duet_partner.songs.all().order_by('request_time').first())
 
     @property
     def all_singers(self):
@@ -168,8 +161,10 @@ class SongRequest(Model):
 # Add singer to cycle when his first request is created for the first time
 @receiver(signals.post_save, sender=SongRequest)
 def after_create_songrequest(sender, instance, created, *args, **kwargs):
-    if created:
+    if created and instance.is_first_request:
         instance.singer.add_to_cycle()
+        if instance.duet_partner:
+            instance.duet_partner.add_to_cycle()
 
 
 # Recalculate position of all requests on change
