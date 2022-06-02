@@ -4,25 +4,20 @@ from django.contrib import admin
 from django.utils import timezone
 
 from .models import SongRequest, Singer, GroupSongRequest
-from .views import _assign_song_priorities
 
 
 def set_performed(modeladmin, request, queryset):
-    # TODO: Reset priorities for remaining songs after this
     for song in queryset:
         song.performance_time = datetime.now()
-        song.priority = None
         song.save()
 
-    _assign_song_priorities()
+    Singer.cycles.seal_cycles()  # Will seal the evening when cycle 2 is all performed
 
 
 def set_not_performed(modeladmin, request, queryset):
     for song in queryset:
         song.performance_time = None
         song.save()
-
-    _assign_song_priorities()
 
 
 set_performed.short_description = 'Mark song as performed'
@@ -37,12 +32,12 @@ class NotYetPerformedFilter(admin.SimpleListFilter):
 
     def lookups(self, request, model_admin):
         return (
-            ('already_performed', 'Include already performed'),
+            ('already_performed', 'Include already performed and not yet scheduled'),
         )
 
     def queryset(self, request, queryset):
         if not self.value() == 'already_performed':
-            return queryset.filter(performance_time=None)
+            return queryset.filter(performance_time=None, position__isnull=False)
         else:
             return queryset.all()
 
@@ -65,7 +60,7 @@ class GroupSongRequestAdmin(admin.ModelAdmin):
 @admin.register(SongRequest)
 class SongRequestAdmin(admin.ModelAdmin):
     list_display = (
-        'position', 'cycle', 'singer', 'song_name', 'musical', 'duet_partner', 'priority',
+        'position', 'formatted_cycle', 'singer', 'song_name', 'musical', 'duet_partner', 'priority',
         'get_performance_time', 'get_request_time', 'get_initial_signup'
     )
     list_filter = (NotYetPerformedFilter,)
@@ -73,8 +68,12 @@ class SongRequestAdmin(admin.ModelAdmin):
     change_list_template = "admin/song_request_changelist.html"
 
     def has_delete_permission(self, request, obj=None):
-        return True
         return False
+
+    def formatted_cycle(self, obj):
+        return obj.cycle and f'{obj.cycle:g}'
+
+    formatted_cycle.short_description = 'Cycle'
 
     def get_request_time(self, obj):
         return obj.request_time.astimezone(timezone.get_current_timezone()).strftime("%H:%M %p")
@@ -104,6 +103,3 @@ class SongRequestAdmin(admin.ModelAdmin):
 class SingerAdmin(admin.ModelAdmin):
     list_display = ['username', 'cy1_position', 'cy2_position', 'cy3_position',
                     'date_joined', 'is_superuser', 'no_image_upload']
-
-    #TODO Remove
-    list_editable = ('cy1_position', 'cy2_position', 'cy3_position')

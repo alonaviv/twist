@@ -31,9 +31,11 @@
                         <input type="text" name="musical" id="musical" placeholder="Where's it from?" required>
                     </div>
                     <div class="form-control">
-                        <label for="additional singers">Anyone else singing this with you?<br>Shani and Alon are
-                            always available 🙂</label>
-                        <select name="additional-singers" id="additional-singers" multiple>
+                        <label for="additional singers">Anyone joining your duet? It counts as a turn.<br>Shani and Alon are also
+                            available 🙂</label>
+                        <select name="duet-partner" id="duet-partner">
+                            <option disabled selected value> -- Optional Partner -- </option>
+
                             <option value="group-song">Everyone! (Request group song)</option>
                             {% for singer in other_singers %}
                             <option value="{{ singer.id }}">{{ singer }}</option>

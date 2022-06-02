@@ -37,10 +37,10 @@ function populateSongList() {
                         }
                     </div>`;
 
-        if (song.singers) {
+        if (song.duet_partner && song.user_song) {
           li.innerHTML += `
                     <div class="other-singers">
-                        <p>Together with: ${song.singers}</p>
+                        <p>Together with: ${song.duet_partner}</p>
                     </div>`;
         }
         return li;
