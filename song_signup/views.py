@@ -31,7 +31,7 @@ def home(request, new_song=None):
 def dashboard_data(request):
     singer = request.user
 
-    user_next_song = singer.pending_songs.first()
+    user_next_song = singer.next_song
     current_song = SongRequest.objects.current_song()
     next_song = SongRequest.objects.next_song()
 
@@ -39,7 +39,7 @@ def dashboard_data(request):
         {
             "current_song": current_song and current_song.basic_data,
             "next_song": next_song and next_song.basic_data,
-            "user_next_song": user_next_song and user_next_song.basic_data
+            "user_next_song": user_next_song and user_next_song.basic_data,
         })
 
 

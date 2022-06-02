@@ -1,12 +1,9 @@
-
 // In order to prevent flickering, disable entire body until promise is complete
 async function loadWait(promiseCallback) {
-    document.body.style.display = 'none';
-    await promiseCallback();
-    document.body.style.display = 'block';
-
+  document.body.style.display = "none";
+  await promiseCallback();
+  document.body.style.display = "block";
 }
-
 
 // Open up dashboard tips
 const tips = document.getElementById("tips");
@@ -68,7 +65,15 @@ function populateNowSinging() {
       if (userNextSong) {
         dashboardElem.classList.remove("hidden");
         noSongElem.classList.add("hidden");
-        document.getElementById("user-next-song").innerHTML =
+
+        document.getElementById(
+          "user-next-song-title"
+        ).innerHTML = `Your next song ${
+          userNextSong.wait_amount
+            ? `(coming up ${userNextSong.wait_amount} songs from now):`
+            : ":"
+        }`;
+        document.getElementById("user-next-song-name").innerHTML =
           userNextSong.name;
       } else {
         dashboardElem.classList.add("hidden");
@@ -78,7 +83,7 @@ function populateNowSinging() {
 }
 
 // If new song added banner is on page - remove it after a few seconds
-const songAddedElem = document.getElementById('song-added');
+const songAddedElem = document.getElementById("song-added");
 if (songAddedElem) {
-    setTimeout(() => songAddedElem.style.display = 'none', 5000);
+  setTimeout(() => (songAddedElem.style.display = "none"), 5000);
 }

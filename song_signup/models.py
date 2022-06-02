@@ -26,6 +26,10 @@ class Singer(AbstractUser):
     def pending_songs(self):
         return self.all_songs.filter(performance_time__isnull=True).order_by('position', 'priority')
 
+    @property
+    def next_song(self):
+        return self.pending_songs.first()
+
     def add_to_cycle(self):
         """
         When a singer adds its first song request, the user is added to a single cycle.x
@@ -101,8 +105,13 @@ class SongRequest(Model):
         return f"Song request: {self.song_name} by {self.singer}"
 
     @property
+    def wait_amount(self):
+        if self.position:
+            return int(self.position - SongRequest.objects.current_song().position)
+
+    @property
     def basic_data(self):
-        return {'name': self.song_name, 'singer': str(self.singer)}
+        return {'name': self.song_name, 'singer': str(self.singer), 'wait_amount': self.wait_amount}
 
     class Meta:
         unique_together = ('song_name', 'musical', 'singer')
