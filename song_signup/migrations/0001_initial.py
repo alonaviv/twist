@@ -18,6 +18,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.RunSQL('CREATE EXTENSION IF NOT EXISTS citext'),
         migrations.CreateModel(
             name='Singer',
             fields=[
