@@ -51,7 +51,7 @@ LOGGING = {
         'file': {
             'class': 'logging.FileHandler',
             'level': 'DEBUG',
-            'filename': '/Users/alona/twist/twist-logs/debug.log',
+            'filename': os.path.join(BASE_DIR, 'twist-logs/debug.log'),
             'formatter': 'simple'
         },
     },
@@ -123,7 +123,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'twistdb',
         'USER': 'postgres',
-        'PASSWORD': '76697421',
+        'PASSWORD': os.environ.get('POSTGRES_PASSWORD', '76697421'),
         'HOST': 'localhost',
     }
 }
