@@ -2,7 +2,7 @@ import itertools
 
 from django.contrib.auth.models import UserManager
 from django.db.models import Manager, Max
-from flags.state import disable_flag, flag_enabled
+from flags.state import disable_flag, flag_enabled, flag_disabled
 
 FIRST_CYCLE_LEN = 10
 
@@ -39,15 +39,31 @@ class CycleManager(UserManager):
             if singer in SongRequest.objects.duets_partners_in_cycles(cycle):
                 continue
 
-            non_scheduled_song = singer.songs.filter(position__isnull=True). \
-                order_by('priority').first()
-
-            if non_scheduled_song:
-                non_scheduled_song.position = current_position
-                non_scheduled_song.cycle = cycle
-                non_scheduled_song.save()
-
+            self._schedule_song(singer, current_position, cycle)
             current_position += 1
+
+        # Repeat cycle 3 as long as there are unscheduled songs. Do so only after cycle 2 is complete and signup blocked
+        sub_3_cycle = 3.1
+        while SongRequest.objects.filter(position__isnull=True).count() and flag_disabled('CAN_SIGNUP'):
+            for singer in self.cy3():
+                # If singer performed duet in current cycle, she can have no more songs this cycle.
+                if singer in SongRequest.objects.duets_partners_in_cycles(sub_3_cycle):
+                    continue
+                self._schedule_song(singer, current_position, sub_3_cycle)
+                current_position += 1
+            sub_3_cycle += 0.1
+
+    @staticmethod
+    def _schedule_song(singer, position, cycle):
+        """
+        Schedule the next song of the singer at given position and cycle
+        """
+        non_scheduled_song = singer.songs.filter(position__isnull=True). \
+            order_by('priority').first()
+        if non_scheduled_song:
+            non_scheduled_song.position = position
+            non_scheduled_song.cycle = cycle
+            non_scheduled_song.save()
 
     def cy1(self):
         return self.filter(cy1_position__isnull=False).order_by('cy1_position')
@@ -129,7 +145,6 @@ class CycleManager(UserManager):
         This method is to be called every time a song is performed, and at some point it'll seal the evening.
         """
         if flag_enabled('CAN_SIGNUP') and self.cy2_complete():
-            disable_flag('CAN_SIGNUP')
             self.calculate_positions()
 
             for cy_2_singer in self.cy2().all():
@@ -137,4 +152,5 @@ class CycleManager(UserManager):
                     cy_2_singer.cy3_position = self.next_pos_cy3()
                     cy_2_singer.save()
 
+            disable_flag('CAN_SIGNUP')
             self.calculate_positions()
