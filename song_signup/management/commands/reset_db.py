@@ -8,3 +8,4 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         SongRequest.objects.all().delete()
         Singer.objects.filter(is_superuser=False).delete()
+
