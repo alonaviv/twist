@@ -20,6 +20,14 @@
   display: none !important;
 }
 
+.text-center {
+    text-align: center;
+}
+
+.bold{
+    font-weight: 500;
+}
+
 .flex-card {
   .row {
     display: flex;
@@ -100,6 +108,12 @@
 .third-card {
   background-color: $third-color;
   color: set-text-color($third-color);
+}
+
+.temp-banner {
+  background-color: $banner-color;
+  color: set-text-color($banner-color);
+  font-size: 20px;
 }
 
 .with-scroll {

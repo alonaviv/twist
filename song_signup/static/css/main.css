@@ -9,6 +9,12 @@
 .hidden {
   display: none !important; }
 
+.text-center {
+  text-align: center; }
+
+.bold {
+  font-weight: 500; }
+
 .flex-card .row {
   display: flex;
   justify-content: space-around;
@@ -68,6 +74,11 @@
 .third-card {
   background-color: #ffff50;
   color: #000; }
+
+.temp-banner {
+  background-color: #DC3AD3;
+  color: #000;
+  font-size: 20px; }
 
 .with-scroll {
   overflow: scroll; }
