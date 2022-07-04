@@ -11,12 +11,14 @@ from song_signup.managers import CycleManager, SongRequestManager
 
 
 class Singer(AbstractUser):
-    # Abbreviation: cy == cycle
+    # Abbreviation: cy == cycle, lscy == late-singers cycle
     # There are three cycles in the evening. Each singer has a possible position in the lineup of each cycle
     cy1_position = IntegerField(blank=True, null=True)
     cy2_position = IntegerField(blank=True, null=True)
+    lscy_position = IntegerField(blank=True, null=True)
     cy3_position = IntegerField(blank=True, null=True)
     no_image_upload = BooleanField(default=False)
+    placeholder = BooleanField(default=False)
 
     @property
     def all_songs(self):
@@ -24,7 +26,7 @@ class Singer(AbstractUser):
 
     @property
     def pending_songs(self):
-        return self.all_songs.filter(performance_time__isnull=True).order_by('position', 'priority')
+        return self.all_songs.filter(performance_time__isnull=True).order_by('priority')
 
     @property
     def next_song(self):
@@ -32,25 +34,31 @@ class Singer(AbstractUser):
 
     def add_to_cycle(self):
         """
-        When a singer adds its first song request, the user is added to a single cycle.x
-        If the first cycle isn't full - adds to the first cycle.
-        If the first cycle is full, adds to the second cycle - copying one more singer from the first cycle after him.
-        If the second cycle is full, adds to the third cycle.
+        When a singer adds its first song request, the user is added to cycles 1 2 and 3, skipping cycles that are
+        already full.
+        Cycle 1 - First come, first served for the first 10
+        Cycle 2 - Singers of cycle 1 repeat, with new singers placed between them
+        (new singer in place 1, old singer in place 1, and so forth until 20)
+        Cycle LATE-SINGERS-SLOT - Only late new singers, that aren't in cycle 2
+        Cycle 3 - Repeat cycle 2
+
+        If cycle 3 is done - repeats cycle LATE-SINGERS + Cycle 3 again. (Happens in calculate_positions)
         """
         # Superusers don't participate in this game
-        if self.is_superuser or any([self.cy1_position, self.cy2_position, self.cy3_position]):
+        if self.is_superuser or any([self.cy1_position, self.cy2_position, self.cy3_position]) or self.placeholder:
             return
-
         if not Singer.cycles.cy1_full():
             self.cy1_position = Singer.cycles.next_pos_cy1()
+            self.cy2_position = self.cy1_position * 2  # Cycle one singers take the even places of cycle 2
+            self.cy3_position = self.cy2_position
             self.save()
         elif not Singer.cycles.cy2_full():
-            self.cy2_position = Singer.cycles.next_pos_cy2()
-            self.save()
-            Singer.cycles.clone_singer_cy1_to_cy2()
+            self.cy2_position = Singer.cycles.next_new_singer_pos_cy2()
+            self.cy3_position = self.cy2_position
         else:
-            self.cy3_position = Singer.cycles.next_pos_cy3()
-            self.save()
+            self.lscy_position = Singer.cycles.next_pos_lscy()
+
+        self.save()
 
     def __str__(self):
         return f'{self.first_name} {self.last_name}'
@@ -81,6 +89,7 @@ class SongRequest(Model):
     priority = IntegerField(null=True, blank=True)  # Priority in each singer's list
     position = IntegerField(null=True, blank=True)  # Absolute position in entire list
     cycle = FloatField(null=True, blank=True)  # The cycle where song was scheduled
+    placeholder = BooleanField(default=False)
 
     def get_additional_singers(self):
         return ", ".join([str(singer) for singer in self.additional_singers.all()])
@@ -114,7 +123,7 @@ class SongRequest(Model):
         return {'name': self.song_name, 'singer': str(self.singer), 'wait_amount': self.wait_amount}
 
     class Meta:
-        unique_together = ('song_name', 'musical', 'singer')
+        unique_together = ('song_name', 'musical', 'singer', 'cycle', 'position')
         ordering = ('position',)
 
     objects = SongRequestManager()

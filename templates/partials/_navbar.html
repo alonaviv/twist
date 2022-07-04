@@ -17,10 +17,10 @@
                     </li>
                     <li><a href="https://www.facebook.com/groups/763859465058650">Upload Your Videos!</a></li>
                     <li><a href="/admin/song_signup/songrequest">View Lineup</a></li>
-                    <li {% if current == 'tip-us' %} class="hidden" {% endif %}>
-                        <a href="{% url 'tip_us' %}">Tip Us</a></li>
                     <li {% if current == 'faq' %} class="hidden" {% endif %}>
                         <a href="{% url 'faq' %}">Common Questions</a></li>
+                    <li {% if current == 'tip-us' %} class="hidden" {% endif %}>
+                    <a href="{% url 'tip_us' %}">Tip Us</a></li>
                     <li><a href="{% url "logout" %}">Logout</a></li>
                 </ul>
             </div>

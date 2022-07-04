@@ -4,14 +4,13 @@ from django.contrib import admin
 from django.utils import timezone
 
 from .models import SongRequest, Singer, GroupSongRequest
+from .managers import LATE_SINGER_CYCLE
 
 
 def set_performed(modeladmin, request, queryset):
     for song in queryset:
         song.performance_time = datetime.now()
         song.save()
-
-    Singer.cycles.seal_cycles()  # Will seal the evening when cycle 2 is all performed
 
 
 def set_not_performed(modeladmin, request, queryset):
@@ -32,7 +31,7 @@ class NotYetPerformedFilter(admin.SimpleListFilter):
 
     def lookups(self, request, model_admin):
         return (
-            ('already_performed', 'Include already performed and not yet scheduled'),
+            ('already_performed', 'Include already performed'),
         )
 
     def queryset(self, request, queryset):
@@ -65,13 +64,16 @@ class SongRequestAdmin(admin.ModelAdmin):
     )
     list_filter = (NotYetPerformedFilter,)
     actions = [set_performed, set_not_performed]
+    ordering = ['cycle', 'position']
     change_list_template = "admin/song_request_changelist.html"
 
     def has_delete_permission(self, request, obj=None):
         return False
 
     def formatted_cycle(self, obj):
-        return obj.cycle and f'{obj.cycle:g}'
+        if obj.cycle == LATE_SINGER_CYCLE:
+            return 'NEW-SINGER-SLOTS'
+        return f'{obj.cycle:g}' if obj.cycle else ''
 
     formatted_cycle.short_description = 'Cycle'
 

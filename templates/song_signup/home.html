@@ -7,7 +7,7 @@
 {% include "partials/_navbar.html" with current="home" %}
 
 <main class="nested-footer">
-    <div class="temp-banner">
+    <div class="temp-banner hidden">
         <div class="container text-center bold">
             <p>Happy Birthday Idani!!! &nbsp; 🎉🎉🎉</p>
         </div>
@@ -50,7 +50,7 @@
                 <p id="user-next-song-name"></p>
             </div>
             <div>
-                <p id="expand-tips">>> Helpful tips</p>
+                <p id="expand-tips">>> Performance tips</p>
                 <a href="{% url 'manage_songs' %}" class="btn" id="manage-songs-btn">Manage Songs</a>
             </div>
         </div>
@@ -65,11 +65,11 @@
         </div>
         <div id="tips" class="expand">
             <ul>
-                <li>If you found your song in a book, come up with it. It'll save time</li>
+                <li>Look at our pianist as the songs starts - he'll help you come in correctly</li>
+                <li>If you want people to hear you - hold the mic <strong>very</strong> close to your mouth</li>
                 <li>If you want to sing faster or slower, just do it! Our pianist will follow you</li>
                 <li>If the key isn't right, just stop and ask to change it. Our keyboard is magical :)</li>
-                <li>If you want people to hear you - hold the mic very close to your mouth</li>
-                <li>No one came here to judge! Relax and enjoy yourself!</li>
+                <li>No one came here to judge! Relax and enjoy yourself! :)</li>
             </ul>
         </div>
     </div>
@@ -92,7 +92,7 @@
             </div>
         </div>
     </a>
-    <a href="{% url 'tip_us' %}">
+    <a href="{% url 'tip_us' %}" class="hidden">
         <div id="tip-us" class="flex-card secondary-card">
             <div class="row">
                 <div class="column larger">

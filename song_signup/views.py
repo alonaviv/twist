@@ -175,6 +175,7 @@ def login(request):
 
 def delete_song(request, song_pk):
     SongRequest.objects.filter(pk=song_pk).delete()
+    Singer.cycles.calculate_positions()
     return HttpResponse()
 
 

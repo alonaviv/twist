@@ -70,7 +70,7 @@ function populateNowSinging() {
           "user-next-song-title"
         ).innerHTML = `Your next song ${
           userNextSong.wait_amount
-            ? `(coming up ${userNextSong.wait_amount} songs from now):`
+            ? `(coming up in ${userNextSong.wait_amount} songs):`
             : ":"
         }`;
         document.getElementById("user-next-song-name").innerHTML =
