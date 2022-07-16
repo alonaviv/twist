@@ -59,13 +59,18 @@ class GroupSongRequestAdmin(admin.ModelAdmin):
 @admin.register(SongRequest)
 class SongRequestAdmin(admin.ModelAdmin):
     list_display = (
-        'position', 'formatted_cycle', 'singer', 'song_name', 'musical', 'duet_partner', 'priority',
+        'position', 'singer', 'song_name', 'musical', 'duet_partner',
         'get_performance_time', 'get_request_time', 'get_initial_signup'
     )
     list_filter = (NotYetPerformedFilter,)
     actions = [set_performed, set_not_performed]
-    ordering = ['cycle', 'position']
+    ordering = ['position']
     change_list_template = "admin/song_request_changelist.html"
+
+    def changelist_view(self, request, extra_context=None):
+        extra_context = extra_context or {}
+        extra_context['new_singers_num'] = Singer.ordering.new_singers_num()
+        return super().changelist_view(request, extra_context=extra_context)
 
     def has_delete_permission(self, request, obj=None):
         return False

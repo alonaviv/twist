@@ -1,3 +1,5 @@
+import datetime
+
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.contrib.postgres.fields import CITextField
@@ -7,7 +9,7 @@ from django.db.models import (
 )
 from django.dispatch import receiver
 
-from song_signup.managers import CycleManager, SongRequestManager
+from song_signup.managers import SongRequestManager, DisneylandOrdering
 
 
 class Singer(AbstractUser):
@@ -32,8 +34,32 @@ class Singer(AbstractUser):
     def next_song(self):
         return self.pending_songs.first()
 
-    def add_to_cycle(self):
+    @property
+    def last_performance_time(self):
+        last_song = self.all_songs.filter(performance_time__isnull=False).order_by(
+            'performance_time').last()
+
+        if not last_song:
+            return None
+
+        performance_time = last_song.performance_time
+
+        # For duets, set the secondary singer to be one second later,
+        # so she will be after the primary singer in the list
+        if last_song in self.duet_songs.all():
+            performance_time += datetime.timedelta(seconds=1)
+
+        return performance_time
+
+    def _add_to_disneyland_lineup(self):
         """
+        Function to add a new singer to the list when using the "Disneyland" algorithm.
+        """
+        pass
+
+    def _add_to_cycle(self):
+        """
+        Function to add a new singer to the list when using the "3 cycles" algorithm.
         When a singer adds its first song request, the user is added to cycles 1 2 and 3, skipping cycles that are
         already full.
         Cycle 1 - First come, first served for the first 10
@@ -47,18 +73,24 @@ class Singer(AbstractUser):
         # Superusers don't participate in this game
         if self.is_superuser or any([self.cy1_position, self.cy2_position, self.cy3_position]) or self.placeholder:
             return
-        if not Singer.cycles.cy1_full():
-            self.cy1_position = Singer.cycles.next_pos_cy1()
+        if not Singer.ordering.cy1_full():
+            self.cy1_position = Singer.ordering.next_pos_cy1()
             self.cy2_position = self.cy1_position * 2  # Cycle one singers take the even places of cycle 2
             self.cy3_position = self.cy2_position
             self.save()
-        elif not Singer.cycles.cy2_full():
-            self.cy2_position = Singer.cycles.next_new_singer_pos_cy2()
+        elif not Singer.ordering.cy2_full():
+            self.cy2_position = Singer.ordering.next_new_singer_pos_cy2()
             self.cy3_position = self.cy2_position
         else:
-            self.lscy_position = Singer.cycles.next_pos_lscy()
+            self.lscy_position = Singer.ordering.next_pos_lscy()
 
         self.save()
+
+    def add_to_lineup(self):
+        """
+        Can choose which algorithm to use here
+        """
+        self._add_to_disneyland_lineup()
 
     def __str__(self):
         return f'{self.first_name} {self.last_name}'
@@ -67,7 +99,7 @@ class Singer(AbstractUser):
         verbose_name = "Singer"
         verbose_name_plural = "Singers"
 
-    cycles = CycleManager()
+    ordering = DisneylandOrdering()
 
 
 class GroupSongRequest(Model):
@@ -133,7 +165,7 @@ class SongRequest(Model):
 @receiver(signals.post_save, sender=SongRequest)
 def after_create_songrequest(sender, instance, created, *args, **kwargs):
     if created:
-        instance.singer.add_to_cycle()
+        instance.singer.add_to_lineup()
         instance.priority = SongRequest.objects.next_priority(instance)
         instance.save()
 
@@ -142,5 +174,5 @@ def after_create_songrequest(sender, instance, created, *args, **kwargs):
 @receiver(signals.post_save, sender=SongRequest)
 def after_save_songrequest(sender, instance, created, *args, **kwargs):
     signals.post_save.disconnect(after_save_songrequest, sender=sender)
-    Singer.cycles.calculate_positions()
+    Singer.ordering.calculate_positions()
     signals.post_save.connect(after_save_songrequest, sender=sender)

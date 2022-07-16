@@ -413,7 +413,7 @@ nav {
 
 #now-singing-wrapper {
   background: url("../img/main/mic.jpeg") center center/cover;
-  height: 43.98vh;
+  height: 44vh;
   width: 100%;
   position: relative; }
   #now-singing-wrapper::before {
@@ -468,7 +468,7 @@ nav {
       text-align: center; }
 
 #dashboard-wrapper {
-  height: 29.32vh;
+  height: 22vh;
   transition: all 0.3s ease;
   color: #00C575; }
   #dashboard-wrapper #dashboard {
@@ -516,7 +516,7 @@ nav {
         margin-bottom: 5%; }
 
 #whatsapp {
-  height: 14.66vh;
+  height: 11vh;
   position: relative; }
   #whatsapp .larger {
     width: 70%; }

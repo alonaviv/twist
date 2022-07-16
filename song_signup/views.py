@@ -175,7 +175,7 @@ def login(request):
 
 def delete_song(request, song_pk):
     SongRequest.objects.filter(pk=song_pk).delete()
-    Singer.cycles.calculate_positions()
+    Singer.ordering.calculate_positions()
     return HttpResponse()
 
 
@@ -188,11 +188,13 @@ def reset_database(request):
 
 def enable_signup(request):
     enable_flag('CAN_SIGNUP')
+    Singer.ordering.calculate_positions()
     return redirect('admin/song_signup/songrequest')
 
 
 def disable_signup(request):
     disable_flag('CAN_SIGNUP')
+    Singer.ordering.calculate_positions()
     return redirect('admin/song_signup/songrequest')
 
 
@@ -201,5 +203,5 @@ def signup_disabled(request):
 
 
 def recalculate_priorities(request):
-    Singer.cycles.calculate_positions()
+    Singer.ordering.calculate_positions()
     return redirect('admin/song_signup/songrequest')

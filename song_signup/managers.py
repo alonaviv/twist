@@ -1,9 +1,9 @@
 from itertools import chain
 
 from django.contrib.auth.models import UserManager
-from django.db.models import Manager, Max
 from django.core.exceptions import ObjectDoesNotExist
-
+from django.db.models import Manager, Max
+from flags.state import flag_enabled
 
 FIRST_CYCLE_LEN = 10
 CYCLE_1 = 1.0
@@ -33,7 +33,12 @@ class SongRequestManager(Manager):
             return None
 
 
-class CycleManager(UserManager):
+class ThreeCycleOrdering(UserManager):
+    """
+    Ordering manager that uses the 3 cycles algorithm.
+    TODO: HAS An unfixed bug! It breaks on real db of default-ip-172-31-3-99-2022-07-10-095904-the-bug.psql
+    """
+
     def calculate_positions(self):
         from song_signup.models import SongRequest
         SongRequest.objects.reset_positions_and_cycles()
@@ -150,3 +155,58 @@ class CycleManager(UserManager):
         The second cycle is full once the last available spot for a new singer is filled.
         """
         return self.next_new_singer_pos_cy2() > FIRST_CYCLE_LEN * 2
+
+
+class DisneylandOrdering(UserManager):
+    """
+    Ordering manager that uses the "Disneyland" algorithm. Once a singer has sung, she moves back to the end of the
+    list. In order to allow latecomers to be able to sing, towards the end of the evening Shani will close the signup
+    and we'll move to a mode in which only those who haven't sung yet get to sing.
+    """
+    def new_singers_num(self):
+        return len([singer for singer in self.all() if singer.all_songs.exists()
+                    and singer.last_performance_time is None])
+
+    def calculate_positions(self):
+        from song_signup.models import SongRequest
+        SongRequest.objects.reset_positions_and_cycles()
+
+        position = 1
+        scheduled_songs = []
+        duet_singers = set()
+        for singer in self.singer_disneyland_ordering():
+            # If singer has a duet earlier in the ordering, her primary song is skipped.
+            # Once the duet is over, her position will be tied to the position of the primary singer (as they both
+            # will have their last_performance_time updated , so she'll be rescheduled.
+            if singer not in duet_singers:
+                song_to_schedule = singer.songs.filter(performance_time__isnull=True).order_by('priority').first()
+                if song_to_schedule:
+                    song_to_schedule.position = position
+                    song_to_schedule.save()
+                    scheduled_songs.append(song_to_schedule)
+
+                    if song_to_schedule.duet_partner:
+                        duet_singers.add(song_to_schedule.duet_partner)
+
+                    position += 1
+
+    def singer_disneyland_ordering(self):
+        """
+        Returns the order of all current singers.
+        First come, first served, and once a singer has sung his song, he's moved to the end of the line, after all the
+        other singers in line.
+        If the list is closed (Shani closes the signup), singers who haven't sung yet get precedence, sorted by
+        joined time, and only then singers who have sung, sorted by their last performance time - that is, according
+        to the order that they were in before. Basically, we're just taking the existing list and pulling the new
+        singers ahead, without changing the internal ordering.
+        """
+        if flag_enabled('CAN_SIGNUP'):
+            return sorted(self.all(), key=lambda singer: singer.last_performance_time or singer.date_joined)
+        else:
+            all_singers = self.all()
+            new_singers, old_singers = [], []
+            for singer in all_singers:
+                new_singers.append(singer) if singer.last_performance_time is None else old_singers.append(singer)
+
+            return sorted(new_singers, key=lambda singer: singer.date_joined) + sorted(old_singers, key=lambda
+                singer: singer.last_performance_time)

@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
         migrations.AlterModelManagers(
             name='singer',
             managers=[
-                ('cycles', song_signup.managers.CycleManager()),
+                ('cycles', song_signup.managers.ThreeCycleOrdering()),
                 ('objects', django.contrib.auth.models.UserManager()),
             ],
         ),
