@@ -1188,7 +1188,6 @@ class TestCalculatePositionsDisney(SongRequestTestCase):
 
 
 class TestSimulatedEvenings(SongRequestTestCase):
-    # TODO: Shani leaves on at the top
     def test_scenario1(self):
         with freeze_time(TEST_START_TIME, auto_tick_seconds=5) as frozen_time:
             # Singer 1 joins with 1 song #1
