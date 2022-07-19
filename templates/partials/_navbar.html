@@ -15,16 +15,24 @@
                     <li {% if current == 'manage-songs' %} class="hidden" {% endif %}>
                         <a href="{% url 'manage_songs' %}">Manage Songs</a>
                     </li>
-                    <li><a href="https://www.facebook.com/groups/763859465058650">Upload Your Videos!</a></li>
-                    <li><a href="/admin/song_signup/songrequest">View Lineup</a></li>
+                    <li><a href="/admin/song_signup/songrequest">Lineup</a></li>
                     <li {% if current == 'faq' %} class="hidden" {% endif %}>
                         <a href="{% url 'faq' %}">Common Questions</a></li>
                     <li {% if current == 'tip-us' %} class="hidden" {% endif %}>
                     <a href="{% url 'tip_us' %}">Tip Us</a></li>
                     <li><a href="{% url "logout" %}">Logout</a></li>
                 </ul>
+        </div>
+        <div>
+        <div id="navbar-social">
+            <a href="https://www.facebook.com/groups/763859465058650/"><i class="fa-brands fa-facebook"></i></a>
+            <div id="navbar-instagram">
+                <a href="https://www.instagram.com/bwtisrael/" id="navbar-instagram"><i class="fa-brands fa-instagram"></i></a>
+                <a href="https://www.instagram.com/bwtisrael/" id="navbar-instagram"><p>@bwtisrael</p></a>
+            </div>
             </div>
         </div>
+    </div>
     </div>
     <div id="navbar">
         <div class="logo">
