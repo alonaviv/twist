@@ -1,5 +1,3 @@
-from datetime import datetime, timezone
-
 from django.contrib import admin
 from django.utils import timezone
 
@@ -9,14 +7,16 @@ from .managers import LATE_SINGER_CYCLE
 
 def set_performed(modeladmin, request, queryset):
     for song in queryset:
-        song.performance_time = datetime.now()
+        song.performance_time = timezone.now()
         song.save()
+        Singer.ordering.calculate_positions()
 
 
 def set_not_performed(modeladmin, request, queryset):
     for song in queryset:
         song.performance_time = None
         song.save()
+        Singer.ordering.calculate_positions()
 
 
 set_performed.short_description = 'Mark song as performed'

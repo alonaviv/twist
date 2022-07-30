@@ -71,6 +71,7 @@ def add_song_request(request):
         except SongRequest.DoesNotExist:
             song_request = SongRequest.objects.create(song_name=song_name, musical=musical, singer=current_user,
                                                       duet_partner_id=duet_partner)
+            Singer.ordering.calculate_positions()
 
     return JsonResponse({
         'requested_song': song_request.song_name,

@@ -1,0 +1,2498 @@
+--
+-- PostgreSQL database dump
+--
+
+-- Dumped from database version 12.11 (Ubuntu 12.11-0ubuntu0.20.04.1)
+-- Dumped by pg_dump version 12.11 (Ubuntu 12.11-0ubuntu0.20.04.1)
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+ALTER TABLE ONLY public.song_signup_songrequest_additional_singers DROP CONSTRAINT song_signup_songrequ_songrequest_id_2e38e58b_fk_song_sign;
+ALTER TABLE ONLY public.song_signup_songrequest DROP CONSTRAINT song_signup_songrequ_singer_id_d2a4ad82_fk_song_sign;
+ALTER TABLE ONLY public.song_signup_songrequest_additional_singers DROP CONSTRAINT song_signup_songrequ_singer_id_a529a8f4_fk_song_sign;
+ALTER TABLE ONLY public.song_signup_songrequest DROP CONSTRAINT song_signup_songrequ_duet_partner_id_5dad5c17_fk_song_sign;
+ALTER TABLE ONLY public.song_signup_singer_user_permissions DROP CONSTRAINT song_signup_singer_u_singer_id_20ebc8cd_fk_song_sign;
+ALTER TABLE ONLY public.song_signup_singer_user_permissions DROP CONSTRAINT song_signup_singer_u_permission_id_94d0d848_fk_auth_perm;
+ALTER TABLE ONLY public.song_signup_singer_groups DROP CONSTRAINT song_signup_singer_groups_group_id_dd867d90_fk_auth_group_id;
+ALTER TABLE ONLY public.song_signup_singer_groups DROP CONSTRAINT song_signup_singer_g_singer_id_2c98845b_fk_song_sign;
+ALTER TABLE ONLY public.song_signup_groupsongrequest DROP CONSTRAINT song_signup_groupson_requested_by_id_28ee6931_fk_song_sign;
+ALTER TABLE ONLY public.django_admin_log DROP CONSTRAINT django_admin_log_user_id_c564eba6_fk_song_signup_singer_id;
+ALTER TABLE ONLY public.django_admin_log DROP CONSTRAINT django_admin_log_content_type_id_c4bce8eb_fk_django_co;
+ALTER TABLE ONLY public.auth_permission DROP CONSTRAINT auth_permission_content_type_id_2f476e4b_fk_django_co;
+ALTER TABLE ONLY public.auth_group_permissions DROP CONSTRAINT auth_group_permissions_group_id_b120cbf9_fk_auth_group_id;
+ALTER TABLE ONLY public.auth_group_permissions DROP CONSTRAINT auth_group_permissio_permission_id_84c5c92e_fk_auth_perm;
+DROP INDEX public.song_signup_songrequest_singer_id_d2a4ad82;
+DROP INDEX public.song_signup_songrequest_duet_partner_id_5dad5c17;
+DROP INDEX public.song_signup_songrequest_additional_singers_singer_id_a529a8f4;
+DROP INDEX public.song_signup_songrequest_ad_songrequest_id_2e38e58b;
+DROP INDEX public.song_signup_singer_username_b362f1d1_like;
+DROP INDEX public.song_signup_singer_user_permissions_singer_id_20ebc8cd;
+DROP INDEX public.song_signup_singer_user_permissions_permission_id_94d0d848;
+DROP INDEX public.song_signup_singer_groups_singer_id_2c98845b;
+DROP INDEX public.song_signup_singer_groups_group_id_dd867d90;
+DROP INDEX public.song_signup_groupsongrequest_requested_by_id_28ee6931;
+DROP INDEX public.django_session_session_key_c0390e0f_like;
+DROP INDEX public.django_session_expire_date_a5c62663;
+DROP INDEX public.django_admin_log_user_id_c564eba6;
+DROP INDEX public.django_admin_log_content_type_id_c4bce8eb;
+DROP INDEX public.auth_permission_content_type_id_2f476e4b;
+DROP INDEX public.auth_group_permissions_permission_id_84c5c92e;
+DROP INDEX public.auth_group_permissions_group_id_b120cbf9;
+DROP INDEX public.auth_group_name_a6ea08ec_like;
+ALTER TABLE ONLY public.song_signup_songrequest DROP CONSTRAINT song_signup_songrequest_song_name_musical_singer_d2c870a5_uniq;
+ALTER TABLE ONLY public.song_signup_songrequest DROP CONSTRAINT song_signup_songrequest_pkey;
+ALTER TABLE ONLY public.song_signup_songrequest_additional_singers DROP CONSTRAINT song_signup_songrequest_additional_singers_pkey;
+ALTER TABLE ONLY public.song_signup_songrequest_additional_singers DROP CONSTRAINT song_signup_songrequest__songrequest_id_singer_id_1b295821_uniq;
+ALTER TABLE ONLY public.song_signup_singer DROP CONSTRAINT song_signup_singer_username_key;
+ALTER TABLE ONLY public.song_signup_singer_user_permissions DROP CONSTRAINT song_signup_singer_user_permissions_pkey;
+ALTER TABLE ONLY public.song_signup_singer_user_permissions DROP CONSTRAINT song_signup_singer_user__singer_id_permission_id_d96a7da1_uniq;
+ALTER TABLE ONLY public.song_signup_singer DROP CONSTRAINT song_signup_singer_pkey;
+ALTER TABLE ONLY public.song_signup_singer_groups DROP CONSTRAINT song_signup_singer_groups_singer_id_group_id_0c2bce52_uniq;
+ALTER TABLE ONLY public.song_signup_singer_groups DROP CONSTRAINT song_signup_singer_groups_pkey;
+ALTER TABLE ONLY public.song_signup_groupsongrequest DROP CONSTRAINT song_signup_groupsongrequest_pkey;
+ALTER TABLE ONLY public.flags_flagstate DROP CONSTRAINT flags_flagstate_pkey;
+ALTER TABLE ONLY public.flags_flagstate DROP CONSTRAINT flags_flagstate_name_condition_value_4e81ec48_uniq;
+ALTER TABLE ONLY public.django_session DROP CONSTRAINT django_session_pkey;
+ALTER TABLE ONLY public.django_migrations DROP CONSTRAINT django_migrations_pkey;
+ALTER TABLE ONLY public.django_content_type DROP CONSTRAINT django_content_type_pkey;
+ALTER TABLE ONLY public.django_content_type DROP CONSTRAINT django_content_type_app_label_model_76bd3d3b_uniq;
+ALTER TABLE ONLY public.django_admin_log DROP CONSTRAINT django_admin_log_pkey;
+ALTER TABLE ONLY public.auth_permission DROP CONSTRAINT auth_permission_pkey;
+ALTER TABLE ONLY public.auth_permission DROP CONSTRAINT auth_permission_content_type_id_codename_01ab375a_uniq;
+ALTER TABLE ONLY public.auth_group DROP CONSTRAINT auth_group_pkey;
+ALTER TABLE ONLY public.auth_group_permissions DROP CONSTRAINT auth_group_permissions_pkey;
+ALTER TABLE ONLY public.auth_group_permissions DROP CONSTRAINT auth_group_permissions_group_id_permission_id_0cd325b0_uniq;
+ALTER TABLE ONLY public.auth_group DROP CONSTRAINT auth_group_name_key;
+ALTER TABLE public.song_signup_songrequest_additional_singers ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE public.song_signup_songrequest ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE public.song_signup_singer_user_permissions ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE public.song_signup_singer_groups ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE public.song_signup_singer ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE public.song_signup_groupsongrequest ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE public.flags_flagstate ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE public.django_migrations ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE public.django_content_type ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE public.django_admin_log ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE public.auth_permission ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE public.auth_group_permissions ALTER COLUMN id DROP DEFAULT;
+ALTER TABLE public.auth_group ALTER COLUMN id DROP DEFAULT;
+DROP SEQUENCE public.song_signup_songrequest_id_seq;
+DROP SEQUENCE public.song_signup_songrequest_additional_singers_id_seq;
+DROP TABLE public.song_signup_songrequest_additional_singers;
+DROP TABLE public.song_signup_songrequest;
+DROP SEQUENCE public.song_signup_singer_user_permissions_id_seq;
+DROP TABLE public.song_signup_singer_user_permissions;
+DROP SEQUENCE public.song_signup_singer_id_seq;
+DROP SEQUENCE public.song_signup_singer_groups_id_seq;
+DROP TABLE public.song_signup_singer_groups;
+DROP TABLE public.song_signup_singer;
+DROP SEQUENCE public.song_signup_groupsongrequest_id_seq;
+DROP TABLE public.song_signup_groupsongrequest;
+DROP SEQUENCE public.flags_flagstate_id_seq;
+DROP TABLE public.flags_flagstate;
+DROP TABLE public.django_session;
+DROP SEQUENCE public.django_migrations_id_seq;
+DROP TABLE public.django_migrations;
+DROP SEQUENCE public.django_content_type_id_seq;
+DROP TABLE public.django_content_type;
+DROP SEQUENCE public.django_admin_log_id_seq;
+DROP TABLE public.django_admin_log;
+DROP SEQUENCE public.auth_permission_id_seq;
+DROP TABLE public.auth_permission;
+DROP SEQUENCE public.auth_group_permissions_id_seq;
+DROP TABLE public.auth_group_permissions;
+DROP SEQUENCE public.auth_group_id_seq;
+DROP TABLE public.auth_group;
+DROP EXTENSION citext;
+--
+-- Name: citext; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS citext WITH SCHEMA public;
+
+
+--
+-- Name: EXTENSION citext; Type: COMMENT; Schema: -; Owner: 
+--
+
+COMMENT ON EXTENSION citext IS 'data type for case-insensitive character strings';
+
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- Name: auth_group; Type: TABLE; Schema: public; Owner: twistdbadmin
+--
+
+CREATE TABLE public.auth_group (
+    id integer NOT NULL,
+    name character varying(150) NOT NULL
+);
+
+
+ALTER TABLE public.auth_group OWNER TO twistdbadmin;
+
+--
+-- Name: auth_group_id_seq; Type: SEQUENCE; Schema: public; Owner: twistdbadmin
+--
+
+CREATE SEQUENCE public.auth_group_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.auth_group_id_seq OWNER TO twistdbadmin;
+
+--
+-- Name: auth_group_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: twistdbadmin
+--
+
+ALTER SEQUENCE public.auth_group_id_seq OWNED BY public.auth_group.id;
+
+
+--
+-- Name: auth_group_permissions; Type: TABLE; Schema: public; Owner: twistdbadmin
+--
+
+CREATE TABLE public.auth_group_permissions (
+    id integer NOT NULL,
+    group_id integer NOT NULL,
+    permission_id integer NOT NULL
+);
+
+
+ALTER TABLE public.auth_group_permissions OWNER TO twistdbadmin;
+
+--
+-- Name: auth_group_permissions_id_seq; Type: SEQUENCE; Schema: public; Owner: twistdbadmin
+--
+
+CREATE SEQUENCE public.auth_group_permissions_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.auth_group_permissions_id_seq OWNER TO twistdbadmin;
+
+--
+-- Name: auth_group_permissions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: twistdbadmin
+--
+
+ALTER SEQUENCE public.auth_group_permissions_id_seq OWNED BY public.auth_group_permissions.id;
+
+
+--
+-- Name: auth_permission; Type: TABLE; Schema: public; Owner: twistdbadmin
+--
+
+CREATE TABLE public.auth_permission (
+    id integer NOT NULL,
+    name character varying(255) NOT NULL,
+    content_type_id integer NOT NULL,
+    codename character varying(100) NOT NULL
+);
+
+
+ALTER TABLE public.auth_permission OWNER TO twistdbadmin;
+
+--
+-- Name: auth_permission_id_seq; Type: SEQUENCE; Schema: public; Owner: twistdbadmin
+--
+
+CREATE SEQUENCE public.auth_permission_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.auth_permission_id_seq OWNER TO twistdbadmin;
+
+--
+-- Name: auth_permission_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: twistdbadmin
+--
+
+ALTER SEQUENCE public.auth_permission_id_seq OWNED BY public.auth_permission.id;
+
+
+--
+-- Name: django_admin_log; Type: TABLE; Schema: public; Owner: twistdbadmin
+--
+
+CREATE TABLE public.django_admin_log (
+    id integer NOT NULL,
+    action_time timestamp with time zone NOT NULL,
+    object_id text,
+    object_repr character varying(200) NOT NULL,
+    action_flag smallint NOT NULL,
+    change_message text NOT NULL,
+    content_type_id integer,
+    user_id integer NOT NULL,
+    CONSTRAINT django_admin_log_action_flag_check CHECK ((action_flag >= 0))
+);
+
+
+ALTER TABLE public.django_admin_log OWNER TO twistdbadmin;
+
+--
+-- Name: django_admin_log_id_seq; Type: SEQUENCE; Schema: public; Owner: twistdbadmin
+--
+
+CREATE SEQUENCE public.django_admin_log_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.django_admin_log_id_seq OWNER TO twistdbadmin;
+
+--
+-- Name: django_admin_log_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: twistdbadmin
+--
+
+ALTER SEQUENCE public.django_admin_log_id_seq OWNED BY public.django_admin_log.id;
+
+
+--
+-- Name: django_content_type; Type: TABLE; Schema: public; Owner: twistdbadmin
+--
+
+CREATE TABLE public.django_content_type (
+    id integer NOT NULL,
+    app_label character varying(100) NOT NULL,
+    model character varying(100) NOT NULL
+);
+
+
+ALTER TABLE public.django_content_type OWNER TO twistdbadmin;
+
+--
+-- Name: django_content_type_id_seq; Type: SEQUENCE; Schema: public; Owner: twistdbadmin
+--
+
+CREATE SEQUENCE public.django_content_type_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.django_content_type_id_seq OWNER TO twistdbadmin;
+
+--
+-- Name: django_content_type_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: twistdbadmin
+--
+
+ALTER SEQUENCE public.django_content_type_id_seq OWNED BY public.django_content_type.id;
+
+
+--
+-- Name: django_migrations; Type: TABLE; Schema: public; Owner: twistdbadmin
+--
+
+CREATE TABLE public.django_migrations (
+    id integer NOT NULL,
+    app character varying(255) NOT NULL,
+    name character varying(255) NOT NULL,
+    applied timestamp with time zone NOT NULL
+);
+
+
+ALTER TABLE public.django_migrations OWNER TO twistdbadmin;
+
+--
+-- Name: django_migrations_id_seq; Type: SEQUENCE; Schema: public; Owner: twistdbadmin
+--
+
+CREATE SEQUENCE public.django_migrations_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.django_migrations_id_seq OWNER TO twistdbadmin;
+
+--
+-- Name: django_migrations_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: twistdbadmin
+--
+
+ALTER SEQUENCE public.django_migrations_id_seq OWNED BY public.django_migrations.id;
+
+
+--
+-- Name: django_session; Type: TABLE; Schema: public; Owner: twistdbadmin
+--
+
+CREATE TABLE public.django_session (
+    session_key character varying(40) NOT NULL,
+    session_data text NOT NULL,
+    expire_date timestamp with time zone NOT NULL
+);
+
+
+ALTER TABLE public.django_session OWNER TO twistdbadmin;
+
+--
+-- Name: flags_flagstate; Type: TABLE; Schema: public; Owner: twistdbadmin
+--
+
+CREATE TABLE public.flags_flagstate (
+    id integer NOT NULL,
+    name character varying(64) NOT NULL,
+    condition character varying(64) NOT NULL,
+    value character varying(127) NOT NULL,
+    required boolean NOT NULL
+);
+
+
+ALTER TABLE public.flags_flagstate OWNER TO twistdbadmin;
+
+--
+-- Name: flags_flagstate_id_seq; Type: SEQUENCE; Schema: public; Owner: twistdbadmin
+--
+
+CREATE SEQUENCE public.flags_flagstate_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.flags_flagstate_id_seq OWNER TO twistdbadmin;
+
+--
+-- Name: flags_flagstate_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: twistdbadmin
+--
+
+ALTER SEQUENCE public.flags_flagstate_id_seq OWNED BY public.flags_flagstate.id;
+
+
+--
+-- Name: song_signup_groupsongrequest; Type: TABLE; Schema: public; Owner: twistdbadmin
+--
+
+CREATE TABLE public.song_signup_groupsongrequest (
+    id integer NOT NULL,
+    song_name public.citext NOT NULL,
+    musical public.citext NOT NULL,
+    request_time timestamp with time zone NOT NULL,
+    requested_by_id integer NOT NULL
+);
+
+
+ALTER TABLE public.song_signup_groupsongrequest OWNER TO twistdbadmin;
+
+--
+-- Name: song_signup_groupsongrequest_id_seq; Type: SEQUENCE; Schema: public; Owner: twistdbadmin
+--
+
+CREATE SEQUENCE public.song_signup_groupsongrequest_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.song_signup_groupsongrequest_id_seq OWNER TO twistdbadmin;
+
+--
+-- Name: song_signup_groupsongrequest_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: twistdbadmin
+--
+
+ALTER SEQUENCE public.song_signup_groupsongrequest_id_seq OWNED BY public.song_signup_groupsongrequest.id;
+
+
+--
+-- Name: song_signup_singer; Type: TABLE; Schema: public; Owner: twistdbadmin
+--
+
+CREATE TABLE public.song_signup_singer (
+    id integer NOT NULL,
+    password character varying(128) NOT NULL,
+    last_login timestamp with time zone,
+    is_superuser boolean NOT NULL,
+    username character varying(150) NOT NULL,
+    first_name character varying(150) NOT NULL,
+    last_name character varying(150) NOT NULL,
+    email character varying(254) NOT NULL,
+    is_staff boolean NOT NULL,
+    is_active boolean NOT NULL,
+    date_joined timestamp with time zone NOT NULL,
+    cy1_position integer,
+    no_image_upload boolean NOT NULL,
+    cy2_position integer,
+    cy3_position integer,
+    lscy_position integer,
+    placeholder boolean NOT NULL
+);
+
+
+ALTER TABLE public.song_signup_singer OWNER TO twistdbadmin;
+
+--
+-- Name: song_signup_singer_groups; Type: TABLE; Schema: public; Owner: twistdbadmin
+--
+
+CREATE TABLE public.song_signup_singer_groups (
+    id integer NOT NULL,
+    singer_id integer NOT NULL,
+    group_id integer NOT NULL
+);
+
+
+ALTER TABLE public.song_signup_singer_groups OWNER TO twistdbadmin;
+
+--
+-- Name: song_signup_singer_groups_id_seq; Type: SEQUENCE; Schema: public; Owner: twistdbadmin
+--
+
+CREATE SEQUENCE public.song_signup_singer_groups_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.song_signup_singer_groups_id_seq OWNER TO twistdbadmin;
+
+--
+-- Name: song_signup_singer_groups_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: twistdbadmin
+--
+
+ALTER SEQUENCE public.song_signup_singer_groups_id_seq OWNED BY public.song_signup_singer_groups.id;
+
+
+--
+-- Name: song_signup_singer_id_seq; Type: SEQUENCE; Schema: public; Owner: twistdbadmin
+--
+
+CREATE SEQUENCE public.song_signup_singer_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.song_signup_singer_id_seq OWNER TO twistdbadmin;
+
+--
+-- Name: song_signup_singer_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: twistdbadmin
+--
+
+ALTER SEQUENCE public.song_signup_singer_id_seq OWNED BY public.song_signup_singer.id;
+
+
+--
+-- Name: song_signup_singer_user_permissions; Type: TABLE; Schema: public; Owner: twistdbadmin
+--
+
+CREATE TABLE public.song_signup_singer_user_permissions (
+    id integer NOT NULL,
+    singer_id integer NOT NULL,
+    permission_id integer NOT NULL
+);
+
+
+ALTER TABLE public.song_signup_singer_user_permissions OWNER TO twistdbadmin;
+
+--
+-- Name: song_signup_singer_user_permissions_id_seq; Type: SEQUENCE; Schema: public; Owner: twistdbadmin
+--
+
+CREATE SEQUENCE public.song_signup_singer_user_permissions_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.song_signup_singer_user_permissions_id_seq OWNER TO twistdbadmin;
+
+--
+-- Name: song_signup_singer_user_permissions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: twistdbadmin
+--
+
+ALTER SEQUENCE public.song_signup_singer_user_permissions_id_seq OWNED BY public.song_signup_singer_user_permissions.id;
+
+
+--
+-- Name: song_signup_songrequest; Type: TABLE; Schema: public; Owner: twistdbadmin
+--
+
+CREATE TABLE public.song_signup_songrequest (
+    id integer NOT NULL,
+    song_name public.citext NOT NULL,
+    musical public.citext NOT NULL,
+    request_time timestamp with time zone NOT NULL,
+    performance_time timestamp with time zone,
+    singer_id integer NOT NULL,
+    priority integer,
+    "position" integer,
+    duet_partner_id integer,
+    cycle double precision,
+    placeholder boolean NOT NULL
+);
+
+
+ALTER TABLE public.song_signup_songrequest OWNER TO twistdbadmin;
+
+--
+-- Name: song_signup_songrequest_additional_singers; Type: TABLE; Schema: public; Owner: twistdbadmin
+--
+
+CREATE TABLE public.song_signup_songrequest_additional_singers (
+    id integer NOT NULL,
+    songrequest_id integer NOT NULL,
+    singer_id integer NOT NULL
+);
+
+
+ALTER TABLE public.song_signup_songrequest_additional_singers OWNER TO twistdbadmin;
+
+--
+-- Name: song_signup_songrequest_additional_singers_id_seq; Type: SEQUENCE; Schema: public; Owner: twistdbadmin
+--
+
+CREATE SEQUENCE public.song_signup_songrequest_additional_singers_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.song_signup_songrequest_additional_singers_id_seq OWNER TO twistdbadmin;
+
+--
+-- Name: song_signup_songrequest_additional_singers_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: twistdbadmin
+--
+
+ALTER SEQUENCE public.song_signup_songrequest_additional_singers_id_seq OWNED BY public.song_signup_songrequest_additional_singers.id;
+
+
+--
+-- Name: song_signup_songrequest_id_seq; Type: SEQUENCE; Schema: public; Owner: twistdbadmin
+--
+
+CREATE SEQUENCE public.song_signup_songrequest_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.song_signup_songrequest_id_seq OWNER TO twistdbadmin;
+
+--
+-- Name: song_signup_songrequest_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: twistdbadmin
+--
+
+ALTER SEQUENCE public.song_signup_songrequest_id_seq OWNED BY public.song_signup_songrequest.id;
+
+
+--
+-- Name: auth_group id; Type: DEFAULT; Schema: public; Owner: twistdbadmin
+--
+
+ALTER TABLE ONLY public.auth_group ALTER COLUMN id SET DEFAULT nextval('public.auth_group_id_seq'::regclass);
+
+
+--
+-- Name: auth_group_permissions id; Type: DEFAULT; Schema: public; Owner: twistdbadmin
+--
+
+ALTER TABLE ONLY public.auth_group_permissions ALTER COLUMN id SET DEFAULT nextval('public.auth_group_permissions_id_seq'::regclass);
+
+
+--
+-- Name: auth_permission id; Type: DEFAULT; Schema: public; Owner: twistdbadmin
+--
+
+ALTER TABLE ONLY public.auth_permission ALTER COLUMN id SET DEFAULT nextval('public.auth_permission_id_seq'::regclass);
+
+
+--
+-- Name: django_admin_log id; Type: DEFAULT; Schema: public; Owner: twistdbadmin
+--
+
+ALTER TABLE ONLY public.django_admin_log ALTER COLUMN id SET DEFAULT nextval('public.django_admin_log_id_seq'::regclass);
+
+
+--
+-- Name: django_content_type id; Type: DEFAULT; Schema: public; Owner: twistdbadmin
+--
+
+ALTER TABLE ONLY public.django_content_type ALTER COLUMN id SET DEFAULT nextval('public.django_content_type_id_seq'::regclass);
+
+
+--
+-- Name: django_migrations id; Type: DEFAULT; Schema: public; Owner: twistdbadmin
+--
+
+ALTER TABLE ONLY public.django_migrations ALTER COLUMN id SET DEFAULT nextval('public.django_migrations_id_seq'::regclass);
+
+
+--
+-- Name: flags_flagstate id; Type: DEFAULT; Schema: public; Owner: twistdbadmin
+--
+
+ALTER TABLE ONLY public.flags_flagstate ALTER COLUMN id SET DEFAULT nextval('public.flags_flagstate_id_seq'::regclass);
+
+
+--
+-- Name: song_signup_groupsongrequest id; Type: DEFAULT; Schema: public; Owner: twistdbadmin
+--
+
+ALTER TABLE ONLY public.song_signup_groupsongrequest ALTER COLUMN id SET DEFAULT nextval('public.song_signup_groupsongrequest_id_seq'::regclass);
+
+
+--
+-- Name: song_signup_singer id; Type: DEFAULT; Schema: public; Owner: twistdbadmin
+--
+
+ALTER TABLE ONLY public.song_signup_singer ALTER COLUMN id SET DEFAULT nextval('public.song_signup_singer_id_seq'::regclass);
+
+
+--
+-- Name: song_signup_singer_groups id; Type: DEFAULT; Schema: public; Owner: twistdbadmin
+--
+
+ALTER TABLE ONLY public.song_signup_singer_groups ALTER COLUMN id SET DEFAULT nextval('public.song_signup_singer_groups_id_seq'::regclass);
+
+
+--
+-- Name: song_signup_singer_user_permissions id; Type: DEFAULT; Schema: public; Owner: twistdbadmin
+--
+
+ALTER TABLE ONLY public.song_signup_singer_user_permissions ALTER COLUMN id SET DEFAULT nextval('public.song_signup_singer_user_permissions_id_seq'::regclass);
+
+
+--
+-- Name: song_signup_songrequest id; Type: DEFAULT; Schema: public; Owner: twistdbadmin
+--
+
+ALTER TABLE ONLY public.song_signup_songrequest ALTER COLUMN id SET DEFAULT nextval('public.song_signup_songrequest_id_seq'::regclass);
+
+
+--
+-- Name: song_signup_songrequest_additional_singers id; Type: DEFAULT; Schema: public; Owner: twistdbadmin
+--
+
+ALTER TABLE ONLY public.song_signup_songrequest_additional_singers ALTER COLUMN id SET DEFAULT nextval('public.song_signup_songrequest_additional_singers_id_seq'::regclass);
+
+
+--
+-- Data for Name: auth_group; Type: TABLE DATA; Schema: public; Owner: twistdbadmin
+--
+
+COPY public.auth_group (id, name) FROM stdin;
+1	singers
+\.
+
+
+--
+-- Data for Name: auth_group_permissions; Type: TABLE DATA; Schema: public; Owner: twistdbadmin
+--
+
+COPY public.auth_group_permissions (id, group_id, permission_id) FROM stdin;
+2	1	32
+\.
+
+
+--
+-- Data for Name: auth_permission; Type: TABLE DATA; Schema: public; Owner: twistdbadmin
+--
+
+COPY public.auth_permission (id, name, content_type_id, codename) FROM stdin;
+1	Can add log entry	1	add_logentry
+2	Can change log entry	1	change_logentry
+3	Can delete log entry	1	delete_logentry
+4	Can view log entry	1	view_logentry
+5	Can add permission	2	add_permission
+6	Can change permission	2	change_permission
+7	Can delete permission	2	delete_permission
+8	Can view permission	2	view_permission
+9	Can add group	3	add_group
+10	Can change group	3	change_group
+11	Can delete group	3	delete_group
+12	Can view group	3	view_group
+13	Can add content type	4	add_contenttype
+14	Can change content type	4	change_contenttype
+15	Can delete content type	4	delete_contenttype
+16	Can view content type	4	view_contenttype
+17	Can add session	5	add_session
+18	Can change session	5	change_session
+19	Can delete session	5	delete_session
+20	Can view session	5	view_session
+21	Can add Singer	6	add_singer
+22	Can change Singer	6	change_singer
+23	Can delete Singer	6	delete_singer
+24	Can view Singer	6	view_singer
+25	Can add group song request	7	add_groupsongrequest
+26	Can change group song request	7	change_groupsongrequest
+27	Can delete group song request	7	delete_groupsongrequest
+28	Can view group song request	7	view_groupsongrequest
+29	Can add song request	8	add_songrequest
+30	Can change song request	8	change_songrequest
+31	Can delete song request	8	delete_songrequest
+32	Can view song request	8	view_songrequest
+33	Can add flag state	9	add_flagstate
+34	Can change flag state	9	change_flagstate
+35	Can delete flag state	9	delete_flagstate
+36	Can view flag state	9	view_flagstate
+\.
+
+
+--
+-- Data for Name: django_admin_log; Type: TABLE DATA; Schema: public; Owner: twistdbadmin
+--
+
+COPY public.django_admin_log (id, action_time, object_id, object_repr, action_flag, change_message, content_type_id, user_id) FROM stdin;
+1	2022-06-02 13:33:06.948665+00	2	Shani Wahrman	1	[{"added": {}}]	6	1
+2	2022-06-02 13:35:26.661644+00	3	Uriel Rosenzweig	1	[{"added": {}}]	6	1
+3	2022-06-02 13:36:43.865423+00	1	Alon Aviv	2	[{"changed": {"fields": ["First name", "Last name"]}}]	6	1
+4	2022-06-02 13:37:20.341053+00	1	singers	1	[{"added": {}}]	3	1
+5	2022-06-02 15:48:27.761363+00	1	singers	2	[{"changed": {"fields": ["Permissions"]}}]	3	1
+6	2022-06-02 16:37:05.427818+00	2	Shani Wahrman	2	[{"changed": {"fields": ["Password"]}}]	6	1
+7	2022-06-02 17:24:15.477964+00	2	GroupSongRequest object (2)	3		7	1
+8	2022-06-02 18:53:02.174231+00	6	GroupSongRequest object (6)	3		7	1
+9	2022-06-02 18:53:11.123124+00	9	GroupSongRequest object (9)	3		7	1
+10	2022-06-02 18:53:11.125586+00	10	GroupSongRequest object (10)	3		7	1
+11	2022-06-17 13:19:26.564721+00	3	GroupSongRequest object (3)	3		7	1
+12	2022-06-17 13:19:36.000364+00	12	GroupSongRequest object (12)	3		7	1
+13	2022-06-17 13:19:36.002877+00	7	GroupSongRequest object (7)	3		7	1
+14	2022-06-17 13:19:36.004533+00	11	GroupSongRequest object (11)	3		7	1
+15	2022-06-17 13:19:36.006186+00	4	GroupSongRequest object (4)	3		7	1
+16	2022-06-17 13:19:36.007569+00	8	GroupSongRequest object (8)	3		7	1
+17	2022-06-17 13:19:36.00897+00	5	GroupSongRequest object (5)	3		7	1
+18	2022-06-17 13:23:13.658782+00	13	GroupSongRequest object (13)	1	[{"added": {}}]	7	1
+19	2022-06-17 13:23:37.171737+00	14	GroupSongRequest object (14)	1	[{"added": {}}]	7	1
+20	2022-06-17 13:23:55.526342+00	15	GroupSongRequest object (15)	1	[{"added": {}}]	7	1
+21	2022-06-17 13:24:08.638299+00	16	GroupSongRequest object (16)	1	[{"added": {}}]	7	1
+22	2022-06-17 13:36:17.5688+00	17	GroupSongRequest object (17)	1	[{"added": {}}]	7	1
+23	2022-06-17 13:36:32.238818+00	18	GroupSongRequest object (18)	1	[{"added": {}}]	7	1
+24	2022-06-17 13:36:32.252686+00	19	GroupSongRequest object (19)	1	[{"added": {}}]	7	1
+25	2022-06-17 13:36:32.750753+00	20	GroupSongRequest object (20)	1	[{"added": {}}]	7	1
+26	2022-06-17 13:36:50.065128+00	18	GroupSongRequest object (18)	3		7	1
+27	2022-06-17 13:36:50.067227+00	19	GroupSongRequest object (19)	3		7	1
+28	2022-06-17 13:36:50.068888+00	20	GroupSongRequest object (20)	3		7	1
+29	2022-06-17 13:37:08.92937+00	21	GroupSongRequest object (21)	1	[{"added": {}}]	7	1
+30	2022-06-17 13:38:41.732489+00	22	GroupSongRequest object (22)	1	[{"added": {}}]	7	1
+31	2022-06-17 13:44:32.484292+00	23	GroupSongRequest object (23)	1	[{"added": {}}]	7	1
+32	2022-06-17 13:45:15.462694+00	24	GroupSongRequest object (24)	1	[{"added": {}}]	7	1
+33	2022-06-17 13:49:31.847336+00	25	GroupSongRequest object (25)	1	[{"added": {}}]	7	1
+34	2022-06-17 13:50:16.929426+00	26	GroupSongRequest object (26)	1	[{"added": {}}]	7	1
+35	2022-06-17 13:50:58.354784+00	27	GroupSongRequest object (27)	1	[{"added": {}}]	7	1
+36	2022-06-17 13:53:20.493506+00	28	GroupSongRequest object (28)	1	[{"added": {}}]	7	1
+37	2022-06-17 13:54:46.47928+00	29	GroupSongRequest object (29)	1	[{"added": {}}]	7	1
+38	2022-06-17 13:55:48.870402+00	30	GroupSongRequest object (30)	1	[{"added": {}}]	7	1
+39	2022-06-17 13:57:04.371802+00	31	GroupSongRequest object (31)	1	[{"added": {}}]	7	1
+40	2022-06-17 13:58:23.008663+00	32	GroupSongRequest object (32)	1	[{"added": {}}]	7	1
+41	2022-06-17 13:59:51.091839+00	33	GroupSongRequest object (33)	1	[{"added": {}}]	7	1
+42	2022-06-17 14:05:29.838155+00	34	GroupSongRequest object (34)	1	[{"added": {}}]	7	1
+43	2022-06-17 14:10:53.802272+00	35	GroupSongRequest object (35)	1	[{"added": {}}]	7	1
+44	2022-06-17 14:11:17.397138+00	36	GroupSongRequest object (36)	1	[{"added": {}}]	7	1
+45	2022-06-17 14:11:38.896652+00	37	GroupSongRequest object (37)	1	[{"added": {}}]	7	1
+46	2022-06-17 14:12:11.93008+00	38	GroupSongRequest object (38)	1	[{"added": {}}]	7	1
+47	2022-06-17 14:12:29.75011+00	39	GroupSongRequest object (39)	1	[{"added": {}}]	7	1
+48	2022-06-17 14:13:06.444135+00	39	GroupSongRequest object (39)	2	[{"changed": {"fields": ["Song name"]}}]	7	1
+49	2022-06-17 14:14:41.864179+00	40	GroupSongRequest object (40)	1	[{"added": {}}]	7	1
+50	2022-06-17 14:17:30.698327+00	41	GroupSongRequest object (41)	1	[{"added": {}}]	7	1
+51	2022-06-17 14:17:53.233771+00	42	GroupSongRequest object (42)	1	[{"added": {}}]	7	1
+52	2022-06-17 14:18:13.163693+00	43	GroupSongRequest object (43)	1	[{"added": {}}]	7	1
+53	2022-06-17 14:19:37.045161+00	44	GroupSongRequest object (44)	1	[{"added": {}}]	7	1
+54	2022-06-17 14:20:02.740349+00	45	GroupSongRequest object (45)	1	[{"added": {}}]	7	1
+55	2022-06-17 14:23:02.864933+00	46	GroupSongRequest object (46)	1	[{"added": {}}]	7	1
+56	2022-06-17 14:29:27.180429+00	47	GroupSongRequest object (47)	1	[{"added": {}}]	7	1
+57	2022-06-17 14:31:37.731248+00	48	GroupSongRequest object (48)	1	[{"added": {}}]	7	1
+58	2022-06-17 14:32:37.502971+00	49	GroupSongRequest object (49)	1	[{"added": {}}]	7	1
+59	2022-06-17 14:34:49.615318+00	50	GroupSongRequest object (50)	1	[{"added": {}}]	7	1
+60	2022-06-17 15:01:05.603141+00	51	GroupSongRequest object (51)	1	[{"added": {}}]	7	1
+61	2022-06-21 05:09:24.305304+00	52	GroupSongRequest object (52)	3		7	1
+62	2022-06-21 05:09:24.307707+00	53	GroupSongRequest object (53)	3		7	1
+63	2022-06-21 05:09:24.309308+00	54	GroupSongRequest object (54)	3		7	1
+64	2022-06-21 05:09:24.311054+00	55	GroupSongRequest object (55)	3		7	1
+65	2022-06-21 05:09:24.312582+00	56	GroupSongRequest object (56)	3		7	1
+66	2022-06-21 05:09:50.015281+00	61	GroupSongRequest object (61)	1	[{"added": {}}]	7	1
+67	2022-06-21 05:10:11.450676+00	62	GroupSongRequest object (62)	1	[{"added": {}}]	7	1
+68	2022-06-21 05:11:02.120069+00	63	GroupSongRequest object (63)	1	[{"added": {}}]	7	1
+69	2022-06-22 22:43:51.719316+00	1	CAN_SIGNUP is enabled when boolean is False	2	[]	9	1
+70	2022-07-05 12:53:12.10568+00	2	Shani Wahrman	2	[{"changed": {"fields": ["Staff status"]}}]	6	1
+71	2022-07-05 12:54:21.421065+00	2	Shani Wahrman	3		6	1
+72	2022-07-05 12:54:52.529897+00	70	Shani Wahrman	1	[{"added": {}}]	6	1
+73	2022-07-05 12:56:21.61297+00	70	Shani Wahrman	3		6	1
+74	2022-07-05 12:56:41.642635+00	3	Uriel Rosenzweig	3		6	1
+75	2022-07-05 12:58:00.532885+00	71	Shani Wahrman	2	[{"changed": {"fields": ["First name", "Last name"]}}]	6	1
+76	2022-07-05 15:15:48.361218+00	64	GroupSongRequest object (64)	1	[{"added": {}}]	7	71
+\.
+
+
+--
+-- Data for Name: django_content_type; Type: TABLE DATA; Schema: public; Owner: twistdbadmin
+--
+
+COPY public.django_content_type (id, app_label, model) FROM stdin;
+1	admin	logentry
+2	auth	permission
+3	auth	group
+4	contenttypes	contenttype
+5	sessions	session
+6	song_signup	singer
+7	song_signup	groupsongrequest
+8	song_signup	songrequest
+9	flags	flagstate
+\.
+
+
+--
+-- Data for Name: django_migrations; Type: TABLE DATA; Schema: public; Owner: twistdbadmin
+--
+
+COPY public.django_migrations (id, app, name, applied) FROM stdin;
+1	contenttypes	0001_initial	2022-06-02 13:30:37.29094+00
+2	contenttypes	0002_remove_content_type_name	2022-06-02 13:30:37.298652+00
+3	auth	0001_initial	2022-06-02 13:30:37.351582+00
+4	auth	0002_alter_permission_name_max_length	2022-06-02 13:30:37.366064+00
+5	auth	0003_alter_user_email_max_length	2022-06-02 13:30:37.375912+00
+6	auth	0004_alter_user_username_opts	2022-06-02 13:30:37.383992+00
+7	auth	0005_alter_user_last_login_null	2022-06-02 13:30:37.389985+00
+8	auth	0006_require_contenttypes_0002	2022-06-02 13:30:37.391911+00
+9	auth	0007_alter_validators_add_error_messages	2022-06-02 13:30:37.398045+00
+10	auth	0008_alter_user_username_max_length	2022-06-02 13:30:37.403986+00
+11	auth	0009_alter_user_last_name_max_length	2022-06-02 13:30:37.409864+00
+12	auth	0010_alter_group_name_max_length	2022-06-02 13:30:37.416293+00
+13	auth	0011_update_proxy_permissions	2022-06-02 13:30:37.42239+00
+14	auth	0012_alter_user_first_name_max_length	2022-06-02 13:30:37.428316+00
+15	song_signup	0001_initial	2022-06-02 13:31:04.942291+00
+16	admin	0001_initial	2022-06-02 13:31:04.968168+00
+17	admin	0002_logentry_remove_auto_add	2022-06-02 13:31:04.978932+00
+18	admin	0003_logentry_add_action_flag_choices	2022-06-02 13:31:04.989365+00
+19	flags	0001_initial	2022-06-02 13:31:05.000794+00
+20	flags	0002_auto_20151030_1401	2022-06-02 13:31:05.002095+00
+21	flags	0003_flag_hidden	2022-06-02 13:31:05.005267+00
+22	flags	0004_remove_flag_hidden	2022-06-02 13:31:05.006602+00
+23	flags	0005_flag_enabled_by_default	2022-06-02 13:31:05.00767+00
+24	flags	0006_auto_20151217_2003	2022-06-02 13:31:05.008741+00
+25	flags	0007_unique_flag_site	2022-06-02 13:31:05.009753+00
+26	flags	0008_add_state_conditions	2022-06-02 13:31:05.010755+00
+27	flags	0009_migrate_to_conditional_state	2022-06-02 13:31:05.011769+00
+28	flags	0010_delete_flag_site_fk	2022-06-02 13:31:05.012796+00
+29	flags	0011_migrate_path_data_startswith_to_matches	2022-06-02 13:31:05.013798+00
+30	flags	0013_add_required_field	2022-06-02 13:31:05.0191+00
+31	sessions	0001_initial	2022-06-02 13:31:05.037524+00
+32	song_signup	0002_auto_20220531_1820	2022-06-02 13:31:05.082734+00
+33	song_signup	0003_auto_20220531_2033	2022-06-02 13:31:05.141221+00
+34	song_signup	0004_songrequest_priority	2022-06-02 13:31:05.152589+00
+35	song_signup	0005_songrequest_position	2022-06-02 13:31:05.16585+00
+36	song_signup	0006_auto_20220601_1055	2022-06-02 13:31:05.19118+00
+37	song_signup	0007_songrequest_cycle	2022-06-02 13:31:05.202453+00
+38	song_signup	0008_songrequest_is_bonus	2022-06-02 13:31:05.214274+00
+39	song_signup	0009_auto_20220602_1138	2022-06-02 13:31:05.25036+00
+40	flags	0012_replace_migrations_for_wagtail_independence	2022-06-02 13:31:05.254698+00
+41	song_signup	0010_singer_lscy_position	2022-07-05 12:50:20.647579+00
+42	song_signup	0011_auto_20220703_2039	2022-07-05 12:50:20.705024+00
+43	song_signup	0012_auto_20220704_1655	2022-07-05 12:50:20.733846+00
+44	song_signup	0013_auto_20220704_2037	2022-07-05 12:50:20.755595+00
+45	song_signup	0014_songrequest_placeholder	2022-07-05 12:50:20.767452+00
+46	song_signup	0015_singer_placeholder	2022-07-05 12:50:20.780328+00
+\.
+
+
+--
+-- Data for Name: django_session; Type: TABLE DATA; Schema: public; Owner: twistdbadmin
+--
+
+COPY public.django_session (session_key, session_data, expire_date) FROM stdin;
+pv4z8a0pe89kx1a1xxeuyxpviq3zga1x	.eJxVjMEOwiAQRP-FsyGE4i549O43kGUBqRpISnsy_rs06UEvk8m8mXkLT9ta_NbT4ucoLsIocfoNA_Ez1Z3EB9V7k9zqusxB7hV50C5vLabX9ej-HRTqZazRsbMUCI1WoJQZ7pwtRUBkCxEZE2jMKmlmdlnbKbs0MXIYChrE5wsLdTiA:1o2xst:ZbTjpD0vLyXMPe_3KGY0BxNdxEPAlYQrG86jQc4s47I	2022-07-03 16:34:47.356787+00
+slr3qngfv607kd9fnslov3tou8x7f5mq	.eJxVjEEOwiAURO_C2hAofCAu3XsGAvyPVA0kpV013l2adKG7yZs3szMftrX4rdPiZ2RXphW7_MIY0ovq0eAz1EfjqdV1mSM_FH62nd8b0vt2un8HJfQy1uTAUAIrJKAcUajJRtQgoiET0TmpMFm0mCG4mKdsSWQLAxudcpDs8wUFqzhC:1o2xyv:WALmQnnAagtKocy_XbXDQ18luA0klRhVOyK9PaMkbOM	2022-07-03 16:41:01.282939+00
+wosxzkv9b1o2qxc5uj4ob9i4w4s2u902	.eJxVjEEOgjAQRe_StWnoTG2nLt1zhmaYDoIaSCisjHdXEha6_e-9_zKZt3XIW9Ulj8VcjDOn361jeei0g3Ln6TZbmad1GTu7K_ag1bZz0ef1cP8OBq7Dt8bgPEpSaHzEIIXP4AN7Am0cRexRKYmDIORS8pGgJxWKPcTgEKEx7w-ssjY2:1nwn3P:lJz3pJy6yDLw-mqseSXSlVxmW6i6N7c1kFxghXN-EuE	2022-06-16 15:48:07.330102+00
+7fo3lfpn8mhgdcca8ur2vxibssbefq6t	.eJxVjEEOwiAQRe_C2hCgnQFcuvcMZGBAqoYmpV0Z765NutDtf-_9lwi0rTVsPS9hYnEWXpx-t0jpkdsO-E7tNss0t3WZotwVedAurzPn5-Vw_w4q9fqtqTDYrNhB0aSM9gqNU9Zz8TbmguTHwaMm4NGBQTIApuCgXdIJIVrx_gDa-Dcp:1nwniF:rjyW8Igo_jSi_RQ23khcDJ3g3F0nRLJgbNi5ejC35pY	2022-06-16 16:30:19.169507+00
+ts268mp3zat3x7xic637h95bp88teh5z	.eJxVjMsOwiAQRf-FtSED9MG4dO83kBkGpGpoUtqV8d-1SRe6veec-1KBtrWEraUlTKLOyoA6_Y5M8ZHqTuRO9TbrONd1mVjvij5o09dZ0vNyuH8HhVr51qPY5JBiGixkY9m4zDg47MB0DnMPRpJ3QgSxFwDx0SAIeRyJPces3h8AnThR:1nwnlo:m8myYxDu1IHaPJgX3_yvF7UNxtN5p74Ndk99bfKqSRY	2022-06-16 16:34:00.419651+00
+a5qnduxep3vaey0kuq1e9s1sbpjs5xc2	.eJxVjEEOwiAQRe_C2hApQ5m6dN8zNDMwSNVAUtqV8e7apAvd_vfef6mJtjVPW5NlmqO6KGPU6XdkCg8pO4l3KreqQy3rMrPeFX3Qpsca5Xk93L-DTC1_6z51eGaPXYjiIYgzLoFBRhJn7YCQLFoXImMKbIAkkQXfIwIkDwOr9wcJbjgj:1nwnpl:3WOZfZsLKNYZV7MXazFnXndNK8qzqmKNyUwhuCFalR0	2022-06-16 16:38:05.78146+00
+163mgsyn88wjkooq55isr18raypqktvj	.eJxVjEEOgjAQRe_StWnoTG2nLt1zhmaYDoIaSCisjHdXEha6_e-9_zKZt3XIW9Ulj8VcjDOn361jeei0g3Ln6TZbmad1GTu7K_ag1bZz0ef1cP8OBq7Dt8bgPEpSaHzEIIXP4AN7Am0cRexRKYmDIORS8pGgJxWKPcTgEKEx7w-ssjY2:1nwnqB:GMdsainHaoUEzlABCMX_-HTdIfxRcCy2g8o5yBThtQ8	2022-06-16 16:38:31.730287+00
+acc6u9ej9buxssdbldhldm2jwf8ls920	.eJxVjEEOgjAQRe_StWnoTG2nLt1zhmaYDoIaSCisjHdXEha6_e-9_zKZt3XIW9Ulj8VcjDOn361jeei0g3Ln6TZbmad1GTu7K_ag1bZz0ef1cP8OBq7Dt8bgPEpSaHzEIIXP4AN7Am0cRexRKYmDIORS8pGgJxWKPcTgEKEx7w-ssjY2:1nwnqb:fysVLU0O-xfIr1MXxWq-XhMwimtLzcptqP4IXo2eQvc	2022-06-16 16:38:57.55207+00
+a03cc1lph4yh9p5fe2j7itg3gt3fk7jw	.eJxVjMsOwiAUBf-FtSE8bAGX7vsN5D5AqgaS0q6M_65NutDtmZnzEhG2tcStpyXOLC5CG3H6HRHokepO-A711iS1ui4zyl2RB-1yapye18P9OyjQy7c2GJTO3iAFf_aMeUAD5AmctY5RO58UjqwyIgHQkIz17IBMsKOjROL9AScaOU0:1nwnuC:ZuYDwoCrl6SeqxQH1fxL2DFqFHfKNE-p0Gp3rVOTbqI	2022-06-16 16:42:40.231764+00
+zbk7110f51ifg4mbqtb0ht1fy5fjdlax	.eJxVjMsOwiAQRf-FtSEMFAZcuvcbyNAZpGrapI-V8d-1SRe6veec-1KZtrXlbZE5D6zOCjp1-h0L9Q8Zd8J3Gm-T7qdxnYeid0UfdNHXieV5Ody_g0ZL-9YWEUIF42ohEOML9CEKGkRbpEvVo7dgJbngIkdDyOyRXOIarAdM6v0B6Vg3JQ:1nwo10:pO4anpONgiySx20uZ7E2BMSpiLJkpu298hVPqVjObPI	2022-06-16 16:49:42.742369+00
+vx5j70bafj4q6govpqbn01n9zxuqf7qm	.eJxVjEsOAiEQRO_C2hCbj4JL956BNN0gowaSYWZlvLtMMgvdVeq9qrcIuC4lrD3NYWJxEWDF4beMSM9UN8IPrPcmqdVlnqLcFLnTLm-N0-u6u38HBXsZ64icVbKsz8eTHxFMtNob1MkpBnDkyREpAMoUrSPHoGzW2SkzvIzi8wUb6Dhp:1nwo2a:wJ8i5hO2fszmcOffDqHND3Ak9k1q3Er2WIynHY4i2Bc	2022-06-16 16:51:20.902284+00
+y6ywtyejn2l6yyawuaeiwn9ly1zv04j4	.eJxVjMsOwiAQRf-FtSG8BgaX7v0GwhSQqoGktCvjv2uTLnR7zzn3xULc1hq2kZcwJ3Zm0rLT70hxeuS2k3SP7db51Nu6zMR3hR908GtP-Xk53L-DGkf91qQ1CmMzQimayAGokm00DoUrIhOhTBGBrJRKCQQg5z1i8dIbl7xg7w_6cjc3:1nwo2t:rwCiR0tHu9YE9yuvLB9CfHjoKfJ-jHIotVr72qdENdQ	2022-06-16 16:51:39.199205+00
+7ugbkp7d6ugdh4x1n1temcnwzbi6bozt	.eJxVjL0OwiAYAN-F2ZAg0IKju89Avr9K1UBS2qnx3ZWkg653l9tVgm3NaWuypJnVRZlRnX4hAj2ldMMPKPeqqZZ1mVH3RB-26VtleV2P9m-QoeX-ZRZBCsguhtE7ihhkcgZCEEAiEHcmiz7aCS2z_fZ2iCaaINb4wan3B0lnOQU:1nwo3D:oZpy_jU2rTc13l2X3Nbshu3MAcE6_X1r7Gu590ffLF8	2022-06-16 16:51:59.257344+00
+mudh0codmwr29jnu69l207meur4i22oe	.eJxVjDEOwjAMRe-SGUVpS2LDyM4ZIttxSAGlUtNOiLtDpQ6w_vfef5lI61Li2nSOYzJn06E5_I5M8tC6kXSnepusTHWZR7abYnfa7HVK-rzs7t9BoVa-tSZ0R0AfesJeTuBIc4eSQxYfAotHLw4IBwJkZFAamMAhBGUv3pn3Bw5pOE4:1nwo3b:Rr7jNqDhGplg413sTdZF-c5pJF-T_3v0rnUmrqMcgBA	2022-06-16 16:52:23.587462+00
+mwb9m8duw6hcxv44s7b5ins818gcuuge	.eJxVjDsOwjAQBe_iGln-xR9Kes5g7dprHEC2FCcV4u4QKQW0b2bei0XY1hq3QUucMzszO7HT74iQHtR2ku_Qbp2n3tZlRr4r_KCDX3um5-Vw_w4qjPqtvRZaEcgcbMJEvqAxVofgsrEoJitBS2Fk8YU0ZIAgpdeEBZVyLonA3h8HQjgE:1o4N2x:U16JxwHubrsD_EMAAvzDJ_dzcNUTXe3reubFstrwCPk	2022-07-07 13:38:59.404989+00
+lchqy1jwsysx7qe460abrj1g8fm5534u	.eJxVjMEOwiAQRP-FsyGASwGP3v0GsiyLVA1NSnsy_rtt0oPOcd6beYuI61Lj2nmOYxYXoYM4_ZYJ6cltJ_mB7T5Jmtoyj0nuijxol7cp8-t6uH8HFXvd1lZncMmVYEFZVkltQSBtTCHjE2YerNNA3mUu1qDhAZQPdC4AVDyLzxf5wjgA:1nwo3x:Uy0IRBieSLNe77ExlFuyV1WkEuUs2ooOmg2B3KPrlEs	2022-06-16 16:52:45.459567+00
+bby5dvm7e3hromggx7jmodltbe1x2ad8	.eJxVjDkOwjAQRe_iGlnjJV4o6TmDNeMFB5AtxUmFuDtESgHtf-_9Fwu4rTVsIy9hTuzMJLDT70gYH7ntJN2x3TqPva3LTHxX-EEHv_aUn5fD_TuoOOq39hJQ6EIgrUjKqUiIBixQMn6y4JW0loRxRkyqyCiNElph0eQsxiiAvT_dgDb2:1nwo4w:lcoJEyxFVL62kn8Qs1qvfOCH30kKh0rw_TRgoIkPYUw	2022-06-16 16:53:46.703489+00
+xx1tyyert399h9do3daam75f1arhyg7y	.eJxVjEEOwiAQAP_C2RCgUMCj976BLLsgVQNJaU_GvxuSHvQ6M5k3C3DsJRw9bWEldmVKsssvjIDPVIehB9R749jqvq2Rj4SftvOlUXrdzvZvUKCX8bV5MgSeEAidQp1jIj8Zm2U0ZJwGtCoaT94L43x0kjQqOQtBNKfk2OcLK9A4qA:1nwo52:XZhDZyie4epS_nS2y_QGHxxQSUnTK9W4bfr518mUSEI	2022-06-16 16:53:52.218917+00
+iphln9x9vzc8yobwp9163hskxhqpdwbz	.eJxVjMsOwiAQRf-FtSEwFCgu3fsNZIaZStXQpI-V8d-1SRe6veec-1IZt7XmbZE5j6zOCkCdfkfC8pC2E75ju026TG2dR9K7og-66OvE8rwc7t9BxaV-62SxGNcNznfibeghCccCJJBCLy5i5GjJpz6YQMQuGIYYrbgB2Q8G1PsD84A3rQ:1nwoAW:3K5LOKqwL4ShHx5QsGLg3X3aAZkSntN4FhWj76BN-wY	2022-06-16 16:59:32.687207+00
+ou900lqdfkbsax0teb9svywqfojmuft0	.eJxVjDsOwjAQBe_iGllhN15sSnrOEO3HxgGUSPlUiLtDpBTQvpl5L9fxutRunfPU9ebODtAdfkdhfeRhI3bn4TZ6HYdl6sVvit_p7K-j5edld_8OKs_1W2NqNAdWsMRJAsQsERCNsFhhVBJiPGXQ0mA0IxAqRAFakWOrIbr3ByLPOJU:1nwoBB:om-ashs9gISj1mehwE8sBZlTGdNQRSPCgDTHA2dG2mw	2022-06-16 17:00:13.112538+00
+7uict1xr4ny50x2gq455vc0x5bpiv768	.eJxVjMsOwiAQRf-FtSFlyqPj0r3fQGAYpGogKe3K-O_apAvd3nPOfQkftrX4rfPi5yTOArQ4_Y4x0IPrTtI91FuT1Oq6zFHuijxol9eW-Hk53L-DEnr51oSJIKJFm62LiIMz7LIa00iGlTbaqmECzKQBOKICxc5qcqR5SsQo3h_7fDfK:1nwoKg:o9JEEqzIHqcr7Crz7noqTfYmsgMiuPQtrFG36RY3xQQ	2022-06-16 17:10:02.414053+00
+vg0dxkh129xsfy3wbaqdyotwysvr0skr	.eJxVjDsOwjAQBe_iGlmLN_6Ekj5nsHb9wQFkS3FSIe4OkVJA-2bmvYSnbS1-62nxcxQXoYw4_Y5M4ZHqTuKd6q3J0Oq6zCx3RR60y6nF9Lwe7t9BoV6-tdY5R3SOjEVIAxgKFsBEM6izQiQ3ckalObuBFY7EASwwRh00JI0g3h_xbjdj:1nwoMV:MX68Aluosn-8IaGSLeqCqgzYp3GCKd6m20cZW1j1sig	2022-06-16 17:11:55.070619+00
+qj25orpqk1dbmkn8t7g4vj59e1tgrp3j	.eJxVjEEOwiAQRe_C2hBgCrQu3XsGMsxMpWpoUtqV8e7apAvd_vfef6mE21rS1mRJE6uzclGdfseM9JC6E75jvc2a5rouU9a7og_a9HVmeV4O9--gYCvf2hOGbFwPvYsQsxH2AdmNQOAwZkArQTCK70bwlvzAMBAzgOPOBkPq_QELszgm:1nwosV:59GNMWZbzDeIjumWKba1rg7Vc6dYLJMitjh4_VpAUJc	2022-06-16 17:44:59.137665+00
+odfunaq5pxv93xv60tmup01iwae7fjie	.eJxVjDsOwjAQBe_iGlmR1_GHkp4zWOv1Lg4gR4qTCnF3iJQC2jcz76USbmtNW-clTUWdlQnq9DtmpAe3nZQ7ttusaW7rMmW9K_qgXV_nws_L4f4dVOz1WxOJRyAWC0VQrBPiCIADxGBlJA4QjTNGvAWhAYLYEj0ShtFmF7J6fwA87Djk:1nwotk:J5E6gW3Ikjrq0bmoEiI7L3jO7hfuCmZ67rE2iBge0LY	2022-06-16 17:46:16.31994+00
+96j53vggrwvyv36ne4298flt0zdujdfg	.eJxVjMsOwiAURP-FtSFclJdL9_0GcoGLVA0kpV0Z_12adKGZ3Zkz82Yet7X4rdPi58SuTDp2-oUB45Pq3qQH1nvjsdV1mQPfFX60nU8t0et2uH8HBXsZa6WkA6dQU9YGXFRgs9E22ouIgFqSOOfBIacwkkkIUlKBiA6MgxDY5wvwAjex:1nwouH:JJsSt_QaYlx1Nr6ibOTnFlAic5iHdxkB39XuBnuRCME	2022-06-16 17:46:49.676972+00
+5elu0kqhqskdomnafcr3jnzsyt4zjdcp	.eJxVjDsOwjAQRO_iGlkGxz9K-pzB2l1vcADZUpxUiLvjSClgynlv5i0ibGuOW-MlzklchVbi9Fsi0JPLTtIDyr1KqmVdZpS7Ig_a5FgTv26H-3eQoeW-dhaZPQetJtMzkAoWYTDWa04TeaRAaM5BdeZSl0Ebk8hqDxcy7MTnCw0xOE0:1nwoyq:9yR4tZEc0V5jxBMalBgUcbNYCOGIXPtP9_0305kTiqo	2022-06-16 17:51:32.336557+00
+n1fottcwjtg3yts6ai9cxlq181ziaxlx	.eJxVjEEOwiAQRe_C2hBhKFCX7j0DYZhBqgaS0q6Md7dNutDtf-_9twhxXUpYO89hInERoMTpd8SYnlx3Qo9Y702mVpd5Qrkr8qBd3hrx63q4fwcl9rLVPCJ4iziCJsOoUwYgImvO2VBk53yGjSUG1HmAzMqpIVqnWPmBlBOfLyZSOG4:1nwpYi:U4vauVZF5z2amfXcJsoy6rDmTLC0hQ2__bQAia6zegM	2022-06-16 18:28:36.351555+00
+sjevssbipn6g56nz7u634jxm39g0qu05	.eJxVjDsOwjAQBe_iGlnx2vGHkj5nsDbeXRxAiZRPhbg7spQC2jcz760yHnvNx8ZrnkhdlTPq8juOWJ48N0IPnO-LLsu8r9Oom6JPuulhIX7dTvfvoOJWW10MB-SOYmd705MEKzYkMEl6TuKsZYkFAAFHm4AoGeclOCnOexNBfb4QKjfm:1o2xtR:L80GbWy1N8gXgld1w8tUJfTuO4JzAye2ocB74Q3f2q4	2022-07-03 16:35:21.298939+00
+ujjqp3qzwfbe3damextvp1p8nokzo4u3	.eJxVjDsOwjAQBe_iGlkbr-2NKek5g7X-4QBypDipEHeHSCmgfTPzXsLztla_9bz4KYmzQCVOv2Pg-MhtJ-nO7TbLOLd1mYLcFXnQLq9zys_L4f4dVO71W0cCG61zaC1ojTTAqIhAZw0FEfOQUgHEYKmACRoUGWZWhkwxZXRZvD_EJTa3:1nwpdh:zmu6eQaRSycTXW_3_AndsACkJthWXOyP9uJEtlJqyqI	2022-06-16 18:33:45.015742+00
+ayekghds2ord536km0rnoi1pirmj87ql	.eJxVjLsOgkAUBf9la7O57IvV0p5v2NyXghpIWKiM_y4kFNqemTlvU3Bd-rJWncsg5mIab06_IyE_ddyJPHC8T5ancZkHsrtiD1ptN4m-rof7d9Bj7bc6uQzEKuKcjyE6JEihzdEjsBcPyozBpwbkdmYK5CiD5pC2qFFpW_P5Av7QOBM:1nwq6Q:M4uiXVyipl8DWERYRmyMxbb3TYSF52TaWYs3RxgATaQ	2022-06-16 19:03:26.733437+00
+faz3sgy95ofctik4366i9lzyhkwzpx3a	.eJxVjEEOwiAQRe_C2pCBDi24dO8ZyFBmpGpoUtqV8e7apAvd_vfef6lI21ri1niJU1ZnhVadfsdE44PrTvKd6m3W41zXZUp6V_RBm77OmZ-Xw_07KNTKtwZyQ7AiYJA8Q-586j1AGnIWg0ksJQqebY8dOxRy7MSLAZEAiCGo9wcPQDg_:1o2xuN:S9yXGcXz5t209Q_AodQCeeWWdy-Ftnfqqmyf87K7O2U	2022-07-03 16:36:19.962371+00
+vsk4b9om4eb9svhq1qi0jng2s64e2w64	.eJxVjEEOgjAQRe_StWnoTG2nLt1zhmaYDoIaSCisjHdXEha6_e-9_zKZt3XIW9Ulj8VcjDOn361jeei0g3Ln6TZbmad1GTu7K_ag1bZz0ef1cP8OBq7Dt8bgPEpSaHzEIIXP4AN7Am0cRexRKYmDIORS8pGgJxWKPcTgEKEx7w-ssjY2:1o0WuG:-XsdyRRobzcZHMl6_5Xr6bUECCeRJN327ojM2kbji-Y	2022-06-26 23:22:08.107138+00
+76e6ib54kgp4zd4sx4sm87at2eih27sl	.eJxVjEsOwjAMBe-SNYqS2GkxS_Y9Q-TEDi2gVupnhbg7VOoCtm9m3ssk3tY-bYvOaRBzMYjm9DtmLg8ddyJ3Hm-TLdO4zkO2u2IPuthuEn1eD_fvoOel_9YUqhMMdPYxVGKERpxACyqtbyEEQYiRsiq6wD6C1hypQENFEaM25v0B5Po3Uw:1o2xzo:LVpBfFg8dTAprY-v_PGtHAnd0wY3EyVDzXTihqRvvIE	2022-07-03 16:41:56.299397+00
+fg4auwm8dwafs8jcwr7it5b9ns7vlmt6	.eJxVjDsOwjAQBe_iGll24nxMSZ8zWOvdFxxAthQnFeLuKFIKaN_MvLcKtG8p7BVrWERdVevU5XeMxE_kg8iD8r1oLnlbl6gPRZ-06qkIXrfT_TtIVNNRg6ywBzVkMHcRELAbO5qtmTvvjMDHiMG6lnhAHJk8S2_t0Hs0zqnPF2FOObU:1o2WLz:WhLlHBz9fX6SlSCoRlU1tFgEsBxOm236SqjU_PbAc4M	2022-07-02 11:10:59.186359+00
+3szeb87y06fmp4j19q6zw1dxcbmgf85n	.eJxVjEEOwiAQRe_C2hBaBjq4dO8ZyDAMUjVtUtqV8e7apAvd_vfef6lI21rj1mSJY1ZnBU6dfsdE_JBpJ_lO023WPE_rMia9K_qgTV_nLM_L4f4dVGr1W7vAjMYOhsEioC9gC3qbOwJkSR2Ikx6JrfeUku8FmU1xAyQMFKCo9wf7hTgd:1o2y5U:SORsmGfHdG1_28Lc5TAs9wRlxni6porOVt7BMW72fkA	2022-07-03 16:47:48.964476+00
+7q91s4idlup24e0h83akxlpwik04judl	.eJxVjMEOwiAQBf-FsyFAgQWP3vsNZIFFqoYmpT0Z_92Q9KDXNzPvzQIeew1Hpy0smV2ZtuzyO0ZMT2qD5Ae2-8rT2vZtiXwo_KSdz2um1-10_w4q9jpqKRAU2GjQTJmgiElEVEU6RHLgi7HJAzjpUbsE5LzO0UtlQBqLQrPPFwdoN4s:1o2yBu:QZajFg6DTKDP9glf1KU2_VSXzjMjgv66Tgk_8Z6WBDk	2022-07-03 16:54:26.464576+00
+a93yx7i120nupaph38rw2n0639pacji9	.eJxVjMEOwiAQRP-FsyFAaRc8evcbyHZZpGogKe3J-O9K0oNe5jDvzbxEwH3LYW-8hiWKs7AgTr_ljPTg0km8Y7lVSbVs6zLLrsiDNnmtkZ-Xw_07yNhyX5NiAE4-WYoTmZScJc1-8I5GQ0pB8mZ2ygBqMBAV8jfdpIl1GmAU7w8orzhN:1o2yCD:LNGxeWMF4K0eB5Xx__w8A1FRlmVljoyxBQHN5OX_Qjo	2022-07-03 16:54:45.288556+00
+ergjtksode4hk5rqpfmjeybcnmwwa35b	.eJxVjEEOgjAQRe_StWlKpTDj0j1naGamg0UNJBRWxrtrExa6-_nv5b1MpH3LcS-6ximZi2nBnH5PJnnoXEm603xbrCzztk5sq2IPWuywJH1eD_cvkKnk2g0KSBywdw7wHJB78p2w910C-M4eVLDzDbILKl6U0XObGhIYx7E17w_zSzgk:1o2yIO:pVsT4-2AgBhAl2FO_Drz_8HOJ8JP7mEFOUMM1MuYOb0	2022-07-03 17:01:08.331177+00
+ff39gtl8g1sd8wsuczdj5ghgbgbo9ssi	.eJxVjDsOwjAQBe_iGlnr-BdT0nMGa71e4wBypDipEHeHSCmgfTPzXiLitta4dV7ilMVZmCBOv2NCenDbSb5ju82S5rYuU5K7Ig_a5XXO_Lwc7t9BxV6_9cCIzgdtVTYKiCygoxIIwNqMoEPwAzOMXLROrIyzJSMXr1IavTEk3h8Nejhk:1o2yKM:skMJ03DUFqTPI5BS1JiR55IC0D9c-ZPHvO1QQFJBsYw	2022-07-03 17:03:10.373049+00
+j32gdf3y5wj6191qyq2rpelf8zmgyxkz	.eJxVjEsOAiEQBe_C2hCGn7ZL956BNE0jowaSYWZlvLuSzEK3r6reSwTc1hK2zkuYkzgLp8Thd4xID66DpDvWW5PU6rrMUQ5F7rTLa0v8vOzu30HBXkZNZLIzlihj0nxyxA4hAqNXgHycImTtk4KvaNEmsKi8J6s1gIHJiPcHRsI4zg:1o2yMd:y0k-cXItk7EVrRKGVR523NXngNGFXRLJz17LcCmBQuY	2022-07-03 17:05:31.458024+00
+jlxd3gs4kfjxcuz57a6pbk8cxdmksxma	.eJxVjEEOwiAQRe_C2pABmaG4dN8zEGCoVA0kpV0Z765NutDtf-_9l_BhW4vfel78zOIiUInT7xhDeuS6E76Hemsytbouc5S7Ig_a5dg4P6-H-3dQQi_fOmYDYEFjZhg4arSBMAYdCQgnOBtUlJIl6wxal_XEylkiBB4SOGTx_gDsxTcd:1o2yVZ:IAmdyIMWhAH0Dz-8oshmAddPWX1FbNdIC4YI5pC2nu0	2022-07-03 17:14:45.296857+00
+dxcpv8vo8izkgstkjwzgf9ue373q1tmb	.eJxVjEEOgjAQRe_StWnoTG2nLt1zhmaYDoIaSCisjHdXEha6_e-9_zKZt3XIW9Ulj8VcjDOn361jeei0g3Ln6TZbmad1GTu7K_ag1bZz0ef1cP8OBq7Dt8bgPEpSaHzEIIXP4AN7Am0cRexRKYmDIORS8pGgJxWKPcTgEKEx7w-ssjY2:1o2xox:S18fJzHkwVFo3B5U6VMVYGfSxsJF3G6m6kgLmOPLRtI	2022-07-03 16:30:43.430842+00
+7ccjwr2dat05cl5fdb2xxqfw4c1x81sr	.eJxVjEEOwiAQRe_C2pBCHYZx6b5naGAGpGpoUtqV8e7apAvd_vfef6kxbGsZt5aWcRJ1UWDV6XeMgR-p7kTuod5mzXNdlynqXdEHbXqYJT2vh_t3UEIr35ptR5RT77KngN73JLEzFjkxCIgzDBgz9SyW0BokQHG54wQIEs6o3h8H3jgB:1o2yWQ:Kq493y_2UA4d6mNGmN6hxurpRu4etNbsK8x85kZZRyw	2022-07-03 17:15:38.368209+00
+amkijlor8kwqp0gr8o5eqv3hb5bvqiss	.eJxVjMsOwiAQRf-FtSF1YHi4dN9vIDBMpWogKe3K-O_apAvd3nPOfYkQt7WErfMS5iwuQjlx-h1TpAfXneR7rLcmqdV1mZPcFXnQLseW-Xk93L-DEnv51gbUGa0ihzopVOSNTc5pYETyUZHmKaMfBp81IDrwnCyZCQxZGzOCeH8A3Q83OQ:1o2xpa:tLRqAgz2k4B7Qvqz-BRFiFFcX5Pv766dsMDWiFNJwfk	2022-07-03 16:31:22.95771+00
+e08c5lr0qv5yxldekm7lkckcplnmns2v	.eJxVjMsOwiAQRf-FtSHDo1RcuvcbyMAMUjWQlHZl_HfbpAvd3nPOfYuA61LC2nkOE4mLMF6cfseI6cl1J_TAem8ytbrMU5S7Ig_a5a0Rv66H-3dQsJetdpqiN84AnJ0GpywlC0DJZ0-YhoQ8ACsaSSvOG4qjd6hiRksqA2vx-QICyDh-:1o2xqZ:p5ss882YYxD8bnDHNWhUddB6Hl_XuXeeKMBQB6zhuGQ	2022-07-03 16:32:23.526632+00
+bzy58jq5wfcsqbpgkroma5b2gimz6fq1	.eJxVjMsOwiAQRf-FtSFUuEBduvcbmhkGbNVA0sfK-O-mSRe6veec-1YDbes4bEueh0nURcGq0-_IlJ657kQeVO9Np1bXeWK9K_qgi741ya_r4f4djLSMey2G0ZVgQQTPCT1cdAjFeOYoCQGcTJTOS5KecjYRsBmRvStngvp8AReCOHI:1o2yep:EH3aJ9gpq6uKroO15GPz3QbdfMDB3DWg-NGN7VQM9Pg	2022-07-03 17:24:19.733377+00
+5epou5thqwdr7o3sbtn3rbwhm41dudgx	.eJxVjMEOwiAQRP-FsyECC6JH734D2WUXqRqalPZk_HfbpAc9zGXem3mrhMtc09JlSgOri_KgDr8lYX5K2wg_sN1Hncc2TwPpTdE77fo2sryuu_t3ULHXdR05B_IGQEyMEgWKA3Rk6Qws1pZwMniMa5wtIt5xLiXHYAkJuWBWny8XbzlN:1o2yn3:RBv0yFOC2e52VhPgQPYmJ1vyRd5IFibhVUic3bK7N3s	2022-07-03 17:32:49.888187+00
+eytbq5ou0ist9fkghfb1n2w74rb6slbq	.eJxVjEEOwiAQRe_C2pAKDBSX7j0DGWBGqoYmpV0Z7y5NutDte-__twi4rSVsjZYwZXERAOL0CyOmJ9Xd5AfW-yzTXNdlinJP5GGbvM2ZXtej_Tso2Epf-0TGk8kcLahoLUZwnREMRqvBaxo18ui4Cw1sjWZFSrFzGs_OshWfLxsFOCY:1o2yn3:CGtwexJ7jquk5GglscNvqRkPg6qlYPW6h1FN13r2uGs	2022-07-03 17:32:49.994867+00
+ywas9oetl00vbdmykra6nhn0569czvvd	.eJxVjMsOwiAQRf-FtSEtw0Ncuu83kGEGpGogKe3K-O_apAvd3nPOfYmA21rC1tMSZhYXYaw4_Y4R6ZHqTviO9dYktbouc5S7Ig_a5dQ4Pa-H-3dQsJdv7SmCd4ZtHj0bjCoBA7kMgxoVRKBsE2TWRGevXbKQSZO2Eb1xg2En3h8dyTh7:1o2z4d:jRmdeJ-gh9W7rAqUuGmSpSWBByh6X-MJauiWTryMT_I	2022-07-03 17:50:59.426561+00
+w3zqv3qi9v8ssu7vz5ddy40ivayydfg7	.eJxVjDsOwjAQBe_iGlmO_6ak5wzWrneDA8iR4qRC3B0ipYD2zcx7iQzbWvPWeckTibNwUZx-R4Ty4LYTukO7zbLMbV0mlLsiD9rldSZ-Xg7376BCr986eEZniVgDa0TFJjjvImsGLobGFGgwxUevBm2SwmTjGCgpmxA1JxDvDygKOHs:1o2zIw:9ENwSyPVCnC_PERe0t46QhuF-GJZtTLUJlCYdYApznY	2022-07-03 18:05:46.409281+00
+a7az8g1h0cvdqgmd4cizzv713je4v63q	.eJxVjEEOgjAQRe_StWkK7ZTWpXvOQKYzg0UNTSisjHcXEha6fe_9_1YDbmsetirLMLG6Kojq8gsT0lPmw_AD53vRVOZ1mZI-En3aqvvC8rqd7d9Bxpr3dQIP3DaBIUDorEmOBKwHIeMSU0SPO40SQBxg03StIbSCPBqD1I3q8wX9yjgx:1o2zMd:a5O2e9cvYl7XH-CM4bjvi15jfyZNM-KTJdYrlrDalHk	2022-07-03 18:09:35.679026+00
+ycdmz5c6zl4i55d99fpbwnaajlmw9qxt	.eJxVjEEOwiAQRe_C2pBSYGBcuvcMzQwDUjVtUtqV8e7apAvd_vfef6mBtrUOW8vLMIo6K-jU6XdkSo887UTuNN1mneZpXUbWu6IP2vR1lvy8HO7fQaVWv3X0AiaDxCRMYEoIzhcnbHuE2CFbQteHghEYCzlnkiTJ3HsbCbGz6v0BECY4JQ:1o2zNg:iBSFVWwVd1Yq6pw9qIYXhy5PZFKwg6WqnlSdbAWiJRA	2022-07-03 18:10:40.148874+00
+9auctrsprqrsocccktdlvktmwdj6aknm	.eJxVjMsOwiAQRf-FtSFQ3i7d-w1kYAapGkhKuzL-uzbpQrf3nHNfLMK21rgNWuKM7MysZKffMUF-UNsJ3qHdOs-9rcuc-K7wgw5-7UjPy-H-HVQY9VuLnAkItMXgghUklU7aeVQmu0JKBxmM8UbqYpyz6NEWSQpIBDdNWDx7fwAI4jfL:1o2zOA:rYG-AcnyZCBekXPATvUCNAB6ZpjY71ScC16xvWWxmVs	2022-07-03 18:11:10.808858+00
+epe5fpjgndxxrohwsnos6618uxa8ilco	.eJxVjDsOwjAQBe_iGllm_dFCSc8ZrLf-4ABKpDipEHeHSCmgfTPzXipiXVpce5njkNVZBVKH31GQHmXcSL5jvE06TeMyD6I3Re-06-uUy_Oyu38HDb19a3IWjlG55qMlz6EESwQrGYUThILxPoXCQBUmAVsxcCcGB-OsUe8PENE4JA:1o2zuc:43gPvmM_7SEC_N-mi_sdNtfZFNI2cS9jnvNMXbtayRY	2022-07-03 18:44:42.124787+00
+042vuoml6810c4wgu4i8jme63sd2ddo8	.eJxVjDsOwjAQBe_iGllx4i8lPWew1rtrHEC2FCcV4u4QKQW0b2beS0TY1hK3zkucSZyFceL0OybAB9ed0B3qrUlsdV3mJHdFHrTLayN-Xg7376BAL986awTrPA9kPNgQnB3ZMdMAIwMB2qwQ0-QSmETK5UkHNopIm0DEPon3BzpDOZs:1o2zwG:LDSEQKCSUWnUf8FRs1r-Wzm6UDKGSOKUYxMb4DRJXVY	2022-07-03 18:46:24.129737+00
+d1r8fn2bmg8lg2iki82gi30200lfwlci	.eJxVjMsOwiAQRf-FtSGUxwAu3fsNZIBBqgaS0q6M_65NutDtPefcFwu4rTVsg5YwZ3ZmoNjpd4yYHtR2ku_Ybp2n3tZljnxX-EEHv_ZMz8vh_h1UHPVbK1uUBAUTeS3AxkykFTnQThgtTVEQJ1e8QG8wlZKyjsKCMdmiAOkte38A6cY3Xw:1o30Bd:vdhTxh-otrkQCLl9irzerspg3pItQexuquBFSqQr7Xg	2022-07-03 19:02:17.527236+00
+p0ey37611vdz8zk2ykp80jrdxwvte0os	.eJxVjEEOwiAQRe_C2hCByRRcuvcMZGAGqRqalHbVeHdt0oVu_3vvbyrSutS4dpnjyOqiENXpd0yUn9J2wg9q90nnqS3zmPSu6IN2fZtYXtfD_Tuo1Ou3tmKBChqyntAjGEPFAKHLAXigwiYL0FAciDjnzTmjLS5xSBBCcEW9Pw4TOD0:1o4N3V:7wH4KMcMcWvW1c7yoLARg6PoSZeDhy2bIf60shemysc	2022-07-07 13:39:33.500095+00
+i4f0303jvvz2pgvxengglh3zpg1p5e98	.eJxVjMsOgjAUBf-la9NcakupS_d-A7mvWtRAQmFl_HchYaHbmTnnbXpcl9KvVed-EHMxbTSnX0jITx13Iw8c75PlaVzmgeye2MNWe5tEX9ej_TsoWMu27lBa1ZDBOQmSUsqQOpbcesUNNA2TkPoUOJyBKTIAOgBRCp5cE83nCzYTOO8:1o4N8z:RQNCfsqw7TVRs4iOXx0I7ZCBsxWr8vauyKCV75fcRgc	2022-07-07 13:45:13.610855+00
+vnp94ln5p0ob77gsd5tuqlw4miqyatxu	.eJxVjEEOgjAQRe_StWnoTG2nLt1zhmaYDoIaSCisjHdXEha6_e-9_zKZt3XIW9Ulj8VcjDOn361jeei0g3Ln6TZbmad1GTu7K_ag1bZz0ef1cP8OBq7Dt8bgPEpSaHzEIIXP4AN7Am0cRexRKYmDIORS8pGgJxWKPcTgEKEx7w-ssjY2:1o8i3o:KTWNK0-JfplBXBTIUGJRL9JhvOss8il28sID4TkhGP4	2022-07-19 12:53:48.799605+00
+oky628534igw9wt1wl7n8ln8mj27505k	.eJxVjEEOwiAQRe_C2pBCywAu3XuGZpgZbNVAUtqV8e7apAvd_vfef6kRt3UatybLOLM6K2_U6XdMSA8pO-E7llvVVMu6zEnvij5o09fK8rwc7t_BhG361uAsdT06mxPHbJw3A3I0kD0A9QEGseSxH4SSiDXAlqLDkLsQCULn1PsDAxU35Q:1o8kGb:AKe_1HZpqz_gPZkrkWS6W12OhcP95ivnm__XTsfGn0U	2022-07-19 15:15:09.107472+00
+4nyb8sjhqt9yvq20bq7k0i7ni7tzxj4l	.eJxVjMsOwiAQAP-FsyFd7PLw6N1vIMAuUjWQlPZk_HdD0oNeZybzFj7sW_F759UvJC7CKHH6hTGkJ9dh6BHqvcnU6rYuUY5EHrbLWyN-XY_2b1BCL-PLgAZsjlonZ9wEim1Ms9PAjGnWCIaIkEPOSgMSnBECExplJ0OYxecL_us37g:1o8l4C:gtlsM-dmXpVVSqTjWNQ-FZ_I8TZ0i6AcrXG1uzaGZ88	2022-07-19 16:06:24.824967+00
+0atki8yexs8ycslvop02fd68agypjsg9	.eJxVjMsOwiAQRf-FtSHIwAAu3fcbyPCSqoGktCvjv2uTLnR7zzn3xTxta_XbyIufE7swo9jpdwwUH7ntJN2p3TqPva3LHPiu8IMOPvWUn9fD_TuoNOq3RoFkY7FSa2uNRukMFGtQknCJwBoBWSiMRapgtJYxAWYAOoNLxaFj7w_Xjzbf:1o8l7o:_5yaE7Xva7PFvv_7qYaCe1nRqQNkRgpWwaV71v8oDAM	2022-07-19 16:10:08.28984+00
+lay65jzmy69uvmre4m6cotoigk06vgzp	.eJxVjEEOgjAQRe_StWnoTG2nLt1zhmaYDoIaSCisjHdXEha6_e-9_zKZt3XIW9Ulj8VcjDOn361jeei0g3Ln6TZbmad1GTu7K_ag1bZz0ef1cP8OBq7Dt8bgPEpSaHzEIIXP4AN7Am0cRexRKYmDIORS8pGgJxWKPcTgEKEx7w-ssjY2:1o8lJh:BlVqK2zyMIyXDzkZ6U7C7RyYMBl9IXzZaUpRWOvqasM	2022-07-19 16:22:25.140834+00
+59ohczanfxqzisc8vnh582n4870ud650	.eJxVjMsOwiAQRf-FtSF0sDxcuu83kBkGpGogKe3K-O_apAvd3nPOfYmA21rC1tMSZhYXYUdx-h0J4yPVnfAd663J2Oq6zCR3RR60y6lxel4P9--gYC_f2qvIaKzWxo3IYJ1in70bDCdjKVOG5MhbhMFoQgAPUcXR8TkzswES7w8Ncjh9:1o8lLr:qyK_WfQF8Uxxe37JN9ELxskOXGBj2y0Ld3XPgnJBF5A	2022-07-19 16:24:39.521797+00
+bxnbsmmuwppuid1y632gcnbod0s09he5	.eJxVjE0OwiAYBe_C2hAILVCX7j0D-f6QqoGktCvj3bVJF7p9M_NeKsG2lrR1WdLM6qyCV6ffEYEeUnfCd6i3pqnVdZlR74o-aNfXxvK8HO7fQYFevjU6L5GZfRwhZhMsOPJMlMmAFSdiwbIIoQnDNA0OjRujGURMQMwE6v0BP0c5eg:1o8lM1:rCa-AtHUpSYyzjIzgcfiM2woMLezn0cecb06yEaQ76E	2022-07-19 16:24:49.726441+00
+pvettyu3vnlznjztuzp12h9z3ggcvn2y	.eJxVjEEOwiAQRe_C2hAoLQMu3XsGwjAztmpoUtqV8e7apAvd_vfef6mUt3VMW-MlTaTOCkCdfkfM5cF1J3TP9TbrMtd1mVDvij5o09eZ-Hk53L-DMbfxW_euE7EDDQiFDEjwIQbsAcXx4KMFa5CkoGHvHTP13LmIAJKDtTEa9f4AE744KQ:1o8lM4:Sqf8KxISX8NYhkICZCzdjQD3hs0GCgSgWBWRwCE1GJ8	2022-07-19 16:24:52.307714+00
+pm8jso6pmp73kmphvmnfaawz7pyq9uaf	.eJxVjMEOwiAQRP-FsyF0KQE8evcbyMKyUjWQlPbU-O-2SQ96m8x7M5sIuC4lrD3PYSJxFdaJy28ZMb1yPQg9sT6aTK0u8xTlociTdnlvlN-30_07KNjLvkZtNFjAQUOyniEycCKvNCbniZQb2ezJsyM7kkPth6is1UwZCQyKzxcO1Dh-:1o8lPp:447OM7bfOKrDlT2FpAsiD3ZtYYKrhJdVObRbR0dkHcE	2022-07-19 16:28:45.602674+00
+mas7pfjea3w9yksza0vikgnda6jtfrmw	.eJxVjEsOAiEQBe_C2hDk04BL956BNDTIqIFkmFkZ725IZqHbV1XvzQLuWw37yGtYiF2Y9ez0O0ZMz9wmoQe2e-ept21dIp8KP-jgt075dT3cv4OKo85aOqNsBFIai0h4NoYkOKu1dABOWS29gpKSBEIXBVknosKUiwHhi2KfL_DYN4w:1o8lQe:AS5AkOtzml_mf3MARsprLJ81CjosbbdF0qLqhCx4rr4	2022-07-19 16:29:36.274638+00
+x7209rarsew2abng1a7uv3xavg6jl8v4	.eJxVjMEOwiAQRP-FsyF0AUGP3vsNZGFZqRpISnsy_rtt0oMeZ96beYuA61LC2vMcJhJX4ZU4_ZYR0zPXndAD673J1OoyT1Huijxol2Oj_Lod7t9BwV62NROcWRNF8JyUIj1owkjekvF-C5BiTo5NBHCWEbM3ZCwmBzTwhUF8vjOmOR8:1o8lWb:eTJh9CB-uNTLu1w6c1hoq-4zwy3QEaGYcxS-2NslTIo	2022-07-19 16:35:45.42965+00
+ixbppj7ub0a268copwy90yqawnojmkaw	.eJxVjDsOwjAQRO_iGln-26Gkzxksr3eDA8iW4qRC3J1ESgFTznszbxbTtpa4dVrijOzKgmSX3xJSflI9CD5SvTeeW12XGfih8JN2Pjak1-10_w5K6mVf-ww2eUVEHhQ5540YlERl9kxGCHQ2uAEDkEbpnNbZah0UyIkkWUzs8wX7rTer:1o8lXf:0Gg-T3mXVX1IT7oMO-BdFTAATy6VkltuTpKdp4dA168	2022-07-19 16:36:51.272266+00
+oz95123bj7k4ljf7hhrg2vvvpa1l0xqz	.eJxVjDsOwjAQBe_iGlmJ179Q0ucM1q69xgHkSHFSIe6OLKWA9s3Me4uAx17C0XgLSxJX4ZW4_I6E8cm1k_TAel9lXOu-LSS7Ik_a5Lwmft1O9--gYCu9JgUwsTMETNm4QSmeYvaWMo9xVBwzEmoHAKwNTsayHSCTs3okT158vid0OJ4:1o8lad:6KXXINzgbj4rIAatmoGX_yPsIsD8YbNz3DUjQO6Pva4	2022-07-19 16:39:55.880856+00
+9pe439739ncx2jgr0a744271u2cco0sd	.eJxVjMsOwiAQAP-FsyGydHl49N5vIMCuUjWQlPZk_HdD0oNeZybzFiHuWwl75zUsJC7CaXH6hSnmJ9dh6BHrvcnc6rYuSY5EHrbLuRG_rkf7Nyixl_F1zpqMmhI7uBlAtqxVsmeVJgUeOGKeSGN0iOSyR_LgiUzKyIoMiM8X_OQ38g:1o8lfK:9XHxm3KtlFkCXJSi13mDXa4FhDyNgEB1UMZnSYmZ16M	2022-07-19 16:44:46.473966+00
+22lzc1y2lqwxhmdk0qkxtunuzf43i3e7	.eJxVjEEOwiAQRe_C2hAEpliX7j0DGWYGqRpISrsy3l2bdKHb_977LxVxXUpcu8xxYnVWJ68Ov2NCekjdCN-x3pqmVpd5SnpT9E67vjaW52V3_w4K9vKtHSSB0VI2KAGJHQJ5TzTwEZ3NnAMYDjyADcaHIJAJyNDoLLFhcer9ATDuOPA:1o8lfj:GvnVhE0xRWEsfizUf5dCdbkEky2sCE2qZG0FSMi5smc	2022-07-19 16:45:11.826781+00
+sjt6k6ry7h8zxft0ah9yt5d7u5gwis7r	.eJxVjDsOwjAQBe_iGln-rK01JT1nsNY_HEC2FCdVxN1JpBTQvpl5G_O0LtWvI89-SuzK0LDL7xgovnI7SHpSe3Qee1vmKfBD4Scd_N5Tft9O9--g0qh7XYxUhQKIglYmzMqRU9ZCEEqj0bGQTEEBCJ01oQMpYCcOBFpltLXs8wXzsjZ_:1o8lfn:OCbm1WbWjWhFqrv3cJwtoeUT6ZBA33Ob2TVfQWtprX4	2022-07-19 16:45:15.254328+00
+kkhip5pxzh7wzx0kgutxcwd5qtm512a4	.eJxVjMsOwiAQRf-FtSFCGTq4dN9vaIZhkKqBpI-V8d-1SRe6veec-1IjbWsZt0XmcUrqotCr0-8YiR9Sd5LuVG9Nc6vrPEW9K_qgix5akuf1cP8OCi3lW59TZ5xDCOwYXAgYoicOgpEyZEGTTGSG3mNyvUW0ADbnLBKoy8Co3h8IpDhv:1o8lmO:bvscNf13YnrDK9FoA0snGxh7IP5KAPU7vEEH_t0CcSc	2022-07-19 16:52:04.964589+00
+e7jtmhx14s1d172aqi5d8znrv2zm2b9s	.eJxVjDsOwjAQBe_iGlnLxl9Kes5gre01DiBHipMKcXcSKQW0b2beWwRalxrWznMYs7gIZ8Xpd4yUntx2kh_U7pNMU1vmMcpdkQft8jZlfl0P9--gUq9bjboULoMihEygvSXjFKICh64MEZN2G3dQsvIWMhprFKA5J9SeC6P4fAEAxTeJ:1o8lnB:wj_KMmGqh-Mb05lo5i54a7JDl7quSVpXZFLjgdFPQyA	2022-07-19 16:52:53.68801+00
+p6ywcueoop4d4dauevx434aa9pjf34on	.eJxVjEEOgjAQRe_StWkslOng0j1naP50iqAGEgor492VhIVu_3vvv0zEtg5xK3mJo5qLYTan31GQHnnaid4x3Wab5mldRrG7Yg9abDdrfl4P9-9gQBm-dUZFHr3nNrEHyPXSUHWWDFVyqLVNTc0k6nYiCFBOtRPyIVRMMO8PLyI4xg:1o8lpw:j1yFNPG9-6IP5520dVT1EVjWi86NF7-Kbd2hsLyfCB8	2022-07-19 16:55:44.196373+00
+xkpx14jbkp6huai039ne2bqtj1x0b05f	.eJxVjDsOwjAQBe_iGlnrjeMPJT1nsNbrFQ4gR4qTCnF3iJQC2jcz76USbWtNW5clTUWdVYjq9Dtm4oe0nZQ7tduseW7rMmW9K_qgXV_nIs_L4f4dVOr1W4OM0RvgwVq2hYqzhtkJGUcCQ8yWssWAAbygeMaIBEUAPSG5UUi9PwmxOB8:1o8lqC:YM9DVMv0sLJhZGxWCuchJ_NgjoYFDrHKDzAa2UrCNsQ	2022-07-19 16:56:00.208467+00
+n84b8td6bsma30w5eee2u2otgwn0208b	.eJxVjDsOwjAQBe_iGlnrT2xMSZ8zROvdNQkgW8qnQtwdIqWA9s3Me6kBt3UctkXmYWJ1UQnU6XfMSA-pO-E71lvT1Oo6T1nvij7oovvG8rwe7t_BiMv4rR10hjMX9NmHFC133mQbHRYfBADZsTiyRkoshARYgu3EhHAGopSien8AGLg4iQ:1o8lr9:FO3bH4EFaKZEB8X2E0sOmA8StTxzcNoEgd3uI6JD3XA	2022-07-19 16:56:59.869995+00
+kjxn8a6fu61j3covif8i8brjzcg0st82	.eJxVjDkOwjAUBe_iGlmx45WSPmeI_BfjALKlLBXi7iRSCmjfzLy3GNO2lnFbeB4nElcRlbj8jpDwyfUg9Ej13iS2us4TyEORJ13k0Ihft9P9OyhpKXvdaw6mVxmdso4dIzi0EbzP0QdgnSMb40gh7SKwz6B0h5QDudyhseLzBRofOOU:1o8lrG:eiU22O--4nz5e9kstws313hx9IizIDJasB9KevNHXq0	2022-07-19 16:57:06.872082+00
+6m7me2hy405wc8yaju12mp7trm9x0gqp	.eJxVjMsOgjAQRf-la9O0lD506Z5vaO7MFEENJBRWxn9XEha6veec-1IZ2zrkrZYlj6Iu6tyo0-9I4EeZdiJ3TLdZ8zyty0h6V_RBq-5mKc_r4f4dDKjDt2brWKwRz-R8cMxeYg9JFmxcBBobraS-bWIiA8AnbksQBEoEI616fwAomzkF:1o8lsv:-nQrGzpOH2HkcVLoEpvQmBpROCmbOcwnUlTm7HTswkM	2022-07-19 16:58:49.465089+00
+tenzlsu6hglhyfnxv1szg0i0rlztvfqw	.eJxVjDsOwjAQBe_iGln476Wkzxks27uLA8iR8qkQd4dIKaB9M_NeIuVtbWlbaE4jiosAI06_Y8n1QX0neM_9Nsk69XUei9wVedBFDhPS83q4fwctL-1bRw0ciyZGHawDhRCInY6KPLrAZ09EsbLVHJRTCjgEj2BRczUGwIv3Bw1nN-o:1o8luQ:72psf8GgySWfy2QWQUIAtOuisvTgmHkfDmbOBaIOWgQ	2022-07-19 17:00:22.610905+00
+kks1yv8akdcdge3i5yaeesxcp1h6ic6m	.eJxVjEEOgjAQRe_StWnamQodl-45QzPtDIIaSCisjHdXEha6_e-9_zKJt3VIW9UljWIuhoI5_Y6Zy0Onncidp9tsyzyty5jtrtiDVtvNos_r4f4dDFyHb-0wgzKUthVyDQgpYiwsoA30uWCM6PHsg28oSCBypOygJ59BGENv3h8BDjep:1o8lwP:DrT1XVu39yuKQzkoJnYcg2qcqBIAdBevTYeheMnYAVQ	2022-07-19 17:02:25.727666+00
+pibuy1x0hxiv321l8lsc0rpuiqg6vt6c	.eJxVjEEOwiAQRe_C2hBgOiAu3XsGAsNUqgaS0q6Md7dNutDtf-_9twhxXUpYO89hyuIiPIrT75giPbnuJD9ivTdJrS7zlOSuyIN2eWuZX9fD_TsosZetVo4INWqDlBSfIdsE2lscDVpvQVt2nDHBYBIxKwcDR2DQ6GGkLRCfL_PBN6o:1o8lxV:rta2-cnt5KeAC4-m4u_rBrn7Rn9Z9uSZTt5LEF1oKQo	2022-07-19 17:03:33.585428+00
+vlnwmhxdd9f9k0fm7xgj9w3179c1htgp	.eJxVjEEOwiAQRe_C2pBCERiX7nsGMsCMVA0kpV0Z765NutDtf-_9lwi4rSVsnZYwZ3ERYMXpd4yYHlR3ku9Yb02mVtdljnJX5EG7nFqm5_Vw_w4K9vKtDRAxD0wqg_fsYEC0o1NGeTTeKUAPMZFmp10ck05oISkTmQjPI4J4fwAfKzi5:1o8lyC:ljLlbFiO-3BeS-hEuR29dM6-g64Wb67Xo8Ux2A4Z-JU	2022-07-19 17:04:16.189251+00
+ua8veamyjuo00jmzudwa3lvnt6e61rfm	.eJxVjMsOwiAQRf-FtSHDS8Cl-34DGRiQqoGktCvjv2uTLnR7zzn3xQJuaw3byEuYiV2Yt-z0O0ZMj9x2Qndst85Tb-syR74r_KCDT53y83q4fwcVR_3WoI0pOqlIpfhERjiIBSgJiBm9lA5MVk7GTAAa01lZYY201jmyKI1j7w8bMTfZ:1o8lyF:ccV6FHbyY1g8sDlMVtgd9Ro82eQlznRxxxR50Hwkv3o	2022-07-19 17:04:19.64133+00
+mc6uohx4u2w8n4v65ajfxpabuv8wa3om	.eJxVjEEOwiAQRe_C2pBChwFcuvcMhGGoVA0kpV0Z765NutDtf-_9lwhxW0vYel7CzOIsvBOn35FieuS6E77HemsytbouM8ldkQft8to4Py-H-3dQYi_fGi2D9UieeFA4UgSfHRKAMQqnlIgVaA1k9JQcRD-OA2cPGdCiIXLi_QEBVDfB:1o8m01:pi4BpP8D_Qo_30TX6q8zY1Xy39dhABP5cpzUnOERf40	2022-07-19 17:06:09.130164+00
+n2u10dtp7rvqvo2eps20mhuuwwtavcov	.eJxVjDsOwjAQBe_iGlmJfxtT0ucM0e7axgFkS3FSIe6OLKWA9s3Me4sFjz0vR4vbsgZxFd6Ly-9IyM9YOgkPLPcquZZ9W0l2RZ60ybmG-Lqd7t9BxpZ7HU105Dw4A5yGlHgiBm-NJuUSecdI44CjYg3BEqH12uoUAYJKExjx-QIviTi4:1o8m0j:96NeQcikU8i1JQv0-phEBxkz6YUzPnOYFJOz3bgJurU	2022-07-19 17:06:53.246525+00
+t89fq807pxnk07hsdbr9bgmtj61ee2zc	.eJxVjEEOwiAQRe_C2pCBoQou3XsGMgOMVA1NSrsy3l2bdKHb_977LxVpXWpce5njmNVZGQB1-F2Z0qO0DeU7tduk09SWeWS9KXqnXV-nXJ6X3f07qNTrtwbxhgkwOSOSBiZhCFCOjIETGkErwYH3uZB1xgOFkqxFZjucECmo9wdA8zh2:1o8m1W:rEw_8B16gANMJ0L7DLvsfbtQrAySyK5ER3gW6sQZCZo	2022-07-19 17:07:42.208224+00
+jcnafsob59w0uh33cwddyzrucq4w3k3l	.eJxVjEEOwiAQRe_C2pCZAUFcuu8ZmoFBqRpISrsy3l2bdKHb_977LzXyupRx7XkeJ1FnhYDq8LtGTo9cNyR3rremU6vLPEW9KXqnXQ9N8vOyu38HhXv51t6RRQsxiCehxJAtRofsTAKgGICRskcxV2uIkkUOJMbCMbEPJ8Pq_QEEnjdC:1o8mBF:J7extvvfiKo_RH60r5nNJPK7jIqq4RE9aLN6-x_c_Ps	2022-07-19 17:17:45.433216+00
+yyz55a1tbx0dkw52jbkpbl55m0nq07ks	.eJxVjDsOwjAQRO_iGln-xB8o6TmDtd5d4wBypDipEHcnkVLAlPPezFskWJea1s5zGklchFZGnH7bDPjktiN6QLtPEqe2zGOWuyIP2uVtIn5dD_fvoEKv2zpTcRqJXDaD2gKQY2ECjbEEcn7wrLQnKmcs4ILSNlhk702xEcmy-HwBWQs5RA:1o8mBr:fSqxCURgN-hvBxTBhcq1ftY-JcewH5HuhtNVEmSGElM	2022-07-19 17:18:23.848191+00
+9j8fqsbksmmaagb7e10ulx5m60gffoky	.eJxVjDsOwjAQBe_iGlm7YPyhpM8ZrF2vjQPIkeKkQtwdIqWA9s3Me6lI61Lj2vMcR1EXhXBSh9-VKT1y25Dcqd0mnaa2zCPrTdE77XqYJD-vu_t3UKnXb83JHYMPKGTMmcE5SIBUnHdQ0NpEWTIWCmAzJiuFmQz6UKxwQS9OvT8x_zj4:1o8mG0:-sFIGnNEH0zRAB_ExRSQ5IP-fbAHYNo5Y2XEdewvysY	2022-07-19 17:22:40.89078+00
+qdr193lf92dhgh144zyc0a3ufg0jmjn4	.eJxVjDsOwjAQRO_iGlnelYNtSnrOYG0maxxAiZRPhbg7iZQCminmvZm3ybIuNa-zTrnvzMWQ8-b027aCpw476h4y3EeLcVimvrW7Yg8629vY6et6uH8HVea6rUtqAUecEmmkwpGbswfAWwbPkgIFRz4AguLRFCkcIqDKTgOR-XwBJx44YQ:1o8mJa:E1yQRgVHr2fbWo9t_9XnVS_aEKHPAgV4W_bAEuR-l1k	2022-07-19 17:26:22.589521+00
+d4qeo8y76s9w2a1j5r7v418g35xvrok8	.eJxVjEEOwiAQRe_C2hCgMwFcuvcMZIBBqgaS0q6Md9cmXej2v_f-SwTa1hq2wUuYszgLrVCcftdI6cFtR_lO7dZl6m1d5ih3RR50yGvP_Lwc7t9BpVG_NUwWHFgAq9AzUMmAhsnrWChmZDRJ2RIZtNcY2RMlO1lEj4YMOSfeHx0TOBI:1o8mKn:4T8JqzU72VCsMMSy9qGMlfd_WacwNc23kmXkvtoT6fM	2022-07-19 17:27:37.031261+00
+fn8084mxs47zbbwfu4r8j4240ew5o15d	.eJxVjDsOwjAQBe_iGllJ_NmYkp4zWLveNQ4gR4qTCnF3iJQC2jcz76UibmuJW5MlTqzOqu-8Ov2uhOkhdUd8x3qbdZrrukykd0UftOnrzPK8HO7fQcFWvrW12TH0JMl7AEM5wYAOSMaAfhDAjh2G7AQ4j2CdiLAYCN5kYzyRen8ARwg5Hg:1o8mL5:WVbuPZakGHgf7nSnly4COcPPLNDHq0KZj5xqQiugt5A	2022-07-19 17:27:55.74616+00
+3fqreifipt50j7917n8hrk91mh165w5e	.eJxVjDsOwjAQBe_iGln2-htKes5g7dprHECJFCcV4u4QKQW0b2beSyTc1pa2zksaizgLrYI4_a6E-cHTjsodp9ss8zyty0hyV-RBu7zOhZ-Xw_07aNjbt_ZQMzmMQACIJoO21gYe2BguChwReo5RUfZKFzfUqGEIRoXqtCUVxfsDLog3xw:1o8mR7:JAUwho6Y4pEW-BOSh6oLFX0U2rxVeVwzOoDKUWrDwRw	2022-07-19 17:34:09.875353+00
+6v0ewsto7itdr2496nzkt6bn0bhh06or	.eJxVjDsOwjAQBe_iGlmJfxtT0ucM0e7axgFkS3FSIe6OLKWA9s3Me4sFjz0vR4vbsgZxFd6Ly-9IyM9YOgkPLPcquZZ9W0l2RZ60ybmG-Lqd7t9BxpZ7HU105Dw4A5yGlHgiBm-NJuUSecdI44CjYg3BEqH12uoUAYJKExjx-QIviTi4:1o8mZC:hnLTCc4sgECtcLc5fj7xc7VVooLNogShLpW2Kjwjpxs	2022-07-19 17:42:30.396024+00
+1gxmtancxekjlg7pmgg9ilf47mn9jijz	.eJxVjEEOwiAQRe_C2hBoYQou3XsGMsOMUjU0Ke3KeHfbpAvd_vfef6uE61LS2mROI6uzsiao0-9KmJ9Sd8QPrPdJ56ku80h6V_RBm75OLK_L4f4dFGxlq8UHseTB0A05Bod9hhhoyM6hePBiHXNAtpvROXAEiNlE8BFsh0OvPl8-Wjg6:1o8mem:3Elz0RzOQsSYVHxs4pKghX1rH_VNdBJ9A9xeIZuE5IY	2022-07-19 17:48:16.303877+00
+\.
+
+
+--
+-- Data for Name: flags_flagstate; Type: TABLE DATA; Schema: public; Owner: twistdbadmin
+--
+
+COPY public.flags_flagstate (id, name, condition, value, required) FROM stdin;
+1	CAN_SIGNUP	boolean	True	f
+\.
+
+
+--
+-- Data for Name: song_signup_groupsongrequest; Type: TABLE DATA; Schema: public; Owner: twistdbadmin
+--
+
+COPY public.song_signup_groupsongrequest (id, song_name, musical, request_time, requested_by_id) FROM stdin;
+13	Satisfied	Hamilton	2022-06-17 13:23:13.657862+00	1
+14	The Room Where It Happens	Hamilton	2022-06-17 13:23:37.170961+00	1
+15	Guns and Ships	Hamilton	2022-06-17 13:23:55.525473+00	1
+16	My Shot	Hamilton	2022-06-17 13:24:08.637555+00	1
+17	Story of Tonight	Hamilton	2022-06-17 13:36:17.567943+00	1
+21	RIght Hand Man	Hamilton	2022-06-17 13:37:08.92853+00	1
+22	The Schuyler Sisters	Hamilton	2022-06-17 13:38:41.731694+00	1
+23	One Day More	Les Mis	2022-06-17 13:44:32.483486+00	1
+24	Do You Hear the People Sing?	Hamilton	2022-06-17 13:45:15.46185+00	1
+25	Deliver Us	Prince of Egypt	2022-06-17 13:49:31.846526+00	1
+26	The Plagues	Prince of Egypt	2022-06-17 13:50:16.928587+00	1
+27	Look Down	Les Mis	2022-06-17 13:50:58.353951+00	1
+28	What Is This Feeling?	Wicked	2022-06-17 13:53:20.492603+00	1
+29	The Wizard and I	Wicked	2022-06-17 13:54:46.47841+00	1
+30	Popular	Wicked	2022-06-17 13:55:48.869612+00	1
+31	All That Jazz	Chicago	2022-06-17 13:57:04.370982+00	1
+32	Cell Block Tango	Chicago	2022-06-17 13:58:23.007772+00	1
+33	When You're Good to Mama	Chicago	2022-06-17 13:59:51.091047+00	1
+34	Both Reached For the Gun	Chicago	2022-06-17 14:05:29.83735+00	1
+35	Sincerely Me	Dear Evan Hanson	2022-06-17 14:10:53.801421+00	1
+36	Sucks To Be Me	Avenue Q	2022-06-17 14:11:17.396276+00	1
+37	If You Were Gay	Avenue Q	2022-06-17 14:11:38.895796+00	1
+38	The Internet Is For Porn	Avenue Q	2022-06-17 14:12:11.929264+00	1
+39	Loud As The Hell You Want	Avenue Q	2022-06-17 14:12:29.749317+00	1
+40	You Can't Stop the Beat	Hairspray	2022-06-17 14:14:41.863363+00	1
+41	Welcome to the 60s	Hairspray	2022-06-17 14:17:30.697528+00	1
+42	Good Morning Baltimore	Hairspray	2022-06-17 14:17:53.232943+00	1
+43	The Nicest Kids In Town	Hairspray	2022-06-17 14:18:13.162867+00	1
+44	Under the Sea	The Little Mermaid	2022-06-17 14:19:37.044311+00	1
+45	Can't Wait To Be King	The Lion King	2022-06-17 14:20:02.739519+00	1
+46	The Circle of Life	The Lion King	2022-06-17 14:23:02.864116+00	1
+47	Hakuna Matata	The Lion King	2022-06-17 14:29:27.179631+00	1
+48	Be Out Guest	Beauty and the Beast	2022-06-17 14:31:37.730461+00	1
+49	Rent	Rent	2022-06-17 14:32:37.502164+00	1
+50	La Vie Boheme	Rent	2022-06-17 14:34:49.614495+00	1
+51	Yorktown	Hamilton	2022-06-17 15:01:05.602285+00	1
+61	We don't talk about  Bruno	Encanto	2022-06-21 05:09:50.014303+00	1
+62	Brotherhood of Man	How to Succeed	2022-06-21 05:10:11.449852+00	1
+63	You Won't Succeed on Broadway	Spamalot	2022-06-21 05:11:02.119231+00	1
+64	Let's Do the Time Warp Again	The Rocky Horror Show	2022-07-05 15:15:48.358426+00	71
+65	Do You Hear the People Sing	Les Miserables	2022-07-05 17:09:21.350351+00	97
+\.
+
+
+--
+-- Data for Name: song_signup_singer; Type: TABLE DATA; Schema: public; Owner: twistdbadmin
+--
+
+COPY public.song_signup_singer (id, password, last_login, is_superuser, username, first_name, last_name, email, is_staff, is_active, date_joined, cy1_position, no_image_upload, cy2_position, cy3_position, lscy_position, placeholder) FROM stdin;
+81	!1VfJ9bLURgR1XzRKARGzgDN34osijgFxfnOxsCnG	2022-07-05 16:36:51.269943+00	f	eva_yashphe	Eva	Yashphe		t	t	2022-07-05 16:36:51.253943+00	6	f	12	12	\N	f
+93	!NNSuOBVJiBI0HFuFwiTzczgb57ow41Wrxug7cQKv	2022-07-05 17:00:22.608439+00	f	shany_roze	Shany	Roze		t	t	2022-07-05 17:00:22.592824+00	\N	t	\N	\N	\N	f
+92	!5DtOHTjsRXojFawpMiPYhV1vt43uJh0lZk0dpwWR	2022-07-05 16:58:49.462558+00	f	rona_yogev	Rona	Yogev		t	t	2022-07-05 16:58:49.446543+00	\N	f	13	13	\N	f
+82	!y4ryUkEtbg5LqWCfgFpqdvlHoBhnVj4qGVLMwl1r	2022-07-05 16:39:55.878292+00	f	inbal_katzen	Inbal	Katzen		t	t	2022-07-05 16:39:55.859432+00	7	f	14	14	\N	f
+106	!s02LKRwKT57ygHcjDYfVs9Ao2A1h1xaKVtlrEr5m	2022-07-05 17:27:55.743756+00	f	ruti_halvani	Ruti	Halvani		t	t	2022-07-05 17:27:55.727953+00	\N	t	\N	\N	\N	f
+85	!fqaMLqsvLWwjdl0n5YeYgb3FCHif2kcGrYLCwQu8	2022-07-05 16:45:15.251784+00	f	nir_kellner	Nir	Kellner		t	t	2022-07-05 16:45:15.23574+00	8	f	16	16	\N	f
+79	!QK05RgD9eKCFDUGanjJsRmNQUSNHPHXZ695Y8FS3	2022-07-05 16:29:36.272002+00	f	ella_eyni	Ella	Eyni		t	t	2022-07-05 16:29:36.246564+00	9	f	18	18	\N	f
+83	!tOYXWxdfj18ghDgrEhZsG5m4TAgUqY8xtR7eJOAw	2022-07-05 16:44:46.471584+00	f	miriam_wartski	Miriam	Wartski		t	t	2022-07-05 16:44:46.455891+00	10	f	20	20	\N	f
+87	!50LXIM3w3ekocTgnl9pEmjKDN1zMGcy6qqfZv0Ne	2022-07-05 16:52:53.685721+00	f	itay_koren kellner	Itay	Koren Kellner		t	t	2022-07-05 16:52:53.670161+00	\N	f	1	1	\N	f
+95	!YNIbJEDKF7reuuP2DhTMtCkbtsBo7ZhX3QoGiVy0	2022-07-05 17:03:33.581846+00	f	nevet_nachnai	Nevet	Nachnai		t	t	2022-07-05 17:03:33.561348+00	\N	f	15	15	\N	f
+94	!nEnQxe1PAsaLw9VonzRKeeSx3bTpoG1xTeWXMwOD	2022-07-05 17:02:25.725217+00	f	aryel_meiras	Aryel	Meiras		t	t	2022-07-05 17:02:25.709846+00	\N	f	17	17	\N	f
+89	!LE3nxSJKtOPK3ndrHUauDlYxlvgHI3sZpCiFoaHr	2022-07-05 16:56:00.185364+00	f	paz_lazar	Paz	Lazar		t	t	2022-07-05 16:56:00.02516+00	\N	f	3	3	\N	f
+96	!AS9Gc0jYYucR1wq42wXVTWW7LBDZinLp7jR6YsIU	2022-07-05 17:04:16.186744+00	f	ifat_gedanken	Ifat	Gedanken		t	t	2022-07-05 17:04:16.171002+00	\N	t	19	19	\N	f
+72	!1sSb3lTSvDlKnEKqykrqqFTup0oMuNCI2Z871eFr	2022-07-05 16:06:24.822517+00	f	noa_shaby	Noa	Shaby		t	t	2022-07-05 16:06:24.806869+00	1	f	2	2	\N	f
+91	!EBhMjXs6XdaQbiu7oalMsapGEHrTsTzrbf4T9Y5O	2022-07-05 16:57:06.869734+00	f	smadar_biriotti	Smadar	Biriotti		t	t	2022-07-05 16:57:06.854397+00	\N	t	5	5	\N	f
+73		\N	f		PLACEHOLDER-FOR-NEW-SINGER			f	t	2022-07-05 16:07:12.737765+00	\N	f	\N	\N	\N	t
+74	!26fOs5qDjyG5CBywrJVsZZ9C6bB7SMhBVRMfB5Tx	2022-07-05 16:10:08.287486+00	f	lara_wolpert	Lara	Wolpert		t	t	2022-07-05 16:10:08.271351+00	\N	f	\N	\N	\N	f
+88	!hys3tktpFwT7Ksb6qdV8UXsPdfcBgUeaZ6ONVtbG	2022-07-05 16:55:44.19385+00	f	inbal_feldman	Inbal	Feldman		t	t	2022-07-05 16:55:44.177527+00	\N	f	7	7	\N	f
+1	pbkdf2_sha256$260000$MRi2Pgo7l2KOrhr2u8j516$jFtcJbTqnJWBg4z4APixtyE250F3DfcL4i8Refq/M+4=	2022-07-05 16:22:25.138485+00	t	alon_aviv	Alon	Aviv		t	t	2022-06-02 13:31:38+00	\N	f	\N	\N	\N	f
+90	!FAdnpaxuZqG0rcUz0kSLmIdzKiyyuhqDJMUbqA7m	2022-07-05 16:56:59.867517+00	f	nitzan_green	Nitzan	Green		t	t	2022-07-05 16:56:59.851936+00	\N	f	9	9	\N	f
+84	!jKqNF3cvte17UypTvcYFszXFEec19sr98FbKYFOW	2022-07-05 16:45:11.824269+00	f	maia_phillips	Maia	Phillips		t	t	2022-07-05 16:45:11.797114+00	\N	f	11	11	\N	f
+100	!ExzFP1N1COWto7fmxemHGgF0fzycIke3tUVjuBkN	2022-07-05 17:07:42.205044+00	f	jeremy_seeff	Jeremy	Seeff		t	t	2022-07-05 17:07:42.145206+00	\N	f	\N	\N	8	f
+71	pbkdf2_sha256$260000$fH90rzL8iuGtoJd2RYwsZU$HHSiC6GEco6n4KY0R+trmtPU7SVVZDLuhzPyT7ixnwE=	2022-07-05 15:15:09.104973+00	t	shani_wahrman	Shani	Wahrman		t	t	2022-07-05 12:57:05+00	\N	f	\N	\N	\N	f
+101	!ji7rr7NTUsBnuBHeC6nfd2FhbW14nlaxAbFdIfwK	2022-07-05 17:17:45.430751+00	f	‫מאי_טל‬‎	‫מאי	טל‬‎		t	t	2022-07-05 17:17:45.411305+00	\N	f	\N	\N	9	f
+78	!N5ufLvlQjqVijPzX0OlWrKYIolDDeQJZDTPZbbnQ	2022-07-05 16:28:45.600161+00	f	מירב_פלקסר	מירב	פלקסר		t	t	2022-07-05 16:28:45.583037+00	\N	f	\N	\N	10	f
+75	!hFGQBHJAgspN9TRvddHZSR7t9MJ5uXHwjYqkanpO	2022-07-05 16:24:39.519345+00	f	shir_hocherman	Shir	Hocherman		t	t	2022-07-05 16:24:39.503432+00	2	f	4	4	\N	f
+102	!uZsjfLUp9qklLQpXYx6gvjvLJuibCYAUV4AyDlmK	2022-07-05 17:18:23.843775+00	f	uri_falk	Uri	Falk		t	t	2022-07-05 17:18:23.805476+00	\N	f	\N	\N	11	f
+76	!cmVlSsoQMgvM1VuuD0P9X3d4KsrEWDJXi9DDPSlp	2022-07-05 16:24:49.724078+00	f	hadass_dubizki	Hadass	Dubizki		t	t	2022-07-05 16:24:49.70856+00	3	f	6	6	\N	f
+97	!oWJYDIiszOZvF6v4x7lqD5qRrnOCYOLanT9tovSC	2022-07-05 17:04:19.638932+00	f	yehuda_fachler	Yehuda	Fachler		t	t	2022-07-05 17:04:19.624878+00	\N	f	\N	\N	3	f
+77	!XeMYSrSK9ESHyX4M4tKPckvzlP2YTU2DfYm0yrdg	2022-07-05 16:24:52.30505+00	f	healy_fintz	Healy	Fintz		t	t	2022-07-05 16:24:52.289666+00	4	f	8	8	\N	f
+86	!mNhbKLXliMX9rJeh74bvgAuw08WtX8g8sJjNRNc4	2022-07-05 16:52:04.960542+00	f	lani_almagor	Lani	Almagor		t	t	2022-07-05 16:52:04.925334+00	\N	t	\N	\N	22	f
+80	!MWvhdZsB0p8xDBzTUQt03CgWE4vxvneFvHIPjlTU	2022-07-05 16:35:45.427341+00	f	maya_finn	Maya	Finn		t	t	2022-07-05 16:35:45.411299+00	5	f	10	10	\N	f
+98	!5KWCvgYNQO9lqMmWxKbH7lOoa6iTTGloENBksilz	2022-07-05 17:06:09.127759+00	f	tamar_orbach	Tamar	Orbach		t	t	2022-07-05 17:06:09.090113+00	\N	f	\N	\N	24	f
+99	!vJBEBCo0N1PwePQzjwPN05SXt1UT4bao7xg2NGwK	2022-07-05 17:42:30.393556+00	f	noa_bronstein	Noa	Bronstein		t	t	2022-07-05 17:06:53.22155+00	\N	f	\N	\N	16	f
+103	!CvZZSy19Xab1iqVJtzBos1qf1dM6yl3uejjMsagW	2022-07-05 17:22:40.888361+00	f	sonia_levy	Sonia	Levy		t	t	2022-07-05 17:22:40.872951+00	\N	f	\N	\N	13	f
+105	!iA34qBsNFnshX77GuKwK39GgtRqROfF6XT6gmRJm	2022-07-05 17:27:37.028274+00	f	tami_katzen	Tami	Katzen		t	t	2022-07-05 17:27:37.011612+00	\N	f	\N	\N	\N	f
+108	!ZWHUTvUv5WQGQD5cXgMMMsWTN2Qbh1VhJVN2fqdS	2022-07-05 17:48:16.301533+00	f	shir_dagan	Shir	Dagan		t	t	2022-07-05 17:48:16.287053+00	\N	f	\N	\N	\N	f
+107	!oMyoSNhRZO5wbtfmGA4lLNbsXRZyrv575DORuAZ5	2022-07-05 17:34:09.87281+00	f	uri_shani	Uri	Shani		t	t	2022-07-05 17:34:09.856727+00	\N	f	\N	\N	17	f
+104	!fs3hYk3OCIpB9kQ6EI9U55PLxYpKFxVSPXcEnPe5	2022-07-05 17:26:22.586798+00	f	yonatan_avitzdor	Yonatan	Avitzdor		t	t	2022-07-05 17:26:22.571183+00	\N	f	\N	\N	18	f
+\.
+
+
+--
+-- Data for Name: song_signup_singer_groups; Type: TABLE DATA; Schema: public; Owner: twistdbadmin
+--
+
+COPY public.song_signup_singer_groups (id, singer_id, group_id) FROM stdin;
+69	72	1
+70	74	1
+71	75	1
+72	76	1
+73	77	1
+74	78	1
+75	79	1
+76	80	1
+77	81	1
+78	82	1
+79	83	1
+80	84	1
+81	85	1
+82	86	1
+83	87	1
+84	88	1
+85	89	1
+86	90	1
+87	91	1
+88	92	1
+89	93	1
+90	94	1
+91	95	1
+92	96	1
+93	97	1
+94	98	1
+95	99	1
+96	100	1
+97	101	1
+98	102	1
+99	103	1
+100	104	1
+101	105	1
+102	106	1
+103	107	1
+105	108	1
+\.
+
+
+--
+-- Data for Name: song_signup_singer_user_permissions; Type: TABLE DATA; Schema: public; Owner: twistdbadmin
+--
+
+COPY public.song_signup_singer_user_permissions (id, singer_id, permission_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: song_signup_songrequest; Type: TABLE DATA; Schema: public; Owner: twistdbadmin
+--
+
+COPY public.song_signup_songrequest (id, song_name, musical, request_time, performance_time, singer_id, priority, "position", duet_partner_id, cycle, placeholder) FROM stdin;
+3823	Everything and More	Twisted	2022-07-05 17:10:58.671096+00	2022-07-05 19:57:02.664481+00	80	2	19	\N	2	f
+1563			2022-07-05 17:03:26.630743+00	\N	73	610	\N	\N	\N	t
+1567			2022-07-05 17:03:26.708793+00	\N	73	612	\N	\N	\N	t
+618			2022-07-05 16:49:52.573054+00	\N	73	237	\N	\N	\N	t
+620			2022-07-05 16:49:52.597304+00	\N	73	238	\N	\N	\N	t
+622			2022-07-05 16:49:52.620658+00	\N	73	239	\N	\N	\N	t
+624			2022-07-05 16:49:52.644594+00	\N	73	240	\N	\N	\N	t
+1481			2022-07-05 17:00:38.773153+00	\N	73	597	\N	\N	\N	t
+139	When He Sees Me	Waitress	2022-07-05 16:07:12.719997+00	2022-07-05 16:43:52.058164+00	72	1	1	\N	1	f
+144	Summer in Ohio	The Last Five Years	2022-07-05 16:25:10.355113+00	2022-07-05 16:48:25.932595+00	75	1	2	\N	1	f
+153	Nothing	Chorus Line	2022-07-05 16:25:41.413826+00	2022-07-05 16:53:27.15557+00	76	1	3	\N	1	f
+166	I Can Do Better Than That	The Last Five Years	2022-07-05 16:26:52.143309+00	2022-07-05 16:57:29.77422+00	77	1	4	\N	1	f
+183	Part of Your World	The Little Mermaid	2022-07-05 16:36:36.546637+00	2022-07-05 17:04:14.603443+00	80	1	5	\N	1	f
+1159	Empty Chairs at Empty Tabled	Les Miserables	2022-07-05 16:57:00.284122+00	2022-07-05 17:52:15.701318+00	89	1	13	\N	2	f
+2573	I'd Rather Be Me	Meqn Girls	2022-07-05 17:06:13.631959+00	2022-07-05 17:59:32.609396+00	75	2	14	\N	2	f
+8171	Get Out and Stay Out	9 to 5	2022-07-05 20:54:25.14843+00	\N	98	4	63	\N	3.3	f
+8212	חחחח שכחת לסגור שוב את ההרשמה	מחזמר מקורי שלי	2022-07-05 21:21:34.280254+00	\N	98	5	64	\N	3.4	f
+1086			2022-07-05 16:53:47.419954+00	\N	73	474	\N	\N	\N	t
+1609	The Confrontation	Le Mis	2022-07-05 17:04:21.634508+00	2022-07-05 19:21:48.556884+00	95	1	22	83	2	f
+412	Dentist!	Little Shop of Horrors	2022-07-05 16:49:08.561342+00	\N	85	3	23	71	2	f
+2270	Therapy	Tick… Tick… Boom!	2022-07-05 17:05:14.453679+00	2022-07-05 19:21:49.570033+00	94	1	24	97	2	f
+4497	Meant to Be Yours	Heathers	2022-07-05 17:39:41.100181+00	\N	79	2	25	\N	2	f
+4925	Used to Be Mine	Waitress	2022-07-05 18:08:45.578008+00	\N	72	3	39	\N	3	f
+1088			2022-07-05 16:53:47.468163+00	\N	73	475	\N	\N	\N	t
+1090			2022-07-05 16:53:47.507059+00	\N	73	476	\N	\N	\N	t
+1092			2022-07-05 16:53:47.539686+00	\N	73	477	\N	\N	\N	t
+1094			2022-07-05 16:53:47.575419+00	\N	73	478	\N	\N	\N	t
+295			2022-07-05 16:43:52.185799+00	\N	73	75	\N	\N	\N	t
+509			2022-07-05 16:49:50.776114+00	\N	73	181	\N	\N	\N	t
+812			2022-07-05 16:49:55.979907+00	\N	73	337	\N	\N	\N	t
+511			2022-07-05 16:49:50.855773+00	\N	73	182	\N	\N	\N	t
+513			2022-07-05 16:49:50.896913+00	\N	73	183	\N	\N	\N	t
+610			2022-07-05 16:49:52.477497+00	\N	73	233	\N	\N	\N	t
+2263			2022-07-05 17:05:14.078477+00	\N	73	697	\N	\N	\N	t
+2305			2022-07-05 17:05:15.708595+00	\N	73	700	\N	\N	\N	t
+1229			2022-07-05 16:58:01.693334+00	\N	73	533	\N	\N	\N	t
+1666			2022-07-05 17:04:54.400766+00	\N	73	623	\N	\N	\N	t
+1668			2022-07-05 17:04:54.437848+00	\N	73	624	\N	\N	\N	t
+142			2022-07-05 16:07:12.772486+00	\N	73	2	\N	\N	\N	t
+419			2022-07-05 16:49:08.678583+00	\N	73	135	\N	\N	\N	t
+1274			2022-07-05 16:58:09.360585+00	\N	73	548	\N	\N	\N	t
+1544			2022-07-05 17:01:04.185128+00	\N	73	608	\N	\N	\N	t
+1546			2022-07-05 17:01:04.222794+00	\N	73	609	\N	\N	\N	t
+1220	Someone Gets Hurt	Mwan Girls	2022-07-05 16:58:01.431966+00	2022-07-05 18:01:54.182653+00	91	1	15	\N	2	f
+2737	Little Girls	Annie	2022-07-05 17:06:48.570685+00	2022-07-05 18:15:23.470432+00	76	2	16	\N	2	f
+302			2022-07-05 16:45:03.064681+00	\N	73	78	\N	\N	\N	t
+234			2022-07-05 16:40:35.330293+00	\N	73	45	\N	\N	\N	t
+236			2022-07-05 16:40:35.351519+00	\N	73	46	\N	\N	\N	t
+368			2022-07-05 16:48:02.985118+00	\N	73	110	\N	\N	\N	t
+742			2022-07-05 16:49:54.769676+00	\N	73	301	\N	\N	\N	t
+744			2022-07-05 16:49:54.795889+00	\N	73	302	\N	\N	\N	t
+746			2022-07-05 16:49:54.82145+00	\N	73	303	\N	\N	\N	t
+261			2022-07-05 16:42:21.012311+00	\N	73	58	\N	\N	\N	t
+263			2022-07-05 16:42:21.033816+00	\N	73	59	\N	\N	\N	t
+265			2022-07-05 16:42:21.054797+00	\N	73	60	\N	\N	\N	t
+952			2022-07-05 16:49:58.586345+00	\N	73	409	\N	\N	\N	t
+921			2022-07-05 16:49:57.966451+00	\N	73	393	\N	\N	\N	t
+1974			2022-07-05 17:05:04.540662+00	\N	73	661	\N	\N	\N	t
+629			2022-07-05 16:49:52.764784+00	\N	73	243	\N	\N	\N	t
+517			2022-07-05 16:49:50.947646+00	\N	73	185	\N	\N	\N	t
+459			2022-07-05 16:49:49.982865+00	\N	73	155	\N	\N	\N	t
+461			2022-07-05 16:49:50.059461+00	\N	73	156	\N	\N	\N	t
+1648			2022-07-05 17:04:22.858992+00	\N	73	622	\N	\N	\N	t
+2078			2022-07-05 17:05:07.933738+00	\N	73	674	\N	\N	\N	t
+1125			2022-07-05 16:53:55.552719+00	\N	73	492	\N	\N	\N	t
+1417			2022-07-05 16:58:38.873611+00	\N	73	584	\N	\N	\N	t
+1419			2022-07-05 16:58:38.908482+00	\N	73	585	\N	\N	\N	t
+1186			2022-07-05 16:57:00.972817+00	\N	73	517	\N	\N	\N	t
+1188			2022-07-05 16:57:01.008723+00	\N	73	518	\N	\N	\N	t
+1196			2022-07-05 16:57:01.191023+00	\N	73	522	\N	\N	\N	t
+1077	Could I Leave You	Follies	2022-07-05 16:53:47.228529+00	2022-07-05 17:36:57.805068+00	83	1	10	\N	1	f
+1118	World Burn	Mean Girls	2022-07-05 16:53:55.362388+00	2022-07-05 17:40:39.054529+00	87	1	11	\N	2	f
+301	My Man	Funny Girl	2022-07-05 16:45:03.026607+00	2022-07-05 17:49:54.840922+00	72	2	12	\N	2	f
+147			2022-07-05 16:25:10.400017+00	\N	73	4	\N	\N	\N	t
+950			2022-07-05 16:49:58.539377+00	\N	73	408	\N	\N	\N	t
+532			2022-07-05 16:49:51.182865+00	\N	73	193	\N	\N	\N	t
+2532	Always a Bridesmaid Never a Bride	I Love You, You're Perfect Now Change	2022-07-05 17:05:32.076027+00	2022-07-05 19:21:50.512211+00	96	1	26	\N	2	f
+2614	Thank You for the Music	Mamma Mia	2022-07-05 17:06:21.916716+00	2022-07-05 20:02:39.415801+00	97	1	27	\N	2.5	f
+2819	What Is This Feeling	Wicked	2022-07-05 17:07:20.593089+00	2022-07-05 19:21:52.323005+00	99	1	33	\N	2.5	f
+4599	Empty Chairs at Empty Tables	Les Miserables	2022-07-05 17:42:23.762875+00	\N	107	1	34	\N	2.5	f
+4252	Waving Through a Window	Dear Evan Hansen	2022-07-05 17:26:45.009057+00	2022-07-05 19:21:53.225137+00	104	1	35	\N	2.5	f
+5026	Kindergarten Boyfriend	Heathers	2022-07-05 18:23:23.928795+00	2022-07-05 19:41:16.661339+00	86	1	36	\N	2.5	f
+2655	Candy Store	Heathers	2022-07-05 17:06:31.157178+00	2022-07-05 19:21:51.410922+00	98	1	37	\N	2.5	f
+994			2022-07-05 16:50:21.8055+00	\N	73	429	\N	\N	\N	t
+449			2022-07-05 16:49:49.85964+00	\N	73	150	\N	\N	\N	t
+151			2022-07-05 16:25:10.459189+00	\N	73	6	\N	\N	\N	t
+154			2022-07-05 16:25:41.440727+00	\N	73	7	\N	\N	\N	t
+1914			2022-07-05 17:05:02.579041+00	\N	73	654	\N	\N	\N	t
+204	I Dreamed a Dream	Les Mis	2022-07-05 16:38:24.689274+00	2022-07-05 17:12:12.077428+00	81	1	6	\N	1	f
+330	Stars	Les Mis	2022-07-05 16:46:03.240932+00	2022-07-05 17:21:15.341055+00	85	1	8	\N	1	f
+4681	Mother Knows Best	Tangled	2022-07-05 17:46:04.477169+00	\N	87	2	38	\N	3	f
+1384	When You're Good to Mama	Chicago	2022-07-05 16:58:37.928498+00	\N	91	2	40	\N	3	f
+2901	Me and the Sky	Come From Away	2022-07-05 17:08:04.263021+00	\N	94	2	47	\N	3	f
+4456	They Don't Let You in the Opera if You're a Country Star	Kelly O'Hara	2022-07-05 17:38:04.430885+00	\N	83	2	48	\N	3	f
+2778	I Know Him	Hamilton	2022-07-05 17:06:52.336593+00	\N	97	2	49	\N	3.1	f
+2860	Last Night on Earth	American Idiot (I'll Send the Sheet Music)	2022-07-05 17:07:48.710959+00	2022-07-05 20:12:12.817911+00	98	2	56	\N	3.1	f
+2119			2022-07-05 17:05:09.265125+00	\N	73	679	\N	\N	\N	t
+1483			2022-07-05 17:00:38.811806+00	\N	73	598	\N	\N	\N	t
+252			2022-07-05 16:40:35.573935+00	\N	73	54	\N	\N	\N	t
+2220			2022-07-05 17:05:12.683364+00	\N	73	691	\N	\N	\N	t
+2346			2022-07-05 17:05:17.247337+00	\N	73	703	\N	\N	\N	t
+490			2022-07-05 16:49:50.48557+00	\N	73	171	\N	\N	\N	t
+492			2022-07-05 16:49:50.507909+00	\N	73	172	\N	\N	\N	t
+495			2022-07-05 16:49:50.622357+00	\N	73	174	\N	\N	\N	t
+688			2022-07-05 16:49:53.710138+00	\N	73	273	\N	\N	\N	t
+1458			2022-07-05 16:58:42.651753+00	\N	73	592	\N	\N	\N	t
+238			2022-07-05 16:40:35.372384+00	\N	73	47	\N	\N	\N	t
+4742	Dance Ten Looks Three	A Chorus Line	2022-07-05 17:51:11.421784+00	2022-07-05 19:41:15.745213+00	107	2	53	\N	3.1	f
+4864	Shiksa Godess	The Last 5 Years	2022-07-05 18:01:41.430423+00	\N	104	2	54	\N	3.1	f
+1198			2022-07-05 16:57:01.226297+00	\N	73	523	\N	\N	\N	t
+223			2022-07-05 16:38:24.984591+00	\N	73	40	\N	\N	\N	t
+337			2022-07-05 16:46:03.388031+00	\N	73	95	\N	\N	\N	t
+297			2022-07-05 16:43:52.207828+00	\N	73	76	\N	\N	\N	t
+299			2022-07-05 16:43:52.228573+00	\N	73	77	\N	\N	\N	t
+1084			2022-07-05 16:53:47.386209+00	\N	73	473	\N	\N	\N	t
+606			2022-07-05 16:49:52.323911+00	\N	73	231	\N	\N	\N	t
+608			2022-07-05 16:49:52.348045+00	\N	73	232	\N	\N	\N	t
+602			2022-07-05 16:49:52.27681+00	\N	73	229	\N	\N	\N	t
+604			2022-07-05 16:49:52.300984+00	\N	73	230	\N	\N	\N	t
+310			2022-07-05 16:45:03.155244+00	\N	73	82	\N	\N	\N	t
+415			2022-07-05 16:49:08.630254+00	\N	73	133	\N	\N	\N	t
+2240			2022-07-05 17:05:13.333851+00	\N	73	693	\N	\N	\N	t
+2242			2022-07-05 17:05:13.37141+00	\N	73	694	\N	\N	\N	t
+1108			2022-07-05 16:53:47.891372+00	\N	73	485	\N	\N	\N	t
+579			2022-07-05 16:49:51.942918+00	\N	73	217	\N	\N	\N	t
+581			2022-07-05 16:49:51.965671+00	\N	73	218	\N	\N	\N	t
+2201			2022-07-05 17:05:12.037144+00	\N	73	689	\N	\N	\N	t
+2138			2022-07-05 17:05:09.916338+00	\N	73	681	\N	\N	\N	t
+2222			2022-07-05 17:05:12.72012+00	\N	73	692	\N	\N	\N	t
+2261			2022-07-05 17:05:14.040631+00	\N	73	696	\N	\N	\N	t
+2037			2022-07-05 17:05:06.563258+00	\N	73	669	\N	\N	\N	t
+1157			2022-07-05 16:53:56.358408+00	\N	73	507	\N	\N	\N	t
+1607			2022-07-05 17:04:15.10896+00	\N	73	618	\N	\N	\N	t
+1603			2022-07-05 17:04:14.998658+00	\N	73	616	\N	\N	\N	t
+1626			2022-07-05 17:04:22.133025+00	\N	73	619	\N	\N	\N	t
+1403			2022-07-05 16:58:38.416081+00	\N	73	582	\N	\N	\N	t
+948			2022-07-05 16:49:58.510616+00	\N	73	407	\N	\N	\N	t
+1583			2022-07-05 17:03:27.220245+00	\N	73	613	\N	\N	\N	t
+364			2022-07-05 16:48:02.937585+00	\N	73	108	\N	\N	\N	t
+1585			2022-07-05 17:03:27.25746+00	\N	73	614	\N	\N	\N	t
+1587			2022-07-05 17:03:27.294344+00	\N	73	615	\N	\N	\N	t
+1522			2022-07-05 17:01:03.52541+00	\N	73	604	\N	\N	\N	t
+503			2022-07-05 16:49:50.71006+00	\N	73	178	\N	\N	\N	t
+505			2022-07-05 16:49:50.732424+00	\N	73	179	\N	\N	\N	t
+639			2022-07-05 16:49:52.882647+00	\N	73	248	\N	\N	\N	t
+641			2022-07-05 16:49:52.906843+00	\N	73	249	\N	\N	\N	t
+643			2022-07-05 16:49:52.989708+00	\N	73	250	\N	\N	\N	t
+645			2022-07-05 16:49:53.015386+00	\N	73	251	\N	\N	\N	t
+507			2022-07-05 16:49:50.753633+00	\N	73	180	\N	\N	\N	t
+1339			2022-07-05 16:58:27.232687+00	\N	73	566	\N	\N	\N	t
+1438			2022-07-05 16:58:42.087071+00	\N	73	588	\N	\N	\N	t
+890			2022-07-05 16:49:57.41923+00	\N	73	377	\N	\N	\N	t
+1027			2022-07-05 16:51:33.662672+00	\N	73	445	\N	\N	\N	t
+959			2022-07-05 16:50:07.632483+00	\N	73	412	\N	\N	\N	t
+1029			2022-07-05 16:51:33.694357+00	\N	73	446	\N	\N	\N	t
+1227			2022-07-05 16:58:01.637691+00	\N	73	532	\N	\N	\N	t
+462			2022-07-05 16:49:50.096195+00	\N	73	157	\N	\N	\N	t
+455			2022-07-05 16:49:49.934397+00	\N	73	153	\N	\N	\N	t
+457			2022-07-05 16:49:49.958073+00	\N	73	154	\N	\N	\N	t
+318			2022-07-05 16:45:03.301224+00	\N	73	86	\N	\N	\N	t
+1933			2022-07-05 17:05:03.205756+00	\N	73	656	\N	\N	\N	t
+2325			2022-07-05 17:05:16.429235+00	\N	73	701	\N	\N	\N	t
+1080			2022-07-05 16:53:47.321708+00	\N	73	471	\N	\N	\N	t
+2035			2022-07-05 17:05:06.523218+00	\N	73	668	\N	\N	\N	t
+421			2022-07-05 16:49:08.704187+00	\N	73	136	\N	\N	\N	t
+858			2022-07-05 16:49:56.85132+00	\N	73	361	\N	\N	\N	t
+860			2022-07-05 16:49:56.878764+00	\N	73	362	\N	\N	\N	t
+862			2022-07-05 16:49:56.905457+00	\N	73	363	\N	\N	\N	t
+864			2022-07-05 16:49:56.932005+00	\N	73	364	\N	\N	\N	t
+866			2022-07-05 16:49:56.959306+00	\N	73	365	\N	\N	\N	t
+973			2022-07-05 16:50:07.919396+00	\N	73	419	\N	\N	\N	t
+979			2022-07-05 16:50:08.012533+00	\N	73	422	\N	\N	\N	t
+975			2022-07-05 16:50:07.951774+00	\N	73	420	\N	\N	\N	t
+839			2022-07-05 16:49:56.425639+00	\N	73	351	\N	\N	\N	t
+596			2022-07-05 16:49:52.208198+00	\N	73	226	\N	\N	\N	t
+598			2022-07-05 16:49:52.230851+00	\N	73	227	\N	\N	\N	t
+600			2022-07-05 16:49:52.253406+00	\N	73	228	\N	\N	\N	t
+370			2022-07-05 16:48:03.007835+00	\N	73	111	\N	\N	\N	t
+372			2022-07-05 16:48:03.032804+00	\N	73	112	\N	\N	\N	t
+413			2022-07-05 16:49:08.604757+00	\N	73	132	\N	\N	\N	t
+164			2022-07-05 16:25:41.5659+00	\N	73	12	\N	\N	\N	t
+593			2022-07-05 16:49:52.145247+00	\N	73	224	\N	\N	\N	t
+528			2022-07-05 16:49:51.13826+00	\N	73	191	\N	\N	\N	t
+530			2022-07-05 16:49:51.161102+00	\N	73	192	\N	\N	\N	t
+343			2022-07-05 16:46:03.455272+00	\N	73	98	\N	\N	\N	t
+289			2022-07-05 16:43:52.119021+00	\N	73	72	\N	\N	\N	t
+291			2022-07-05 16:43:52.141014+00	\N	73	73	\N	\N	\N	t
+1628			2022-07-05 17:04:22.177315+00	\N	73	620	\N	\N	\N	t
+884			2022-07-05 16:49:57.271296+00	\N	73	374	\N	\N	\N	t
+886			2022-07-05 16:49:57.297361+00	\N	73	375	\N	\N	\N	t
+983			2022-07-05 16:50:08.076401+00	\N	73	424	\N	\N	\N	t
+589			2022-07-05 16:49:52.059302+00	\N	73	222	\N	\N	\N	t
+594			2022-07-05 16:49:52.18381+00	\N	73	225	\N	\N	\N	t
+754			2022-07-05 16:49:54.921455+00	\N	73	307	\N	\N	\N	t
+756			2022-07-05 16:49:54.94698+00	\N	73	308	\N	\N	\N	t
+488			2022-07-05 16:49:50.461007+00	\N	73	170	\N	\N	\N	t
+1131			2022-07-05 16:53:55.701096+00	\N	73	495	\N	\N	\N	t
+250			2022-07-05 16:40:35.552442+00	\N	73	53	\N	\N	\N	t
+1319			2022-07-05 16:58:26.687153+00	\N	73	561	\N	\N	\N	t
+184			2022-07-05 16:36:36.582235+00	\N	73	21	\N	\N	\N	t
+1141			2022-07-05 16:53:56.018426+00	\N	73	499	\N	\N	\N	t
+1143			2022-07-05 16:53:56.07426+00	\N	73	500	\N	\N	\N	t
+1374			2022-07-05 16:58:34.92932+00	\N	73	573	\N	\N	\N	t
+1235			2022-07-05 16:58:01.796777+00	\N	73	536	\N	\N	\N	t
+1401			2022-07-05 16:58:38.378688+00	\N	73	581	\N	\N	\N	t
+1251			2022-07-05 16:58:02.231003+00	\N	73	541	\N	\N	\N	t
+1253			2022-07-05 16:58:02.263777+00	\N	73	542	\N	\N	\N	t
+1255			2022-07-05 16:58:02.297979+00	\N	73	543	\N	\N	\N	t
+961			2022-07-05 16:50:07.662842+00	\N	73	413	\N	\N	\N	t
+963			2022-07-05 16:50:07.693419+00	\N	73	414	\N	\N	\N	t
+1395			2022-07-05 16:58:38.247367+00	\N	73	578	\N	\N	\N	t
+2387			2022-07-05 17:05:18.760759+00	\N	73	706	\N	\N	\N	t
+1976			2022-07-05 17:05:04.579502+00	\N	73	662	\N	\N	\N	t
+612			2022-07-05 16:49:52.501855+00	\N	73	234	\N	\N	\N	t
+571			2022-07-05 16:49:51.791872+00	\N	73	213	\N	\N	\N	t
+2076			2022-07-05 17:05:07.896946+00	\N	73	673	\N	\N	\N	t
+1317			2022-07-05 16:58:26.650354+00	\N	73	560	\N	\N	\N	t
+2117			2022-07-05 17:05:09.200529+00	\N	73	678	\N	\N	\N	t
+1892			2022-07-05 17:05:01.8607+00	\N	73	651	\N	\N	\N	t
+1894			2022-07-05 17:05:01.897829+00	\N	73	652	\N	\N	\N	t
+366			2022-07-05 16:48:02.962917+00	\N	73	109	\N	\N	\N	t
+269			2022-07-05 16:42:21.098563+00	\N	73	62	\N	\N	\N	t
+1565			2022-07-05 17:03:26.671388+00	\N	73	611	\N	\N	\N	t
+769			2022-07-05 16:49:55.180096+00	\N	73	315	\N	\N	\N	t
+771			2022-07-05 16:49:55.205177+00	\N	73	316	\N	\N	\N	t
+773			2022-07-05 16:49:55.231613+00	\N	73	317	\N	\N	\N	t
+919			2022-07-05 16:49:57.936943+00	\N	73	392	\N	\N	\N	t
+1485			2022-07-05 17:00:38.849218+00	\N	73	599	\N	\N	\N	t
+1526			2022-07-05 17:01:03.617628+00	\N	73	606	\N	\N	\N	t
+1810			2022-07-05 17:04:59.027234+00	\N	73	641	\N	\N	\N	t
+876			2022-07-05 16:49:57.160863+00	\N	73	370	\N	\N	\N	t
+1321			2022-07-05 16:58:26.723309+00	\N	73	562	\N	\N	\N	t
+1830			2022-07-05 17:04:59.675728+00	\N	73	643	\N	\N	\N	t
+1832			2022-07-05 17:04:59.711753+00	\N	73	644	\N	\N	\N	t
+897			2022-07-05 16:49:57.55987+00	\N	73	381	\N	\N	\N	t
+899			2022-07-05 16:49:57.587656+00	\N	73	382	\N	\N	\N	t
+730			2022-07-05 16:49:54.523853+00	\N	73	295	\N	\N	\N	t
+732			2022-07-05 16:49:54.555904+00	\N	73	296	\N	\N	\N	t
+1912			2022-07-05 17:05:02.540732+00	\N	73	653	\N	\N	\N	t
+267			2022-07-05 16:42:21.077018+00	\N	73	61	\N	\N	\N	t
+1047			2022-07-05 16:51:34.067016+00	\N	73	455	\N	\N	\N	t
+781			2022-07-05 16:49:55.419362+00	\N	73	321	\N	\N	\N	t
+783			2022-07-05 16:49:55.446478+00	\N	73	322	\N	\N	\N	t
+682			2022-07-05 16:49:53.636786+00	\N	73	270	\N	\N	\N	t
+1356			2022-07-05 16:58:34.334333+00	\N	73	569	\N	\N	\N	t
+956	You Can Always Count on Me	City of Angels	2022-07-05 16:50:07.533636+00	\N	77	3	41	\N	3	f
+3884	Roxie	Chicago	2022-07-05 17:15:35.661716+00	\N	90	2	42	\N	3	f
+4783	Stars and the Moon	Jason Robert Brown	2022-07-05 17:51:52.576287+00	\N	84	2	43	\N	3	f
+2491	Don't Rain on My Parade	Funnygirl	2022-07-05 17:05:24.509027+00	\N	92	2	44	\N	3	f
+5067	Mr Cellophane	Chicago	2022-07-05 18:28:10.875156+00	\N	95	2	45	\N	3	f
+989	Dammit Janet	Rocky Horror	2022-07-05 16:50:21.693647+00	2022-07-05 19:57:13.67307+00	85	4	46	71	3	f
+3986	Take Me or Leave Me	Rent	2022-07-05 17:18:48.887838+00	\N	100	2	50	71	3.1	f
+4211	Somewhere That's Green	Little Shop of Horrors	2022-07-05 17:24:36.928061+00	\N	103	2	51	\N	3.1	f
+4640	Maybe This Time	Cabaret	2022-07-05 17:43:06.37425+00	\N	99	2	52	\N	3.1	f
+6929	Who I'd Be	Shrek	2022-07-05 18:52:19.960187+00	\N	86	3	55	84	3.1	f
+1466	Dead Girl Walking	Heathers	2022-07-05 17:00:38.422542+00	\N	91	3	57	\N	3.1	f
+4395	Almost There	The Princess and the Frog	2022-07-05 17:32:19.60077+00	\N	90	3	58	\N	3.1	f
+4538	On My Own	עלובי החיים	2022-07-05 17:40:08.730742+00	\N	92	3	59	\N	3.1	f
+4293	Music of the Night	Phantom of the Opera	2022-07-05 17:29:44.905385+00	2022-07-05 19:46:08.99584+00	94	3	60	\N	3.1	f
+6970	Slipping Through My Fingers	Mamma Mia	2022-07-05 18:53:49.714573+00	\N	86	4	61	\N	3.2	f
+2942	Right Hand Man	Something Rotten	2022-07-05 17:08:51.84053+00	\N	98	3	62	\N	3.2	f
+1190			2022-07-05 16:57:01.079367+00	\N	73	519	\N	\N	\N	t
+1270			2022-07-05 16:58:09.244835+00	\N	73	546	\N	\N	\N	t
+1272			2022-07-05 16:58:09.286536+00	\N	73	547	\N	\N	\N	t
+271			2022-07-05 16:42:21.119259+00	\N	73	63	\N	\N	\N	t
+785			2022-07-05 16:49:55.473267+00	\N	73	323	\N	\N	\N	t
+895			2022-07-05 16:49:57.533352+00	\N	73	380	\N	\N	\N	t
+558			2022-07-05 16:49:51.582398+00	\N	73	206	\N	\N	\N	t
+1425	What Baking Can Do	Waitress	2022-07-05 16:58:41.746243+00	2022-07-05 18:44:34.31996+00	84	1	20	\N	2	f
+1507	A Piece of Sky	Yentl	2022-07-05 17:01:03.106007+00	2022-07-05 19:21:47.451902+00	92	1	21	\N	2	f
+1214			2022-07-05 16:57:30.185197+00	\N	73	529	\N	\N	\N	t
+1646			2022-07-05 17:04:22.819072+00	\N	73	621	\N	\N	\N	t
+1216			2022-07-05 16:57:30.22257+00	\N	73	530	\N	\N	\N	t
+451			2022-07-05 16:49:49.884489+00	\N	73	151	\N	\N	\N	t
+453			2022-07-05 16:49:49.909614+00	\N	73	152	\N	\N	\N	t
+384			2022-07-05 16:48:03.238844+00	\N	73	118	\N	\N	\N	t
+386			2022-07-05 16:48:03.261418+00	\N	73	119	\N	\N	\N	t
+388			2022-07-05 16:48:03.286229+00	\N	73	120	\N	\N	\N	t
+464			2022-07-05 16:49:50.11901+00	\N	73	158	\N	\N	\N	t
+466			2022-07-05 16:49:50.14058+00	\N	73	159	\N	\N	\N	t
+798			2022-07-05 16:49:55.735583+00	\N	73	330	\N	\N	\N	t
+800			2022-07-05 16:49:55.761668+00	\N	73	331	\N	\N	\N	t
+717			2022-07-05 16:49:54.251901+00	\N	73	288	\N	\N	\N	t
+719			2022-07-05 16:49:54.277987+00	\N	73	289	\N	\N	\N	t
+721			2022-07-05 16:49:54.30239+00	\N	73	290	\N	\N	\N	t
+723			2022-07-05 16:49:54.327859+00	\N	73	291	\N	\N	\N	t
+527			2022-07-05 16:49:51.100851+00	\N	73	190	\N	\N	\N	t
+351			2022-07-05 16:46:03.609134+00	\N	73	102	\N	\N	\N	t
+1012			2022-07-05 16:50:22.178493+00	\N	73	438	\N	\N	\N	t
+1812			2022-07-05 17:04:59.063609+00	\N	73	642	\N	\N	\N	t
+333			2022-07-05 16:46:03.322183+00	\N	73	93	\N	\N	\N	t
+335			2022-07-05 16:46:03.358505+00	\N	73	94	\N	\N	\N	t
+476			2022-07-05 16:49:50.250279+00	\N	73	164	\N	\N	\N	t
+304			2022-07-05 16:45:03.088387+00	\N	73	79	\N	\N	\N	t
+1218			2022-07-05 16:57:30.258764+00	\N	73	531	\N	\N	\N	t
+1290			2022-07-05 16:58:09.782111+00	\N	73	552	\N	\N	\N	t
+1147			2022-07-05 16:53:56.142408+00	\N	73	502	\N	\N	\N	t
+221			2022-07-05 16:38:24.963867+00	\N	73	39	\N	\N	\N	t
+1333			2022-07-05 16:58:27.103217+00	\N	73	563	\N	\N	\N	t
+1460			2022-07-05 16:58:42.70493+00	\N	73	593	\N	\N	\N	t
+3945	I’m Not That Smart	Spelling Bee	2022-07-05 17:17:25.02292+00	2022-07-05 19:30:29.626868+00	100	1	28	\N	2.5	f
+4027	A Deadgirl Walking	Heathers	2022-07-05 17:18:55.108053+00	2022-07-05 18:22:50.135956+00	101	1	29	\N	2.5	f
+4068	Let It Go	Frozen	2022-07-05 17:19:30.464155+00	\N	78	1	30	\N	2.5	f
+4109	You've Got a Friend	Toy Story	2022-07-05 17:21:09.394307+00	2022-07-05 18:22:51.171355+00	102	1	31	\N	2.5	f
+4170	Surabaya Santa	Songs for a New World	2022-07-05 17:23:29.329823+00	2022-07-05 19:30:30.63933+00	103	1	32	\N	2.5	f
+1335			2022-07-05 16:58:27.15873+00	\N	73	564	\N	\N	\N	t
+145			2022-07-05 16:25:10.379195+00	\N	73	3	\N	\N	\N	t
+1462			2022-07-05 16:58:42.748675+00	\N	73	594	\N	\N	\N	t
+1464			2022-07-05 16:58:42.802076+00	\N	73	595	\N	\N	\N	t
+2160			2022-07-05 17:05:10.664979+00	\N	73	684	\N	\N	\N	t
+837			2022-07-05 16:49:56.393677+00	\N	73	350	\N	\N	\N	t
+901			2022-07-05 16:49:57.615452+00	\N	73	383	\N	\N	\N	t
+275			2022-07-05 16:42:21.217644+00	\N	73	65	\N	\N	\N	t
+277			2022-07-05 16:42:21.238866+00	\N	73	66	\N	\N	\N	t
+287			2022-07-05 16:43:52.097127+00	\N	73	71	\N	\N	\N	t
+544			2022-07-05 16:49:51.398428+00	\N	73	199	\N	\N	\N	t
+810			2022-07-05 16:49:55.953547+00	\N	73	336	\N	\N	\N	t
+1358			2022-07-05 16:58:34.376507+00	\N	73	570	\N	\N	\N	t
+2140			2022-07-05 17:05:09.976843+00	\N	73	682	\N	\N	\N	t
+678			2022-07-05 16:49:53.588776+00	\N	73	268	\N	\N	\N	t
+680			2022-07-05 16:49:53.612688+00	\N	73	269	\N	\N	\N	t
+880			2022-07-05 16:49:57.215771+00	\N	73	372	\N	\N	\N	t
+882			2022-07-05 16:49:57.243914+00	\N	73	373	\N	\N	\N	t
+664			2022-07-05 16:49:53.312376+00	\N	73	261	\N	\N	\N	t
+1871			2022-07-05 17:05:01.202489+00	\N	73	648	\N	\N	\N	t
+1292			2022-07-05 16:58:09.816763+00	\N	73	553	\N	\N	\N	t
+1294			2022-07-05 16:58:09.850815+00	\N	73	554	\N	\N	\N	t
+1296			2022-07-05 16:58:09.902628+00	\N	73	555	\N	\N	\N	t
+1298			2022-07-05 16:58:09.953897+00	\N	73	556	\N	\N	\N	t
+1300			2022-07-05 16:58:09.998591+00	\N	73	557	\N	\N	\N	t
+1362			2022-07-05 16:58:34.453336+00	\N	73	572	\N	\N	\N	t
+1397			2022-07-05 16:58:38.281111+00	\N	73	579	\N	\N	\N	t
+1399			2022-07-05 16:58:38.333012+00	\N	73	580	\N	\N	\N	t
+1341			2022-07-05 16:58:27.270152+00	\N	73	567	\N	\N	\N	t
+1082			2022-07-05 16:53:47.354071+00	\N	73	472	\N	\N	\N	t
+1247			2022-07-05 16:58:02.136641+00	\N	73	539	\N	\N	\N	t
+1249			2022-07-05 16:58:02.173145+00	\N	73	540	\N	\N	\N	t
+1145			2022-07-05 16:53:56.107045+00	\N	73	501	\N	\N	\N	t
+1542			2022-07-05 17:01:04.142292+00	\N	73	607	\N	\N	\N	t
+2469			2022-07-05 17:05:21.749724+00	\N	73	712	\N	\N	\N	t
+2510			2022-07-05 17:05:25.182187+00	\N	73	714	\N	\N	\N	t
+2530			2022-07-05 17:05:25.945081+00	\N	73	715	\N	\N	\N	t
+631			2022-07-05 16:49:52.787924+00	\N	73	244	\N	\N	\N	t
+501			2022-07-05 16:49:50.687709+00	\N	73	177	\N	\N	\N	t
+657			2022-07-05 16:49:53.159631+00	\N	73	257	\N	\N	\N	t
+429			2022-07-05 16:49:08.866891+00	\N	73	140	\N	\N	\N	t
+431			2022-07-05 16:49:08.8923+00	\N	73	141	\N	\N	\N	t
+433			2022-07-05 16:49:08.915445+00	\N	73	142	\N	\N	\N	t
+660			2022-07-05 16:49:53.263985+00	\N	73	259	\N	\N	\N	t
+662			2022-07-05 16:49:53.28884+00	\N	73	260	\N	\N	\N	t
+472			2022-07-05 16:49:50.207019+00	\N	73	162	\N	\N	\N	t
+423			2022-07-05 16:49:08.729068+00	\N	73	137	\N	\N	\N	t
+425			2022-07-05 16:49:08.752806+00	\N	73	138	\N	\N	\N	t
+427			2022-07-05 16:49:08.777651+00	\N	73	139	\N	\N	\N	t
+374			2022-07-05 16:48:03.056963+00	\N	73	113	\N	\N	\N	t
+376			2022-07-05 16:48:03.079086+00	\N	73	114	\N	\N	\N	t
+378			2022-07-05 16:48:03.102774+00	\N	73	115	\N	\N	\N	t
+160			2022-07-05 16:25:41.526958+00	\N	73	10	\N	\N	\N	t
+162			2022-07-05 16:25:41.546322+00	\N	73	11	\N	\N	\N	t
+2407			2022-07-05 17:05:19.445875+00	\N	73	707	\N	\N	\N	t
+2409			2022-07-05 17:05:19.689461+00	\N	73	708	\N	\N	\N	t
+888			2022-07-05 16:49:57.324766+00	\N	73	376	\N	\N	\N	t
+794			2022-07-05 16:49:55.684862+00	\N	73	328	\N	\N	\N	t
+1337			2022-07-05 16:58:27.194254+00	\N	73	565	\N	\N	\N	t
+1728			2022-07-05 17:04:56.389014+00	\N	73	631	\N	\N	\N	t
+1730			2022-07-05 17:04:56.426425+00	\N	73	632	\N	\N	\N	t
+326			2022-07-05 16:45:03.4179+00	\N	73	90	\N	\N	\N	t
+328			2022-07-05 16:45:03.440184+00	\N	73	91	\N	\N	\N	t
+666			2022-07-05 16:49:53.335744+00	\N	73	262	\N	\N	\N	t
+1176			2022-07-05 16:57:00.670124+00	\N	73	514	\N	\N	\N	t
+1098			2022-07-05 16:53:47.725321+00	\N	73	480	\N	\N	\N	t
+1100			2022-07-05 16:53:47.758341+00	\N	73	481	\N	\N	\N	t
+1102			2022-07-05 16:53:47.789535+00	\N	73	482	\N	\N	\N	t
+789			2022-07-05 16:49:55.546695+00	\N	73	325	\N	\N	\N	t
+791			2022-07-05 16:49:55.617783+00	\N	73	326	\N	\N	\N	t
+540			2022-07-05 16:49:51.272469+00	\N	73	197	\N	\N	\N	t
+750			2022-07-05 16:49:54.87151+00	\N	73	305	\N	\N	\N	t
+752			2022-07-05 16:49:54.897127+00	\N	73	306	\N	\N	\N	t
+878			2022-07-05 16:49:57.188593+00	\N	73	371	\N	\N	\N	t
+891			2022-07-05 16:49:57.47839+00	\N	73	378	\N	\N	\N	t
+893			2022-07-05 16:49:57.506253+00	\N	73	379	\N	\N	\N	t
+796			2022-07-05 16:49:55.710038+00	\N	73	329	\N	\N	\N	t
+361			2022-07-05 16:46:03.722415+00	\N	73	107	\N	\N	\N	t
+140			2022-07-05 16:07:12.740848+00	\N	73	1	\N	\N	\N	t
+1194			2022-07-05 16:57:01.155838+00	\N	73	521	\N	\N	\N	t
+872			2022-07-05 16:49:57.042718+00	\N	73	368	\N	\N	\N	t
+273			2022-07-05 16:42:21.195886+00	\N	73	64	\N	\N	\N	t
+445			2022-07-05 16:49:49.810387+00	\N	73	148	\N	\N	\N	t
+967			2022-07-05 16:50:07.757276+00	\N	73	416	\N	\N	\N	t
+969			2022-07-05 16:50:07.787569+00	\N	73	417	\N	\N	\N	t
+971			2022-07-05 16:50:07.818706+00	\N	73	418	\N	\N	\N	t
+1354			2022-07-05 16:58:34.281119+00	\N	73	568	\N	\N	\N	t
+616			2022-07-05 16:49:52.548409+00	\N	73	236	\N	\N	\N	t
+672			2022-07-05 16:49:53.432291+00	\N	73	265	\N	\N	\N	t
+1239			2022-07-05 16:58:01.865697+00	\N	73	538	\N	\N	\N	t
+556			2022-07-05 16:49:51.558662+00	\N	73	205	\N	\N	\N	t
+156			2022-07-05 16:25:41.460381+00	\N	73	8	\N	\N	\N	t
+259			2022-07-05 16:42:20.990602+00	\N	73	57	\N	\N	\N	t
+1004			2022-07-05 16:50:21.980991+00	\N	73	434	\N	\N	\N	t
+1016			2022-07-05 16:50:22.263868+00	\N	73	440	\N	\N	\N	t
+1018			2022-07-05 16:50:22.293565+00	\N	73	441	\N	\N	\N	t
+1020			2022-07-05 16:50:22.325612+00	\N	73	442	\N	\N	\N	t
+1257			2022-07-05 16:58:02.333989+00	\N	73	544	\N	\N	\N	t
+1259			2022-07-05 16:58:02.415102+00	\N	73	545	\N	\N	\N	t
+167			2022-07-05 16:26:52.175502+00	\N	73	13	\N	\N	\N	t
+322			2022-07-05 16:45:03.369048+00	\N	73	88	\N	\N	\N	t
+1873			2022-07-05 17:05:01.239201+00	\N	73	649	\N	\N	\N	t
+1174			2022-07-05 16:57:00.634272+00	\N	73	513	\N	\N	\N	t
+2158			2022-07-05 17:05:10.628427+00	\N	73	683	\N	\N	\N	t
+787			2022-07-05 16:49:55.498743+00	\N	73	324	\N	\N	\N	t
+542			2022-07-05 16:49:51.295429+00	\N	73	198	\N	\N	\N	t
+748			2022-07-05 16:49:54.846187+00	\N	73	304	\N	\N	\N	t
+1096			2022-07-05 16:53:47.608823+00	\N	73	479	\N	\N	\N	t
+954			2022-07-05 16:49:58.615558+00	\N	73	410	\N	\N	\N	t
+957			2022-07-05 16:50:07.600551+00	\N	73	411	\N	\N	\N	t
+217			2022-07-05 16:38:24.922422+00	\N	73	37	\N	\N	\N	t
+219			2022-07-05 16:38:24.943495+00	\N	73	38	\N	\N	\N	t
+936			2022-07-05 16:49:58.247182+00	\N	73	401	\N	\N	\N	t
+903			2022-07-05 16:49:57.648401+00	\N	73	384	\N	\N	\N	t
+905			2022-07-05 16:49:57.68038+00	\N	73	385	\N	\N	\N	t
+907			2022-07-05 16:49:57.769411+00	\N	73	386	\N	\N	\N	t
+909			2022-07-05 16:49:57.797568+00	\N	73	387	\N	\N	\N	t
+1440			2022-07-05 16:58:42.124364+00	\N	73	589	\N	\N	\N	t
+1421			2022-07-05 16:58:38.966255+00	\N	73	586	\N	\N	\N	t
+1423			2022-07-05 16:58:39.005648+00	\N	73	587	\N	\N	\N	t
+192			2022-07-05 16:36:36.664278+00	\N	73	25	\N	\N	\N	t
+254			2022-07-05 16:40:35.595235+00	\N	73	55	\N	\N	\N	t
+759			2022-07-05 16:49:55.049134+00	\N	73	310	\N	\N	\N	t
+1953			2022-07-05 17:05:03.827622+00	\N	73	658	\N	\N	\N	t
+1955			2022-07-05 17:05:03.86478+00	\N	73	659	\N	\N	\N	t
+726			2022-07-05 16:49:54.45726+00	\N	73	293	\N	\N	\N	t
+728			2022-07-05 16:49:54.483016+00	\N	73	294	\N	\N	\N	t
+534			2022-07-05 16:49:51.204993+00	\N	73	194	\N	\N	\N	t
+536			2022-07-05 16:49:51.22768+00	\N	73	195	\N	\N	\N	t
+474			2022-07-05 16:49:50.228039+00	\N	73	163	\N	\N	\N	t
+802			2022-07-05 16:49:55.788138+00	\N	73	332	\N	\N	\N	t
+804			2022-07-05 16:49:55.813374+00	\N	73	333	\N	\N	\N	t
+637			2022-07-05 16:49:52.85968+00	\N	73	247	\N	\N	\N	t
+1055			2022-07-05 16:51:34.198945+00	\N	73	459	\N	\N	\N	t
+2428			2022-07-05 17:05:20.22343+00	\N	73	709	\N	\N	\N	t
+1479			2022-07-05 17:00:38.735955+00	\N	73	596	\N	\N	\N	t
+942			2022-07-05 16:49:58.424116+00	\N	73	404	\N	\N	\N	t
+944			2022-07-05 16:49:58.452753+00	\N	73	405	\N	\N	\N	t
+946			2022-07-05 16:49:58.481047+00	\N	73	406	\N	\N	\N	t
+1137			2022-07-05 16:53:55.83131+00	\N	73	498	\N	\N	\N	t
+1114			2022-07-05 16:53:47.989977+00	\N	73	488	\N	\N	\N	t
+1116			2022-07-05 16:53:48.0244+00	\N	73	489	\N	\N	\N	t
+1053			2022-07-05 16:51:34.165258+00	\N	73	458	\N	\N	\N	t
+965			2022-07-05 16:50:07.725733+00	\N	73	415	\N	\N	\N	t
+1748			2022-07-05 17:04:57.038634+00	\N	73	633	\N	\N	\N	t
+1127			2022-07-05 16:53:55.588214+00	\N	73	493	\N	\N	\N	t
+1129			2022-07-05 16:53:55.649616+00	\N	73	494	\N	\N	\N	t
+380			2022-07-05 16:48:03.191147+00	\N	73	116	\N	\N	\N	t
+382			2022-07-05 16:48:03.216474+00	\N	73	117	\N	\N	\N	t
+478			2022-07-05 16:49:50.329667+00	\N	73	165	\N	\N	\N	t
+497			2022-07-05 16:49:50.644651+00	\N	73	175	\N	\N	\N	t
+499			2022-07-05 16:49:50.6662+00	\N	73	176	\N	\N	\N	t
+985			2022-07-05 16:50:08.106184+00	\N	73	425	\N	\N	\N	t
+1791			2022-07-05 17:04:58.394725+00	\N	73	639	\N	\N	\N	t
+977			2022-07-05 16:50:07.981766+00	\N	73	421	\N	\N	\N	t
+981			2022-07-05 16:50:08.045226+00	\N	73	423	\N	\N	\N	t
+1789			2022-07-05 17:04:58.358026+00	\N	73	638	\N	\N	\N	t
+316			2022-07-05 16:45:03.277521+00	\N	73	85	\N	\N	\N	t
+246			2022-07-05 16:40:35.509609+00	\N	73	51	\N	\N	\N	t
+647			2022-07-05 16:49:53.038923+00	\N	73	252	\N	\N	\N	t
+693			2022-07-05 16:49:53.83704+00	\N	73	276	\N	\N	\N	t
+1104			2022-07-05 16:53:47.820896+00	\N	73	483	\N	\N	\N	t
+1106			2022-07-05 16:53:47.859386+00	\N	73	484	\N	\N	\N	t
+1112			2022-07-05 16:53:47.954992+00	\N	73	487	\N	\N	\N	t
+229	When I Am Older	Frozen 2	2022-07-05 16:40:35.244375+00	2022-07-05 17:16:33.522861+00	82	1	7	\N	1	f
+1022	Pirat Jenny	Threepenny Opera	2022-07-05 16:51:33.539938+00	2022-07-05 17:31:44.417928+00	79	1	9	\N	1	f
+215			2022-07-05 16:38:24.834372+00	\N	73	36	\N	\N	\N	t
+684			2022-07-05 16:49:53.661496+00	\N	73	271	\N	\N	\N	t
+808			2022-07-05 16:49:55.926458+00	\N	73	335	\N	\N	\N	t
+1442			2022-07-05 16:58:42.16249+00	\N	73	590	\N	\N	\N	t
+1444			2022-07-05 16:58:42.2193+00	\N	73	591	\N	\N	\N	t
+1025			2022-07-05 16:51:33.631315+00	\N	73	444	\N	\N	\N	t
+240			2022-07-05 16:40:35.392831+00	\N	73	48	\N	\N	\N	t
+242			2022-07-05 16:40:35.413981+00	\N	73	49	\N	\N	\N	t
+225			2022-07-05 16:38:25.005563+00	\N	73	41	\N	\N	\N	t
+227			2022-07-05 16:38:25.028035+00	\N	73	42	\N	\N	\N	t
+515			2022-07-05 16:49:50.925853+00	\N	73	184	\N	\N	\N	t
+561			2022-07-05 16:49:51.67679+00	\N	73	208	\N	\N	\N	t
+831			2022-07-05 16:49:56.292292+00	\N	73	347	\N	\N	\N	t
+833			2022-07-05 16:49:56.319289+00	\N	73	348	\N	\N	\N	t
+835			2022-07-05 16:49:56.346818+00	\N	73	349	\N	\N	\N	t
+1415			2022-07-05 16:58:38.839835+00	\N	73	583	\N	\N	\N	t
+911			2022-07-05 16:49:57.824816+00	\N	73	388	\N	\N	\N	t
+913			2022-07-05 16:49:57.85174+00	\N	73	389	\N	\N	\N	t
+915			2022-07-05 16:49:57.880087+00	\N	73	390	\N	\N	\N	t
+917			2022-07-05 16:49:57.909378+00	\N	73	391	\N	\N	\N	t
+565			2022-07-05 16:49:51.722777+00	\N	73	210	\N	\N	\N	t
+567			2022-07-05 16:49:51.745168+00	\N	73	211	\N	\N	\N	t
+1237			2022-07-05 16:58:01.831602+00	\N	73	537	\N	\N	\N	t
+653			2022-07-05 16:49:53.112066+00	\N	73	255	\N	\N	\N	t
+655			2022-07-05 16:49:53.135227+00	\N	73	256	\N	\N	\N	t
+740			2022-07-05 16:49:54.659091+00	\N	73	300	\N	\N	\N	t
+248			2022-07-05 16:40:35.5307+00	\N	73	52	\N	\N	\N	t
+417			2022-07-05 16:49:08.654823+00	\N	73	134	\N	\N	\N	t
+447			2022-07-05 16:49:49.835924+00	\N	73	149	\N	\N	\N	t
+345			2022-07-05 16:46:03.478165+00	\N	73	99	\N	\N	\N	t
+306			2022-07-05 16:45:03.110422+00	\N	73	80	\N	\N	\N	t
+308			2022-07-05 16:45:03.132039+00	\N	73	81	\N	\N	\N	t
+390			2022-07-05 16:48:03.309669+00	\N	73	121	\N	\N	\N	t
+392			2022-07-05 16:48:03.332068+00	\N	73	122	\N	\N	\N	t
+394			2022-07-05 16:48:03.372514+00	\N	73	123	\N	\N	\N	t
+404			2022-07-05 16:48:26.074935+00	\N	73	128	\N	\N	\N	t
+406			2022-07-05 16:48:26.105139+00	\N	73	129	\N	\N	\N	t
+408			2022-07-05 16:48:26.129032+00	\N	73	130	\N	\N	\N	t
+410			2022-07-05 16:48:26.154537+00	\N	73	131	\N	\N	\N	t
+443			2022-07-05 16:49:09.063643+00	\N	73	147	\N	\N	\N	t
+538			2022-07-05 16:49:51.250531+00	\N	73	196	\N	\N	\N	t
+1851			2022-07-05 17:05:00.50708+00	\N	73	646	\N	\N	\N	t
+1853			2022-07-05 17:05:00.554385+00	\N	73	647	\N	\N	\N	t
+232			2022-07-05 16:40:35.309239+00	\N	73	44	\N	\N	\N	t
+480			2022-07-05 16:49:50.352063+00	\N	73	166	\N	\N	\N	t
+569			2022-07-05 16:49:51.768655+00	\N	73	212	\N	\N	\N	t
+627			2022-07-05 16:49:52.740405+00	\N	73	242	\N	\N	\N	t
+1170			2022-07-05 16:57:00.5677+00	\N	73	511	\N	\N	\N	t
+938			2022-07-05 16:49:58.276224+00	\N	73	402	\N	\N	\N	t
+940			2022-07-05 16:49:58.387138+00	\N	73	403	\N	\N	\N	t
+1605			2022-07-05 17:04:15.050726+00	\N	73	617	\N	\N	\N	t
+1014			2022-07-05 16:50:22.228337+00	\N	73	439	\N	\N	\N	t
+1707			2022-07-05 17:04:55.706691+00	\N	73	628	\N	\N	\N	t
+1709			2022-07-05 17:04:55.743265+00	\N	73	629	\N	\N	\N	t
+1499			2022-07-05 17:00:39.334166+00	\N	73	600	\N	\N	\N	t
+1501			2022-07-05 17:00:39.370227+00	\N	73	601	\N	\N	\N	t
+1503			2022-07-05 17:00:39.407241+00	\N	73	602	\N	\N	\N	t
+1505			2022-07-05 17:00:39.459415+00	\N	73	603	\N	\N	\N	t
+1376			2022-07-05 16:58:34.962976+00	\N	73	574	\N	\N	\N	t
+1378			2022-07-05 16:58:34.998437+00	\N	73	575	\N	\N	\N	t
+1380			2022-07-05 16:58:35.059576+00	\N	73	576	\N	\N	\N	t
+1382			2022-07-05 16:58:35.104349+00	\N	73	577	\N	\N	\N	t
+1172			2022-07-05 16:57:00.60036+00	\N	73	512	\N	\N	\N	t
+1178			2022-07-05 16:57:00.704878+00	\N	73	515	\N	\N	\N	t
+990			2022-07-05 16:50:21.741673+00	\N	73	427	\N	\N	\N	t
+992			2022-07-05 16:50:21.774983+00	\N	73	428	\N	\N	\N	t
+1149			2022-07-05 16:53:56.176569+00	\N	73	503	\N	\N	\N	t
+1151			2022-07-05 16:53:56.208908+00	\N	73	504	\N	\N	\N	t
+1153			2022-07-05 16:53:56.261966+00	\N	73	505	\N	\N	\N	t
+1155			2022-07-05 16:53:56.322742+00	\N	73	506	\N	\N	\N	t
+1164			2022-07-05 16:57:00.462074+00	\N	73	508	\N	\N	\N	t
+1031			2022-07-05 16:51:33.727897+00	\N	73	447	\N	\N	\N	t
+1033			2022-07-05 16:51:33.760443+00	\N	73	448	\N	\N	\N	t
+1035			2022-07-05 16:51:33.79205+00	\N	73	449	\N	\N	\N	t
+1037			2022-07-05 16:51:33.824119+00	\N	73	450	\N	\N	\N	t
+690			2022-07-05 16:49:53.735249+00	\N	73	274	\N	\N	\N	t
+1276			2022-07-05 16:58:09.394472+00	\N	73	549	\N	\N	\N	t
+1278			2022-07-05 16:58:09.429654+00	\N	73	550	\N	\N	\N	t
+1280			2022-07-05 16:58:09.464594+00	\N	73	551	\N	\N	\N	t
+1192			2022-07-05 16:57:01.122059+00	\N	73	520	\N	\N	\N	t
+1057			2022-07-05 16:51:34.232784+00	\N	73	460	\N	\N	\N	t
+396			2022-07-05 16:48:25.971755+00	\N	73	124	\N	\N	\N	t
+398			2022-07-05 16:48:25.997981+00	\N	73	125	\N	\N	\N	t
+583			2022-07-05 16:49:51.988441+00	\N	73	219	\N	\N	\N	t
+256			2022-07-05 16:40:35.616304+00	\N	73	56	\N	\N	\N	t
+194			2022-07-05 16:36:36.724199+00	\N	73	26	\N	\N	\N	t
+614			2022-07-05 16:49:52.525153+00	\N	73	235	\N	\N	\N	t
+1233			2022-07-05 16:58:01.763513+00	\N	73	535	\N	\N	\N	t
+1184			2022-07-05 16:57:00.938311+00	\N	73	516	\N	\N	\N	t
+585			2022-07-05 16:49:52.013361+00	\N	73	220	\N	\N	\N	t
+587			2022-07-05 16:49:52.036931+00	\N	73	221	\N	\N	\N	t
+441			2022-07-05 16:49:09.013209+00	\N	73	146	\N	\N	\N	t
+230			2022-07-05 16:40:35.288112+00	\N	73	43	\N	\N	\N	t
+1121			2022-07-05 16:53:55.46101+00	\N	73	490	\N	\N	\N	t
+1123			2022-07-05 16:53:55.494356+00	\N	73	491	\N	\N	\N	t
+1994			2022-07-05 17:05:05.199893+00	\N	73	663	\N	\N	\N	t
+1996			2022-07-05 17:05:05.237427+00	\N	73	664	\N	\N	\N	t
+1750			2022-07-05 17:04:57.075068+00	\N	73	634	\N	\N	\N	t
+674			2022-07-05 16:49:53.457054+00	\N	73	266	\N	\N	\N	t
+676			2022-07-05 16:49:53.56398+00	\N	73	267	\N	\N	\N	t
+1360			2022-07-05 16:58:34.415879+00	\N	73	571	\N	\N	\N	t
+1023			2022-07-05 16:51:33.59723+00	\N	73	443	\N	\N	\N	t
+1039			2022-07-05 16:51:33.858154+00	\N	73	451	\N	\N	\N	t
+2179			2022-07-05 17:05:11.3462+00	\N	73	686	\N	\N	\N	t
+775			2022-07-05 16:49:55.316805+00	\N	73	318	\N	\N	\N	t
+777			2022-07-05 16:49:55.343258+00	\N	73	319	\N	\N	\N	t
+779			2022-07-05 16:49:55.389317+00	\N	73	320	\N	\N	\N	t
+820			2022-07-05 16:49:56.085294+00	\N	73	341	\N	\N	\N	t
+822			2022-07-05 16:49:56.111727+00	\N	73	342	\N	\N	\N	t
+825			2022-07-05 16:49:56.213944+00	\N	73	344	\N	\N	\N	t
+827			2022-07-05 16:49:56.240669+00	\N	73	345	\N	\N	\N	t
+829			2022-07-05 16:49:56.266388+00	\N	73	346	\N	\N	\N	t
+158			2022-07-05 16:25:41.479835+00	\N	73	9	\N	\N	\N	t
+169			2022-07-05 16:26:52.196735+00	\N	73	14	\N	\N	\N	t
+437			2022-07-05 16:49:08.963929+00	\N	73	144	\N	\N	\N	t
+171			2022-07-05 16:26:52.216996+00	\N	73	15	\N	\N	\N	t
+439			2022-07-05 16:49:08.988981+00	\N	73	145	\N	\N	\N	t
+173			2022-07-05 16:26:52.237708+00	\N	73	16	\N	\N	\N	t
+573			2022-07-05 16:49:51.814094+00	\N	73	214	\N	\N	\N	t
+575			2022-07-05 16:49:51.837689+00	\N	73	215	\N	\N	\N	t
+577			2022-07-05 16:49:51.918717+00	\N	73	216	\N	\N	\N	t
+2015			2022-07-05 17:05:05.854033+00	\N	73	666	\N	\N	\N	t
+2017			2022-07-05 17:05:05.891684+00	\N	73	667	\N	\N	\N	t
+2056			2022-07-05 17:05:07.209287+00	\N	73	671	\N	\N	\N	t
+2058			2022-07-05 17:05:07.247943+00	\N	73	672	\N	\N	\N	t
+2097			2022-07-05 17:05:08.599465+00	\N	73	676	\N	\N	\N	t
+2099			2022-07-05 17:05:08.636597+00	\N	73	677	\N	\N	\N	t
+2181			2022-07-05 17:05:11.385299+00	\N	73	687	\N	\N	\N	t
+2199			2022-07-05 17:05:11.997482+00	\N	73	688	\N	\N	\N	t
+1110			2022-07-05 16:53:47.922421+00	\N	73	486	\N	\N	\N	t
+736			2022-07-05 16:49:54.607932+00	\N	73	298	\N	\N	\N	t
+341			2022-07-05 16:46:03.433995+00	\N	73	97	\N	\N	\N	t
+806			2022-07-05 16:49:55.839417+00	\N	73	334	\N	\N	\N	t
+651			2022-07-05 16:49:53.087494+00	\N	73	254	\N	\N	\N	t
+563			2022-07-05 16:49:51.700184+00	\N	73	209	\N	\N	\N	t
+1002			2022-07-05 16:50:21.949338+00	\N	73	433	\N	\N	\N	t
+347			2022-07-05 16:46:03.563771+00	\N	73	100	\N	\N	\N	t
+349			2022-07-05 16:46:03.587138+00	\N	73	101	\N	\N	\N	t
+734			2022-07-05 16:49:54.581781+00	\N	73	297	\N	\N	\N	t
+1687			2022-07-05 17:04:55.041024+00	\N	73	626	\N	\N	\N	t
+1689			2022-07-05 17:04:55.079666+00	\N	73	627	\N	\N	\N	t
+1231			2022-07-05 16:58:01.730947+00	\N	73	534	\N	\N	\N	t
+738			2022-07-05 16:49:54.633086+00	\N	73	299	\N	\N	\N	t
+149			2022-07-05 16:25:10.439019+00	\N	73	5	\N	\N	\N	t
+659			2022-07-05 16:49:53.225141+00	\N	73	258	\N	\N	\N	t
+2448			2022-07-05 17:05:20.954291+00	\N	73	710	\N	\N	\N	t
+633			2022-07-05 16:49:52.811477+00	\N	73	245	\N	\N	\N	t
+701			2022-07-05 16:49:53.95787+00	\N	73	280	\N	\N	\N	t
+703			2022-07-05 16:49:53.983004+00	\N	73	281	\N	\N	\N	t
+1043			2022-07-05 16:51:34.001941+00	\N	73	453	\N	\N	\N	t
+1045			2022-07-05 16:51:34.035039+00	\N	73	454	\N	\N	\N	t
+468			2022-07-05 16:49:50.161935+00	\N	73	160	\N	\N	\N	t
+649			2022-07-05 16:49:53.062517+00	\N	73	253	\N	\N	\N	t
+482			2022-07-05 16:49:50.3737+00	\N	73	167	\N	\N	\N	t
+484			2022-07-05 16:49:50.395465+00	\N	73	168	\N	\N	\N	t
+486			2022-07-05 16:49:50.418099+00	\N	73	169	\N	\N	\N	t
+591			2022-07-05 16:49:52.083013+00	\N	73	223	\N	\N	\N	t
+996			2022-07-05 16:50:21.836224+00	\N	73	430	\N	\N	\N	t
+998			2022-07-05 16:50:21.86871+00	\N	73	431	\N	\N	\N	t
+1000			2022-07-05 16:50:21.901319+00	\N	73	432	\N	\N	\N	t
+924			2022-07-05 16:49:58.07875+00	\N	73	395	\N	\N	\N	t
+926			2022-07-05 16:49:58.107121+00	\N	73	396	\N	\N	\N	t
+928			2022-07-05 16:49:58.135058+00	\N	73	397	\N	\N	\N	t
+930			2022-07-05 16:49:58.162206+00	\N	73	398	\N	\N	\N	t
+932			2022-07-05 16:49:58.19006+00	\N	73	399	\N	\N	\N	t
+934			2022-07-05 16:49:58.218988+00	\N	73	400	\N	\N	\N	t
+841			2022-07-05 16:49:56.538257+00	\N	73	352	\N	\N	\N	t
+353			2022-07-05 16:46:03.631371+00	\N	73	103	\N	\N	\N	t
+355			2022-07-05 16:46:03.654884+00	\N	73	104	\N	\N	\N	t
+357			2022-07-05 16:46:03.677934+00	\N	73	105	\N	\N	\N	t
+359			2022-07-05 16:46:03.699329+00	\N	73	106	\N	\N	\N	t
+519			2022-07-05 16:49:50.970241+00	\N	73	186	\N	\N	\N	t
+196			2022-07-05 16:36:36.744602+00	\N	73	27	\N	\N	\N	t
+198			2022-07-05 16:36:36.765152+00	\N	73	28	\N	\N	\N	t
+200			2022-07-05 16:36:36.785595+00	\N	73	29	\N	\N	\N	t
+668			2022-07-05 16:49:53.360194+00	\N	73	263	\N	\N	\N	t
+670			2022-07-05 16:49:53.40868+00	\N	73	264	\N	\N	\N	t
+470			2022-07-05 16:49:50.184815+00	\N	73	161	\N	\N	\N	t
+186			2022-07-05 16:36:36.60265+00	\N	73	22	\N	\N	\N	t
+188			2022-07-05 16:36:36.623513+00	\N	73	23	\N	\N	\N	t
+190			2022-07-05 16:36:36.644003+00	\N	73	24	\N	\N	\N	t
+761			2022-07-05 16:49:55.076296+00	\N	73	311	\N	\N	\N	t
+763			2022-07-05 16:49:55.102468+00	\N	73	312	\N	\N	\N	t
+705			2022-07-05 16:49:54.007642+00	\N	73	282	\N	\N	\N	t
+707			2022-07-05 16:49:54.063888+00	\N	73	283	\N	\N	\N	t
+1166			2022-07-05 16:57:00.496582+00	\N	73	509	\N	\N	\N	t
+1168			2022-07-05 16:57:00.533114+00	\N	73	510	\N	\N	\N	t
+202			2022-07-05 16:36:36.805861+00	\N	73	30	\N	\N	\N	t
+205			2022-07-05 16:38:24.731756+00	\N	73	31	\N	\N	\N	t
+207			2022-07-05 16:38:24.752861+00	\N	73	32	\N	\N	\N	t
+1061			2022-07-05 16:53:27.236633+00	\N	73	462	\N	\N	\N	t
+1063			2022-07-05 16:53:27.284813+00	\N	73	463	\N	\N	\N	t
+1075			2022-07-05 16:53:27.495383+00	\N	73	469	\N	\N	\N	t
+1065			2022-07-05 16:53:27.326363+00	\N	73	464	\N	\N	\N	t
+1067			2022-07-05 16:53:27.360886+00	\N	73	465	\N	\N	\N	t
+1069			2022-07-05 16:53:27.395425+00	\N	73	466	\N	\N	\N	t
+1071			2022-07-05 16:53:27.427977+00	\N	73	467	\N	\N	\N	t
+1041			2022-07-05 16:51:33.968441+00	\N	73	452	\N	\N	\N	t
+765			2022-07-05 16:49:55.127844+00	\N	73	313	\N	\N	\N	t
+767			2022-07-05 16:49:55.154113+00	\N	73	314	\N	\N	\N	t
+1769			2022-07-05 17:04:57.749557+00	\N	73	636	\N	\N	\N	t
+1771			2022-07-05 17:04:57.78558+00	\N	73	637	\N	\N	\N	t
+523			2022-07-05 16:49:51.015303+00	\N	73	188	\N	\N	\N	t
+525			2022-07-05 16:49:51.038617+00	\N	73	189	\N	\N	\N	t
+244			2022-07-05 16:40:35.488257+00	\N	73	50	\N	\N	\N	t
+550			2022-07-05 16:49:51.490436+00	\N	73	202	\N	\N	\N	t
+552			2022-07-05 16:49:51.513512+00	\N	73	203	\N	\N	\N	t
+554			2022-07-05 16:49:51.536659+00	\N	73	204	\N	\N	\N	t
+792			2022-07-05 16:49:55.658607+00	\N	73	327	\N	\N	\N	t
+331			2022-07-05 16:46:03.297803+00	\N	73	92	\N	\N	\N	t
+320			2022-07-05 16:45:03.334646+00	\N	73	87	\N	\N	\N	t
+279			2022-07-05 16:42:21.259673+00	\N	73	67	\N	\N	\N	t
+312			2022-07-05 16:45:03.178687+00	\N	73	83	\N	\N	\N	t
+281			2022-07-05 16:42:21.28271+00	\N	73	68	\N	\N	\N	t
+686			2022-07-05 16:49:53.686416+00	\N	73	272	\N	\N	\N	t
+283			2022-07-05 16:42:21.305423+00	\N	73	69	\N	\N	\N	t
+285			2022-07-05 16:42:21.326501+00	\N	73	70	\N	\N	\N	t
+175			2022-07-05 16:26:52.292011+00	\N	73	17	\N	\N	\N	t
+177			2022-07-05 16:26:52.312412+00	\N	73	18	\N	\N	\N	t
+2489			2022-07-05 17:05:22.452836+00	\N	73	713	\N	\N	\N	t
+709			2022-07-05 16:49:54.149279+00	\N	73	284	\N	\N	\N	t
+711			2022-07-05 16:49:54.175494+00	\N	73	285	\N	\N	\N	t
+1935			2022-07-05 17:05:03.241947+00	\N	73	657	\N	\N	\N	t
+546			2022-07-05 16:49:51.421644+00	\N	73	200	\N	\N	\N	t
+548			2022-07-05 16:49:51.467932+00	\N	73	201	\N	\N	\N	t
+435			2022-07-05 16:49:08.938895+00	\N	73	143	\N	\N	\N	t
+521			2022-07-05 16:49:50.993102+00	\N	73	187	\N	\N	\N	t
+2284			2022-07-05 17:05:14.844234+00	\N	73	698	\N	\N	\N	t
+635			2022-07-05 16:49:52.835642+00	\N	73	246	\N	\N	\N	t
+695			2022-07-05 16:49:53.884849+00	\N	73	277	\N	\N	\N	t
+2366			2022-07-05 17:05:17.964565+00	\N	73	704	\N	\N	\N	t
+697			2022-07-05 16:49:53.908856+00	\N	73	278	\N	\N	\N	t
+258	For Good	Wicked	2022-07-05 16:42:20.951293+00	2022-07-05 18:39:08.615089+00	77	2	17	81	2	f
+1302	Let's Be Bad	Bombshell (Smash)	2022-07-05 16:58:26.240723+00	2022-07-05 18:41:45.731758+00	90	1	18	\N	2	f
+1049			2022-07-05 16:51:34.100134+00	\N	73	456	\N	\N	\N	t
+1051			2022-07-05 16:51:34.133049+00	\N	73	457	\N	\N	\N	t
+1204			2022-07-05 16:57:29.927744+00	\N	73	524	\N	\N	\N	t
+699			2022-07-05 16:49:53.932918+00	\N	73	279	\N	\N	\N	t
+725			2022-07-05 16:49:54.416671+00	\N	73	292	\N	\N	\N	t
+713			2022-07-05 16:49:54.200557+00	\N	73	286	\N	\N	\N	t
+715			2022-07-05 16:49:54.225874+00	\N	73	287	\N	\N	\N	t
+843			2022-07-05 16:49:56.565714+00	\N	73	353	\N	\N	\N	t
+845			2022-07-05 16:49:56.592206+00	\N	73	354	\N	\N	\N	t
+847			2022-07-05 16:49:56.6192+00	\N	73	355	\N	\N	\N	t
+849			2022-07-05 16:49:56.646479+00	\N	73	356	\N	\N	\N	t
+851			2022-07-05 16:49:56.67364+00	\N	73	357	\N	\N	\N	t
+853			2022-07-05 16:49:56.699294+00	\N	73	358	\N	\N	\N	t
+1078			2022-07-05 16:53:47.28723+00	\N	73	470	\N	\N	\N	t
+1059			2022-07-05 16:53:27.201239+00	\N	73	461	\N	\N	\N	t
+1073			2022-07-05 16:53:27.460453+00	\N	73	468	\N	\N	\N	t
+324			2022-07-05 16:45:03.393922+00	\N	73	89	\N	\N	\N	t
+1133			2022-07-05 16:53:55.734387+00	\N	73	496	\N	\N	\N	t
+1135			2022-07-05 16:53:55.78672+00	\N	73	497	\N	\N	\N	t
+814			2022-07-05 16:49:56.006189+00	\N	73	338	\N	\N	\N	t
+816			2022-07-05 16:49:56.03325+00	\N	73	339	\N	\N	\N	t
+818			2022-07-05 16:49:56.060018+00	\N	73	340	\N	\N	\N	t
+1524			2022-07-05 17:01:03.579563+00	\N	73	605	\N	\N	\N	t
+400			2022-07-05 16:48:26.022848+00	\N	73	126	\N	\N	\N	t
+402			2022-07-05 16:48:26.047539+00	\N	73	127	\N	\N	\N	t
+987			2022-07-05 16:50:08.137153+00	\N	73	426	\N	\N	\N	t
+209			2022-07-05 16:38:24.772683+00	\N	73	33	\N	\N	\N	t
+211			2022-07-05 16:38:24.793408+00	\N	73	34	\N	\N	\N	t
+213			2022-07-05 16:38:24.813949+00	\N	73	35	\N	\N	\N	t
+855			2022-07-05 16:49:56.726034+00	\N	73	359	\N	\N	\N	t
+857			2022-07-05 16:49:56.809411+00	\N	73	360	\N	\N	\N	t
+1006			2022-07-05 16:50:22.084446+00	\N	73	435	\N	\N	\N	t
+1008			2022-07-05 16:50:22.116804+00	\N	73	436	\N	\N	\N	t
+1010			2022-07-05 16:50:22.147685+00	\N	73	437	\N	\N	\N	t
+1206			2022-07-05 16:57:29.961081+00	\N	73	525	\N	\N	\N	t
+1208			2022-07-05 16:57:29.996027+00	\N	73	526	\N	\N	\N	t
+868			2022-07-05 16:49:56.986982+00	\N	73	366	\N	\N	\N	t
+870			2022-07-05 16:49:57.014598+00	\N	73	367	\N	\N	\N	t
+314			2022-07-05 16:45:03.20078+00	\N	73	84	\N	\N	\N	t
+339			2022-07-05 16:46:03.411348+00	\N	73	96	\N	\N	\N	t
+179			2022-07-05 16:26:52.332597+00	\N	73	19	\N	\N	\N	t
+293			2022-07-05 16:43:52.162516+00	\N	73	74	\N	\N	\N	t
+1210			2022-07-05 16:57:30.115084+00	\N	73	527	\N	\N	\N	t
+1212			2022-07-05 16:57:30.149732+00	\N	73	528	\N	\N	\N	t
+181			2022-07-05 16:26:52.352979+00	\N	73	20	\N	\N	\N	t
+1313			2022-07-05 16:58:26.576319+00	\N	73	558	\N	\N	\N	t
+1315			2022-07-05 16:58:26.61456+00	\N	73	559	\N	\N	\N	t
+\.
+
+
+--
+-- Data for Name: song_signup_songrequest_additional_singers; Type: TABLE DATA; Schema: public; Owner: twistdbadmin
+--
+
+COPY public.song_signup_songrequest_additional_singers (id, songrequest_id, singer_id) FROM stdin;
+\.
+
+
+--
+-- Name: auth_group_id_seq; Type: SEQUENCE SET; Schema: public; Owner: twistdbadmin
+--
+
+SELECT pg_catalog.setval('public.auth_group_id_seq', 1, true);
+
+
+--
+-- Name: auth_group_permissions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: twistdbadmin
+--
+
+SELECT pg_catalog.setval('public.auth_group_permissions_id_seq', 2, true);
+
+
+--
+-- Name: auth_permission_id_seq; Type: SEQUENCE SET; Schema: public; Owner: twistdbadmin
+--
+
+SELECT pg_catalog.setval('public.auth_permission_id_seq', 36, true);
+
+
+--
+-- Name: django_admin_log_id_seq; Type: SEQUENCE SET; Schema: public; Owner: twistdbadmin
+--
+
+SELECT pg_catalog.setval('public.django_admin_log_id_seq', 76, true);
+
+
+--
+-- Name: django_content_type_id_seq; Type: SEQUENCE SET; Schema: public; Owner: twistdbadmin
+--
+
+SELECT pg_catalog.setval('public.django_content_type_id_seq', 9, true);
+
+
+--
+-- Name: django_migrations_id_seq; Type: SEQUENCE SET; Schema: public; Owner: twistdbadmin
+--
+
+SELECT pg_catalog.setval('public.django_migrations_id_seq', 46, true);
+
+
+--
+-- Name: flags_flagstate_id_seq; Type: SEQUENCE SET; Schema: public; Owner: twistdbadmin
+--
+
+SELECT pg_catalog.setval('public.flags_flagstate_id_seq', 1, true);
+
+
+--
+-- Name: song_signup_groupsongrequest_id_seq; Type: SEQUENCE SET; Schema: public; Owner: twistdbadmin
+--
+
+SELECT pg_catalog.setval('public.song_signup_groupsongrequest_id_seq', 65, true);
+
+
+--
+-- Name: song_signup_singer_groups_id_seq; Type: SEQUENCE SET; Schema: public; Owner: twistdbadmin
+--
+
+SELECT pg_catalog.setval('public.song_signup_singer_groups_id_seq', 105, true);
+
+
+--
+-- Name: song_signup_singer_id_seq; Type: SEQUENCE SET; Schema: public; Owner: twistdbadmin
+--
+
+SELECT pg_catalog.setval('public.song_signup_singer_id_seq', 108, true);
+
+
+--
+-- Name: song_signup_singer_user_permissions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: twistdbadmin
+--
+
+SELECT pg_catalog.setval('public.song_signup_singer_user_permissions_id_seq', 1, false);
+
+
+--
+-- Name: song_signup_songrequest_additional_singers_id_seq; Type: SEQUENCE SET; Schema: public; Owner: twistdbadmin
+--
+
+SELECT pg_catalog.setval('public.song_signup_songrequest_additional_singers_id_seq', 1, false);
+
+
+--
+-- Name: song_signup_songrequest_id_seq; Type: SEQUENCE SET; Schema: public; Owner: twistdbadmin
+--
+
+SELECT pg_catalog.setval('public.song_signup_songrequest_id_seq', 8252, true);
+
+
+--
+-- Name: auth_group auth_group_name_key; Type: CONSTRAINT; Schema: public; Owner: twistdbadmin
+--
+
+ALTER TABLE ONLY public.auth_group
+    ADD CONSTRAINT auth_group_name_key UNIQUE (name);
+
+
+--
+-- Name: auth_group_permissions auth_group_permissions_group_id_permission_id_0cd325b0_uniq; Type: CONSTRAINT; Schema: public; Owner: twistdbadmin
+--
+
+ALTER TABLE ONLY public.auth_group_permissions
+    ADD CONSTRAINT auth_group_permissions_group_id_permission_id_0cd325b0_uniq UNIQUE (group_id, permission_id);
+
+
+--
+-- Name: auth_group_permissions auth_group_permissions_pkey; Type: CONSTRAINT; Schema: public; Owner: twistdbadmin
+--
+
+ALTER TABLE ONLY public.auth_group_permissions
+    ADD CONSTRAINT auth_group_permissions_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: auth_group auth_group_pkey; Type: CONSTRAINT; Schema: public; Owner: twistdbadmin
+--
+
+ALTER TABLE ONLY public.auth_group
+    ADD CONSTRAINT auth_group_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: auth_permission auth_permission_content_type_id_codename_01ab375a_uniq; Type: CONSTRAINT; Schema: public; Owner: twistdbadmin
+--
+
+ALTER TABLE ONLY public.auth_permission
+    ADD CONSTRAINT auth_permission_content_type_id_codename_01ab375a_uniq UNIQUE (content_type_id, codename);
+
+
+--
+-- Name: auth_permission auth_permission_pkey; Type: CONSTRAINT; Schema: public; Owner: twistdbadmin
+--
+
+ALTER TABLE ONLY public.auth_permission
+    ADD CONSTRAINT auth_permission_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: django_admin_log django_admin_log_pkey; Type: CONSTRAINT; Schema: public; Owner: twistdbadmin
+--
+
+ALTER TABLE ONLY public.django_admin_log
+    ADD CONSTRAINT django_admin_log_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: django_content_type django_content_type_app_label_model_76bd3d3b_uniq; Type: CONSTRAINT; Schema: public; Owner: twistdbadmin
+--
+
+ALTER TABLE ONLY public.django_content_type
+    ADD CONSTRAINT django_content_type_app_label_model_76bd3d3b_uniq UNIQUE (app_label, model);
+
+
+--
+-- Name: django_content_type django_content_type_pkey; Type: CONSTRAINT; Schema: public; Owner: twistdbadmin
+--
+
+ALTER TABLE ONLY public.django_content_type
+    ADD CONSTRAINT django_content_type_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: django_migrations django_migrations_pkey; Type: CONSTRAINT; Schema: public; Owner: twistdbadmin
+--
+
+ALTER TABLE ONLY public.django_migrations
+    ADD CONSTRAINT django_migrations_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: django_session django_session_pkey; Type: CONSTRAINT; Schema: public; Owner: twistdbadmin
+--
+
+ALTER TABLE ONLY public.django_session
+    ADD CONSTRAINT django_session_pkey PRIMARY KEY (session_key);
+
+
+--
+-- Name: flags_flagstate flags_flagstate_name_condition_value_4e81ec48_uniq; Type: CONSTRAINT; Schema: public; Owner: twistdbadmin
+--
+
+ALTER TABLE ONLY public.flags_flagstate
+    ADD CONSTRAINT flags_flagstate_name_condition_value_4e81ec48_uniq UNIQUE (name, condition, value);
+
+
+--
+-- Name: flags_flagstate flags_flagstate_pkey; Type: CONSTRAINT; Schema: public; Owner: twistdbadmin
+--
+
+ALTER TABLE ONLY public.flags_flagstate
+    ADD CONSTRAINT flags_flagstate_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: song_signup_groupsongrequest song_signup_groupsongrequest_pkey; Type: CONSTRAINT; Schema: public; Owner: twistdbadmin
+--
+
+ALTER TABLE ONLY public.song_signup_groupsongrequest
+    ADD CONSTRAINT song_signup_groupsongrequest_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: song_signup_singer_groups song_signup_singer_groups_pkey; Type: CONSTRAINT; Schema: public; Owner: twistdbadmin
+--
+
+ALTER TABLE ONLY public.song_signup_singer_groups
+    ADD CONSTRAINT song_signup_singer_groups_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: song_signup_singer_groups song_signup_singer_groups_singer_id_group_id_0c2bce52_uniq; Type: CONSTRAINT; Schema: public; Owner: twistdbadmin
+--
+
+ALTER TABLE ONLY public.song_signup_singer_groups
+    ADD CONSTRAINT song_signup_singer_groups_singer_id_group_id_0c2bce52_uniq UNIQUE (singer_id, group_id);
+
+
+--
+-- Name: song_signup_singer song_signup_singer_pkey; Type: CONSTRAINT; Schema: public; Owner: twistdbadmin
+--
+
+ALTER TABLE ONLY public.song_signup_singer
+    ADD CONSTRAINT song_signup_singer_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: song_signup_singer_user_permissions song_signup_singer_user__singer_id_permission_id_d96a7da1_uniq; Type: CONSTRAINT; Schema: public; Owner: twistdbadmin
+--
+
+ALTER TABLE ONLY public.song_signup_singer_user_permissions
+    ADD CONSTRAINT song_signup_singer_user__singer_id_permission_id_d96a7da1_uniq UNIQUE (singer_id, permission_id);
+
+
+--
+-- Name: song_signup_singer_user_permissions song_signup_singer_user_permissions_pkey; Type: CONSTRAINT; Schema: public; Owner: twistdbadmin
+--
+
+ALTER TABLE ONLY public.song_signup_singer_user_permissions
+    ADD CONSTRAINT song_signup_singer_user_permissions_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: song_signup_singer song_signup_singer_username_key; Type: CONSTRAINT; Schema: public; Owner: twistdbadmin
+--
+
+ALTER TABLE ONLY public.song_signup_singer
+    ADD CONSTRAINT song_signup_singer_username_key UNIQUE (username);
+
+
+--
+-- Name: song_signup_songrequest_additional_singers song_signup_songrequest__songrequest_id_singer_id_1b295821_uniq; Type: CONSTRAINT; Schema: public; Owner: twistdbadmin
+--
+
+ALTER TABLE ONLY public.song_signup_songrequest_additional_singers
+    ADD CONSTRAINT song_signup_songrequest__songrequest_id_singer_id_1b295821_uniq UNIQUE (songrequest_id, singer_id);
+
+
+--
+-- Name: song_signup_songrequest_additional_singers song_signup_songrequest_additional_singers_pkey; Type: CONSTRAINT; Schema: public; Owner: twistdbadmin
+--
+
+ALTER TABLE ONLY public.song_signup_songrequest_additional_singers
+    ADD CONSTRAINT song_signup_songrequest_additional_singers_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: song_signup_songrequest song_signup_songrequest_pkey; Type: CONSTRAINT; Schema: public; Owner: twistdbadmin
+--
+
+ALTER TABLE ONLY public.song_signup_songrequest
+    ADD CONSTRAINT song_signup_songrequest_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: song_signup_songrequest song_signup_songrequest_song_name_musical_singer_d2c870a5_uniq; Type: CONSTRAINT; Schema: public; Owner: twistdbadmin
+--
+
+ALTER TABLE ONLY public.song_signup_songrequest
+    ADD CONSTRAINT song_signup_songrequest_song_name_musical_singer_d2c870a5_uniq UNIQUE (song_name, musical, singer_id, cycle, "position");
+
+
+--
+-- Name: auth_group_name_a6ea08ec_like; Type: INDEX; Schema: public; Owner: twistdbadmin
+--
+
+CREATE INDEX auth_group_name_a6ea08ec_like ON public.auth_group USING btree (name varchar_pattern_ops);
+
+
+--
+-- Name: auth_group_permissions_group_id_b120cbf9; Type: INDEX; Schema: public; Owner: twistdbadmin
+--
+
+CREATE INDEX auth_group_permissions_group_id_b120cbf9 ON public.auth_group_permissions USING btree (group_id);
+
+
+--
+-- Name: auth_group_permissions_permission_id_84c5c92e; Type: INDEX; Schema: public; Owner: twistdbadmin
+--
+
+CREATE INDEX auth_group_permissions_permission_id_84c5c92e ON public.auth_group_permissions USING btree (permission_id);
+
+
+--
+-- Name: auth_permission_content_type_id_2f476e4b; Type: INDEX; Schema: public; Owner: twistdbadmin
+--
+
+CREATE INDEX auth_permission_content_type_id_2f476e4b ON public.auth_permission USING btree (content_type_id);
+
+
+--
+-- Name: django_admin_log_content_type_id_c4bce8eb; Type: INDEX; Schema: public; Owner: twistdbadmin
+--
+
+CREATE INDEX django_admin_log_content_type_id_c4bce8eb ON public.django_admin_log USING btree (content_type_id);
+
+
+--
+-- Name: django_admin_log_user_id_c564eba6; Type: INDEX; Schema: public; Owner: twistdbadmin
+--
+
+CREATE INDEX django_admin_log_user_id_c564eba6 ON public.django_admin_log USING btree (user_id);
+
+
+--
+-- Name: django_session_expire_date_a5c62663; Type: INDEX; Schema: public; Owner: twistdbadmin
+--
+
+CREATE INDEX django_session_expire_date_a5c62663 ON public.django_session USING btree (expire_date);
+
+
+--
+-- Name: django_session_session_key_c0390e0f_like; Type: INDEX; Schema: public; Owner: twistdbadmin
+--
+
+CREATE INDEX django_session_session_key_c0390e0f_like ON public.django_session USING btree (session_key varchar_pattern_ops);
+
+
+--
+-- Name: song_signup_groupsongrequest_requested_by_id_28ee6931; Type: INDEX; Schema: public; Owner: twistdbadmin
+--
+
+CREATE INDEX song_signup_groupsongrequest_requested_by_id_28ee6931 ON public.song_signup_groupsongrequest USING btree (requested_by_id);
+
+
+--
+-- Name: song_signup_singer_groups_group_id_dd867d90; Type: INDEX; Schema: public; Owner: twistdbadmin
+--
+
+CREATE INDEX song_signup_singer_groups_group_id_dd867d90 ON public.song_signup_singer_groups USING btree (group_id);
+
+
+--
+-- Name: song_signup_singer_groups_singer_id_2c98845b; Type: INDEX; Schema: public; Owner: twistdbadmin
+--
+
+CREATE INDEX song_signup_singer_groups_singer_id_2c98845b ON public.song_signup_singer_groups USING btree (singer_id);
+
+
+--
+-- Name: song_signup_singer_user_permissions_permission_id_94d0d848; Type: INDEX; Schema: public; Owner: twistdbadmin
+--
+
+CREATE INDEX song_signup_singer_user_permissions_permission_id_94d0d848 ON public.song_signup_singer_user_permissions USING btree (permission_id);
+
+
+--
+-- Name: song_signup_singer_user_permissions_singer_id_20ebc8cd; Type: INDEX; Schema: public; Owner: twistdbadmin
+--
+
+CREATE INDEX song_signup_singer_user_permissions_singer_id_20ebc8cd ON public.song_signup_singer_user_permissions USING btree (singer_id);
+
+
+--
+-- Name: song_signup_singer_username_b362f1d1_like; Type: INDEX; Schema: public; Owner: twistdbadmin
+--
+
+CREATE INDEX song_signup_singer_username_b362f1d1_like ON public.song_signup_singer USING btree (username varchar_pattern_ops);
+
+
+--
+-- Name: song_signup_songrequest_ad_songrequest_id_2e38e58b; Type: INDEX; Schema: public; Owner: twistdbadmin
+--
+
+CREATE INDEX song_signup_songrequest_ad_songrequest_id_2e38e58b ON public.song_signup_songrequest_additional_singers USING btree (songrequest_id);
+
+
+--
+-- Name: song_signup_songrequest_additional_singers_singer_id_a529a8f4; Type: INDEX; Schema: public; Owner: twistdbadmin
+--
+
+CREATE INDEX song_signup_songrequest_additional_singers_singer_id_a529a8f4 ON public.song_signup_songrequest_additional_singers USING btree (singer_id);
+
+
+--
+-- Name: song_signup_songrequest_duet_partner_id_5dad5c17; Type: INDEX; Schema: public; Owner: twistdbadmin
+--
+
+CREATE INDEX song_signup_songrequest_duet_partner_id_5dad5c17 ON public.song_signup_songrequest USING btree (duet_partner_id);
+
+
+--
+-- Name: song_signup_songrequest_singer_id_d2a4ad82; Type: INDEX; Schema: public; Owner: twistdbadmin
+--
+
+CREATE INDEX song_signup_songrequest_singer_id_d2a4ad82 ON public.song_signup_songrequest USING btree (singer_id);
+
+
+--
+-- Name: auth_group_permissions auth_group_permissio_permission_id_84c5c92e_fk_auth_perm; Type: FK CONSTRAINT; Schema: public; Owner: twistdbadmin
+--
+
+ALTER TABLE ONLY public.auth_group_permissions
+    ADD CONSTRAINT auth_group_permissio_permission_id_84c5c92e_fk_auth_perm FOREIGN KEY (permission_id) REFERENCES public.auth_permission(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: auth_group_permissions auth_group_permissions_group_id_b120cbf9_fk_auth_group_id; Type: FK CONSTRAINT; Schema: public; Owner: twistdbadmin
+--
+
+ALTER TABLE ONLY public.auth_group_permissions
+    ADD CONSTRAINT auth_group_permissions_group_id_b120cbf9_fk_auth_group_id FOREIGN KEY (group_id) REFERENCES public.auth_group(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: auth_permission auth_permission_content_type_id_2f476e4b_fk_django_co; Type: FK CONSTRAINT; Schema: public; Owner: twistdbadmin
+--
+
+ALTER TABLE ONLY public.auth_permission
+    ADD CONSTRAINT auth_permission_content_type_id_2f476e4b_fk_django_co FOREIGN KEY (content_type_id) REFERENCES public.django_content_type(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: django_admin_log django_admin_log_content_type_id_c4bce8eb_fk_django_co; Type: FK CONSTRAINT; Schema: public; Owner: twistdbadmin
+--
+
+ALTER TABLE ONLY public.django_admin_log
+    ADD CONSTRAINT django_admin_log_content_type_id_c4bce8eb_fk_django_co FOREIGN KEY (content_type_id) REFERENCES public.django_content_type(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: django_admin_log django_admin_log_user_id_c564eba6_fk_song_signup_singer_id; Type: FK CONSTRAINT; Schema: public; Owner: twistdbadmin
+--
+
+ALTER TABLE ONLY public.django_admin_log
+    ADD CONSTRAINT django_admin_log_user_id_c564eba6_fk_song_signup_singer_id FOREIGN KEY (user_id) REFERENCES public.song_signup_singer(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: song_signup_groupsongrequest song_signup_groupson_requested_by_id_28ee6931_fk_song_sign; Type: FK CONSTRAINT; Schema: public; Owner: twistdbadmin
+--
+
+ALTER TABLE ONLY public.song_signup_groupsongrequest
+    ADD CONSTRAINT song_signup_groupson_requested_by_id_28ee6931_fk_song_sign FOREIGN KEY (requested_by_id) REFERENCES public.song_signup_singer(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: song_signup_singer_groups song_signup_singer_g_singer_id_2c98845b_fk_song_sign; Type: FK CONSTRAINT; Schema: public; Owner: twistdbadmin
+--
+
+ALTER TABLE ONLY public.song_signup_singer_groups
+    ADD CONSTRAINT song_signup_singer_g_singer_id_2c98845b_fk_song_sign FOREIGN KEY (singer_id) REFERENCES public.song_signup_singer(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: song_signup_singer_groups song_signup_singer_groups_group_id_dd867d90_fk_auth_group_id; Type: FK CONSTRAINT; Schema: public; Owner: twistdbadmin
+--
+
+ALTER TABLE ONLY public.song_signup_singer_groups
+    ADD CONSTRAINT song_signup_singer_groups_group_id_dd867d90_fk_auth_group_id FOREIGN KEY (group_id) REFERENCES public.auth_group(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: song_signup_singer_user_permissions song_signup_singer_u_permission_id_94d0d848_fk_auth_perm; Type: FK CONSTRAINT; Schema: public; Owner: twistdbadmin
+--
+
+ALTER TABLE ONLY public.song_signup_singer_user_permissions
+    ADD CONSTRAINT song_signup_singer_u_permission_id_94d0d848_fk_auth_perm FOREIGN KEY (permission_id) REFERENCES public.auth_permission(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: song_signup_singer_user_permissions song_signup_singer_u_singer_id_20ebc8cd_fk_song_sign; Type: FK CONSTRAINT; Schema: public; Owner: twistdbadmin
+--
+
+ALTER TABLE ONLY public.song_signup_singer_user_permissions
+    ADD CONSTRAINT song_signup_singer_u_singer_id_20ebc8cd_fk_song_sign FOREIGN KEY (singer_id) REFERENCES public.song_signup_singer(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: song_signup_songrequest song_signup_songrequ_duet_partner_id_5dad5c17_fk_song_sign; Type: FK CONSTRAINT; Schema: public; Owner: twistdbadmin
+--
+
+ALTER TABLE ONLY public.song_signup_songrequest
+    ADD CONSTRAINT song_signup_songrequ_duet_partner_id_5dad5c17_fk_song_sign FOREIGN KEY (duet_partner_id) REFERENCES public.song_signup_singer(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: song_signup_songrequest_additional_singers song_signup_songrequ_singer_id_a529a8f4_fk_song_sign; Type: FK CONSTRAINT; Schema: public; Owner: twistdbadmin
+--
+
+ALTER TABLE ONLY public.song_signup_songrequest_additional_singers
+    ADD CONSTRAINT song_signup_songrequ_singer_id_a529a8f4_fk_song_sign FOREIGN KEY (singer_id) REFERENCES public.song_signup_singer(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: song_signup_songrequest song_signup_songrequ_singer_id_d2a4ad82_fk_song_sign; Type: FK CONSTRAINT; Schema: public; Owner: twistdbadmin
+--
+
+ALTER TABLE ONLY public.song_signup_songrequest
+    ADD CONSTRAINT song_signup_songrequ_singer_id_d2a4ad82_fk_song_sign FOREIGN KEY (singer_id) REFERENCES public.song_signup_singer(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: song_signup_songrequest_additional_singers song_signup_songrequ_songrequest_id_2e38e58b_fk_song_sign; Type: FK CONSTRAINT; Schema: public; Owner: twistdbadmin
+--
+
+ALTER TABLE ONLY public.song_signup_songrequest_additional_singers
+    ADD CONSTRAINT song_signup_songrequ_songrequest_id_2e38e58b_fk_song_sign FOREIGN KEY (songrequest_id) REFERENCES public.song_signup_songrequest(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- PostgreSQL database dump complete
+--
+

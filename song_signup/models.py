@@ -174,5 +174,4 @@ def after_create_songrequest(sender, instance, created, *args, **kwargs):
 @receiver(signals.post_save, sender=SongRequest)
 def after_save_songrequest(sender, instance, created, *args, **kwargs):
     signals.post_save.disconnect(after_save_songrequest, sender=sender)
-    Singer.ordering.calculate_positions()
     signals.post_save.connect(after_save_songrequest, sender=sender)

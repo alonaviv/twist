@@ -1,5 +1,5 @@
 from itertools import chain
-
+from django.utils import timezone
 from django.contrib.auth.models import UserManager
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Manager, Max
@@ -17,18 +17,21 @@ class SongRequestManager(Manager):
         self.all().update(position=None, cycle=None)
 
     def duets_partners_in_cycles(self, cycle):
-        return [song.duet_partner for song in self.filter(cycle=cycle)]
+        return [song.duet_partner for song in self.filter(cycle=cycle, request_time__lte=timezone.now())]
 
     def next_priority(self, song_request):
-        songs_of_singer = self.filter(singer=song_request.singer).exclude(pk=song_request.pk)
+        songs_of_singer = self.filter(singer=song_request.singer,
+                                      request_time__lte=timezone.now()).exclude(pk=song_request.pk)
         return songs_of_singer.aggregate(Max('priority'))['priority__max'] + 1 if songs_of_singer else 1
 
     def current_song(self):
-        return self.filter(performance_time__isnull=True, position__isnull=False, placeholder=False).first()
+        return self.filter(performance_time__isnull=True, position__isnull=False, placeholder=False,
+                           request_time__lte=timezone.now()).first()
 
     def next_song(self):
         try:
-            return self.filter(performance_time__isnull=True, position__isnull=False, placeholder=False)[1]
+            return self.filter(performance_time__isnull=True, position__isnull=False,
+                               placeholder=False,request_time__lte=timezone.now())[1]
         except IndexError:
             return None
 
@@ -163,6 +166,7 @@ class DisneylandOrdering(UserManager):
     list. In order to allow latecomers to be able to sing, towards the end of the evening Shani will close the signup
     and we'll move to a mode in which only those who haven't sung yet get to sing.
     """
+
     def new_singers_num(self):
         return len([singer for singer in self.all() if singer.all_songs.exists()
                     and singer.last_performance_time is None])
@@ -179,7 +183,8 @@ class DisneylandOrdering(UserManager):
             # Once the duet is over, her position will be tied to the position of the primary singer (as they both
             # will have their last_performance_time updated , so she'll be rescheduled.
             if singer not in duet_singers:
-                song_to_schedule = singer.songs.filter(performance_time__isnull=True).order_by('priority').first()
+                song_to_schedule = singer.songs.filter(performance_time__isnull=True,
+                                                       request_time__lte=timezone.now()).order_by('priority').first()
                 if song_to_schedule:
                     song_to_schedule.position = position
                     song_to_schedule.save()
@@ -210,3 +215,4 @@ class DisneylandOrdering(UserManager):
 
             return sorted(new_singers, key=lambda singer: singer.date_joined) + sorted(old_singers, key=lambda
                 singer: singer.last_performance_time)
+
