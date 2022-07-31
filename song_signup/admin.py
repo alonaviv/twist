@@ -1,8 +1,8 @@
 from django.contrib import admin
 from django.utils import timezone
 
-from .models import SongRequest, Singer, GroupSongRequest
 from .managers import LATE_SINGER_CYCLE
+from .models import SongRequest, Singer, GroupSongRequest
 
 
 def set_performed(modeladmin, request, queryset):
@@ -31,11 +31,11 @@ class NotYetPerformedFilter(admin.SimpleListFilter):
 
     def lookups(self, request, model_admin):
         return (
-            ('already_performed', 'Include already performed'),
+            ('not_scheduled', 'Include Not Scheduled'),
         )
 
     def queryset(self, request, queryset):
-        if not self.value() == 'already_performed':
+        if not self.value() == 'not_scheduled':
             return queryset.filter(performance_time=None, position__isnull=False)
         else:
             return queryset.all()
@@ -59,7 +59,7 @@ class GroupSongRequestAdmin(admin.ModelAdmin):
 @admin.register(SongRequest)
 class SongRequestAdmin(admin.ModelAdmin):
     list_display = (
-        'position', 'singer', 'song_name', 'musical', 'duet_partner',
+        'position', 'singer', 'song_name', 'musical', 'duet_partner', 'get_notes', 'get_additional_singers',
         'get_performance_time', 'get_request_time', 'get_initial_signup'
     )
     list_filter = (NotYetPerformedFilter,)
@@ -87,6 +87,16 @@ class SongRequestAdmin(admin.ModelAdmin):
 
     get_request_time.short_description = 'Request Time'
     get_request_time.admin_order_field = 'request_time'
+
+    def get_notes(self, obj):
+        return obj.notes
+
+    get_notes.short_description = 'Notes..................................'
+
+    def get_additional_singers(self, obj):
+        return ", ".join([f"{singer.first_name} {singer.last_name}" for singer in obj.additional_singers.all()])
+
+    get_additional_singers.short_description = 'Helping Singers'
 
     def get_initial_signup(self, obj):
         if not obj.singer.is_superuser:

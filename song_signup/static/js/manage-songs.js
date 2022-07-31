@@ -1,4 +1,3 @@
-const newSongForm = document.getElementById("new-song-form");
 const songListUl = document.getElementById("song-list");
 songListWrapper = document.getElementById("song-list-wrapper");
 
@@ -17,7 +16,6 @@ function populateSongList() {
     .then((response) => response.json())
     .then((data) => {
       if (data.current_songs.length > 0) {
-        songListWrapper.classList.remove("hideonpageload");
         songListWrapper.classList.remove("hidden");
       } else {
         songListWrapper.classList.add("hidden");
@@ -26,7 +24,6 @@ function populateSongList() {
         const li = document.createElement("li");
         li.innerHTML = `
                     <div class="song-wrapper">
-                        <i class="fa-solid fa-star"></i>
                         <p class="song-name">${song.name}${
           !song.user_song ? ` (Added by ${song.primary_singer})` : ""
         }</p>
@@ -51,20 +48,6 @@ function populateSongList() {
     .catch((error) => console.error(error));
 }
 
-newSongForm.addEventListener("submit", (e) => {
-  e.preventDefault();
-  const formData = new FormData(newSongForm);
-
-  fetch("/add_song_request", { method: "POST", body: formData })
-    .then(async (response) => {
-      const data = await response.json();
-      if (!response.ok) {
-        throw Error(data.error);
-      }
-        window.location.replace(`/home/${data.requested_song}?group_song=${data.group_song}`);
-    })
-    .catch((error) => alert(error));
-});
 
 function setDeletelinks() {
   const deleteSongLinks = document.querySelectorAll(".delete-song");
@@ -90,29 +73,3 @@ function setDeletelinks() {
   });
 }
 
-// Disable signup if server says so
-const signupsDisabledBanner = document.getElementById("singups-disabled");
-
-const formFields = newSongForm.querySelectorAll("input, select");
-function checkDisableSignup() {
-  fetch("/signup_disabled")
-    .then((response) => response.json())
-    .then((data) => {
-      if (data.result) {
-        signupsDisabledBanner.style.opacity = "1";
-        formFields.forEach((field) => {
-          field.disabled = true;
-          field.style.background = "#666";
-        });
-      } else {
-        signupsDisabledBanner.style.opacity = "0";
-        formFields.forEach((field) => {
-          field.disabled = false;
-          field.style.background = "#333";
-        });
-      }
-    });
-}
-
-setInterval(checkDisableSignup, 10000);
-window.addEventListener("DOMContentLoaded", checkDisableSignup);

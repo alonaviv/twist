@@ -12,6 +12,7 @@ urlpatterns = [
     path('tip_us', views.tip_us, name='tip_us'),
     path('logout', views.logout, name='logout'),
     path('manage_songs', views.manage_songs, name='manage_songs'),
+    path('add_song', views.add_song, name='add_song'),
     path('add_song_request', views.add_song_request, name='add_song_request'),
     path('get_current_songs', views.get_current_songs, name='get_current_songs'),
     path('delete_song/<int:song_pk>', views.delete_song, name='delete_song'),

@@ -4,11 +4,11 @@
 }
 
 #song-list-wrapper {
-  height: $song-list-height;
+  height: 100%;
   width: 100%;
   background: $secondary-color;
   color: set-text-color($secondary-color);
-  border: solid #000 3px;
+
 
   .container {
     overflow: scroll;
@@ -16,18 +16,24 @@
     width: 100%;
     padding: 5% 5%;
 
-    .fa-arrows-up-down {
-      margin-left: 15%;
-    }
-    ul {
+    ol {
       width: 100%;
+      counter-reset: song-counter;
 
       li {
         display: flex;
         flex-direction: column;
         margin: 5% 0;
+        counter-increment: song-counter;
+
 
         .song-wrapper {
+            &::before{
+                content: counter(song-counter) ".  ";
+                font-weight: bold;
+                font-size: 20px;
+                margin-right: 5px;
+            }
           display: flex;
           width: 100%;
           justify-content: space-between;
@@ -51,78 +57,10 @@
         }
       }
     }
-  }
-}
 
-#add-song-wrapper {
-  background: $primary-color;
-  color: set-text-color($primary-color);
-  height: $add-song-height;
-  width: 100%;
-  padding: 3% 7%;
-  position: relative;
-
-  #singups-disabled {
-    color: $third-color;
-    transform: rotate(-15deg);
-    position: absolute;
-    right: 12%;
-    top: 12%;
-    font-weight: 500;
-    font-size: 50px;
-    text-decoration: underline;
-    transition: all 2s ease;
-    opacity: 0;
-    pointer-events: none;
-  }
-  
-
-  #add-song-text {
-    font-size: 14px;
-    margin-bottom: 5%;
-  }
-
-  form {
-    width: 100%;
-
-    #submit-wrapper{
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-
-    .form-control {
-      margin-bottom: 15px;
-      transition: all 2s ease;
-
-      input[type=text] {
-        width: 100%;
-        padding: 4px;
-        height: 40px;
-        border: #333 2px solid;
-        border-radius: 5px;
-        background: #333;
-        color: #fff;
-        font-size: 18px;
-        &::placeholder {
-          color: #aaa;
-          font-size: 18px;
-        }
-        transition: inherit;
-
-      }
-
-      select {
-        margin-top: 10px;
-        margin-bottom: 10px;
-        width: 100%;
-        height: 30px;
-        padding: 4px;
-        background: #333;
-        color: #fff;
-        font-size: 14px;
-        transition: inherit;
-      }
+    #new-song-btn {
+        margin-top: 15px;
+        width: 200px;
     }
   }
 }

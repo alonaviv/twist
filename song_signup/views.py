@@ -54,7 +54,9 @@ def add_song_request(request):
     if request.method == 'POST':
         song_name = _sanitize_string(request.POST['song-name'], title=True)
         musical = _sanitize_string(request.POST['musical'], title=True)
+        notes = request.POST.get('notes')
         duet_partner = request.POST.get('duet-partner')
+        additional_singers = request.POST.getlist('additional-singers')
 
         if duet_partner == 'group-song':
             GroupSongRequest.objects.create(song_name=song_name, musical=musical, requested_by=current_user)
@@ -70,7 +72,9 @@ def add_song_request(request):
 
         except SongRequest.DoesNotExist:
             song_request = SongRequest.objects.create(song_name=song_name, musical=musical, singer=current_user,
-                                                      duet_partner_id=duet_partner)
+                                                      duet_partner_id=duet_partner, notes=notes)
+            song_request.additional_singers.set(additional_singers)
+
             Singer.ordering.calculate_positions()
 
     return JsonResponse({
@@ -103,6 +107,11 @@ def get_song(request, song_pk):
 
 @login_required(login_url='login')
 def manage_songs(request):
+    return render(request, 'song_signup/manage_songs.html')
+
+
+@login_required(login_url='login')
+def add_song(request):
     class HostSinger:
         def __init__(self, user_obj):
             self.name = user_obj.first_name
@@ -116,7 +125,7 @@ def manage_songs(request):
 
     other_singers = Singer.objects.all().exclude(pk=request.user.pk).exclude(pk=alon.id).exclude(pk=shani.id).order_by(
         'first_name')
-    return render(request, 'song_signup/manage_songs.html', {'other_singers': [shani, alon] + list(other_singers)})
+    return render(request, 'song_signup/add_song.html', {'other_singers': [shani, alon] + list(other_singers)})
 
 
 def logout(request):

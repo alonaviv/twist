@@ -90,6 +90,7 @@
   }
 }
 
+
 .dark-card {
   background-color: $dark-bg;
   color: $primary-color;
@@ -118,4 +119,11 @@
 
 .with-scroll {
   overflow: scroll;
+}
+
+.center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
 }

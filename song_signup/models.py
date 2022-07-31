@@ -119,6 +119,7 @@ class GroupSongRequest(Model):
 class SongRequest(Model):
     song_name = CITextField(max_length=50)
     musical = CITextField(max_length=50)
+    notes = CITextField(max_length=1000, null=True, blank=True, default='')
     request_time = DateTimeField(auto_now_add=True)
     performance_time = DateTimeField(default=None, null=True, blank=True)
     singer = ForeignKey(settings.AUTH_USER_MODEL, on_delete=CASCADE, related_name='songs')

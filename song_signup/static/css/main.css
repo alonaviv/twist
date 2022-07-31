@@ -83,6 +83,12 @@
 .with-scroll {
   overflow: scroll; }
 
+.center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center; }
+
 nav {
   position: relative; }
 
@@ -337,97 +343,49 @@ nav {
   background: #00C575; }
 
 #song-list-wrapper {
-  height: 27vh;
+  height: 100%;
   width: 100%;
   background: #00b3c5;
-  color: #000;
-  border: solid #000 3px; }
+  color: #000; }
   #song-list-wrapper .container {
     overflow: scroll;
     height: 100%;
     width: 100%;
     padding: 5% 5%; }
-    #song-list-wrapper .container .fa-arrows-up-down {
-      margin-left: 15%; }
-    #song-list-wrapper .container ul {
-      width: 100%; }
-      #song-list-wrapper .container ul li {
+    #song-list-wrapper .container ol {
+      width: 100%;
+      counter-reset: song-counter; }
+      #song-list-wrapper .container ol li {
         display: flex;
         flex-direction: column;
-        margin: 5% 0; }
-        #song-list-wrapper .container ul li .song-wrapper {
+        margin: 5% 0;
+        counter-increment: song-counter; }
+        #song-list-wrapper .container ol li .song-wrapper {
           display: flex;
           width: 100%;
           justify-content: space-between;
           font-size: 20px;
           padding-bottom: 3%; }
-          #song-list-wrapper .container ul li .song-wrapper .fa-xmark {
+          #song-list-wrapper .container ol li .song-wrapper::before {
+            content: counter(song-counter) ".  ";
+            font-weight: bold;
+            font-size: 20px;
+            margin-right: 5px; }
+          #song-list-wrapper .container ol li .song-wrapper .fa-xmark {
             font-size: 25px;
             margin-left: 5%;
             padding-top: 4px;
             color: #c51200; }
-          #song-list-wrapper .container ul li .song-wrapper .fa-star {
+          #song-list-wrapper .container ol li .song-wrapper .fa-star {
             margin-right: 3%;
             padding-top: 6px; }
-          #song-list-wrapper .container ul li .song-wrapper .song-name {
+          #song-list-wrapper .container ol li .song-wrapper .song-name {
             display: inline-block;
             width: 100%;
             font-weight: 500; }
-
-#add-song-wrapper {
-  background: #00C575;
-  color: #000;
-  height: 57vh;
-  width: 100%;
-  padding: 3% 7%;
-  position: relative; }
-  #add-song-wrapper #singups-disabled {
-    color: #ffff50;
-    transform: rotate(-15deg);
-    position: absolute;
-    right: 12%;
-    top: 12%;
-    font-weight: 500;
-    font-size: 50px;
-    text-decoration: underline;
-    transition: all 2s ease;
-    opacity: 0;
-    pointer-events: none; }
-  #add-song-wrapper #add-song-text {
-    font-size: 14px;
-    margin-bottom: 5%; }
-  #add-song-wrapper form {
-    width: 100%; }
-    #add-song-wrapper form #submit-wrapper {
-      display: flex;
-      justify-content: center;
-      align-items: center; }
-    #add-song-wrapper form .form-control {
-      margin-bottom: 15px;
-      transition: all 2s ease; }
-      #add-song-wrapper form .form-control input[type=text] {
-        width: 100%;
-        padding: 4px;
-        height: 40px;
-        border: #333 2px solid;
-        border-radius: 5px;
-        background: #333;
-        color: #fff;
-        font-size: 18px;
-        transition: inherit; }
-        #add-song-wrapper form .form-control input[type=text]::placeholder {
-          color: #aaa;
-          font-size: 18px; }
-      #add-song-wrapper form .form-control select {
-        margin-top: 10px;
-        margin-bottom: 10px;
-        width: 100%;
-        height: 30px;
-        padding: 4px;
-        background: #333;
-        color: #fff;
-        font-size: 14px;
-        transition: inherit; }
+    #song-list-wrapper .container #new-song-btn {
+      margin-top: 15px;
+      width: 200px; }
 
 #now-singing-wrapper {
   background: url("../img/main/mic.jpeg") center center/cover;
@@ -645,6 +603,61 @@ nav {
     #tip-wrapper #cash p {
       font-size: 20px;
       font-weight: 500; }
+
+#add-song-wrapper {
+  background: #00C575;
+  color: #000;
+  height: 100%;
+  width: 100%;
+  padding: 3% 7%;
+  position: relative; }
+  #add-song-wrapper #singups-disabled {
+    color: #ffff50;
+    transform: rotate(-15deg);
+    position: absolute;
+    right: 12%;
+    top: 12%;
+    font-weight: 500;
+    font-size: 50px;
+    text-decoration: underline;
+    transition: all 2s ease;
+    opacity: 0;
+    pointer-events: none; }
+  #add-song-wrapper #add-song-text {
+    font-size: 14px;
+    margin-bottom: 5%; }
+  #add-song-wrapper form {
+    width: 100%; }
+    #add-song-wrapper form #submit-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center; }
+    #add-song-wrapper form .form-control {
+      margin-bottom: 15px;
+      transition: all 2s ease; }
+      #add-song-wrapper form .form-control input[type=text] {
+        width: 100%;
+        padding: 4px;
+        height: 40px;
+        border: #333 2px solid;
+        border-radius: 5px;
+        background: #333;
+        color: #fff;
+        font-size: 18px;
+        transition: inherit; }
+        #add-song-wrapper form .form-control input[type=text]::placeholder {
+          color: #aaa;
+          font-size: 18px; }
+      #add-song-wrapper form .form-control select {
+        margin-top: 10px;
+        margin-bottom: 10px;
+        width: 100%;
+        height: 30px;
+        padding: 4px;
+        background: #333;
+        color: #fff;
+        font-size: 14px;
+        transition: inherit; }
 
 * {
   box-sizing: border-box;

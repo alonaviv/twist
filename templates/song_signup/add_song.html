@@ -1,0 +1,62 @@
+
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block content %}
+
+{% include "partials/_navbar.html" with current="manage-songs" %}
+<main>
+    <div id="add-song-wrapper">
+        <div id="singups-disabled">
+            <p>Signup is<br>now closed</p>
+        </div>
+        <h2>Choose your next song!</h2>
+        <p id="add-song-text">Pick literally anything in the Broadway or Disney style (seriously, try us)
+            and come up to sing!</p>
+        <div id="new-song-form-wrapper">
+            <form action="" id="new-song-form" autocomplete="off">
+                {% csrf_token %}
+                <input autocomplete="false" name="hidden" type="text" style="display:none;">
+                <div class="form-control">
+                    <input type="text" name="song-name" id="song-name" placeholder="Song Name" required>
+                </div>
+                <div class="form-control">
+                    <input type="text" name="musical" id="musical" placeholder="Where's it from?" required>
+                </div>
+                <div class="form-control">
+                    <input type="text" name="notes" id="notes" placeholder="Additional notes for us">
+                </div>
+                <div class="form-control">
+                    <label for="duet-partner">Duet partner - <strong><u>Counts as a turn!</u></strong><br>You can also pick Shani or Alon 🙂</label>
+                    <select name="duet-partner" id="duet-partner">
+                        <option disabled selected value> -- Duet Partner -- </option>
+
+                        {% for singer in other_singers %}
+                        <option value="{{ singer.id }}">{{ singer }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-control">
+                    <label for="additional-singers">Other people joining in smaller parts? This doesn't count as a turn.
+                    <select name="additional-singers" id="additional-singers" multiple>
+                        <option disabled selected value> -- Helping Singers -- </option>
+                        {% for singer in other_singers %}
+                        <option value="{{ singer.id }}">{{ singer }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-control" id="submit-wrapper">
+                        <input type="submit" value="To the stage!" class="btn btn-inverted">
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+
+{% include "partials/_footer.html"  %}
+
+<script src="{% static "js/add-song.js" %}"></script>
+<script src="{% static "js/navbar.js" %}"></script>
+        
+{% endblock %}
