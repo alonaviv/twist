@@ -3,5 +3,5 @@ Using the db backups as tests:
 Load the db file into the local db:
 ./manage.py dbrestore -I song_signup/real_dbs/default-ip-172-31-3-99-2022-07-29-070029-first-outdoor.psql
 
-Then dump the contents of the local db in to a fixture (json type file):
-./manage.py dumpdata -o song_signup/fixtures/first_outdoor_jlm
+Then dump the contents of the local db in to a fixture (json file):
+./manage.py dumpdata -o song_signup/fixtures/first_outdoor_jlm.json

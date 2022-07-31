@@ -66,3 +66,20 @@ class TestSingerModel(SongRequestTestCase):
             frozen_time.tick()
 
             self.assertEqual(singer.last_performance_time, None)
+
+    def test_first_request_time(self):
+        with freeze_time(TEST_START_TIME) as frozen_time:
+            [singer] = create_singers(1)
+
+            self.assertIsNone(singer.first_request_time)
+
+            frozen_time.tick()
+            add_songs_to_singer(1, 1)
+            self.assertEqual(singer.first_request_time, TEST_START_TIME + datetime.timedelta(seconds=1))
+
+
+
+
+
+
+

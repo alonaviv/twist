@@ -1,8 +1,9 @@
 from itertools import chain
-from django.utils import timezone
+
 from django.contrib.auth.models import UserManager
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Manager, Max
+from django.utils import timezone
 from flags.state import flag_enabled
 
 FIRST_CYCLE_LEN = 10
@@ -31,7 +32,7 @@ class SongRequestManager(Manager):
     def next_song(self):
         try:
             return self.filter(performance_time__isnull=True, position__isnull=False,
-                               placeholder=False,request_time__lte=timezone.now())[1]
+                               placeholder=False, request_time__lte=timezone.now())[1]
         except IndexError:
             return None
 
@@ -167,8 +168,14 @@ class DisneylandOrdering(UserManager):
     and we'll move to a mode in which only those who haven't sung yet get to sing.
     """
 
+    def active_singers(self):
+        """
+        Return all singers that have at least one song request
+        """
+        return [singer for singer in self.all() if singer.songs.filter(request_time__isnull=False).exists()]
+
     def new_singers_num(self):
-        return len([singer for singer in self.all() if singer.all_songs.exists()
+        return len([singer for singer in self.active_singers() if singer.all_songs.exists()
                     and singer.last_performance_time is None])
 
     def calculate_positions(self):
@@ -206,13 +213,13 @@ class DisneylandOrdering(UserManager):
         singers ahead, without changing the internal ordering.
         """
         if flag_enabled('CAN_SIGNUP'):
-            return sorted(self.all(), key=lambda singer: singer.last_performance_time or singer.date_joined)
+            return sorted(self.active_singers(), key=lambda singer: singer.last_performance_time
+                                                                    or singer.first_request_time)
         else:
-            all_singers = self.all()
+            all_singers = self.active_singers()
             new_singers, old_singers = [], []
             for singer in all_singers:
                 new_singers.append(singer) if singer.last_performance_time is None else old_singers.append(singer)
 
-            return sorted(new_singers, key=lambda singer: singer.date_joined) + sorted(old_singers, key=lambda
+            return sorted(new_singers, key=lambda singer: singer.first_request_time) + sorted(old_singers, key=lambda
                 singer: singer.last_performance_time)
-

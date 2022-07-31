@@ -10,6 +10,11 @@ from song_signup.views import disable_signup
 
 
 class TestDisneylandOrdering(SongRequestTestCase):
+    def test_active_singers(self):
+        create_singers(5)
+        add_songs_to_singers(3, 1)
+        self.assertEqual(Singer.ordering.active_singers(), [get_singer(1), get_singer(2), get_singer(3)])
+
     def test_no_performances_no_songs(self):
         with freeze_time(TEST_START_TIME, auto_tick_seconds=5) as frozen_time:
             create_singers(10, frozen_time)
@@ -143,18 +148,18 @@ class TestCalculatePositionsDisney(SongRequestTestCase):
             # Adding songs invokes the calculate_positions method
             add_songs_to_singers(10, 3)
 
-        assert_song_positions(self, [
-            (5, 1),
-            (6, 1),
-            (2, 1),
-            (7, 1),
-            (8, 1),
-            (9, 1),
-            (3, 1),
-            (4, 1),
-            (10, 1),
-            (1, 1)
-        ])
+            assert_song_positions(self, [
+                (5, 1),
+                (6, 1),
+                (2, 1),
+                (7, 1),
+                (8, 1),
+                (9, 1),
+                (3, 1),
+                (4, 1),
+                (10, 1),
+                (1, 1)
+            ])
 
     def test_some_singers_have_songs(self):
         """
@@ -170,16 +175,16 @@ class TestCalculatePositionsDisney(SongRequestTestCase):
             add_songs_to_singers(6, 1)
             add_songs_to_singers([8, 10], 1)
 
-        assert_song_positions(self, [
-            (5, 1),
-            (6, 1),
-            (2, 1),
-            (8, 1),
-            (3, 1),
-            (4, 1),
-            (10, 1),
-            (1, 1)
-        ])
+            assert_song_positions(self, [
+                (5, 1),
+                (6, 1),
+                (2, 1),
+                (8, 1),
+                (3, 1),
+                (4, 1),
+                (10, 1),
+                (1, 1)
+            ])
 
     def test_next_songs(self):
         """
@@ -200,18 +205,18 @@ class TestCalculatePositionsDisney(SongRequestTestCase):
             set_performed(4, 1)
             set_performed(1, 2)
 
-        assert_song_positions(self, [
-            (5, 1),
-            (6, 1),
-            (2, 2),
-            (7, 1),
-            (8, 1),
-            (9, 1),
-            (3, 2),
-            (4, 2),
-            (10, 1),
-            (1, 3)
-        ])
+            assert_song_positions(self, [
+                (5, 1),
+                (6, 1),
+                (2, 2),
+                (7, 1),
+                (8, 1),
+                (9, 1),
+                (3, 2),
+                (4, 2),
+                (10, 1),
+                (1, 3)
+            ])
 
     def test_duets(self):
         """
@@ -233,18 +238,18 @@ class TestCalculatePositionsDisney(SongRequestTestCase):
             add_duet(3, 8, 1)
             add_duet(10, 7, 1)
 
-        assert_song_positions(self, [
-            (5, 1),
-            (6, 1),
-            (2, 1),
-            (7, 1),
-            # 8 has a duet, so is skipped
-            (9, 1),  # Has a duet later, which doesn't affect her
-            (3, 1),  # Had a duet with 8, but 8's song was skipped, so no penalty
-            (4, 1),
-            # 10 Doesn't have a primary song, only a duet
-            (1, 1)
-        ])
+            assert_song_positions(self, [
+                (5, 1),
+                (6, 1),
+                (2, 1),
+                (7, 1),
+                # 8 has a duet, so is skipped
+                (9, 1),  # Has a duet later, which doesn't affect her
+                (3, 1),  # Had a duet with 8, but 8's song was skipped, so no penalty
+                (4, 1),
+                # 10 Doesn't have a primary song, only a duet
+                (1, 1)
+            ])
 
 
 class TestSimulatedEvenings(SongRequestTestCase):
