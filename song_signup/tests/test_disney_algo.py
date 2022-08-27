@@ -16,9 +16,10 @@ class TestDisneylandOrdering(SongRequestTestCase):
         self.assertEqual(Singer.ordering.active_singers(), [get_singer(1), get_singer(2), get_singer(3)])
 
     def test_no_performances_no_songs(self):
+        # Singers that didn't sign up for a song yet don't apper in the list
         with freeze_time(TEST_START_TIME, auto_tick_seconds=5) as frozen_time:
             create_singers(10, frozen_time)
-            assert_singers_in_disney(self, range(1, 11))
+            assert_singers_in_disney(self, [])
             self.assertEqual(Singer.ordering.new_singers_num(), 0)
 
     def test_no_performances(self):
@@ -59,69 +60,124 @@ class TestDisneylandOrdering(SongRequestTestCase):
             assert_singers_in_disney(self, [1, 2, 3, 5, 4])
             self.assertEqual(Singer.ordering.new_singers_num(), 0)
 
+    def test_opening_round(self):
+        with patch('song_signup.managers.OPENING_ROUND_SIZE', 6):
+            with freeze_time(TEST_START_TIME) as frozen_time:
+                create_singers(10, frozen_time)
+                add_songs_to_singers([1, 2, 3], 3, frozen_time)
+                assert_singers_in_disney(self, [1, 2, 3])
+
+                set_performed(1, 1, frozen_time)
+                assert_singers_in_disney(self, [2, 3, 1])
+
+                add_songs_to_singer(4, 3, frozen_time)
+                assert_singers_in_disney(self, [2, 3, 4, 1])
+
+                set_performed(2, 1, frozen_time)
+                assert_singers_in_disney(self, [3, 4, 1, 2])
+
+                add_songs_to_singer(5, 3, frozen_time)
+                assert_singers_in_disney(self, [3, 4, 5, 1, 2])
+
+                set_performed(3, 1, frozen_time)
+                assert_singers_in_disney(self, [4, 5, 1, 2, 3])
+
+                add_songs_to_singer(6, 3, frozen_time)
+                assert_singers_in_disney(self, [4, 5, 6, 1, 2, 3])
+
+                # After singer 6 the opening round ends, and algo goes back to normal (no benefit for new singers)
+                add_songs_to_singer(7, 3, frozen_time)
+                assert_singers_in_disney(self, [4, 5, 6, 1, 2, 3, 7])
+
+                set_performed(4, 1, frozen_time)
+                assert_singers_in_disney(self, [5, 6, 1, 2, 3, 7, 4])
+
+                add_songs_to_singer(8, 3, frozen_time)
+                assert_singers_in_disney(self, [5, 6, 1, 2, 3, 7, 4, 8])
+
+                set_performed(5, 1, frozen_time)
+                assert_singers_in_disney(self, [6, 1, 2, 3, 7, 4, 8, 5])
+
+                set_performed(6, 1, frozen_time)
+                assert_singers_in_disney(self, [1, 2, 3, 7, 4, 8, 5, 6])
+
+                add_songs_to_singer(9, 3, frozen_time)
+                assert_singers_in_disney(self, [1, 2, 3, 7, 4, 8, 5, 6, 9])
+
+                add_songs_to_singer(10, 3, frozen_time)
+                assert_singers_in_disney(self, [1, 2, 3, 7, 4, 8, 5, 6, 9, 10])
+
+                set_performed(1, 2, frozen_time)
+                assert_singers_in_disney(self, [2, 3, 7, 4, 8, 5, 6, 9, 10, 1])
+
+                set_performed(2, 2, frozen_time)
+                assert_singers_in_disney(self, [3, 7, 4, 8, 5, 6, 9, 10, 1, 2])
+
     def test_long_ordering(self):
-        with freeze_time(TEST_START_TIME, auto_tick_seconds=5) as frozen_time:
-            create_singers([1, 2], frozen_time, num_songs=3)
-            assert_singers_in_disney(self, [1, 2])
-            self.assertEqual(Singer.ordering.new_singers_num(), 2)
+        with patch('song_signup.managers.OPENING_ROUND_SIZE', 5):
+            with freeze_time(TEST_START_TIME, auto_tick_seconds=5) as frozen_time:
+                create_singers([1, 2], frozen_time, num_songs=3)
+                assert_singers_in_disney(self, [1, 2])
+                self.assertEqual(Singer.ordering.new_singers_num(), 2)
 
-            create_singers([3, 4], frozen_time, num_songs=3)
-            set_performed(1, 1, frozen_time)
-            assert_singers_in_disney(self, [2, 3, 4, 1])
-            self.assertEqual(Singer.ordering.new_singers_num(), 3)
+                create_singers([3, 4], frozen_time, num_songs=3)
+                set_performed(1, 1, frozen_time)
+                assert_singers_in_disney(self, [2, 3, 4, 1])
+                self.assertEqual(Singer.ordering.new_singers_num(), 3)
 
-            create_singers([5, 6], frozen_time, num_songs=3)
-            assert_singers_in_disney(self, [2, 3, 4, 1, 5, 6])
-            self.assertEqual(Singer.ordering.new_singers_num(), 5)
+                create_singers([5, 6], frozen_time, num_songs=3)
+                assert_singers_in_disney(self, [2, 3, 4, 5, 1, 6])
+                self.assertEqual(Singer.ordering.new_singers_num(), 5)
 
-            set_performed(2, 1, frozen_time)
-            assert_singers_in_disney(self, [3, 4, 1, 5, 6, 2])
-            self.assertEqual(Singer.ordering.new_singers_num(), 4)
+                set_performed(2, 1, frozen_time)
+                assert_singers_in_disney(self, [3, 4, 5, 1, 6, 2])
+                self.assertEqual(Singer.ordering.new_singers_num(), 4)
 
-            # Singer 9 joins but doesn't sign up for a song, still counts in the ordering
-            create_singers([7, 8, 9], frozen_time)
-            add_songs_to_singers([7, 8], 3)
-            assert_singers_in_disney(self, [3, 4, 1, 5, 6, 2, 7, 8, 9])
-            self.assertEqual(Singer.ordering.new_singers_num(), 6)
+                # Singer 9 joins but doesn't sign up for a song, so don't count in the ordering or new_singers_num
+                create_singers([7, 8, 9], frozen_time)
+                add_songs_to_singers([7, 8], 3)
+                assert_singers_in_disney(self, [3, 4, 5, 1, 6, 2, 7, 8])
+                self.assertEqual(Singer.ordering.new_singers_num(), 6)
 
-            set_performed(3, 1, frozen_time)
-            set_performed(4, 1, frozen_time)
-            assert_singers_in_disney(self, [1, 5, 6, 2, 7, 8, 9, 3, 4])
-            self.assertEqual(Singer.ordering.new_singers_num(), 4)
+                set_performed(3, 1, frozen_time)
+                set_performed(4, 1, frozen_time)
+                assert_singers_in_disney(self, [5, 1, 6, 2, 7, 8, 3, 4])
+                self.assertEqual(Singer.ordering.new_singers_num(), 4)
 
-            create_singers([10], frozen_time, num_songs=1)
-            self.assertEqual(Singer.ordering.new_singers_num(), 5)
-            set_performed(1, 2, frozen_time)
-            assert_singers_in_disney(self, [5, 6, 2, 7, 8, 9, 3, 4, 10, 1])
-            self.assertEqual(Singer.ordering.new_singers_num(), 5)  # 1 already sung, doesn't count as new singer
+                create_singers([10], frozen_time, num_songs=1)
+                self.assertEqual(Singer.ordering.new_singers_num(), 5)
+                set_performed(5, 2, frozen_time)
+                set_performed(1, 2, frozen_time)
+                assert_singers_in_disney(self, [6, 2, 7, 8, 3, 4, 10, 5, 1])
+                self.assertEqual(Singer.ordering.new_singers_num(), 4)  # 1 already sung, doesn't count as new singer
 
-            # Shani stops signup, which pushes all the people who haven't sung yet to the start of the list
+                # Shani stops signup, which pushes all the people who haven't sung yet to the start of the list
 
-            disable_signup(None)
-            assert_singers_in_disney(self, [5, 6, 7, 8, 9, 10, 2, 3, 4, 1])
-            self.assertEqual(Singer.ordering.new_singers_num(), 5)
+                disable_signup(None)
+                assert_singers_in_disney(self, [6, 7, 8, 10, 2, 3, 4, 5, 1])
+                self.assertEqual(Singer.ordering.new_singers_num(), 4)
 
-            set_performed(5, 1, frozen_time)
-            assert_singers_in_disney(self, [6, 7, 8, 9, 10, 2, 3, 4, 1, 5])
-            self.assertEqual(Singer.ordering.new_singers_num(), 4)
+                set_performed(6, 1, frozen_time)
+                set_performed(7, 1, frozen_time)
+                set_performed(8, 1, frozen_time)
+                self.assertEqual(Singer.ordering.new_singers_num(), 1)
+                # 9 Didn't sign up for a song
+                set_performed(10, 1, frozen_time)
+                self.assertEqual(Singer.ordering.new_singers_num(), 0)
+                set_performed(2, 2, frozen_time)
+                set_performed(3, 2, frozen_time)
+                self.assertEqual(Singer.ordering.new_singers_num(), 0)
 
-            set_performed(6, 1, frozen_time)
-            set_performed(7, 1, frozen_time)
-            set_performed(8, 1, frozen_time)
-            self.assertEqual(Singer.ordering.new_singers_num(), 1)
-            # 9 Didn't sign up for a song
-            set_performed(10, 1, frozen_time)
-            self.assertEqual(Singer.ordering.new_singers_num(), 0)
-            set_performed(2, 2, frozen_time)
-            set_performed(3, 2, frozen_time)
-            self.assertEqual(Singer.ordering.new_singers_num(), 0)
+                assert_singers_in_disney(self, [4, 5, 1, 6, 7, 8, 10, 2, 3])
 
-            assert_singers_in_disney(self, [9, 4, 1, 5, 6, 7, 8, 10, 2, 3])
+                set_performed(4, 2, frozen_time)
+                set_performed(5, 2, frozen_time)
+                self.assertEqual(Singer.ordering.new_singers_num(), 0)
+                assert_singers_in_disney(self, [1, 6, 7, 8, 10, 2, 3, 4, 5])
 
-            set_performed(4, 2, frozen_time)
-            set_performed(1, 3, frozen_time)
-            self.assertEqual(Singer.ordering.new_singers_num(), 0)
-            assert_singers_in_disney(self, [9, 5, 6, 7, 8, 10, 2, 3, 4, 1])
+                set_performed(1, 3, frozen_time)
+                self.assertEqual(Singer.ordering.new_singers_num(), 0)
+                assert_singers_in_disney(self, [6, 7, 8, 10, 2, 3, 4, 5, 1])
 
 
 class TestCalculatePositionsDisney(SongRequestTestCase):

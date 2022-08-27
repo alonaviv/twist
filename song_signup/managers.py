@@ -1,4 +1,5 @@
 from itertools import chain
+from functools import cmp_to_key
 
 from django.contrib.auth.models import UserManager
 from django.core.exceptions import ObjectDoesNotExist
@@ -6,11 +7,15 @@ from django.db.models import Manager, Max
 from django.utils import timezone
 from flags.state import flag_enabled
 
+# 3 cycles algo config
 FIRST_CYCLE_LEN = 10
 CYCLE_1 = 1.0
 CYCLE_2 = 2.0
 LATE_SINGER_CYCLE = 2.5
 CYCLE_3 = 3.0
+
+# Disneyland algo config
+OPENING_ROUND_SIZE = 6
 
 
 class SongRequestManager(Manager):
@@ -167,7 +172,6 @@ class DisneylandOrdering(UserManager):
     list. In order to allow latecomers to be able to sing, towards the end of the evening Shani will close the signup
     and we'll move to a mode in which only those who haven't sung yet get to sing.
     """
-
     def active_singers(self):
         """
         Return all singers that have at least one song request
@@ -212,14 +216,42 @@ class DisneylandOrdering(UserManager):
         to the order that they were in before. Basically, we're just taking the existing list and pulling the new
         singers ahead, without changing the internal ordering.
         """
+        def _comparator(x, y):
+            x_key = x.last_performance_time or x.first_request_time
+            y_key = y.last_performance_time or y.first_request_time
+            opening_round_end = _get_opening_round_end()
+
+            # if x.first_name in ('user_1', 'user_4') and y.first_name in ('user_1', 'user_4'):
+            #     breakpoint()
+
+            if x.has_sung and not y.has_sung:
+                if not opening_round_end or y.first_request_time <= opening_round_end:
+                    return 1
+                
+            elif y.has_sung and not x.has_sung:
+                if not opening_round_end or x.first_request_time <= opening_round_end:
+                    return -1
+                
+            if x_key < y_key:
+                return -1
+            elif x_key > y_key:
+                return 1
+            else:
+                return 0
+
+        def _get_opening_round_end():
+            first_song_request_times = sorted(singer.first_request_time for singer in self.active_singers())
+            return first_song_request_times[
+                OPENING_ROUND_SIZE - 1] if len(first_song_request_times) > OPENING_ROUND_SIZE else None
+
         if flag_enabled('CAN_SIGNUP'):
-            return sorted(self.active_singers(), key=lambda singer: singer.last_performance_time
-                                                                    or singer.first_request_time)
+            return sorted(self.active_singers(), key=cmp_to_key(_comparator))
+
         else:
             all_singers = self.active_singers()
             new_singers, old_singers = [], []
             for singer in all_singers:
-                new_singers.append(singer) if singer.last_performance_time is None else old_singers.append(singer)
+                old_singers.append(singer) if singer.has_sung else new_singers.append(singer)
 
             return sorted(new_singers, key=lambda singer: singer.first_request_time) + sorted(old_singers, key=lambda
                 singer: singer.last_performance_time)

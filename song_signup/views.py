@@ -67,6 +67,10 @@ def add_song_request(request):
                                     status=400)
             elif song_request.singer == current_user:
                 return JsonResponse({"error": "You already signed up with this song tonight"}, status=400)
+            else:
+                song_request = SongRequest.objects.create(song_name=song_name, musical=musical, singer=current_user,
+                                                          duet_partner_id=duet_partner)
+                Singer.ordering.calculate_positions()
 
         except SongRequest.DoesNotExist:
             song_request = SongRequest.objects.create(song_name=song_name, musical=musical, singer=current_user,

@@ -31,13 +31,35 @@ def get_arrival_num_dict():
     return arrival_order_dict
 
 
+def get_first_song_wait(singer):
+    """
+    Get amount of time that passed between first song request (which we treat as arrival) and first performance
+    """
+    performed_songs = singer.all_songs.filter(performance_time__isnull=False).order_by('performance_time')
+    if performed_songs.exists() and singer.first_request_time:
+        return performed_songs.first().performance_time - singer.first_request_time
+
+
+def get_waited_most():
+    """
+    Return (singer, wait_time) of the singer who waited the most for their first song
+    """
+    waited_dict = {get_first_song_wait(singer): singer for singer in Singer.ordering.active_singers()
+                   if get_first_song_wait(singer) is not None}
+    max_wait_time = max(waited_dict)
+    return waited_dict[max_wait_time], max_wait_time
+
+
 def print_db_analysis():
     arrival_num_dict = get_arrival_num_dict()
     singers = Singer.ordering.active_singers()
     num_performances_dict = defaultdict(set)  # Number of songs performed -> singers that performed that num
 
     print(f"Num active singers: {len(Singer.ordering.active_singers())}")
-    print(f"Total registered singers: {Singer.objects.all().count()}\n")
+    print(f"Total registered singers: {Singer.objects.all().count()}")
+    max_waited_singer, max_waited_time = get_waited_most()
+    print(f"Longest wait to sing: {max_waited_time.seconds//3600} hours and {(max_waited_time.seconds//60)%60} - {max_waited_singer}")
+    print("")
 
     for singer in singers:
         num_performance = singer.all_songs.filter(performance_time__isnull=False).count()
@@ -57,7 +79,7 @@ def print_db_analysis():
 def print_song(i, song, arrival_num_dict):
     print(f'{i}: {song.singer.first_name} ({arrival_num_dict[song.singer]}) '
           f'{f" + {song.duet_partner.first_name} ({arrival_num_dict[song.duet_partner]}) " if song.duet_partner and not song.duet_partner.is_superuser else ""} - '
-          f'{song.song_name} {f"(p{convert_time(song.performance_time)})" if song.performance_time else f"r{convert_time(song.request_time)}"}')
+          f'{song.song_name} {f"performed-{convert_time(song.performance_time)}" if song.performance_time else ""} requested-{convert_time(song.request_time)}')
 
 
 def get_current_song():

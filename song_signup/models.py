@@ -35,6 +35,10 @@ class Singer(AbstractUser):
         return self.pending_songs.first()
 
     @property
+    def has_sung(self):
+        return self.last_performance_time is not None
+
+    @property
     def first_request_time(self):
         first_song_request = self.songs.order_by('request_time').first()
 
