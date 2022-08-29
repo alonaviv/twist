@@ -391,11 +391,21 @@ nav {
             font-weight: bold;
             font-size: 20px;
             margin-right: 5px; }
-          #song-list-wrapper .container ol li .song-wrapper .fa-xmark {
+          #song-list-wrapper .container ol li .song-wrapper .fa-trash-can {
             font-size: 25px;
             margin-left: 5%;
             padding-top: 4px;
             color: #c51200; }
+          #song-list-wrapper .container ol li .song-wrapper .fa-pen {
+            font-size: 25px;
+            margin-left: 5%;
+            padding-top: 4px;
+            color: #0051c5; }
+          #song-list-wrapper .container ol li .song-wrapper .fa-check {
+            font-size: 25px;
+            margin-left: 5%;
+            padding-top: 4px;
+            color: green; }
           #song-list-wrapper .container ol li .song-wrapper .fa-star {
             margin-right: 3%;
             padding-top: 6px; }
@@ -403,6 +413,33 @@ nav {
             display: inline-block;
             width: 100%;
             font-weight: 500; }
+          #song-list-wrapper .container ol li .song-wrapper .song-name {
+            display: inline-block;
+            width: 100%;
+            font-weight: 500; }
+          #song-list-wrapper .container ol li .song-wrapper .edit-song-form {
+            display: flex;
+            width: fit-content;
+            align-items: center;
+            font-weight: 500;
+            width: 100%; }
+            #song-list-wrapper .container ol li .song-wrapper .edit-song-form .approve-rename-btn {
+              background: none;
+              height: fit-content;
+              width: fit-content;
+              border: none;
+              margin-left: 10px; }
+            #song-list-wrapper .container ol li .song-wrapper .edit-song-form .edit-song-name {
+              font-size: 20px;
+              font-family: inherit;
+              font-weight: inherit;
+              line-height: inherit;
+              resize: none;
+              outline: none;
+              background: #00a1b1;
+              border: none;
+              border-radius: 5px;
+              padding: 3px; }
     #song-list-wrapper .container #new-song-btn {
       margin: 15px 0px 30px;
       width: 200px; }

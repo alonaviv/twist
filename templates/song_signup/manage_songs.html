@@ -9,7 +9,7 @@
     <div id="song-list-wrapper">
         <div class="container">
             <h1>Your Next Songs</h1>
-            <p id="explanation-text">Your songs are registered in the system, even if they don't appear in the lineup. <br> Feel free to delete or edit - your place in line will not change. </p>
+            <p id="explanation-text">Your songs are registered in the system, even if they don't appear in the lineup. <br> Feel free to delete or edit: your place in line will not change. </p>
             <ol id="song-list"></ol>
             <div class="center">
                 <a href="{% url 'add_song' %}" class="btn btn-secondary-inverted" id="new-song-btn">Add New Song</a> 
@@ -20,7 +20,7 @@
 
 {% include "partials/_footer.html"  %}
 
-<script src="{% static "js/manage-songs.js" %}"></script>
+<script type="module" src="{% static "js/manage-songs.js" %}"></script>
 <script src="{% static "js/navbar.js" %}"></script>
         
 {% endblock %}

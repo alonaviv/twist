@@ -14,6 +14,7 @@ urlpatterns = [
     path('manage_songs', views.manage_songs, name='manage_songs'),
     path('view_suggestions', views.view_suggestions, name='view_suggestions'),
     path('add_song', views.add_song, name='add_song'),
+    path('rename_song', views.rename_song, name='rename_song'),
     path('suggest_song', views.suggest_song, name='suggest_song'),
     path('add_song_request', views.add_song_request, name='add_song_request'),
     path('get_current_songs', views.get_current_songs, name='get_current_songs'),

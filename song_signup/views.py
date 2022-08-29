@@ -104,13 +104,32 @@ def get_current_user(request):
     return Response(serialized.data, status=status.HTTP_200_OK)
 
 
+@api_view(["GET"])
 def get_song(request, song_pk):
     try:
         song_request = SongRequest.objects.get(pk=song_pk)
+        serialized = SongRequestSerializer(song_request, read_only=True)
+        return Response(serialized.data, status=status.HTTP_200_OK)
     except SongRequest.DoesNotExist:
-        return JsonResponse({'error': f"Song with ID {song_pk} does not exist, and cannot be deleted"}, status=403)
+        return Response({'error': f"Song with ID {song_pk} does not exist"}, status=status.HTTP_400_BAD_REQUEST)
 
-    return JsonResponse({"name": song_request.song_name})
+
+@api_view(["PUT"])
+def rename_song(request):
+    song_id = request.data['song_id']
+    new_name = _sanitize_string(request.data['song_name'], title=True)
+
+    if not new_name:
+        return Response({'error': f"Song name can not empty"}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        song_request = SongRequest.objects.get(pk=song_id)
+        serialized = SongRequestSerializer(song_request, read_only=True)
+        song_request.song_name = new_name
+        song_request.save()
+        return Response(serialized.data, status=status.HTTP_200_OK)
+    except SongRequest.DoesNotExist:
+        return Response({'error': f"Song with ID {song_id} does not exist"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @login_required(login_url='login')

@@ -39,11 +39,23 @@
           justify-content: space-between;
           font-size: 20px;
           padding-bottom: 3%;
-          .fa-xmark {
+          .fa-trash-can {
             font-size: 25px;
             margin-left: 5%;
             padding-top: 4px;
             color: $complimentery-secondary;
+          }
+          .fa-pen {
+            font-size: 25px;
+            margin-left: 5%;
+            padding-top: 4px;
+            color: #0051c5;
+          }
+          .fa-check {
+            font-size: 25px;
+            margin-left: 5%;
+            padding-top: 4px;
+            color: green;
           }
           .fa-star {
             margin-right: 3%;
@@ -53,6 +65,39 @@
             display: inline-block;
             width: 100%;
             font-weight: 500;
+          }
+          .song-name {
+            display: inline-block;
+            width: 100%;
+            font-weight: 500;
+          }
+          .edit-song-form {
+            display: flex;
+            width: fit-content;
+            align-items: center;
+            font-weight: 500;
+            width: 100%;
+
+            .approve-rename-btn {
+                background: none;
+                height: fit-content;
+                width: fit-content;
+                border: none;
+                margin-left: 10px;
+            }
+
+            .edit-song-name {
+                font-size: 20px;
+                font-family: inherit;
+                font-weight: inherit;
+                line-height: inherit;
+                resize: none;
+                outline: none;
+                background: #00a1b1;
+                border: none;
+                border-radius: 5px;
+                padding: 3px;
+            }
           }
         }
       }
