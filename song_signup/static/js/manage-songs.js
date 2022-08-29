@@ -32,6 +32,7 @@ function populateSongList() {
                         }
                     </div>`;
 
+
         if (song.duet_partner && song.user_song) {
           li.innerHTML += `
                     <div class="other-singers">

@@ -12,7 +12,7 @@
             <p>Signup is<br>now closed</p>
         </div>
         <h2>Choose your next song!</h2>
-        <p id="add-song-text">Pick literally anything in the Broadway or Disney style (seriously, try us!), or check out tonight's <a href={% url 'view_suggestions' %}> <strong><u>suggestions</u></strong></a> for ideas</p>
+        <p id="add-song-text">Pick literally anything in the Broadway or Disney style (seriously, try us!), or check out <a href={% url 'view_suggestions' %} id="view_suggestions_link">tonight's suggestions</a> for ideas</p>
         <div id="new-song-form-wrapper">
             <form action="" id="new-song-form" autocomplete="off">
                 {% csrf_token %}
@@ -27,7 +27,7 @@
                     <input type="text" name="notes" id="notes" placeholder="Additional notes for us">
                 </div>
                 <div class="form-control">
-                    <label for="duet-partner">Duet partner - <strong><u>Counts as a turn!</u></strong><br>You can also pick Shani or Alon 🙂</label>
+                    <label for="duet-partner">Duet partner - <u>Counts as a turn!</u><br>You can also pick Shani or Alon 🙂</label>
                     <select name="duet-partner" id="duet-partner">
                         <option disabled selected value> -- Duet Partner -- </option>
 
@@ -37,7 +37,7 @@
                     </select>
                 </div>
                 <div class="form-control">
-                    <label for="additional-singers">Smaller parts - <strong><u>Doesn't count as a turn</u></strong></label>
+                    <label for="additional-singers">Smaller parts - <u>Doesn't count as a turn</u></label>
                     <select name="additional-singers" id="additional-singers" multiple>
                         <option disabled selected value> -- Helping Singers -- </option>
                         {% for singer in other_singers %}

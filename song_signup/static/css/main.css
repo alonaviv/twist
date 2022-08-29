@@ -404,7 +404,7 @@ nav {
             width: 100%;
             font-weight: 500; }
     #song-list-wrapper .container #new-song-btn {
-      margin-top: 15px;
+      margin: 15px 0px 30px;
       width: 200px; }
 
 #now-singing-wrapper {
@@ -631,6 +631,11 @@ nav {
   width: 100%;
   padding: 3% 7%;
   position: relative; }
+  #add-song-wrapper #view_suggestions_link {
+    font-weight: 500;
+    text-decoration: underline;
+    font-size: 20px;
+    color: #c51200; }
   #add-song-wrapper #singups-disabled {
     color: #ffff50;
     transform: rotate(-15deg);
@@ -686,6 +691,12 @@ nav {
   width: 100%;
   padding: 3% 7%;
   position: relative; }
+  #add-song-wrapper #suggest-song-header {
+    display: flex;
+    justify-content: space-between;
+    margin: 10px 0px 25px; }
+    #add-song-wrapper #suggest-song-header a {
+      font-size: 14px; }
   #add-song-wrapper #add-song-text {
     font-size: 16px;
     margin-bottom: 5%; }
@@ -741,7 +752,7 @@ nav {
     width: 100%;
     padding: 5% 5%; }
     #suggestion-list-wrapper .container #suggest-again-btn {
-      margin-top: 15px;
+      margin: 15px 0px 30px;
       width: 250px; }
     #suggestion-list-wrapper .container ul {
       width: 100%; }
