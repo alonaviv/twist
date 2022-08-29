@@ -27,11 +27,20 @@ function populateSongList() {
         }</p>
                         ${
                           song.user_song
+                            ? `<i class="fa-solid fa-xmark delete-song" id=delete-${song.pk}></i>`
+                            : ""
+                        }
+                    </div>`;
+        li.innerHTML = `
+                    <div class="song-wrapper">
+                <form action="" id="edit-song=form" autocomplete="off">
+                    <input type="text" name="edit-song-${song.pk}" id="edit-song-name" placeholder=${song.name} required>
+                        ${
+                          song.user_song
                             ? `<i class="fa-solid fa-xmark delete-song" id=${song.pk}></i>`
                             : ""
                         }
                     </div>`;
-
 
         if (song.duet_partner && song.user_song) {
           li.innerHTML += `
