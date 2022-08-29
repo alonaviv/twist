@@ -43,7 +43,7 @@ nav {
     left: 0;
     height: 100vh;
     width: 100vw;
-    padding: 50px 0px;
+    padding: 30px 0px 10px;
     opacity: 0;
     transition: all 0.3s ease;
     transform: translateX(50vw);
@@ -57,7 +57,7 @@ nav {
       }
       h3 {
         font-size: 25px;
-        margin-bottom: 50px;
+        margin-bottom: 35px;
       }
 
       li {
@@ -66,25 +66,43 @@ nav {
         font-weight: 900;
       }
     }
-    #navbar-social {
-      text-align: center;
-      font-size: 40px;
-      margin: 20px 8%;
+    #navbar-icons{
+        width: 100%;
+        margin-top: 30px;
+        align-self: flex-end;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
 
-      display: flex;
-      flex-direction: row-reverse;
-      justify-content: space-between;
-      align-items: center;
+        #navbar-social {
+            width: 100%;
+            text-align: center;
+            font-size: 40px;
+            margin: 0px 8%;
 
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: space-around;
+            align-items: center;
 
-      #navbar-instagram{
-          display: flex;
-          align-items: center;
-            p {
-                margin-left: 5px;
-                font-size: 30px;
+            #navbar-instagram{
+                display: flex;
+                align-items: center;
+                    p {
+                        margin-left: 5px;
+                        font-size: 30px;
+                    }
             }
-      }
+        }
+        #navbar-whatsapp {
+            text-align: center;
+            font-size: 30px;
+            margin: 0px 8% 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
     }
   }
 }

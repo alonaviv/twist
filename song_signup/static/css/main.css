@@ -89,6 +89,44 @@
   justify-content: center;
   text-align: center; }
 
+.checkboxes {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  width: 150%; }
+
+.checkbox {
+  margin-bottom: 20px;
+  width: 100%;
+  display: flex;
+  align-items: center; }
+  .checkbox input[type="checkbox"] {
+    margin-right: 20px;
+    appearance: none;
+    height: 25px;
+    width: 25px;
+    border: 1px solid black;
+    border-radius: 4px;
+    background-color: #aaa;
+    display: block;
+    position: relative;
+    transition: all 0.25s ease; }
+    .checkbox input[type="checkbox"]:checked {
+      background-color: #333; }
+      .checkbox input[type="checkbox"]:checked::before {
+        content: "\2713";
+        display: inline-block;
+        text-align: center;
+        color: #ffff3d;
+        position: absolute;
+        left: 10%;
+        top: 0;
+        font-size: 20px; }
+  .checkbox label {
+    font-size: inherit; }
+
 nav {
   position: relative; }
 
@@ -126,7 +164,7 @@ nav {
     left: 0;
     height: 100vh;
     width: 100vw;
-    padding: 50px 0px;
+    padding: 30px 0px 10px;
     opacity: 0;
     transition: all 0.3s ease;
     transform: translateX(50vw); }
@@ -138,25 +176,41 @@ nav {
         font-weight: 900; }
       #menu-wrapper #menu #menu-content h3 {
         font-size: 25px;
-        margin-bottom: 50px; }
+        margin-bottom: 35px; }
       #menu-wrapper #menu #menu-content li {
         margin: 20px 0;
         font-size: 30px;
         font-weight: 900; }
-    #menu-wrapper #menu #navbar-social {
-      text-align: center;
-      font-size: 40px;
-      margin: 20px 8%;
+    #menu-wrapper #menu #navbar-icons {
+      width: 100%;
+      margin-top: 30px;
+      align-self: flex-end;
       display: flex;
-      flex-direction: row-reverse;
+      flex-direction: column;
       justify-content: space-between;
       align-items: center; }
-      #menu-wrapper #menu #navbar-social #navbar-instagram {
+      #menu-wrapper #menu #navbar-icons #navbar-social {
+        width: 100%;
+        text-align: center;
+        font-size: 40px;
+        margin: 0px 8%;
         display: flex;
+        flex-direction: row-reverse;
+        justify-content: space-around;
         align-items: center; }
-        #menu-wrapper #menu #navbar-social #navbar-instagram p {
-          margin-left: 5px;
-          font-size: 30px; }
+        #menu-wrapper #menu #navbar-icons #navbar-social #navbar-instagram {
+          display: flex;
+          align-items: center; }
+          #menu-wrapper #menu #navbar-icons #navbar-social #navbar-instagram p {
+            margin-left: 5px;
+            font-size: 30px; }
+      #menu-wrapper #menu #navbar-icons #navbar-whatsapp {
+        text-align: center;
+        font-size: 30px;
+        margin: 0px 8% 10px;
+        display: flex;
+        justify-content: center;
+        align-items: center; }
 
 #navbar {
   position: fixed;
@@ -267,6 +321,8 @@ nav {
         letter-spacing: 1px; }
       #login-hero #login-wrapper #login-form-wrapper form {
         width: 100%; }
+        #login-hero #login-wrapper #login-form-wrapper form label {
+          font-size: 18px; }
         #login-hero #login-wrapper #login-form-wrapper form .form-control {
           margin-bottom: 15px; }
           #login-hero #login-wrapper #login-form-wrapper form .form-control input {
@@ -280,42 +336,6 @@ nav {
             font-size: 18px; }
             #login-hero #login-wrapper #login-form-wrapper form .form-control input::placeholder {
               color: #aaa;
-              font-size: 18px; }
-        #login-hero #login-wrapper #login-form-wrapper form .checkboxes {
-          margin-top: 20px;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          align-items: flex-start;
-          width: 150%; }
-          #login-hero #login-wrapper #login-form-wrapper form .checkboxes .checkbox {
-            margin-bottom: 20px;
-            width: 100%;
-            display: flex;
-            align-items: center; }
-            #login-hero #login-wrapper #login-form-wrapper form .checkboxes .checkbox input[type="checkbox"] {
-              margin-right: 20px;
-              appearance: none;
-              height: 25px;
-              width: 25px;
-              border: 1px solid black;
-              border-radius: 4px;
-              background-color: #aaa;
-              display: block;
-              position: relative;
-              transition: all 0.25s ease; }
-              #login-hero #login-wrapper #login-form-wrapper form .checkboxes .checkbox input[type="checkbox"]:checked {
-                background-color: #333; }
-                #login-hero #login-wrapper #login-form-wrapper form .checkboxes .checkbox input[type="checkbox"]:checked::before {
-                  content: "\2713";
-                  display: inline-block;
-                  text-align: center;
-                  color: #ffff3d;
-                  position: absolute;
-                  left: 10%;
-                  top: 0;
-                  font-size: 20px; }
-            #login-hero #login-wrapper #login-form-wrapper form .checkboxes .checkbox label {
               font-size: 18px; }
 
 @keyframes pulsate {
@@ -658,6 +678,94 @@ nav {
         color: #fff;
         font-size: 14px;
         transition: inherit; }
+
+#add-song-wrapper {
+  background: #00C575;
+  color: #000;
+  height: 100%;
+  width: 100%;
+  padding: 3% 7%;
+  position: relative; }
+  #add-song-wrapper #add-song-text {
+    font-size: 16px;
+    margin-bottom: 5%; }
+  #add-song-wrapper form {
+    width: 100%; }
+    #add-song-wrapper form #submit-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center; }
+    #add-song-wrapper form .checkbox {
+      margin: 30px 0px; }
+      #add-song-wrapper form .checkbox input[type="checkbox"] {
+        background-color: #333; }
+    #add-song-wrapper form .form-control {
+      margin-bottom: 15px;
+      transition: all 2s ease; }
+      #add-song-wrapper form .form-control input[type=text] {
+        width: 100%;
+        padding: 4px;
+        height: 40px;
+        border: #333 2px solid;
+        border-radius: 5px;
+        background: #333;
+        color: #fff;
+        font-size: 18px;
+        transition: inherit; }
+        #add-song-wrapper form .form-control input[type=text]::placeholder {
+          color: #aaa;
+          font-size: 18px; }
+      #add-song-wrapper form .form-control select {
+        margin-top: 10px;
+        margin-bottom: 10px;
+        width: 100%;
+        height: 30px;
+        padding: 4px;
+        background: #333;
+        color: #fff;
+        font-size: 14px;
+        transition: inherit; }
+
+#explanation-text {
+  font-size: 18px;
+  margin: 20px 0px; }
+
+#suggestion-list-wrapper {
+  height: 100%;
+  width: 100%;
+  background: #00b3c5;
+  color: #000; }
+  #suggestion-list-wrapper .container {
+    overflow: scroll;
+    height: 100%;
+    width: 100%;
+    padding: 5% 5%; }
+    #suggestion-list-wrapper .container #suggest-again-btn {
+      margin-top: 15px;
+      width: 250px; }
+    #suggestion-list-wrapper .container ul {
+      width: 100%; }
+      #suggestion-list-wrapper .container ul li {
+        display: flex;
+        flex-direction: column;
+        margin: 20px 10px; }
+        #suggestion-list-wrapper .container ul li .song-wrapper {
+          font-size: 20px;
+          padding-bottom: 3%; }
+          #suggestion-list-wrapper .container ul li .song-wrapper .fa-star {
+            margin-right: 10px;
+            padding-top: 6px; }
+          #suggestion-list-wrapper .container ul li .song-wrapper .song-name {
+            font-weight: 500;
+            display: flex; }
+        #suggestion-list-wrapper .container ul li .musical-name {
+          font-weight: 500;
+          font-style: italic; }
+        #suggestion-list-wrapper .container ul li .suggested-by {
+          font-weight: 500; }
+        #suggestion-list-wrapper .container ul li.claimed {
+          color: #666;
+          pointer-events: none; }
 
 * {
   box-sizing: border-box;

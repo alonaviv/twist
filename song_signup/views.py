@@ -10,7 +10,7 @@ from django.shortcuts import render, redirect
 from flags.state import enable_flag, disable_flag, flag_disabled
 from titlecase import titlecase
 
-from .models import GroupSongRequest, SongRequest, Singer
+from .models import GroupSongRequest, SongRequest, Singer, SongSuggestion
 
 logger = logging.getLogger(__name__)
 
@@ -20,8 +20,7 @@ def _name_to_username(first_name, last_name):
 
 
 @login_required(login_url='login')
-def home(request, new_song=None):
-    is_group_song = request.GET.get('group_song') == 'true'
+def home(request, new_song=None, is_group_song=False):
     return render(request, 'song_signup/home.html', {
         "new_song": new_song,
         "is_group_song": is_group_song
@@ -58,10 +57,6 @@ def add_song_request(request):
         duet_partner = request.POST.get('duet-partner')
         additional_singers = request.POST.getlist('additional-singers')
 
-        if duet_partner == 'group-song':
-            GroupSongRequest.objects.create(song_name=song_name, musical=musical, requested_by=current_user)
-            return JsonResponse({'requested_song': song_name, 'group_song': True})
-
         try:
             song_request = SongRequest.objects.get(song_name=song_name, musical=musical)
             if current_user == song_request.duet_partner:
@@ -77,10 +72,9 @@ def add_song_request(request):
 
             Singer.ordering.calculate_positions()
 
-    return JsonResponse({
-        'requested_song': song_request.song_name,
-        'group_song': False
-    })
+        return JsonResponse({
+            'requested_song': song_request.song_name,
+        })
 
 
 def get_current_songs(request):
@@ -96,6 +90,18 @@ def get_current_songs(request):
     return JsonResponse({'current_songs': songs_dict})
 
 
+def get_suggested_songs(request):
+    songs_dict = []
+
+    for suggestion in SongSuggestion.objects.all().order_by('is_used', '-request_time'):
+        songs_dict.append({
+            'name': suggestion.song_name, 'musical': suggestion.musical,
+            'suggested_by': str(suggestion.suggested_by), 'is_used': suggestion.is_used,
+        })
+
+    return JsonResponse({'suggested_songs': songs_dict})
+
+
 def get_song(request, song_pk):
     try:
         song_request = SongRequest.objects.get(pk=song_pk)
@@ -108,6 +114,11 @@ def get_song(request, song_pk):
 @login_required(login_url='login')
 def manage_songs(request):
     return render(request, 'song_signup/manage_songs.html')
+
+
+@login_required(login_url='login')
+def view_suggestions(request):
+    return render(request, 'song_signup/view_suggestions.html')
 
 
 @login_required(login_url='login')
@@ -126,6 +137,29 @@ def add_song(request):
     other_singers = Singer.objects.all().exclude(pk=request.user.pk).exclude(pk=alon.id).exclude(pk=shani.id).order_by(
         'first_name')
     return render(request, 'song_signup/add_song.html', {'other_singers': [shani, alon] + list(other_singers)})
+
+
+@login_required(login_url='login')
+def suggest_song(request):
+    current_user = request.user
+
+    if request.method == 'POST':
+        song_name = _sanitize_string(request.POST['song-name'], title=True)
+        musical = _sanitize_string(request.POST['musical'], title=True)
+
+        if request.POST.get('group-song') == 'on':
+            GroupSongRequest.objects.create(song_name=song_name, musical=musical, suggested_by=current_user)
+            return home(request, song_name, is_group_song=True)
+
+        _, created = SongSuggestion.objects.get_or_create(song_name=song_name, musical=musical,
+                                                          suggested_by=current_user)
+        if created:
+            SongSuggestion.objects.check_used_suggestions()
+
+        return redirect('view_suggestions')
+
+    else:
+        return render(request, 'song_signup/suggest_song.html')
 
 
 def logout(request):

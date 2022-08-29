@@ -12,7 +12,7 @@ newSongForm.addEventListener("submit", (e) => {
       if (!response.ok) {
         throw Error(data.error);
       }
-        window.location.replace(`/home/${data.requested_song}?group_song=${data.group_song}`);
+        window.location.replace(`/home/${data.requested_song}`);
     })
     .catch((error) => alert(error));
 });

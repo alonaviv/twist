@@ -6,7 +6,7 @@ import pytz
 from django.test import TestCase
 
 from song_signup.managers import LATE_SINGER_CYCLE
-from song_signup.models import Singer, SongRequest
+from song_signup.models import Singer, SongRequest, SongSuggestion
 from song_signup.views import enable_signup
 
 CYCLE_NAMES = ['cy1', 'cy2', 'lscy', 'cy3']
@@ -192,8 +192,19 @@ def assert_song_positions(testcase, expected_songs):
     testcase.assertEqual(positions, list(range(1, len(expected_songs) + 1)))
 
 
+def add_song_suggestions():
+    suggester = Singer.objects.create_user('suggester')
+    SongSuggestion.objects.create(song_name='suggested_song_1', musical='a musical', suggested_by=suggester)
+    SongSuggestion.objects.create(song_name='suggested_song_2', musical='a musical', suggested_by=suggester)
+
+
 class SongRequestTestCase(TestCase):
     def setUp(self):
         enable_signup(None)
+        add_song_suggestions()
 
-
+    def tearDown(self):
+        suggestions = SongSuggestion.objects.all().order_by('request_time')
+        self.assertEqual(suggestions.count(), 2)
+        self.assertEqual(suggestions[0].song_name, 'suggested_song_1')
+        self.assertEqual(suggestions[1].song_name, 'suggested_song_2')

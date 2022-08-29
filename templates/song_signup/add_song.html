@@ -12,17 +12,16 @@
             <p>Signup is<br>now closed</p>
         </div>
         <h2>Choose your next song!</h2>
-        <p id="add-song-text">Pick literally anything in the Broadway or Disney style (seriously, try us)
-            and come up to sing!</p>
+        <p id="add-song-text">Pick literally anything in the Broadway or Disney style (seriously, try us!), or check out tonight's <a href={% url 'view_suggestions' %}> <strong><u>suggestions</u></strong></a> for ideas</p>
         <div id="new-song-form-wrapper">
             <form action="" id="new-song-form" autocomplete="off">
                 {% csrf_token %}
                 <input autocomplete="false" name="hidden" type="text" style="display:none;">
                 <div class="form-control">
-                    <input type="text" name="song-name" id="song-name" placeholder="Song Name" required>
+                    <input type="text" name="song-name" id="song-name" placeholder="Song name" {% if request.GET.song_name %} value="{{ request.GET.song_name }}" {% endif %} required>
                 </div>
                 <div class="form-control">
-                    <input type="text" name="musical" id="musical" placeholder="Where's it from?" required>
+                    <input type="text" name="musical" id="musical" placeholder="Where's it from?" {% if request.GET.musical %} value="{{ request.GET.musical }}" {% endif %} required>
                 </div>
                 <div class="form-control">
                     <input type="text" name="notes" id="notes" placeholder="Additional notes for us">
@@ -38,7 +37,7 @@
                     </select>
                 </div>
                 <div class="form-control">
-                    <label for="additional-singers">Other people joining in smaller parts? This doesn't count as a turn.
+                    <label for="additional-singers">Smaller parts - <strong><u>Doesn't count as a turn</u></strong></label>
                     <select name="additional-singers" id="additional-singers" multiple>
                         <option disabled selected value> -- Helping Singers -- </option>
                         {% for singer in other_singers %}

@@ -15,10 +15,8 @@ function populateSongList() {
   return fetch("/get_current_songs")
     .then((response) => response.json())
     .then((data) => {
-      if (data.current_songs.length > 0) {
-        songListWrapper.classList.remove("hidden");
-      } else {
-        songListWrapper.classList.add("hidden");
+        if (data.current_songs.length === 0) {
+            window.location.replace("/add_song");
       }
       const lis = data.current_songs.map((song) => {
         const li = document.createElement("li");

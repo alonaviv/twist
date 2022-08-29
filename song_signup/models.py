@@ -9,7 +9,7 @@ from django.db.models import (
 )
 from django.dispatch import receiver
 
-from song_signup.managers import SongRequestManager, DisneylandOrdering
+from song_signup.managers import SongRequestManager, DisneylandOrdering, SongSuggestionManager
 
 
 class Singer(AbstractUser):
@@ -112,17 +112,37 @@ class Singer(AbstractUser):
 class GroupSongRequest(Model):
     song_name = CITextField(max_length=50, null=False, blank=False)
     musical = CITextField(max_length=50, null=False, blank=False)
-    requested_by = ForeignKey(settings.AUTH_USER_MODEL, on_delete=CASCADE)
+    suggested_by = ForeignKey(settings.AUTH_USER_MODEL, on_delete=CASCADE)
     request_time = DateTimeField(auto_now_add=True)
+
+
+class SongSuggestion(Model):
+    song_name = CITextField(max_length=50)
+    musical = CITextField(max_length=50)
+    suggested_by = ForeignKey(settings.AUTH_USER_MODEL, on_delete=CASCADE, related_name='songs_suggested')
+    request_time = DateTimeField(auto_now_add=True)
+    is_used = BooleanField(default=False)
+
+    def check_if_used(self):
+        try:
+            SongRequest.objects.get(song_name=self.song_name, musical=self.musical)
+            self.is_used = True
+
+        except SongRequest.DoesNotExist:
+            self.is_used = False
+
+        self.save()
+
+    objects = SongSuggestionManager()
 
 
 class SongRequest(Model):
     song_name = CITextField(max_length=50)
     musical = CITextField(max_length=50)
-    notes = CITextField(max_length=1000, null=True, blank=True, default='')
+    notes = CITextField(max_length=1000, null=True, blank=True)
     request_time = DateTimeField(auto_now_add=True)
     performance_time = DateTimeField(default=None, null=True, blank=True)
-    singer = ForeignKey(settings.AUTH_USER_MODEL, on_delete=CASCADE, related_name='songs')
+    singer = ForeignKey(settings.AUTH_USER_MODEL, on_delete=CASCADE, related_name='songs', null=True)
     duet_partner = ForeignKey(settings.AUTH_USER_MODEL, on_delete=SET_NULL, null=True, blank=True,
                               related_name='duet_songs')
     additional_singers = ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='songs_as_additional')
@@ -162,24 +182,16 @@ class SongRequest(Model):
     def basic_data(self):
         return {'name': self.song_name, 'singer': str(self.singer), 'wait_amount': self.wait_amount}
 
+    def save(self, *args, **kwargs):
+        self.singer.add_to_lineup()  # Only used in the 3 cycles algo
+
+        if not self.priority:
+            self.priority = SongRequest.objects.next_priority(self)
+
+        super().save(*args, **kwargs)
+
     class Meta:
         unique_together = ('song_name', 'musical', 'singer', 'cycle', 'position')
         ordering = ('position',)
 
     objects = SongRequestManager()
-
-
-# Add singer to cycle when his first request is created for the first time
-@receiver(signals.post_save, sender=SongRequest)
-def after_create_songrequest(sender, instance, created, *args, **kwargs):
-    if created:
-        instance.singer.add_to_lineup()
-        instance.priority = SongRequest.objects.next_priority(instance)
-        instance.save()
-
-
-# Recalculate position of all requests on change
-@receiver(signals.post_save, sender=SongRequest)
-def after_save_songrequest(sender, instance, created, *args, **kwargs):
-    signals.post_save.disconnect(after_save_songrequest, sender=sender)
-    signals.post_save.connect(after_save_songrequest, sender=sender)
