@@ -71,6 +71,7 @@ def add_song_request(request):
             song_request.additional_singers.set(additional_singers)
 
             Singer.ordering.calculate_positions()
+            SongSuggestion.objects.check_used_suggestions()
 
         return JsonResponse({
             'requested_song': song_request.song_name,
