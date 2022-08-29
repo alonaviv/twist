@@ -1,0 +1,43 @@
+
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block content %}
+
+{% include "partials/_navbar.html" with current="suggest-song" %}
+<main>
+    <div id="add-song-wrapper">
+        <div id="suggest-song-header">
+            <h2>Suggest a Song</h2>
+            <a href={% url 'view_suggestions' %} class="btn btn-inverted">View Suggestions</a>
+        </div>
+        
+        <p id="add-song-text">Is there a song you'd like to hear tonight? Maybe someone will select it!</p>
+        <div id="new-song-form-wrapper">
+            <form action="/suggest_song" method="POST" id="new-song-form" autocomplete="off">
+                {% csrf_token %}
+                <input autocomplete="false" name="hidden" type="text" style="display:none;">
+                <div class="form-control">
+                    <input type="text" name="song-name" id="song-name" placeholder="Song Name" required>
+                </div>
+                <div class="form-control">
+                    <input type="text" name="musical" id="musical" placeholder="Where's it from?" required>
+                </div>
+                <div class="checkbox">
+                    <input type="checkbox" name="group-song" id="group-song">
+                    <label for="group-song">This is a group song - for everyone</label>
+                </div>
+                <div class="form-control" id="submit-wrapper">
+                        <input type="submit" value="Suggest" class="btn btn-inverted">
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+
+{% include "partials/_footer.html"  %}
+
+<script src="{% static "js/navbar.js" %}"></script>
+        
+{% endblock %}

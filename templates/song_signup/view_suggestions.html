@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block content %}
+
+{% include "partials/_navbar.html" with current="suggest-song" %}
+<main>
+    <div id="suggestion-list-wrapper">
+        <div class="container">
+        </div>
+    </div>
+</main>
+
+{% include "partials/_footer.html"  %}
+
+<script src="{% static "js/view-suggestions.js" %}"></script>
+<script src="{% static "js/navbar.js" %}"></script>
+        
+{% endblock %}

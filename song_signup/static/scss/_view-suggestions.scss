@@ -1,0 +1,64 @@
+#explanation-text {
+    font-size: 18px;
+    margin: 20px 0px;
+}
+
+
+#suggestion-list-wrapper {
+  height: 100%;
+  width: 100%;
+  background: $secondary-color;
+  color: set-text-color($secondary-color);
+
+
+  .container {
+    overflow: scroll;
+    height: 100%;
+    width: 100%;
+    padding: 5% 5%;
+
+    #suggest-again-btn {
+        margin: 15px 0px 30px;
+        width: 250px;
+    }
+
+    ul {
+      width: 100%;
+
+      li {
+        display: flex;
+        flex-direction: column;
+        margin: 20px 10px;
+
+        .song-wrapper {
+          font-size: 20px;
+          padding-bottom: 3%;
+
+
+          .fa-star {
+            margin-right: 10px;
+            padding-top: 6px;
+          }
+          .song-name {
+            font-weight: 500;
+            display: flex;
+          }
+        }
+
+        .musical-name {
+            font-weight: 500;
+            font-style: italic;
+        }
+
+        .suggested-by {
+            font-weight: 500;
+        }
+
+        &.claimed {
+            color: #666;
+            pointer-events: none;
+        }
+      }
+    }
+  }
+}
