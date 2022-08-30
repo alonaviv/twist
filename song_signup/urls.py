@@ -17,6 +17,7 @@ urlpatterns = [
     path('suggest_song', views.suggest_song, name='suggest_song'),
     path('add_song_request', views.add_song_request, name='add_song_request'),
     path('get_current_songs', views.get_current_songs, name='get_current_songs'),
+    path('get_current_user', views.get_current_user, name='get_current_user'),
     path('get_suggested_songs', views.get_suggested_songs, name='get_suggested_songs'),
     path('delete_song/<int:song_pk>', views.delete_song, name='delete_song'),
     path('get_song/<int:song_pk>', views.get_song, name='get_song'),

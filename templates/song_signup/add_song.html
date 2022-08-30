@@ -17,6 +17,7 @@
             <form action="" id="new-song-form" autocomplete="off">
                 {% csrf_token %}
                 <input autocomplete="false" name="hidden" type="text" style="display:none;">
+                <input type="hidden" id="suggested_by" name="suggested_by" value="{{ request.GET.suggested_by }}">
                 <div class="form-control">
                     <input type="text" name="song-name" id="song-name" placeholder="Song name" {% if request.GET.song_name %} value="{{ request.GET.song_name }}" {% endif %} required>
                 </div>

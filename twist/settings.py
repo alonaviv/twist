@@ -77,6 +77,7 @@ INSTALLED_APPS = [
     'easy_select2',
     'dbbackup',
     'flags',
+    'rest_framework'
 ]
 
 DBBACKUP_STORAGE = 'django.core.files.storage.FileSystemStorage'

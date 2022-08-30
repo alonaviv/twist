@@ -75,7 +75,7 @@ class SongSuggestionAdmin(admin.ModelAdmin):
 class SongRequestAdmin(admin.ModelAdmin):
     list_display = (
         'position', 'singer', 'song_name', 'musical', 'duet_partner', 'get_notes', 'get_additional_singers',
-        'get_performance_time', 'get_request_time', 'get_initial_signup'
+        'suggested_by', 'get_performance_time', 'get_request_time', 'get_initial_signup'
     )
     list_filter = (NotYetPerformedFilter,)
     actions = [set_performed, set_not_performed]

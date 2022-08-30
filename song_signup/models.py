@@ -146,6 +146,8 @@ class SongRequest(Model):
     duet_partner = ForeignKey(settings.AUTH_USER_MODEL, on_delete=SET_NULL, null=True, blank=True,
                               related_name='duet_songs')
     additional_singers = ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='songs_as_additional')
+    suggested_by = ForeignKey(settings.AUTH_USER_MODEL, on_delete=SET_NULL, null=True, blank=True,
+                              related_name='suggested_songs_claimed')
     priority = IntegerField(null=True, blank=True)  # Priority in each singer's list
     position = IntegerField(null=True, blank=True)  # Absolute position in entire list
     cycle = FloatField(null=True, blank=True)  # The cycle where song was scheduled

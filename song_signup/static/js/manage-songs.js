@@ -11,40 +11,48 @@ async function loadWait(promiseCallback) {
   document.body.style.display = "block";
 }
 
-function populateSongList() {
-  return fetch("/get_current_songs")
-    .then((response) => response.json())
-    .then((data) => {
-        if (data.current_songs.length === 0) {
-            window.location.replace("/add_song");
-      }
-      const lis = data.current_songs.map((song) => {
-        const li = document.createElement("li");
-        li.innerHTML = `
-                    <div class="song-wrapper">
-                        <p class="song-name">${song.name}${
-          !song.user_song ? ` (Added by ${song.primary_singer})` : ""
-        }</p>
-                        ${
-                          song.user_song
-                            ? `<i class="fa-solid fa-xmark delete-song" id=${song.pk}></i>`
-                            : ""
-                        }
-                    </div>`;
+
+async function get_current_user() {
+    const response = await fetch("/get_current_user");
+    const data = await response.json();
+    return data;
+}
 
 
-        if (song.duet_partner && song.user_song) {
-          li.innerHTML += `
-                    <div class="other-singers">
-                        <p>Together with: ${song.duet_partner}</p>
-                    </div>`;
-        }
-        return li;
-      });
-      songListUl.replaceChildren(...lis);
-      setDeletelinks();
-    })
-    .catch((error) => console.error(error));
+async function populateSongList() {
+    const response = await fetch("get_current_songs");
+    const data = await response.json();
+    const current_user = await get_current_user();
+
+    if (data.length === 0) {
+        window.location.replace("/add_song");
+    }
+    
+    const lis = data.map((song) => {
+    const li = document.createElement("li");
+    li.innerHTML = `
+                <div class="song-wrapper">
+                    <p class="song-name">${song.song_name}${
+        song.singer.id != current_user.id ? ` (Added by ${song.singer.first_name} ${song.singer.last_name})` : ""
+    }</p>
+                    ${
+                        song.singer.id === current_user.id
+                        ? `<i class="fa-solid fa-xmark delete-song" id=${song.id}></i>`
+                        : ""
+                    }
+                </div>`;
+
+
+    if (song.duet_partner && song.singer.id == current_user.id) {
+        li.innerHTML += `
+                <div class="other-singers">
+                    <p>Together with: ${song.duet_partner.first_name} ${song.duet_partner.last_name}</p>
+                </div>`;
+    }
+    return li;
+    });
+    songListUl.replaceChildren(...lis);
+    setDeletelinks();
 }
 
 

@@ -12,7 +12,7 @@ async function loadWait(promiseCallback) {
 }
 
 function get_song_lis(data) {
-    const lis = data.suggested_songs.map((song) => {
+    const lis = data.map((song) => {
         const li = document.createElement("li");
 
         if (song.is_used) {
@@ -20,17 +20,17 @@ function get_song_lis(data) {
         }
         
         li.innerHTML = `
-        <a href="/add_song?song_name=${song.name}&musical=${song.musical}" class="song-wrapper">
+        <a href="/add_song?song_name=${song.song_name}&musical=${song.musical}&suggested_by=${song.suggested_by.id}" class="song-wrapper">
                 <div class="song-name">
                     <i class="fa-solid fa-star"></i>
-                    <p>${song.name} ${song.is_used ? " - Claimed" : ""}</p>
+                    <p>${song.song_name} ${song.is_used ? " - Claimed" : ""}</p>
                 </div>
         </a>
         <div class="musical-name">
             <p> From ${song.musical}</p>
         </div>
         <div class="suggested-by">
-            <p>Suggested by ${song.suggested_by}</p>
+            <p>Suggested by ${song.suggested_by.first_name} ${song.suggested_by.last_name}</p>
         </div>`;
         return li;
     });
@@ -38,11 +38,10 @@ function get_song_lis(data) {
 }
 
 
-function populateSuggestionList() {
-  return fetch("/get_suggested_songs")
-    .then((response) => response.json())
-    .then((data) => {
-        if (data.suggested_songs.length === 0) {
+async function populateSuggestionList() {
+    const response = await fetch("/get_suggested_songs");
+    const data = await response.json();
+    if (data.length === 0) {
             suggestionContainer.innerHTML = `
                 <h1>Song Suggestions</h1>
                     <p id="explanation-text">No suggestions yet :(<br><br>
@@ -51,17 +50,15 @@ function populateSuggestionList() {
                         <a href="/suggest_song" class="btn btn-secondary-inverted" id="suggest-again-btn">Suggest a Song</a> 
                     </div>
             `
-        } else {
-            suggestionContainer.innerHTML = `
-                <h1>Song Suggestions</h1>
-                    <p id="explanation-text">Wondering what to sing tonight? <br> Select an audience suggestion with a click</p>
-                    <ul id="suggestion-list"></ul>
-                    <div class="center">
-                        <a href="/suggest_song" class="btn btn-secondary-inverted" id="suggest-again-btn">Make Another Suggestion</a> 
-                    </div>
-            `
-            document.getElementById('suggestion-list').replaceChildren(...get_song_lis(data));
-        }
-    })
-    .catch((error) => console.error(error));
+    } else {
+        suggestionContainer.innerHTML = `
+            <h1>Song Suggestions</h1>
+                <p id="explanation-text">Wondering what to sing tonight? <br> Select an audience suggestion with a click</p>
+                <ul id="suggestion-list"></ul>
+                <div class="center">
+                    <a href="/suggest_song" class="btn btn-secondary-inverted" id="suggest-again-btn">Make Another Suggestion</a> 
+                </div>
+        `
+        document.getElementById('suggestion-list').replaceChildren(...get_song_lis(data));
+    }
 }
