@@ -11,6 +11,10 @@ from flags.state import enable_flag, disable_flag, flag_disabled
 from titlecase import titlecase
 
 from .models import GroupSongRequest, SongRequest, Singer, SongSuggestion
+from .serializers import SongSuggestionSerializer, SongRequestSerializer
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
 
 logger = logging.getLogger(__name__)
 
@@ -78,29 +82,18 @@ def add_song_request(request):
         })
 
 
+@api_view(["GET"])
 def get_current_songs(request):
     singer = request.user
-    songs_dict = []
-
-    for song in singer.pending_songs:
-        songs_dict.append({
-            'name': song.song_name, 'duet_partner': song.duet_partner and str(song.duet_partner),
-            'primary_singer': str(song.singer), 'user_song': song.singer == singer, 'pk': song.pk
-        })
-
-    return JsonResponse({'current_songs': songs_dict})
+    serialized = SongRequestSerializer(singer.pending_songs, many=True, read_only=True)
+    return Response(serialized.data, status=status.HTTP_200_OK)
 
 
+@api_view(["GET"])
 def get_suggested_songs(request):
-    songs_dict = []
-
-    for suggestion in SongSuggestion.objects.all().order_by('is_used', '-request_time'):
-        songs_dict.append({
-            'name': suggestion.song_name, 'musical': suggestion.musical,
-            'suggested_by': str(suggestion.suggested_by), 'is_used': suggestion.is_used,
-        })
-
-    return JsonResponse({'suggested_songs': songs_dict})
+    serialized = SongSuggestionSerializer(SongSuggestion.objects.all().order_by('is_used', '-request_time'),
+                                          many=True, read_only=True)
+    return Response(serialized.data, status=status.HTTP_200_OK)
 
 
 def get_song(request, song_pk):

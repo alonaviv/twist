@@ -11,18 +11,23 @@ async function loadWait(promiseCallback) {
   document.body.style.display = "block";
 }
 
+async function get_current_user() {
+    return fetch("/get_user_id").then((response) => response.json())
+}
+
 function populateSongList() {
   return fetch("/get_current_songs")
     .then((response) => response.json())
     .then((data) => {
         if (data.current_songs.length === 0) {
             window.location.replace("/add_song");
-      }
+        }
+    
       const lis = data.current_songs.map((song) => {
         const li = document.createElement("li");
         li.innerHTML = `
                     <div class="song-wrapper">
-                        <p class="song-name">${song.name}${
+                        <p class="song-name">${song.song_name}${
           !song.user_song ? ` (Added by ${song.primary_singer})` : ""
         }</p>
                         ${
