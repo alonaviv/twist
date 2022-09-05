@@ -179,9 +179,10 @@ class DisneylandOrdering(UserManager):
 
     def active_singers(self):
         """
-        Return all singers that have at least one song request
+        Return all logged-in singers that have at least one song request
         """
-        return [singer for singer in self.all() if singer.songs.filter(request_time__isnull=False).exists()]
+        return [singer for singer in self.all() if singer.is_active
+                and singer.songs.filter(request_time__isnull=False).exists()]
 
     def new_singers_num(self):
         return len([singer for singer in self.active_singers() if singer.all_songs.exists()

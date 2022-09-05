@@ -198,6 +198,19 @@ def add_song_suggestions():
     SongSuggestion.objects.create(song_name='suggested_song_2', musical='a musical', suggested_by=suggester)
 
 
+def logout(singer_id):
+    singer = get_singer(singer_id)
+    singer.is_active = False
+    singer.save()
+
+
+def login(singer_id):
+    singer = get_singer(singer_id)
+    singer.is_active = True
+    singer.save()
+
+
+
 class SongRequestTestCase(TestCase):
     def setUp(self):
         enable_signup(None)

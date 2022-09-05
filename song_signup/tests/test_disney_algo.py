@@ -4,7 +4,8 @@ from mock import patch
 from song_signup.models import Singer, SongRequest
 from song_signup.tests.test_utils import (
     SongRequestTestCase, TEST_START_TIME, create_singers, assert_singers_in_disney,
-    set_performed, add_duet, add_songs_to_singers, get_singer, assert_song_positions, add_songs_to_singer
+    set_performed, add_duet, add_songs_to_singers, get_singer, assert_song_positions, add_songs_to_singer,
+    login, logout,
 )
 from song_signup.views import disable_signup
 
@@ -13,7 +14,31 @@ class TestDisneylandOrdering(SongRequestTestCase):
     def test_active_singers(self):
         create_singers(5)
         add_songs_to_singers(3, 1)
-        self.assertEqual(Singer.ordering.active_singers(), [get_singer(1), get_singer(2), get_singer(3)])
+
+        self.assertEqual(set(Singer.ordering.active_singers()), {get_singer(1), get_singer(2), get_singer(3)})
+        assert_song_positions(self, [
+            (1, 1),
+            (2, 1),
+            (3, 1)
+        ])
+
+        logout(2)
+        logout(4)
+        self.assertEqual(set(Singer.ordering.active_singers()), {get_singer(1), get_singer(3)})
+        assert_song_positions(self, [
+            (1, 1),
+            (3, 1)
+        ])
+
+        login(2)
+        login(4)
+
+        self.assertEqual(set(Singer.ordering.active_singers()), {get_singer(1), get_singer(2), get_singer(3)})
+        assert_song_positions(self, [
+            (1, 1),
+            (2, 1),
+            (3, 1)
+        ])
 
     def test_no_performances_no_songs(self):
         # Singers that didn't sign up for a song yet don't apper in the list
@@ -300,14 +325,22 @@ class TestSimulatedEvenings(SongRequestTestCase):
             add_songs_to_singers([6, 7, 9], [2, 3, 4], frozen_time)
             assert_song_positions(self, [(3, 1), (4, 1), (2, 2), (6, 1), (8, 1), (1, 3), (7, 1), (9, 1)])
 
+            # Singer 6 logs out
+            logout(6)
+            assert_song_positions(self, [(3, 1), (4, 1), (2, 2), (8, 1), (1, 3), (7, 1), (9, 1)])
+
             # Singers 10-11 join without songs (along with 5 who doesn't have a song yet either)
             create_singers([10, 11], frozen_time)
-            assert_song_positions(self, [(3, 1), (4, 1), (2, 2), (6, 1), (8, 1), (1, 3), (7, 1), (9, 1)])
+            assert_song_positions(self, [(3, 1), (4, 1), (2, 2), (8, 1), (1, 3), (7, 1), (9, 1)])
 
             # 4 adds 7 as a duet partner - So 7's song disappears. 2 adds 3 as a duet partner - no effect.
             add_duet(7, 4, 1, frozen_time)
-            assert_song_positions(self, [(3, 1), (4, 1), (2, 2), (6, 1), (8, 1), (1, 3), (9, 1)])
+            assert_song_positions(self, [(3, 1), (4, 1), (2, 2), (8, 1), (1, 3), (9, 1)])
             add_duet(3, 2, 2, frozen_time)
+            assert_song_positions(self, [(3, 1), (4, 1), (2, 2), (8, 1), (1, 3), (9, 1)])
+
+            # Singer 6 logs back in
+            login(6)
             assert_song_positions(self, [(3, 1), (4, 1), (2, 2), (6, 1), (8, 1), (1, 3), (9, 1)])
 
             # Singers 12-13 join while 3 is singing. 3 is a duet partner with 2, so his song doesn't appear at the end
@@ -366,16 +399,21 @@ class TestSimulatedEvenings(SongRequestTestCase):
             assert_song_positions(self, [(12, 1), (13, 1), (14, 1), (5, 1),
                                          (15, 1), (16, 1), (1, 3), (4, 2), (7, 1), (2, 3), (3, 2), (11, 1), (9, 2), (6, 2)])
 
+            # Singer 7 logs out
+            logout(7)
+            assert_song_positions(self, [(12, 1), (13, 1), (14, 1), (5, 1),
+                                         (15, 1), (16, 1), (1, 3), (4, 2), (2, 3), (3, 2), (11, 1), (9, 2), (6, 2)])
+
             # 8 adds his second song. Appears after in his place after 11
             add_songs_to_singer(8, [2])
             assert_song_positions(self, [(12, 1), (13, 1), (14, 1), (5, 1),
-                                         (15, 1), (16, 1), (1, 3), (4, 2), (7, 1), (2, 3), (3, 2),
+                                         (15, 1), (16, 1), (1, 3), (4, 2), (2, 3), (3, 2),
                                          (8, 2), (11, 1), (9, 2), (6, 2)])
 
             # 12 Sings. Is dueting with 1, later on - so doesn't appear in the list
             set_performed(12, 1, frozen_time)
             assert_song_positions(self, [(13, 1), (14, 1), (5, 1),
-                                         (15, 1), (16, 1), (1, 3), (4, 2), (7, 1), (2, 3), (3, 2),
+                                         (15, 1), (16, 1), (1, 3), (4, 2), (2, 3), (3, 2),
                                          (8, 2), (11, 1), (9, 2), (6, 2)])
 
             # Singers 13, 14, 5, 15, 16 sing.
@@ -385,6 +423,11 @@ class TestSimulatedEvenings(SongRequestTestCase):
             set_performed(5, 1, frozen_time)
             set_performed(15, 1, frozen_time)
             set_performed(16, 1, frozen_time)
+            assert_song_positions(self, [(1, 3), (4, 2), (2, 3), (3, 2),
+                                         (8, 2), (11, 1), (9, 2), (6, 2), (13, 2)])
+
+            # Singer 7 logs back in
+            login(7)
             assert_song_positions(self, [(1, 3), (4, 2), (7, 1), (2, 3), (3, 2),
                                          (8, 2), (11, 1), (9, 2), (6, 2), (13, 2)])
 

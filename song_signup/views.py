@@ -189,6 +189,9 @@ def suggest_song(request):
 
 
 def logout(request):
+    user = request.user
+    user.is_active = False
+    user.save()
     auth_logout(request)
     return redirect('login')
 
@@ -215,6 +218,8 @@ def login(request):
         if logged_in:
             try:
                 singer = Singer.objects.get(first_name=first_name, last_name=last_name)
+                singer.is_active = True
+                singer.save()
             except Singer.DoesNotExist:
                 return JsonResponse(
                     {'error': "The name that you logged in with previously does not match your current one"},
