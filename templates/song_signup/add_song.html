@@ -40,7 +40,7 @@
                 <div class="form-control">
                     <label for="additional-singers">Smaller parts - <u>Doesn't count as a turn</u></label>
                     <select name="additional-singers" id="additional-singers" multiple>
-                        <option disabled selected value> -- Helping Singers -- </option>
+                        {% comment %} <option disabled selected value> -- Helping Singers -- </option> {% endcomment %}
                         {% for singer in other_singers %}
                         <option value="{{ singer.id }}">{{ singer }}</option>
                         {% endfor %}
