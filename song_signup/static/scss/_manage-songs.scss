@@ -38,7 +38,7 @@
           width: 100%;
           justify-content: space-between;
           font-size: 20px;
-          padding-bottom: 3%;
+          padding-bottom: 2px;
           .fa-trash-can {
             font-size: 25px;
             margin-left: 5%;
@@ -61,16 +61,6 @@
             margin-right: 3%;
             padding-top: 6px;
           }
-          .song-name {
-            display: inline-block;
-            width: 100%;
-            font-weight: 500;
-          }
-          .song-name {
-            display: inline-block;
-            width: 100%;
-            font-weight: 500;
-          }
           .edit-song-form {
             display: flex;
             width: fit-content;
@@ -83,10 +73,11 @@
                 height: fit-content;
                 width: fit-content;
                 border: none;
-                margin-left: 10px;
+                margin-right: 30px;
+                align-self: flex-start;
             }
 
-            .edit-song-name {
+            .edit-song {
                 font-size: 20px;
                 font-family: inherit;
                 font-weight: inherit;
@@ -97,6 +88,18 @@
                 border: none;
                 border-radius: 5px;
                 padding: 3px;
+            }
+          }
+
+          .song-details {
+            display: inline-block;
+            width: 100%;
+            .song-name{ 
+                font-weight: 500;
+            }
+            .song-musical {
+                font-style: italic;
+                font-size: 15px;
             }
           }
         }

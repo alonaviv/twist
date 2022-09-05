@@ -118,14 +118,19 @@ def get_song(request, song_pk):
 def rename_song(request):
     song_id = request.data['song_id']
     new_name = _sanitize_string(request.data['song_name'], title=True)
+    new_musical = _sanitize_string(request.data['musical'], title=True)
 
     if not new_name:
         return Response({'error': f"Song name can not empty"}, status=status.HTTP_400_BAD_REQUEST)
+
+    if not new_musical:
+        return Response({'error': f"Musical name can not empty"}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
         song_request = SongRequest.objects.get(pk=song_id)
         serialized = SongRequestSerializer(song_request, read_only=True)
         song_request.song_name = new_name
+        song_request.musical = new_musical
         song_request.save()
         return Response(serialized.data, status=status.HTTP_200_OK)
     except SongRequest.DoesNotExist:

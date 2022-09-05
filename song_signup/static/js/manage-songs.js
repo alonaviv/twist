@@ -61,7 +61,7 @@ async function populateSongList() {
         if (song.duet_partner && song.singer.id == current_user.id) {
             li.innerHTML += `
                     <div class="other-singers">
-                        <p>Together with: ${song.duet_partner.first_name} ${song.duet_partner.last_name}</p>
+                        <p>Duet with: ${song.duet_partner.first_name} ${song.duet_partner.last_name}</p>
                     </div>`;
         }
         setupListeners(li, song.id);
@@ -84,7 +84,10 @@ function setupListeners(parentElement, songId) {
 
 function getSongHtml(song, current_user) {
     const res = `
-            <p class="song-name">${song.song_name}${song.singer.id != current_user.id ? ` (Added by ${song.singer.first_name} ${song.singer.last_name})` : ""}</p>
+            <div class="song-details">
+                <p class="song-name">${song.song_name}${song.singer.id != current_user.id ? ` (Added by ${song.singer.first_name} ${song.singer.last_name})` : ""}</p>
+                <p class="song-musical">${song.musical}</p>
+            </div>
             ${song.singer.id === current_user.id ? `<i class="fa-solid fa-pen rename-song" data-song-id=${song.id} id="rename-${song.id}"></i>
             <i class="fa-solid fa-trash-can delete-song" data-song-id=${song.id} id="delete-${song.id}"></i>` : ""}`;
     return res;
@@ -140,16 +143,26 @@ async function displayRenameForm(e) {
 
     songWrapper.innerHTML = `
             <form action="" class="edit-song-form" autocomplete="off" id="rename-form-${songPK}" data-song-id=${songPK}>
-                <textarea name="edit-song-${songPK}" class="edit-song-name" required>${song.song_name}</textarea>
+                <div class="song-details">
+                    <textarea name="edit-song-name-${songPK}" class="edit-song edit-song-name" required>${song.song_name}</textarea>
+                    <textarea name="edit-song-musical-${songPK}" class="edit-song edit-song-musical song-musical" required>${song.musical}</textarea>
+                </div>
                 <button type="submit" class="approve-rename-btn">
                     <i class="fa-solid fa-check"></i>
                 </button>                 
             </form>
         `;
-    const textArea = songWrapper.querySelector('.edit-song-name');
+
     // Set testarea height to match the content height
-    textArea.style.height = "1px";
-    textArea.style.height = textArea.scrollHeight + "px";
+    const editSong = songWrapper.querySelector('.edit-song-name');
+    editSong.style.height = "1px";
+    editSong.style.height = editSong.scrollHeight + "px";
+
+    // Set testarea height to match the content height
+    const editMusical = songWrapper.querySelector('.edit-song-musical');
+    editMusical.style.height = "1px";
+    editMusical.style.height = editMusical.scrollHeight + "px";
+
     songWrapper.querySelector(`#rename-form-${songPK}`).addEventListener("submit", sendRename);
     toggleNewSongBtn();
 }
@@ -158,7 +171,8 @@ async function sendRename(e) {
     e.preventDefault();
 
     const songPK = e.currentTarget.dataset.songId;
-    const textInput = e.currentTarget.firstElementChild;
+    const songNameInput = e.currentTarget.querySelector('.edit-song-name');
+    const songMusicalInput = e.currentTarget.querySelector('.edit-song-musical');
     const songWrapper = e.currentTarget.parentElement;
 
     const current_user = await get_current_user();
@@ -171,7 +185,8 @@ async function sendRename(e) {
       },
       body: JSON.stringify({
         song_id: songPK,
-        song_name: textInput.value,
+          song_name: songNameInput.value,
+          musical: songMusicalInput.value
       }),
     })
         .then(async response => {
