@@ -5,7 +5,7 @@ from freezegun import freeze_time
 
 from song_signup.admin import set_performed
 from song_signup.models import SongRequest, Singer
-from song_signup.tests.test_utils import SongRequestTestCase
+from django.test import TestCase
 from song_signup.views import disable_signup
 
 
@@ -71,13 +71,12 @@ def get_current_song():
             return song
 
 
-class TestRealDB(SongRequestTestCase):
-    fixtures = ['raanana-10-7']
-    # fixtures = ['first_outdoor_jlm']
+class TestRealDB(TestCase):
+    fixtures = ['jlm-22-9']
 
     def test_real_db_file(self):
         INTERACTIVE = False
-        CLOSE_SIGNUP_TIME = '22:08'
+        CLOSE_SIGNUP_TIME = '21:43'
 
         print("\n=====ORIGINAL EVENING======")
         print_db_analysis()

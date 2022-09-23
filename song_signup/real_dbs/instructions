@@ -4,4 +4,11 @@ Load the db file into the local db:
 ./manage.py dbrestore -I song_signup/real_dbs/default-ip-172-31-3-99-2022-07-29-070029-first-outdoor.psql
 
 Then dump the contents of the local db in to a fixture (json file):
-./manage.py dumpdata -o song_signup/fixtures/first_outdoor_jlm.json
+./manage.py dumpdata --exclude auth.permission --exclude contenttypes -o song_signup/fixtures/jlm-22-9.json
+
+Change to the the new fixture in test_real_dbs:test_real_db_file (the string in the "fixtures" constant). You add it without the .json
+
+Add the time when shani closed the list to the constant CLOSE_SIGNUP_TIME and select if you want interactive mode.
+
+Then run:
+./manage.py test song_signup.tests.test_real_dbs
