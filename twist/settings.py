@@ -73,6 +73,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'song_signup.apps.SongSignupConfig',
+    'payment.apps.PaymentConfig',
     'easy_select2',
     'dbbackup',
     'flags',
