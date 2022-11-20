@@ -289,22 +289,23 @@ nav {
   #login-hero #login-wrapper {
     text-align: center;
     color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
     position: absolute;
     top: 0;
     left: 0;
     height: 100%;
     width: 100%;
-    margin: 5% auto;
+    margin: 0 auto;
     z-index: 2; }
     #login-hero #login-wrapper #login-title {
-      margin-bottom: 15vh;
       font-family: "Oleo Script Swash Caps", cursive;
       font-size: 25px;
       color: #ccc;
       text-shadow: 7px 5px 30px #ffff3d; }
     #login-hero #login-wrapper #login-form-wrapper {
-      padding: 10px 40px;
-      position: relative; }
+      padding: 10px 40px; }
       #login-hero #login-wrapper #login-form-wrapper #form-messages {
         position: absolute;
         width: 100%;

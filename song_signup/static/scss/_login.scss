@@ -20,16 +20,18 @@
   #login-wrapper {
     text-align: center;
     color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
     position: absolute;
     top: 0;
     left: 0;
     height: 100%;
     width: 100%;
-    margin: 5% auto;
+    margin: 0 auto;
     z-index: 2;
 
     #login-title {
-      margin-bottom: 15vh;
       font-family: "Oleo Script Swash Caps", cursive;
       font-size: 25px;
       color: #ccc;
@@ -38,7 +40,6 @@
 
     #login-form-wrapper {
       padding: 10px 40px;
-      position: relative;
 
       #form-messages {
         position: absolute;
