@@ -3,7 +3,6 @@
   height: 100vh;
   width: 100vw;
   position: relative;
-  overflow: hidden;
 
   &::before {
     content: "";
@@ -66,7 +65,7 @@
         }
 
         .form-control {
-          margin-bottom: 15px;
+          margin-bottom: 20px;
 
           input {
             width: 100%;
