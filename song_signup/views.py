@@ -15,6 +15,8 @@ from .serializers import SongSuggestionSerializer, SongRequestSerializer, Singer
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
+from constance import config
+
 
 logger = logging.getLogger(__name__)
 
@@ -205,15 +207,22 @@ def tip_us(request):
 
 
 def login(request):
-    # This is the root endpoint. If already logged in, go straight to home. 
-    if request.user.is_authenticated and not request.user.is_anonymous:
+    # This is the root endpoint. If already logged in, go straight to home.
+    evening_started = bool(config.PASSCODE)
+    if request.user.is_authenticated and not request.user.is_anonymous and evening_started:
         return redirect('home')
 
     if request.method == 'POST':
         first_name = _sanitize_string(request.POST['first-name'])
         last_name = _sanitize_string(request.POST['last-name'])
+        passcode = _sanitize_string(request.POST['passcode'])
         logged_in = request.POST.get('logged-in') == 'on'
         no_image_upload = request.POST.get('no-upload') == 'on'
+
+        if passcode.lower() != config.PASSCODE.lower():
+            return JsonResponse({
+                'error': "Wrong passcode - Shani will reveal tonight's passcode at the event"
+            }, status=400)
 
         if logged_in:
             try:
@@ -245,7 +254,7 @@ def login(request):
         auth_login(request, singer)
         return HttpResponse()
 
-    return render(request, 'song_signup/login.html')
+    return render(request, 'song_signup/login.html', context={'evening_started': evening_started})
 
 
 def delete_song(request, song_pk):

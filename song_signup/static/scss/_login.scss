@@ -3,6 +3,7 @@
   height: 100vh;
   width: 100vw;
   position: relative;
+  overflow: scroll;
 
   &::before {
     content: "";
@@ -25,10 +26,10 @@
     position: absolute;
     top: 0;
     left: 0;
-    height: 100%;
     width: 100%;
     margin: 0 auto;
     z-index: 2;
+    overflow:scroll;
 
     #login-title {
       font-family: "Oleo Script Swash Caps", cursive;
@@ -37,19 +38,25 @@
       text-shadow: 7px 5px 30px $login;
     }
 
-    #login-form-wrapper {
-      padding: 10px 40px;
-
-      #form-messages {
-        position: absolute;
-        width: 100%;
-        top: -80px;
-        left: 0;
-        padding: 0 7%;
+    #not-started {
+        margin-top: 150px;
         text-align: center;
         color: $third-color;
         font-weight: 500;
-      }
+        font-size: 40px;
+    }
+
+    #form-messages {
+        padding: 20px 7%;
+        text-align: center;
+        color: $third-color;
+        font-weight: 500;
+        font-size: 20px;
+    }
+
+    #login-form-wrapper {
+      padding: 10px 40px;
+
 
       h3 {
         margin-bottom: 30px;

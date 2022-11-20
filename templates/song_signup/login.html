@@ -7,10 +7,11 @@
 <div id="login-hero">
     <div id="login-wrapper">
         <div id="login-title">
-            <h1>Broadway<br>With a Twist</h1>
+            <a href="https://chat.whatsapp.com/La9NtdsfoXC0xKnCVjTdIw"><h1>Broadway<br>With a Twist</h1></a>
         </div>
+        {% if evening_started %}
+        <div id="form-messages"></div>
         <div id="login-form-wrapper">
-            <div id="form-messages"></div>
             <h3>Let's get this party started!</h3>
             <form action="" method="POST" id="login-form" autocomplete="off">
                {% csrf_token %}
@@ -39,6 +40,9 @@
                 <input type="submit" value="Let me in!" class="btn">
             </form>
         </div>
+        {% else %}
+        <div id="not-started"><p>Tonight's Event Hasn't Started Yet</p></div>
+        {% endif %}
     </div>
 </div>
 
