@@ -84,6 +84,8 @@ CONSTANCE_CONFIG = {
     'PASSCODE': ('', "Tonight's Secret Word")
 }
 
+CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
+
 DBBACKUP_STORAGE = 'django.core.files.storage.FileSystemStorage'
 DBBACKUP_STORAGE_OPTIONS = {'location': './db_backups'}
 
