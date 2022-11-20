@@ -73,6 +73,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'constance',
+    'constance.backends.database',
     'song_signup.apps.SongSignupConfig',
     'easy_select2',
     'dbbackup',
@@ -84,7 +85,7 @@ CONSTANCE_CONFIG = {
     'PASSCODE': ('', "Tonight's Secret Word")
 }
 
-CONSTANCE_BACKEND = 'constance.backends.redisd.RedisBackend'
+CONSTANCE_BACKEND = 'constance.backends.database.DatabaseBackend'
 
 DBBACKUP_STORAGE = 'django.core.files.storage.FileSystemStorage'
 DBBACKUP_STORAGE_OPTIONS = {'location': './db_backups'}
