@@ -24,7 +24,8 @@
     flex-direction: column;
     justify-content: space-around;
     width: 100%;
-    overflow: auto;
+    overflow-y: auto;
+    overflow-x: hidden;
     position: relative;
     z-index: 3;
 
