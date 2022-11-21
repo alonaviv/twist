@@ -192,7 +192,8 @@ def suggest_song(request):
 
 def logout(request):
     user = request.user
-    user.is_active = False
+    if not user.is_superuser:
+        user.is_active = False
     user.save()
     auth_logout(request)
     return redirect('login')
