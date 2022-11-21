@@ -73,7 +73,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'constance',
-    'constance.backends.database',
     'song_signup.apps.SongSignupConfig',
     'easy_select2',
     'dbbackup',
