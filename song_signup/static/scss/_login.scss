@@ -1,10 +1,9 @@
 #login-hero {
   background: url("../img/login/curtain.jpeg") no-repeat center center/cover;
-  max-height: 100vh;
+  min-height: 100vh;
   width: 100%;
   position: relative;
-  overflow-y: scroll;
-  overflow-x: hidden;
+  z-index: 1;
 
   &::before {
     content: "";
@@ -14,7 +13,7 @@
     left: 0;
     height: 100%;
     width: 100%;
-    z-index: 1;
+    z-index: 2;
     opacity: 0.4;
   }
 
@@ -24,10 +23,10 @@
     display: flex;
     flex-direction: column;
     justify-content: space-around;
-    position: relative;
     width: 100%;
-    height: 100%;
-    z-index: 2;
+    overflow: auto;
+    position: relative;
+    z-index: 3;
 
     #login-title {
       font-family: "Oleo Script Swash Caps", cursive;
@@ -38,16 +37,20 @@
 
     #not-started-wrapper {
         text-align: center;
-        color: $third-color;
         font-weight: 500;
         font-size: 40px;
         display: flex;
         flex-direction: column;
         justify-content: space-around;
 
+        #not-started-message{
+            margin-top: 70px;
+            color: $third-color;
+        }
+
         #login-icons{
             width: 100%;
-            margin-top: 30px;
+            margin-top: 80px;
             align-self: flex-end;
             display: flex;
             flex-direction: column;
@@ -65,7 +68,12 @@
                 justify-content: space-around;
                 align-items: center;
 
+                #login-facebook{
+                    color: #4267B2;
+                }
+
                 #login-instagram{
+                    color: #E1306C;
                     display: flex;
                     align-items: center;
                         p {
@@ -75,12 +83,17 @@
                 }
             }
             #login-whatsapp {
+                color: #25d366;
                 text-align: center;
                 font-size: 30px;
-                margin: 0px 8% 10px;
+                margin: 0px 8% 20px;
                 display: flex;
                 justify-content: center;
                 align-items: center;
+                i {
+                    font-size: 40px;
+                    margin-right: 3px;
+                }
             }
         }
     }
