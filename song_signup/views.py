@@ -196,6 +196,7 @@ def logout(request):
         user.is_active = False
     user.save()
     auth_logout(request)
+    Singer.ordering.calculate_positions()
     return redirect('login')
 
 
