@@ -74,7 +74,7 @@ class SongSuggestionAdmin(admin.ModelAdmin):
 @admin.register(SongRequest)
 class SongRequestAdmin(admin.ModelAdmin):
     list_display = (
-        'position', 'singer', 'song_name', 'musical', 'duet_partner', 'get_notes', 'get_additional_singers',
+        'position', 'allows_filming', 'singer', 'song_name', 'musical', 'duet_partner', 'get_notes', 'get_additional_singers',
         'suggested_by', 'get_performance_time', 'get_request_time', 'get_initial_signup'
     )
     list_filter = (NotYetPerformedFilter,)
@@ -129,6 +129,13 @@ class SongRequestAdmin(admin.ModelAdmin):
 
     get_performance_time.short_description = 'Performance Time'
     get_performance_time.admin_order_field = 'performance_time'
+
+    def allows_filming(self, obj):
+        return not obj.singer.no_image_upload
+
+    allows_filming.short_description = 'Filming?'
+    allows_filming.admin_order_field = 'allows_filming'
+    allows_filming.boolean = True
 
 
 @admin.register(Singer)
