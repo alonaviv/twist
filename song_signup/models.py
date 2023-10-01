@@ -114,6 +114,11 @@ class GroupSongRequest(Model):
     suggested_by = ForeignKey(settings.AUTH_USER_MODEL, on_delete=CASCADE)
     request_time = DateTimeField(auto_now_add=True)
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        from song_signup.tasks import get_lyrics
+        get_lyrics.delay(group_song_id = self.id)
 
 class SongSuggestion(Model):
     song_name = CITextField(max_length=50)
@@ -190,6 +195,9 @@ class SongRequest(Model):
             self.priority = SongRequest.objects.next_priority(self)
 
         super().save(*args, **kwargs)
+
+        from song_signup.tasks import get_lyrics
+        get_lyrics.delay(song_id = self.id)
 
     class Meta:
         unique_together = ('song_name', 'musical', 'singer', 'cycle', 'position')
