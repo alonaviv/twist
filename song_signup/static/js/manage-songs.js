@@ -39,7 +39,7 @@ async function populateSongList() {
     let data;
     let current_user;
     try {
-        const response = await fetch("get_current_songs");
+        const response = await fetch("/get_current_songs");
         data = await response.json();
         current_user = await get_current_user();
     } catch (err) {
