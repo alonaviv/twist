@@ -5,9 +5,8 @@ from django.contrib.auth.models import AbstractUser
 from django.contrib.postgres.fields import CITextField
 from django.db.models import (
     Model, DateTimeField, ForeignKey, CASCADE, SET_NULL, ManyToManyField, IntegerField, BooleanField, signals,
-    FloatField
+    FloatField, TextField, URLField
 )
-from django.dispatch import receiver
 
 from song_signup.managers import SongRequestManager, DisneylandOrdering, SongSuggestionManager
 
@@ -197,3 +196,15 @@ class SongRequest(Model):
         ordering = ('position',)
 
     objects = SongRequestManager()
+
+
+class SongLyrics(Model):
+    song_name = TextField()
+    artist_name = TextField()
+    lyrics = TextField()
+    url = URLField()
+    song_request = ForeignKey(SongRequest, on_delete=CASCADE, related_name='lyrics', null=True)
+    group_song_request = ForeignKey(GroupSongRequest, on_delete=CASCADE, related_name='lyrics', null=True)
+
+    class Meta:
+        verbose_name_plural = "Song lyrics"
