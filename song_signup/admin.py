@@ -1,8 +1,10 @@
 from django.contrib import admin
 from django.utils import timezone
+from django.urls import reverse
+from django.utils.safestring import mark_safe    
 
 from .managers import LATE_SINGER_CYCLE
-from .models import SongRequest, Singer, GroupSongRequest, SongSuggestion
+from .models import SongLyrics, SongRequest, Singer, GroupSongRequest, SongSuggestion
 
 
 def set_performed(modeladmin, request, queryset):
@@ -44,7 +46,7 @@ class NotYetPerformedFilter(admin.SimpleListFilter):
 @admin.register(GroupSongRequest)
 class GroupSongRequestAdmin(admin.ModelAdmin):
     list_display = (
-        'song_name', 'musical', 'suggested_by', 'get_request_time',
+        'song_name', 'musical', 'suggested_by', 'get_request_time', 'lyrics'
     )
 
     def get_request_time(self, obj):
@@ -52,6 +54,10 @@ class GroupSongRequestAdmin(admin.ModelAdmin):
 
     get_request_time.short_description = 'Request Time'
     get_request_time.admin_order_field = 'request_time'
+
+    def lyrics(self, obj):
+        return mark_safe(f'<a href="{reverse("group_lyrics", args=(obj.id,))}">Lyrics</a>')
+    lyrics.short_description = "Lyrics"
 
     ordering = ['request_time']
 
@@ -67,7 +73,7 @@ class SongSuggestionAdmin(admin.ModelAdmin):
 
     get_request_time.short_description = 'Request Time'
     get_request_time.admin_order_field = 'request_time'
-
+    
     ordering = ['request_time']
 
 
@@ -75,7 +81,7 @@ class SongSuggestionAdmin(admin.ModelAdmin):
 class SongRequestAdmin(admin.ModelAdmin):
     list_display = (
         'position', 'allows_filming', 'singer', 'song_name', 'musical', 'duet_partner', 'get_notes', 'get_additional_singers',
-        'suggested_by', 'get_performance_time', 'get_request_time', 'get_initial_signup'
+        'suggested_by', 'get_performance_time', 'lyrics', 'get_request_time', 'get_initial_signup'
     )
     list_filter = (NotYetPerformedFilter,)
     actions = [set_performed, set_not_performed]
@@ -137,8 +143,15 @@ class SongRequestAdmin(admin.ModelAdmin):
     allows_filming.admin_order_field = 'allows_filming'
     allows_filming.boolean = True
 
+    def lyrics(self, obj):
+        return mark_safe(f'<a href="{reverse("lyrics", args=(obj.id,))}">Lyrics</a>')
+    lyrics.short_description = "Lyrics"
 
 @admin.register(Singer)
 class SingerAdmin(admin.ModelAdmin):
     list_display = ['username', 'cy1_position', 'cy2_position', 'cy3_position',
                     'date_joined', 'is_superuser', 'no_image_upload']
+
+@admin.register(SongLyrics)
+class LyricsAdmin(admin.ModelAdmin):
+    list_display = ['song_name', 'artist_name', 'url', 'song_request','group_song_request']

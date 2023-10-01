@@ -128,8 +128,9 @@
     font-size: inherit; }
 
 nav {
-  position: relative; }
-
+  position: relative;
+  height: 8vh; }
+  
 #menu-wrapper {
   position: fixed;
   height: 100%;
@@ -487,6 +488,28 @@ nav {
     #song-list-wrapper .container #new-song-btn {
       margin: 15px 0px 30px;
       width: 200px; }
+
+#lyrics-wrapper {
+  height: 100%;
+  width: 100%;
+  background: #00b3c5;
+  color: #000;
+  margin-bottom: 5vh; 
+  padding: 2% 0% 2% 0%; }
+  #lyrics-wrapper .container {
+    overflow: wrap;
+    height: 100%;
+    width: 100%;
+    }
+    #lyrics-wrapper .container pre {
+      white-space: pre-line; }
+    @media only screen and (min-width: 768px) {
+      /* Make the font big but keep room for movement on screen */
+      #lyrics-wrapper .container #lyrics {
+        max-width: 60%;
+        font-size: 2vw;
+      }
+    }
 
 #now-singing-wrapper {
   background: url("../img/main/mic.jpeg") center center/cover;

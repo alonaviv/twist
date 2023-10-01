@@ -168,6 +168,29 @@ def add_song(request):
 
 
 @login_required(login_url='login')
+def lyrics(request, song_pk):
+    try:
+        song_request = SongRequest.objects.get(pk=song_pk)
+    except SongRequest.DoesNotExist:
+        return JsonResponse({'error': f"Song with ID {song_pk} does not exist"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+    lyrics = song_request.lyrics.first()
+    return render(request, 'song_signup/lyrics.html', {"lyrics": lyrics})
+
+
+@login_required(login_url='login')
+def group_lyrics(request, song_pk):
+    try:
+        song_request = GroupSongRequest.objects.get(pk=song_pk)
+    except GroupSongRequest.DoesNotExist:
+        return JsonResponse({'error': f"Group song with ID {song_pk} does not exist"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+    lyrics = song_request.lyrics.first()
+    return render(request, 'song_signup/lyrics.html', {"lyrics": lyrics})
+
+@login_required(login_url='login')
 def suggest_song(request):
     current_user = request.user
 

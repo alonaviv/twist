@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block content %}
+{% include "partials/_navbar.html"%}
+<div id="lyrics-wrapper">
+    <div class="container">
+        <div class="center">
+            <div id="lyrics">
+            {% if lyrics %}
+                <h2>{{ lyrics.song_name}}</h1>
+                <h3>{{ lyrics.artist_name }}</h2><br>
+                <pre>{{ lyrics.lyrics }}</pre>
+            {% else %}
+                <h1>Lyrics not found</h1>
+            {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% include "partials/_footer.html"  %}
+
+<script src="{% static "js/navbar.js" %}"></script>
+<script
+src="https://code.jquery.com/jquery-3.7.1.min.js"
+integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
+crossorigin="anonymous"></script>        
+<script
+src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"
+integrity="sha256-lSjKY0/srUM9BE3dPm+c4fBo1dky2v27Gdjm2uoZaL0="
+crossorigin="anonymous"></script>
+
+<script>
+    // Allow dragging on computers - useful for projector screen
+    if( !/Android|iPhone/i.test(navigator.userAgent) ) {
+        $("#lyrics").draggable({ containment: "#lyrics-wrapper"});
+    }
+</script>
+{% endblock %}
