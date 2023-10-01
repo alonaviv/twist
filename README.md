@@ -44,3 +44,9 @@ Go to localhost:8000/admin, sign in as admin, create "singers" group with permis
 Set passcode in constance settings, and under song requests select "ALLOW MORE SIGNUPS"
 
 Go to localhost:8000, sign in to app as "Alon Aviv", logout, sign is as "Shani Wahrman", logout, sign in normally
+
+To allow downloading lyrics in background task, run a celery worker:
+
+```sh
+celery -A twist worker -l INFO
+```
