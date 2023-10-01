@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.utils import timezone
 from django.urls import reverse
-from django.utils.safestring import mark_safe    
+from django.utils.safestring import mark_safe
 
 from .managers import LATE_SINGER_CYCLE
 from .models import SongLyrics, SongRequest, Singer, GroupSongRequest, SongSuggestion
@@ -73,7 +73,7 @@ class SongSuggestionAdmin(admin.ModelAdmin):
 
     get_request_time.short_description = 'Request Time'
     get_request_time.admin_order_field = 'request_time'
-    
+
     ordering = ['request_time']
 
 

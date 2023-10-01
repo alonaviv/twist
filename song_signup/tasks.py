@@ -51,7 +51,7 @@ def get_lyrics(song_id: int | None = None, group_song_id: int | None = None):
                 br.replace_with("\n")
 
             lyrics = '\n\n'.join(
-                verse.get_text() for verse in 
+                verse.get_text() for verse in
                 soup.findAll("div", {"data-lyrics-container": "true"})
             )
 
