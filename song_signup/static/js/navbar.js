@@ -1,13 +1,14 @@
 // Toggle menu with hamburger
 
 const hamburger = document.getElementById("hamburger");
+const hamburgerWrapper = document.getElementById("hamburger-wrapper");
 const menuWrapper = document.getElementById("menu-wrapper");
 const menu = document.getElementById("menu");
 const navbar = document.getElementById("navbar");
 const logo = document.querySelector(".logo");
 let showMenu = false;
 
-hamburger.addEventListener("click", toggleMenu);
+hamburgerWrapper.addEventListener("click", toggleMenu);
 
 function getRGBA(element, alpha, styleName = "backgroundColor") {
   let rgb = window.getComputedStyle(element)[styleName];
