@@ -224,9 +224,20 @@ class ShironetParser(LyricsWebsiteParser):
             url = None
         )
 
+PARSERS = {
+    parser.__name__: parser
+    for parser in LyricsWebsiteParser.__subclasses__()
+}
 
 @shared_task
 def get_lyrics(song_id: int | None = None, group_song_id: int | None = None):
+    for parser_name in PARSERS:
+        get_lyrics_for_provider.delay(parser_name, song_id, group_song_id)
+
+@shared_task
+def get_lyrics_for_provider(parser_name: str, song_id: int | None, group_song_id: int | None):
+    parser = PARSERS[parser_name]
+
     if song_id is not None:
         assert group_song_id is None
         song = SongRequest.objects.get(id=song_id)
@@ -240,17 +251,16 @@ def get_lyrics(song_id: int | None = None, group_song_id: int | None = None):
         # Delete old lyrics
         SongLyrics.objects.filter(group_song_request = song).delete()
 
-    for parser in LyricsWebsiteParser.__subclasses__():
-        for i, result in enumerate(parser().get_lyrics(song.song_name, song.musical)):
-                SongLyrics.objects.create(
-                    song_name = result.title,
-                    artist_name = result.artist,
-                    url = result.url,
-                    lyrics = result.lyrics,
-                    song_request = song if song_id is not None else None,
-                    group_song_request = song if group_song_id is not None else None,
-                )
+    for i, result in enumerate(parser().get_lyrics(song.song_name, song.musical)):
+            SongLyrics.objects.create(
+                song_name = result.title,
+                artist_name = result.artist,
+                url = result.url,
+                lyrics = result.lyrics,
+                song_request = song if song_id is not None else None,
+                group_song_request = song if group_song_id is not None else None,
+            )
 
-                # 2 lyrics per site is plenty for now
-                if i == 1:
-                    break
+            # 2 lyrics per site is plenty for now
+            if i == 1:
+                break
