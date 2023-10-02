@@ -49,6 +49,7 @@ function populateNowSinging() {
       if (currentSongData) {
         currentSinger.innerHTML = currentSongData.singer;
         currentSong.innerHTML = currentSongData.name;
+        document.getElementById("current-song-lyrics").href = "/lyrics/" + currentSongData.id;
       } else {
         currentSinger.innerHTML = "No One Yet";
         currentSong.innerHTML = "We're waiting for you! Pick a Song!";
@@ -58,6 +59,7 @@ function populateNowSinging() {
         upNextElem.style.visibility = "visible";
         nextSinger.innerHTML = nextSongData.singer;
         nextSong.innerHTML = nextSongData.name;
+        document.getElementById("next-song-lyrics").href = "/lyrics/" + nextSongData.id;
       } else {
         upNextElem.style.visibility = "hidden";
       }
@@ -75,6 +77,7 @@ function populateNowSinging() {
         }`;
         document.getElementById("user-next-song-name").innerHTML =
           userNextSong.name;
+        document.getElementById("user-next-song-lyrics").href = "/lyrics/" + userNextSong.id;
       } else {
         dashboardElem.classList.add("hidden");
         noSongElem.classList.remove("hidden");

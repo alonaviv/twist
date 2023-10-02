@@ -186,7 +186,7 @@ class SongRequest(Model):
 
     @property
     def basic_data(self):
-        return {'name': self.song_name, 'singer': str(self.singer), 'wait_amount': self.wait_amount}
+        return {'id': self.id, 'name': self.song_name, 'singer': str(self.singer), 'wait_amount': self.wait_amount}
 
     def save(self, *args, **kwargs):
         self.singer.add_to_lineup()  # Only used in the 3 cycles algo

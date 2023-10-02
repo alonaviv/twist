@@ -902,6 +902,10 @@ a {
   text-decoration: none;
   color: inherit; }
 
+.link {
+  text-decoration: underline;
+}
+
 input:focus {
   outline: none; }
 
