@@ -10,7 +10,7 @@ from django.shortcuts import render, redirect
 from flags.state import enable_flag, disable_flag, flag_disabled
 from titlecase import titlecase
 
-from .models import GroupSongRequest, SongRequest, Singer, SongSuggestion
+from .models import GroupSongRequest, SongLyrics, SongRequest, Singer, SongSuggestion
 from .serializers import SongSuggestionSerializer, SongRequestSerializer, SingerSerializer
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -167,6 +167,20 @@ def add_song(request):
     return render(request, 'song_signup/add_song.html', {'other_singers': [shani, alon] + list(other_singers)})
 
 
+def _sort_lyrics(song: SongRequest | GroupSongRequest):
+    lyrics = song.lyrics.order_by('id').all()
+
+    exact_matches = [lyric for lyric in lyrics if song.song_name.lower() == lyric.song_name.lower()]
+    lyrics = [lyric for lyric in lyrics if lyric not in exact_matches]
+
+    left_matches = [lyric for lyric in lyrics if song.song_name.lower() in lyric.song_name.lower()]
+    lyrics = [lyric for lyric in lyrics if lyric not in left_matches]
+
+    right_matches = [lyric for lyric in lyrics if lyric.song_name.lower() in song.song_name.lower()]
+    lyrics = [lyric for lyric in lyrics if lyric not in right_matches]
+
+    return exact_matches + left_matches + right_matches + lyrics
+
 @login_required(login_url='login')
 def lyrics(request, song_pk):
     try:
@@ -174,9 +188,8 @@ def lyrics(request, song_pk):
     except SongRequest.DoesNotExist:
         return JsonResponse({'error': f"Song with ID {song_pk} does not exist"}, status=status.HTTP_400_BAD_REQUEST)
 
-
-    lyrics = song_request.lyrics.first()
-    return render(request, 'song_signup/lyrics.html', {"lyrics": lyrics})
+    lyrics = _sort_lyrics(song_request)
+    return render(request, 'song_signup/lyrics.html', {"lyrics": lyrics and lyrics[0], "song_id": song_pk})
 
 
 @login_required(login_url='login')
@@ -186,9 +199,43 @@ def group_lyrics(request, song_pk):
     except GroupSongRequest.DoesNotExist:
         return JsonResponse({'error': f"Group song with ID {song_pk} does not exist"}, status=status.HTTP_400_BAD_REQUEST)
 
+    lyrics = _sort_lyrics(song_request)[0]
+    return render(request, 'song_signup/lyrics.html', {"lyrics": lyrics and lyrics[0], "group_song_id": song_pk})
 
-    lyrics = song_request.lyrics.first()
-    return render(request, 'song_signup/lyrics.html', {"lyrics": lyrics})
+@login_required(login_url='login')
+def alternative_lyrics(request, song_pk):
+    try:
+        song_request = SongRequest.objects.get(pk=song_pk)
+    except GroupSongRequest.DoesNotExist:
+        return JsonResponse({'error': f"Group song with ID {song_pk} does not exist"}, status=status.HTTP_400_BAD_REQUEST)
+
+    lyrics = _sort_lyrics(song_request)
+    return render(request, 'song_signup/alternative_lyrics.html', {"lyrics": lyrics, "song": song_request})
+
+@login_required(login_url='login')
+def alternative_group_lyrics(request, song_pk):
+    try:
+        song_request = GroupSongRequest.objects.get(pk=song_pk)
+    except GroupSongRequest.DoesNotExist:
+        return JsonResponse({'error': f"Group song with ID {song_pk} does not exist"}, status=status.HTTP_400_BAD_REQUEST)
+
+    lyrics = _sort_lyrics(song_request)
+    return render(request, 'song_signup/alternative_lyrics.html', {"lyrics": lyrics, "song": song_request})
+
+@login_required(login_url='login')
+def lyrics_by_id(request, lyrics_id):
+    try:
+        lyrics = SongLyrics.objects.get(id=lyrics_id)
+    except SongLyrics.DoesNotExist:
+        return JsonResponse({'error': f"Lyrics with ID {lyrics_id} does not exist"}, status=status.HTTP_400_BAD_REQUEST)
+    
+    song_id = group_song_id = None
+    if lyrics.song_request:
+        song_id = lyrics.song_request.id
+    if lyrics.group_song_request:
+        group_song_id = lyrics.group_song_request.id
+
+    return render(request, 'song_signup/lyrics.html', {"lyrics": lyrics, "song_id": song_id, "group_song_id": group_song_id})
 
 @login_required(login_url='login')
 def suggest_song(request):

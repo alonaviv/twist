@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block content %}
+{% include "partials/_navbar.html"%}
+<div id="lyrics-wrapper">
+    <div class="container">   
+        <h1> {{ song.song_name }} - {{ song.musical }} </h1>
+        {% for lyric in lyrics %}
+        <br/><a href = "{% url 'lyrics_by_id' lyric.id%}">{{ lyric.song_name }} | {{ lyric.artist_name }} | {{ lyric.url }} </a><br/>
+        {% endfor %}
+    </div>
+</div>
+
+
+{% include "partials/_footer.html"  %}
+
+<script src="{% static "js/navbar.js" %}"></script>
+{% endblock %}

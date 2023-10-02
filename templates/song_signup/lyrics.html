@@ -6,12 +6,19 @@
 {% include "partials/_navbar.html"%}
 <div id="lyrics-wrapper">
     <div class="container">
+        {% if song_id %}
+        <a href="{% url 'alternative_lyrics' song_id %}" class="btn">Alternatives</a>
+        {% endif %}
+        {% if group_song_id %}
+        <a href="{% url 'alternative_group_lyrics' group_song_id %}" class="btn">Alternatives</a>
+        {% endif %}
+ 
         <div class="center">
             <div id="lyrics">
             {% if lyrics %}
                 <h2>{{ lyrics.song_name}}</h1>
                 <h3>{{ lyrics.artist_name }}</h2><br>
-                <pre>{{ lyrics.lyrics }}</pre>
+                <pre dir="auto">{{ lyrics.lyrics }}</pre>
             {% else %}
                 <h1>Lyrics not found</h1>
             {% endif %}
