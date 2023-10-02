@@ -18,9 +18,9 @@ class Migration(migrations.Migration):
                 ('song_name', models.TextField()),
                 ('artist_name', models.TextField()),
                 ('lyrics', models.TextField()),
-                ('url', models.URLField()),
-                ('song_request', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='lyrics', to='song_signup.songrequest')),
-                ('group_song_request', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='lyrics', to='song_signup.groupsongrequest')),            
+                ('url', models.URLField(blank=True, null=True)),
+                ('song_request', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='lyrics', to='song_signup.songrequest')),
+                ('group_song_request', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='lyrics', to='song_signup.groupsongrequest')),            
             ],
         ),
     ]

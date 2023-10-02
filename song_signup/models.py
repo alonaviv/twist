@@ -210,9 +210,9 @@ class SongLyrics(Model):
     song_name = TextField()
     artist_name = TextField()
     lyrics = TextField()
-    url = URLField()
-    song_request = ForeignKey(SongRequest, on_delete=CASCADE, related_name='lyrics', null=True)
-    group_song_request = ForeignKey(GroupSongRequest, on_delete=CASCADE, related_name='lyrics', null=True)
+    url = URLField(null=True, blank=True)
+    song_request = ForeignKey(SongRequest, on_delete=CASCADE, related_name='lyrics', null=True, blank=True)
+    group_song_request = ForeignKey(GroupSongRequest, on_delete=CASCADE, related_name='lyrics', null=True, blank=True)
 
     class Meta:
         verbose_name_plural = "Song lyrics"
