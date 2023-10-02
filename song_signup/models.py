@@ -213,6 +213,17 @@ class SongLyrics(Model):
     url = URLField(null=True, blank=True)
     song_request = ForeignKey(SongRequest, on_delete=CASCADE, related_name='lyrics', null=True, blank=True)
     group_song_request = ForeignKey(GroupSongRequest, on_delete=CASCADE, related_name='lyrics', null=True, blank=True)
+    default = BooleanField(default=False)
 
     class Meta:
         verbose_name_plural = "Song lyrics"
+
+    def save(self, *args, **kwargs):
+        # Only one can be default
+        if self.default:
+            if self.song_request:
+                self.song_request.lyrics.update(default=False)
+            if self.group_song_request:
+                self.group_song_request.lyrics.update(default=False)
+
+        super().save(*args, **kwargs)

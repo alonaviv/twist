@@ -27,6 +27,7 @@ urlpatterns = [
     path('alternative_lyrics/<int:song_pk>', views.alternative_lyrics, name='alternative_lyrics'),
     path('alternative_group_lyrics/<int:song_pk>', views.alternative_group_lyrics, name='alternative_group_lyrics'),
     path('lyrics_by_id/<int:lyrics_id>', views.lyrics_by_id, name='lyrics_by_id'),
+    path('default_lyrics', views.default_lyrics, name='default_lyrics'),
     path('reset_database', views.reset_database, name='reset_database'),
     path('enable_signup', views.enable_signup, name='enable_signup'),
     path('disable_signup', views.disable_signup, name='disable_signup'),

@@ -6,13 +6,20 @@
 {% include "partials/_navbar.html"%}
 <div id="lyrics-wrapper">
     <div class="container">
-        {% if song_id %}
-        <a href="{% url 'alternative_lyrics' song_id %}" class="btn">Alternatives</a>
+        {% if lyrics %}
+            {% if song %}
+            <a href="{% url 'alternative_lyrics' song.id %}" class="btn">Alternatives</a>
+            {% endif %}
+            {% if group_song %}
+            <a href="{% url 'alternative_group_lyrics' group_song.id %}" class="btn">Alternatives</a>
+            {% endif %}
+            {% if lyrics.default == False %} 
+                {% if song.singer == request.user or request.user.is_superuser %}
+                <a href="#" class="btn btn-inverted" id="default_lyrics" data-lyrics-id="{{ lyrics.id }}">Make Default</a>
+                {% endif %}
+            {% endif %}
         {% endif %}
-        {% if group_song_id %}
-        <a href="{% url 'alternative_group_lyrics' group_song_id %}" class="btn">Alternatives</a>
-        {% endif %}
- 
+
         <div class="center">
             <div id="lyrics">
             {% if lyrics %}
@@ -20,7 +27,7 @@
                 <h3>{{ lyrics.artist_name }}</h2><br>
                 <pre dir="auto">{{ lyrics.lyrics }}</pre>
             {% else %}
-                <h1>Lyrics not found</h1>
+                <h1>Lyrics not found - wait 30 seconds</h1>
             {% endif %}
             </div>
         </div>
@@ -30,6 +37,8 @@
 {% include "partials/_footer.html"  %}
 
 <script src="{% static "js/navbar.js" %}"></script>
+<script type="module" src="{% static "js/manage-lyrics.js" %}"></script>
+
 <script
 src="https://code.jquery.com/jquery-3.7.1.min.js"
 integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="

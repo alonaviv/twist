@@ -168,7 +168,22 @@ def add_song(request):
 
 
 def _sort_lyrics(song: SongRequest | GroupSongRequest):
+    """
+    Sort the lyrics based on our best guess of how well they match
+    Tried a few algorithms here but this relatively simple one worked best:
+
+    1) If default is selected order first
+    2) Songs with exact name matches
+    3) Songs with left matches (input song name is included in full song name)
+    4) Songs with right matches (full song name is included in input song name)
+    5) Everything else
+
+    Within each group just order by ID for consistency.
+    """
     lyrics = song.lyrics.order_by('id').all()
+
+    default = [lyric for lyric in lyrics if lyric.default]
+    lyrics = [lyric for lyric in lyrics if lyric not in default]
 
     exact_matches = [lyric for lyric in lyrics if song.song_name.lower() == lyric.song_name.lower()]
     lyrics = [lyric for lyric in lyrics if lyric not in exact_matches]
@@ -179,7 +194,7 @@ def _sort_lyrics(song: SongRequest | GroupSongRequest):
     right_matches = [lyric for lyric in lyrics if lyric.song_name.lower() in song.song_name.lower()]
     lyrics = [lyric for lyric in lyrics if lyric not in right_matches]
 
-    return exact_matches + left_matches + right_matches + lyrics
+    return default + exact_matches + left_matches + right_matches + lyrics
 
 @login_required(login_url='login')
 def lyrics(request, song_pk):
@@ -189,7 +204,7 @@ def lyrics(request, song_pk):
         return JsonResponse({'error': f"Song with ID {song_pk} does not exist"}, status=status.HTTP_400_BAD_REQUEST)
 
     lyrics = _sort_lyrics(song_request)
-    return render(request, 'song_signup/lyrics.html', {"lyrics": lyrics and lyrics[0], "song_id": song_pk})
+    return render(request, 'song_signup/lyrics.html', {"lyrics": lyrics and lyrics[0], "song": song_request})
 
 
 @login_required(login_url='login')
@@ -200,7 +215,21 @@ def group_lyrics(request, song_pk):
         return JsonResponse({'error': f"Group song with ID {song_pk} does not exist"}, status=status.HTTP_400_BAD_REQUEST)
 
     lyrics = _sort_lyrics(song_request)
-    return render(request, 'song_signup/lyrics.html', {"lyrics": lyrics and lyrics[0], "group_song_id": song_pk})
+    return render(request, 'song_signup/lyrics.html', {"lyrics": lyrics and lyrics[0], "group_song": song_request})
+
+@login_required(login_url='login')
+def lyrics_by_id(request, lyrics_id):
+    try:
+        lyrics = SongLyrics.objects.get(id=lyrics_id)
+    except SongLyrics.DoesNotExist:
+        return JsonResponse({'error': f"Lyrics with ID {lyrics_id} does not exist"}, status=status.HTTP_400_BAD_REQUEST)
+
+    return render(request, 'song_signup/lyrics.html', {
+        "lyrics": lyrics,
+        "song": lyrics.song_request,
+        "group_song": lyrics.group_song_request
+    })
+
 
 @login_required(login_url='login')
 def alternative_lyrics(request, song_pk):
@@ -222,20 +251,18 @@ def alternative_group_lyrics(request, song_pk):
     lyrics = _sort_lyrics(song_request)
     return render(request, 'song_signup/alternative_lyrics.html', {"lyrics": lyrics, "song": song_request})
 
-@login_required(login_url='login')
-def lyrics_by_id(request, lyrics_id):
-    try:
-        lyrics = SongLyrics.objects.get(id=lyrics_id)
-    except SongLyrics.DoesNotExist:
-        return JsonResponse({'error': f"Lyrics with ID {lyrics_id} does not exist"}, status=status.HTTP_400_BAD_REQUEST)
-    
-    song_id = group_song_id = None
-    if lyrics.song_request:
-        song_id = lyrics.song_request.id
-    if lyrics.group_song_request:
-        group_song_id = lyrics.group_song_request.id
+@api_view(["PUT"])
+def default_lyrics(request):
+    lyrics_id = request.data['lyricsId']
 
-    return render(request, 'song_signup/lyrics.html', {"lyrics": lyrics, "song_id": song_id, "group_song_id": group_song_id})
+    lyric = SongLyrics.objects.get(id=lyrics_id)
+
+    if not (request.user.is_superuser or (lyric.song_request and lyric.song_request.singer == request.user)):
+        return Response({"error": "Only original singer can set default lyrics"}, status=status.HTTP_401_UNAUTHORIZED)
+
+    lyric.default = True
+    lyric.save()
+    return Response({}, status=status.HTTP_200_OK)
 
 @login_required(login_url='login')
 def suggest_song(request):
