@@ -199,7 +199,7 @@ def group_lyrics(request, song_pk):
     except GroupSongRequest.DoesNotExist:
         return JsonResponse({'error': f"Group song with ID {song_pk} does not exist"}, status=status.HTTP_400_BAD_REQUEST)
 
-    lyrics = _sort_lyrics(song_request)[0]
+    lyrics = _sort_lyrics(song_request)
     return render(request, 'song_signup/lyrics.html', {"lyrics": lyrics and lyrics[0], "group_song_id": song_pk})
 
 @login_required(login_url='login')
