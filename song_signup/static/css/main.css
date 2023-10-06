@@ -507,7 +507,7 @@ nav {
       /* Make the font big but keep room for movement on screen */
       #lyrics-wrapper .container #lyrics {
         max-width: 60%;
-        font-size: 2vw;
+        font-size: 50px;
       }
     }
 
