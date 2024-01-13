@@ -1,7 +1,8 @@
 version: '3.8'
 services:
   db:
-    image: postgres
+    image: postgres:11-alpine
+    platform: linux/amd64
     restart: always
     environment:
       - POSTGRES_USER=twistdbadmin
@@ -11,7 +12,8 @@ services:
     volumes: 
       - db:/var/lib/postgresql/data
   redis:
-    image: redis
+    image: amd64/redis
+    platform: linux/amd64
     restart: always
     ports:
       - '6379:6379'

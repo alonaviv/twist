@@ -1,16 +1,17 @@
-from typing import Iterable
-
-from celery import shared_task
-from duckduckgo_search import DDGS
-from .models import GroupSongRequest, SongRequest, SongLyrics
-
-import bs4
 import dataclasses
 import re
+from typing import Iterable
+
+import bs4
 import requests
+from celery import shared_task
+from duckduckgo_search import DDGS
+
+from .models import GroupSongRequest, SongRequest, SongLyrics
 
 GENIUS_URL_FORMAT = re.compile("genius\.com\/.*-lyrics$")
 USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
+
 
 @dataclasses.dataclass
 class LyricsResult:
@@ -18,6 +19,7 @@ class LyricsResult:
     title: str
     artist: str
     url: str | None
+
 
 class LyricsWebsiteParser:
     URL_FORMAT = re.compile("")
@@ -64,6 +66,7 @@ class LyricsWebsiteParser:
                     # Skip exceptions in individual parsers
                     print(e)
 
+
 class GenuisParser(LyricsWebsiteParser):
     URL_FORMAT = re.compile("genius\.com\/.*-lyrics$")
     SITE = "genius.com"
@@ -74,7 +77,7 @@ class GenuisParser(LyricsWebsiteParser):
 
     def parse_lyrics(self, soup: bs4.BeautifulSoup) -> str:
         page_title = soup.find("title").text
-        artist, title = page_title.split("–")[:2] # Note that this is a unicode character
+        artist, title = page_title.split("–")[:2]  # Note that this is a unicode character
         artist = artist.strip()
         if "Lyrics" in title:
             title = title[:title.index("Lyrics")]
@@ -84,14 +87,15 @@ class GenuisParser(LyricsWebsiteParser):
             br.replace_with("\n")
 
         return LyricsResult(
-            lyrics = '\n\n'.join(
+            lyrics='\n\n'.join(
                 verse.get_text() for verse in
                 soup.findAll("div", {"data-lyrics-container": "true"})
             ),
-            artist = artist,
-            title = title,
-            url = None
+            artist=artist,
+            title=title,
+            url=None
         )
+
 
 class AllMusicalsParser(LyricsWebsiteParser):
     URL_FORMAT = re.compile("allmusicals\.com\/lyrics\/.*\.htm$")
@@ -113,11 +117,12 @@ class AllMusicalsParser(LyricsWebsiteParser):
             element.replace_with("")
 
         return LyricsResult(
-            lyrics = soup.find("div", {"id": "page"}).text.strip(),
-            artist = artist,
-            title = title,
-            url = None
+            lyrics=soup.find("div", {"id": "page"}).text.strip(),
+            artist=artist,
+            title=title,
+            url=None
         )
+
 
 class AzLyricsParser(LyricsWebsiteParser):
     URL_FORMAT = re.compile("azlyrics.com\/lyrics\/.*html$")
@@ -140,11 +145,12 @@ class AzLyricsParser(LyricsWebsiteParser):
             br.replace_with("\n")
 
         return LyricsResult(
-            lyrics = max(soup.findAll("div", {"class": None}), key=len).text.strip(),
-            artist = artist,
-            title = title,
-            url = None
+            lyrics=max(soup.findAll("div", {"class": None}), key=len).text.strip(),
+            artist=artist,
+            title=title,
+            url=None
         )
+
 
 class TheMusicalLyricsParser(LyricsWebsiteParser):
     URL_FORMAT = re.compile("themusicallyrics\.com\/.*\/.*-lyrics\/.*-lyrics\.html$")
@@ -167,11 +173,12 @@ class TheMusicalLyricsParser(LyricsWebsiteParser):
             tag.replace_with("")
 
         return LyricsResult(
-            lyrics = soup.find("p").text.strip(),
-            artist = artist,
-            title = title,
-            url = None
+            lyrics=soup.find("p").text.strip(),
+            artist=artist,
+            title=title,
+            url=None
         )
+
 
 class LyricsTranslateParser(LyricsWebsiteParser):
     URL_FORMAT = re.compile("-lyrics\.html$")
@@ -193,11 +200,12 @@ class LyricsTranslateParser(LyricsWebsiteParser):
             br.replace_with("\n")
 
         return LyricsResult(
-            lyrics = soup.find("div", {"id": "song-body"}).text.strip(),
-            artist = artist,
-            title = title,
-            url = None
+            lyrics=soup.find("div", {"id": "song-body"}).text.strip(),
+            artist=artist,
+            title=title,
+            url=None
         )
+
 
 class ShironetParser(LyricsWebsiteParser):
     URL_FORMAT = re.compile("type=lyrics")
@@ -218,21 +226,24 @@ class ShironetParser(LyricsWebsiteParser):
             br.replace_with("\n")
 
         return LyricsResult(
-            lyrics = soup.find("span", {"itemprop": "Lyrics"}).text.strip(),
-            artist = artist,
-            title = title,
-            url = None
+            lyrics=soup.find("span", {"itemprop": "Lyrics"}).text.strip(),
+            artist=artist,
+            title=title,
+            url=None
         )
+
 
 PARSERS = {
     parser.__name__: parser
     for parser in LyricsWebsiteParser.__subclasses__()
 }
 
+
 @shared_task
 def get_lyrics(song_id: int | None = None, group_song_id: int | None = None):
     for parser_name in PARSERS:
         get_lyrics_for_provider.delay(parser_name, song_id, group_song_id)
+
 
 @shared_task
 def get_lyrics_for_provider(parser_name: str, song_id: int | None, group_song_id: int | None):
@@ -243,24 +254,24 @@ def get_lyrics_for_provider(parser_name: str, song_id: int | None, group_song_id
         song = SongRequest.objects.get(id=song_id)
 
         # Delete old lyrics
-        SongLyrics.objects.filter(song_request = song).delete()
+        SongLyrics.objects.filter(song_request=song).delete()
     else:
         assert group_song_id is not None
         song = GroupSongRequest.objects.get(id=group_song_id)
 
         # Delete old lyrics
-        SongLyrics.objects.filter(group_song_request = song).delete()
+        SongLyrics.objects.filter(group_song_request=song).delete()
 
     for i, result in enumerate(parser().get_lyrics(song.song_name, song.musical)):
-            SongLyrics.objects.create(
-                song_name = result.title,
-                artist_name = result.artist,
-                url = result.url,
-                lyrics = result.lyrics,
-                song_request = song if song_id is not None else None,
-                group_song_request = song if group_song_id is not None else None,
-            )
+        SongLyrics.objects.create(
+            song_name=result.title,
+            artist_name=result.artist,
+            url=result.url,
+            lyrics=result.lyrics,
+            song_request=song if song_id is not None else None,
+            group_song_request=song if group_song_id is not None else None,
+        )
 
-            # 2 lyrics per site is plenty for now
-            if i == 1:
-                break
+        # 2 lyrics per site is plenty for now
+        if i == 1:
+            break

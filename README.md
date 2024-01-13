@@ -18,20 +18,9 @@ Run local postgres and redis. This can be done with docker
 docker-compose up -d
 ```
 
-Create postgres db
-
+Run script to setup postgres admin, users, and put the site into a working state
 ```sh
-psql -h localhost -U twistdbadmin
-(password from docker-compose)
-
-create database twist_db;
-```
-
-Run migrations and create superuser
-
-```sh
-python manage.py migrate
-python manage.py createsuperuser
+./dev_setup.py
 ```
 
 Run local server
@@ -39,11 +28,6 @@ Run local server
 ```sh
 python manage.py runserver
 ```
-
-Go to localhost:8000/admin, sign in as admin, create "singers" group with permissions "song_signup | song request | Can view"
-Set passcode in constance settings, and under song requests select "ALLOW MORE SIGNUPS"
-
-Go to localhost:8000, sign in to app as "Alon Aviv", logout, sign is as "Shani Wahrman", logout, sign in normally
 
 To allow downloading lyrics in background task, run a celery worker:
 

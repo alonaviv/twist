@@ -21,7 +21,7 @@ from constance import config
 logger = logging.getLogger(__name__)
 
 
-def _name_to_username(first_name, last_name):
+def name_to_username(first_name, last_name):
     return f'{first_name.lower()}_{last_name.lower()}'
 
 
@@ -336,7 +336,7 @@ def login(request):
         else:
             try:
                 singer = Singer.objects.create_user(
-                    _name_to_username(first_name, last_name),
+                    name_to_username(first_name, last_name),
                     first_name=first_name,
                     last_name=last_name,
                     is_staff=True,
