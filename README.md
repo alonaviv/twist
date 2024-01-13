@@ -4,7 +4,7 @@ This app is a sign up webiste for open mic nights
 
 ## Local development setup
 
-Create virtualenv and install requirements
+Create a python3.10 virtualenv and install requirements
 
 ```sh
 python3 -m venv .venv
