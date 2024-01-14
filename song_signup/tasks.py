@@ -36,7 +36,10 @@ class LyricsWebsiteParser:
         seen_urls = set()
         with DDGS() as ddgs:
             search_query = "{} lyrics {} site:{}".format(song_name, author, self.SITE)
-            search_results = ddgs.text(search_query)
+            from celery.utils.log import get_task_logger
+            logger = get_task_logger(__name__)
+            logger.info("Making a query for ", self.__class__)
+            search_results = ddgs.text(search_query, max_results=1)
             for result in search_results:
                 url = self.fix_url(result['href'])
 

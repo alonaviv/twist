@@ -1,5 +1,6 @@
 import logging
 
+from constance import config
 from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group
@@ -8,15 +9,13 @@ from django.db import IntegrityError
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
 from flags.state import enable_flag, disable_flag, flag_disabled
+from rest_framework import status
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 from titlecase import titlecase
 
 from .models import GroupSongRequest, SongLyrics, SongRequest, Singer, SongSuggestion
 from .serializers import SongSuggestionSerializer, SongRequestSerializer, SingerSerializer
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
-from rest_framework import status
-from constance import config
-
 
 logger = logging.getLogger(__name__)
 
@@ -196,6 +195,7 @@ def _sort_lyrics(song: SongRequest | GroupSongRequest):
 
     return default + exact_matches + left_matches + right_matches + lyrics
 
+
 @login_required(login_url='login')
 def lyrics(request, song_pk):
     try:
@@ -216,6 +216,7 @@ def group_lyrics(request, song_pk):
 
     lyrics = _sort_lyrics(song_request)
     return render(request, 'song_signup/lyrics.html', {"lyrics": lyrics and lyrics[0], "group_song": song_request})
+
 
 @login_required(login_url='login')
 def lyrics_by_id(request, lyrics_id):
@@ -241,6 +242,7 @@ def alternative_lyrics(request, song_pk):
     lyrics = _sort_lyrics(song_request)
     return render(request, 'song_signup/alternative_lyrics.html', {"lyrics": lyrics, "song": song_request})
 
+
 @login_required(login_url='login')
 def alternative_group_lyrics(request, song_pk):
     try:
@@ -250,6 +252,7 @@ def alternative_group_lyrics(request, song_pk):
 
     lyrics = _sort_lyrics(song_request)
     return render(request, 'song_signup/alternative_lyrics.html', {"lyrics": lyrics, "song": song_request})
+
 
 @api_view(["PUT"])
 def default_lyrics(request):
@@ -263,6 +266,7 @@ def default_lyrics(request):
     lyric.default = True
     lyric.save()
     return Response({}, status=status.HTTP_200_OK)
+
 
 @login_required(login_url='login')
 def suggest_song(request):

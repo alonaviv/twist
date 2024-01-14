@@ -85,6 +85,8 @@ CONSTANCE_CONFIG = {
 }
 
 CONSTANCE_BACKEND = 'constance.backends.redisd.RedisBackend'
+CONSTANCE_REDIS_CONNECTION = {'host': 'redis'}  # Connect to the docker container
+
 
 DBBACKUP_STORAGE = 'django.core.files.storage.FileSystemStorage'
 DBBACKUP_STORAGE_OPTIONS = {'location': './db_backups'}
@@ -130,7 +132,7 @@ DATABASES = {
         'NAME': 'twist_db',
         'USER': 'twistdbadmin',
         'PASSWORD': os.environ.get('POSTGRES_PASSWORD', '76697421'),
-        'HOST': 'localhost',
+        'HOST': 'db',  # Docker container
     }
 }
 
@@ -177,8 +179,8 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'twist/static')
 ]
 
-CELERY_BROKER_URL = 'redis://localhost:6379'
-CELERY_RESULT_BACKEND = 'redis://localhost:6379'
+CELERY_BROKER_URL = 'redis://redis:6379'
+CELERY_RESULT_BACKEND = 'redis://redis:6379'
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TASK_SERIALIZER = 'json'

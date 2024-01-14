@@ -32,15 +32,6 @@ def create_superuser(first_name, last_name, password):
 
 
 if __name__ == '__main__':
-    try:
-        result = subprocess.run(f"PGPASSWORD={PG_PASSWORD} psql -U {PG_USER} -h localhost -c \"CREATE DATABASE twist_db\"",
-                                shell=True, check=True, text=True, stderr=subprocess.PIPE)
-    except subprocess.CalledProcessError as e:
-        if 'already exists' in e.stderr:
-            pass
-        else:
-            raise
-
     call_command('migrate')
     create_superuser(*ALON_USER)
     create_superuser(*SHANI_USER)
