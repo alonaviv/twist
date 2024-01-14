@@ -1,18 +1,16 @@
 import dataclasses
 import re
-import urllib.parse
 from typing import Iterable
 
 import bs4
 import requests
-from celery import shared_task
 from ScrapeSearchEngine.ScrapeSearchEngine import Bing
+from celery import shared_task
 
 from .models import GroupSongRequest, SongLyrics, SongRequest
 
 GENIUS_URL_FORMAT = re.compile("genius\.com\/.*-lyrics$")
 USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-
 
 
 @dataclasses.dataclass
@@ -78,9 +76,7 @@ class GenuisParser(LyricsWebsiteParser):
 
     def parse_lyrics(self, soup: bs4.BeautifulSoup) -> str:
         page_title = soup.find("title").text
-        artist, title = page_title.split("–")[
-            :2
-        ]  # Note that this is a unicode character
+        artist, title = page_title.split("–")[:2]  # Note that this is a unicode character
         artist = artist.strip()
         if "Lyrics" in title:
             title = title[: title.index("Lyrics")]
@@ -125,7 +121,6 @@ class AllMusicalsParser(LyricsWebsiteParser):
             title=title,
             url=None,
         )
-
 
 
 class AzLyricsParser(LyricsWebsiteParser):
@@ -184,7 +179,6 @@ class TheMusicalLyricsParser(LyricsWebsiteParser):
         )
 
 
-
 class LyricsTranslateParser(LyricsWebsiteParser):
     URL_FORMAT = re.compile("-lyrics\.html$")
     SITE = "lyricstranslate.com"
@@ -210,7 +204,6 @@ class LyricsTranslateParser(LyricsWebsiteParser):
             title=title,
             url=None,
         )
-
 
 
 class ShironetParser(LyricsWebsiteParser):
@@ -242,7 +235,6 @@ class ShironetParser(LyricsWebsiteParser):
 PARSERS = {parser.__name__: parser for parser in LyricsWebsiteParser.__subclasses__()}
 
 
-
 @shared_task
 def get_lyrics(song_id: int | None = None, group_song_id: int | None = None):
     if song_id is not None:
@@ -264,7 +256,7 @@ def get_lyrics(song_id: int | None = None, group_song_id: int | None = None):
 
 @shared_task(rate_limit="0.5/s")
 def get_lyrics_for_provider(
-    parser_name: str, song_id: int | None, group_song_id: int | None
+        parser_name: str, song_id: int | None, group_song_id: int | None
 ):
     parser = PARSERS[parser_name]
 
