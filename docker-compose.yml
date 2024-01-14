@@ -35,7 +35,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.celery
-    command: celery -A twist worker -l DEBUG -c 2
+    command: celery -A twist worker -l INFO
     volumes:
       - .:/twist
     depends_on:
