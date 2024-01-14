@@ -4,11 +4,24 @@ from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.contrib.postgres.fields import CITextField
 from django.db.models import (
-    Model, DateTimeField, ForeignKey, CASCADE, SET_NULL, ManyToManyField, IntegerField, BooleanField, signals,
-    FloatField, TextField, URLField
+    CASCADE,
+    SET_NULL,
+    BooleanField,
+    DateTimeField,
+    FloatField,
+    ForeignKey,
+    IntegerField,
+    ManyToManyField,
+    Model,
+    TextField,
+    URLField,
 )
 
-from song_signup.managers import SongRequestManager, DisneylandOrdering, SongSuggestionManager
+from song_signup.managers import (
+    DisneylandOrdering,
+    SongRequestManager,
+    SongSuggestionManager,
+)
 
 
 class Singer(AbstractUser):
@@ -118,7 +131,9 @@ class GroupSongRequest(Model):
         super().save(*args, **kwargs)
 
         from song_signup.tasks import get_lyrics
-        get_lyrics.delay(group_song_id = self.id)
+
+        get_lyrics.delay(group_song_id=self.id)
+
 
 class SongSuggestion(Model):
     song_name = CITextField(max_length=50)
@@ -157,6 +172,11 @@ class SongRequest(Model):
     cycle = FloatField(null=True, blank=True)  # The cycle where song was scheduled
     placeholder = BooleanField(default=False)
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._original_song_name = self.song_name
+        self._original_musical = self.musical
+
     def get_additional_singers(self):
         return ", ".join([str(singer) for singer in self.additional_singers.all()])
 
@@ -194,10 +214,23 @@ class SongRequest(Model):
         if not self.priority:
             self.priority = SongRequest.objects.next_priority(self)
 
+        # Update the lyxrics if the song was just added, or if its name or musical changed
+        fetch_lyrics = False
+        if (
+            self.id is None
+            or self._original_song_name != self.song_name
+            or self._original_musical != self.musical
+        ):
+            fetch_lyrics = True
+
         super().save(*args, **kwargs)
 
-        from song_signup.tasks import get_lyrics
-        get_lyrics.delay(song_id = self.id)
+        if fetch_lyrics:
+            from song_signup.tasks import get_lyrics
+
+            get_lyrics.delay(song_id=self.id)
+            self._original_song_name = self.song_name
+            self._original_musical = self.musical
 
     class Meta:
         unique_together = ('song_name', 'musical', 'singer', 'cycle', 'position')
