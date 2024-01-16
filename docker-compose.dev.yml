@@ -39,7 +39,7 @@ services:
   celery:
     build:
       context: .
-      dockerfile: Dockerfile.celery
+      dockerfile: Dockerfile.celery.dev
     command: celery -A twist worker -l INFO
     volumes:
       - .:/twist

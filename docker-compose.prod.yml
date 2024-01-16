@@ -39,10 +39,8 @@ services:
     restart: always
     build:
       context: .
-      dockerfile: Dockerfile.celery
+      dockerfile: Dockerfile.celery.prod
     command: celery -A twist worker -l INFO
-    volumes:
-      - .:/twist
     depends_on:
       redis:
         condition: service_healthy
