@@ -7,7 +7,9 @@ volumes:
 
 services:
   db:
-    image: postgres:11-alpine
+    build:
+      context: .
+      dockerfile: Dockerfile.db
     platform: linux/amd64
     restart: always
     environment:
