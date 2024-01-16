@@ -32,6 +32,7 @@ services:
       retries: 5
 
   celery:
+    restart: always
     build:
       context: .
       dockerfile: Dockerfile.celery
@@ -43,10 +44,11 @@ services:
         condition: service_healthy
 
   django:
+    restart: always
     build:
       context: .
-      dockerfile: Dockerfile.dev
-    command: sh -c "./dev_setup.py && ./manage.py runserver 0.0.0.0:8000"
+      dockerfile: Dockerfile.prod
+    command: ./prod-setup.sh
     ports:
       - "8000:8000"
     volumes:
