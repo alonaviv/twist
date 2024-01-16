@@ -2,6 +2,8 @@ version: '3.8'
 
 volumes:
   django_static_vol: {}
+  db: {}
+
 
 services:
   db:
@@ -51,8 +53,6 @@ services:
     command: ./prod-setup.sh
     ports:
       - "8000:8000"
-    volumes:
-      - gunicorn_sock_vol:/tmp
     depends_on:
       db:
         condition: service_healthy
