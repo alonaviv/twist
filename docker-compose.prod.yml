@@ -1,4 +1,8 @@
 version: '3.8'
+
+volumes:
+  django_static_vol: {}
+
 services:
   db:
     image: postgres:11-alpine
@@ -7,9 +11,7 @@ services:
     environment:
       - POSTGRES_USER=twistdbadmin
       - POSTGRES_PASSWORD=76697421
-    ports:
-      - '5432:5432'
-    volumes: 
+    volumes:
       - db:/var/lib/postgresql/data
       - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
     healthcheck:
@@ -21,8 +23,6 @@ services:
   redis:
     image: redis
     restart: always
-    ports:
-      - '6379:6379'
     volumes:
       - redis:/data
     healthcheck:
@@ -52,16 +52,9 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - .:/twist
+      - gunicorn_sock_vol:/tmp
     depends_on:
       db:
         condition: service_healthy
       redis:
         condition: service_healthy
-
-volumes:
-  db:
-    driver: local
-  redis:
-    driver: local
-
