@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import os
+import sys
 import django
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "twist.settings")
 django.setup()
@@ -9,6 +10,8 @@ from flags.state import enable_flag
 
 from song_signup.views import name_to_username
 from django.contrib.auth.models import Group, Permission
+from django.core.management import call_command
+
 
 ALON_USER = ('Alon', 'Aviv', '76697421')
 SHANI_USER = ('Shani', 'Wahrman', '76697421')
@@ -28,6 +31,9 @@ def create_superuser(first_name, last_name, password):
 
 
 if __name__ == '__main__':
+    if 'init' in sys.argv:
+        call_command('migrate')
+
     create_superuser(*ALON_USER)
     create_superuser(*SHANI_USER)
 
