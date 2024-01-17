@@ -1,14 +1,14 @@
 #!/usr/bin/env python
-import subprocess
 import os
 import django
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "twist.settings")
+django.setup()
+
 import constance
 from django.core.management import call_command
 from django.contrib.auth import get_user_model
 from flags.state import enable_flag
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "twist.settings")
-django.setup()
 from song_signup.views import name_to_username
 from django.contrib.auth.models import Group, Permission
 

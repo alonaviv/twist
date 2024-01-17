@@ -31,6 +31,7 @@ INTERNAL_IPS = [
     "127.0.0.1",
 ]
 
+
 ALLOWED_HOSTS = ['192.168.1.111', 'localhost', '127.0.0.1', '77.124.168.72', '138.68.64.78']
 DOMAIN = 'http://localhost:8000'
 

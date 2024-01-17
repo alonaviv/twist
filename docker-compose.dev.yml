@@ -1,17 +1,16 @@
 version: '3.8'
 services:
   db:
-    image: postgres:11-alpine
+    build:
+      context: .
+      dockerfile: environment/common/postgres/Dockerfile
     platform: linux/amd64
     restart: always
     environment:
       - POSTGRES_USER=twistdbadmin
       - POSTGRES_PASSWORD=76697421
-    ports:
-      - '5432:5432'
-    volumes: 
+    volumes:
       - db:/var/lib/postgresql/data
-      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U twistdbadmin"]
       interval: 10s
@@ -26,10 +25,6 @@ services:
   redis:
     image: redis
     restart: always
-    ports:
-      - '6379:6379'
-    volumes:
-      - redis:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -39,7 +34,7 @@ services:
   celery:
     build:
       context: .
-      dockerfile: Dockerfile.celery.dev
+      dockerfile: environment/dev/celery/Dockerfile
     command: celery -A twist worker -l INFO
     volumes:
       - .:/twist
@@ -50,7 +45,7 @@ services:
   django:
     build:
       context: .
-      dockerfile: Dockerfile.dev
+      dockerfile: environment/dev/django/Dockerfile
     command: sh -c "./dev_setup.py && ./manage.py runserver 0.0.0.0:8000"
     ports:
       - "8000:8000"
@@ -65,6 +60,3 @@ services:
 volumes:
   db:
     driver: local
-  redis:
-    driver: local
-
