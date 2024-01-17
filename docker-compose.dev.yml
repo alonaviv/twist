@@ -3,7 +3,7 @@ services:
   db:
     build:
       context: .
-      dockerfile: environment/common/postgres/Dockerfile
+      dockerfile: docker/common/Dockerfile.db
     platform: linux/amd64
     restart: always
     environment:
@@ -32,9 +32,10 @@ services:
       retries: 5
 
   celery:
+    restart: always
     build:
       context: .
-      dockerfile: environment/dev/celery/Dockerfile
+      dockerfile: docker/dev/Dockerfile.celery
     command: celery -A twist worker -l INFO
     volumes:
       - .:/twist
@@ -43,9 +44,10 @@ services:
         condition: service_healthy
 
   django:
+    restart: always
     build:
       context: .
-      dockerfile: environment/dev/django/Dockerfile
+      dockerfile: docker/dev/Dockerfile.django
     command: sh -c "./dev_setup.py && ./manage.py runserver 0.0.0.0:8000"
     ports:
       - "8000:8000"
@@ -58,5 +60,4 @@ services:
         condition: service_healthy
 
 volumes:
-  db:
-    driver: local
+  db: {}
