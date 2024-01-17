@@ -5,10 +5,6 @@ volumes:
     driver: local
   db:
     driver: local
-    driver_opts:
-      type: none
-      device: /twist-db
-      o: bind
 
 services:
   db:
