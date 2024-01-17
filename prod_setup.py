@@ -4,8 +4,6 @@ import django
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "twist.settings")
 django.setup()
 
-import constance
-from django.core.management import call_command
 from django.contrib.auth import get_user_model
 from flags.state import enable_flag
 
@@ -30,11 +28,9 @@ def create_superuser(first_name, last_name, password):
 
 
 if __name__ == '__main__':
-    call_command('migrate')
     create_superuser(*ALON_USER)
     create_superuser(*SHANI_USER)
 
     singers_group, _ = Group.objects.get_or_create(name='singers')
     singers_group.permissions.add(Permission.objects.get(codename='view_songrequest'))
-    constance.config.PASSCODE = 'dev'
     enable_flag('CAN_SIGNUP')

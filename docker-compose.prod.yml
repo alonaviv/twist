@@ -52,7 +52,7 @@ services:
     build:
       context: .
       dockerfile: docker/prod/Dockerfile.django
-    command: ./prod-setup.sh
+    command: sh -c "./prod_setup.py && gunicorn twist.wsgi:application --bind 0.0.0.0:8000"
     volumes:
       - django_static_vol:/twist/static
     depends_on:
