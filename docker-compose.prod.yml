@@ -1,7 +1,8 @@
 version: '3.8'
 
 volumes:
-  django_static_vol: {}
+  django_static_vol:
+    driver: local
   db:
     driver: local
     driver_opts:
@@ -52,11 +53,27 @@ services:
       context: .
       dockerfile: docker/prod/Dockerfile.django
     command: ./prod-setup.sh
-    # REMOVE
-    ports:
-      - "8000:8000"
+    volumes:
+      - django_static_vol:/twist/static
     depends_on:
       db:
         condition: service_healthy
       redis:
         condition: service_healthy
+
+  nginx:
+    restart: always
+    build:
+        context: .
+        dockerfile: docker/prod/Dockerfile.nginx
+    volumes:
+      - django_static_vol:/usr/share/nginx/html/django_static
+    ports:
+      - "80:80"
+    depends_on:
+      - django
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
