@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 import os
-import sys
 import django
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "twist.settings")
 django.setup()
@@ -31,7 +30,7 @@ def create_superuser(first_name, last_name, password):
 
 
 if __name__ == '__main__':
-    if 'init' in sys.argv:
+    if os.getenv('INIT', 'true'):
         call_command('migrate')
 
     create_superuser(*ALON_USER)
