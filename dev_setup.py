@@ -12,8 +12,8 @@ from flags.state import enable_flag
 from song_signup.views import name_to_username
 from django.contrib.auth.models import Group, Permission
 
-ALON_USER = ('Alon', 'Aviv', '76697421')
-SHANI_USER = ('Shani', 'Wahrman', '76697421')
+ALON_USER = ('Alon', 'Aviv', os.environ.get('ALON_PASSWORD'))
+SHANI_USER = ('Shani', 'Wahrman', os.environ.get('SHANI_PASSWORD'))
 
 
 def create_superuser(first_name, last_name, password):
