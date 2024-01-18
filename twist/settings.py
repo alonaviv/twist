@@ -21,7 +21,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '10ux=r^ftgae13@(-5m(&z7dcjy4c7c%xffs2+o2gw)ab9p4&@'
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -32,7 +32,7 @@ INTERNAL_IPS = [
 ]
 
 
-ALLOWED_HOSTS = ['192.168.1.111', 'localhost', '127.0.0.1', '77.124.168.72', '138.68.64.78', 'broadwaywithatwist.xyz']
+ALLOWED_HOSTS = ['192.168.1.111', 'localhost', '127.0.0.1']
 DOMAIN = 'http://localhost:8000'
 
 FLAGS = {
@@ -61,6 +61,7 @@ LOGGING = {
         'level': 'DEBUG',
     },
 }
+
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
@@ -131,8 +132,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'twist_db',
-        'USER': 'twistdbadmin',
-        'PASSWORD': os.environ.get('POSTGRES_PASSWORD', '76697421'),
+        'USER': os.environ.get('POSTGRES_USER'),
+        'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
         'HOST': 'db',  # Docker container
     }
 }

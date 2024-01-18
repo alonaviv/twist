@@ -7,8 +7,8 @@ services:
     platform: linux/amd64
     restart: always
     environment:
-      - POSTGRES_USER=twistdbadmin
-      - POSTGRES_PASSWORD=76697421
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     volumes:
       - db:/var/lib/postgresql/data
     healthcheck:
@@ -39,6 +39,7 @@ services:
     command: celery -A twist worker -l INFO
     volumes:
       - .:/twist
+    env_file: .env
     depends_on:
       redis:
         condition: service_healthy
@@ -53,6 +54,7 @@ services:
       - "8000:8000"
     volumes:
       - .:/twist
+    env_file: .env
     depends_on:
       db:
         condition: service_healthy
