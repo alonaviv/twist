@@ -52,7 +52,7 @@ services:
     command: sh -c "./prod_setup.py && gunicorn twist.wsgi:application --bind 0.0.0.0:8000"
     volumes:
       - django_static_vol:/twist/static
-      - /root/db_backups:/twist/db_backups
+      - /alona/db_backups:/twist/db_backups
     environment:
       - INIT=false
     env_file: .env
