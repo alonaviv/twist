@@ -49,7 +49,7 @@ services:
     build:
       context: .
       dockerfile: docker/dev/Dockerfile.django
-    command: sh -c "./dev_setup.py && ./manage.py runserver 0.0.0.0:8000"
+    command: sh -c "./dev_setup.py && tail -f /dev/null" # Keep container running
     ports:
       - "8000:8000"
     volumes:

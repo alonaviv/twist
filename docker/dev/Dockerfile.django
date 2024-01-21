@@ -1,6 +1,7 @@
 FROM python:3.10
 
 ENV PYTHONUNBUFFERED=1
+ENV PYTHONBREAKPOINT=ipdb.set_trace
 
 WORKDIR /twist/
 

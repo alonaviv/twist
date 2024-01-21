@@ -1,8 +1,9 @@
 import logging
-
+import traceback
+from openpyxl import load_workbook
 from constance import config
 from django.contrib.auth import login as auth_login, logout as auth_logout
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import Group
 from django.core.management import call_command
 from django.db import IntegrityError
@@ -14,10 +15,15 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from titlecase import titlecase
 
+from .forms import FileUploadForm
 from .models import GroupSongRequest, SongLyrics, SongRequest, Singer, SongSuggestion
 from .serializers import SongSuggestionSerializer, SongRequestSerializer, SingerSerializer
 
 logger = logging.getLogger(__name__)
+
+
+def _is_superuser(user):
+    return user.is_authenticated and user.is_superuser
 
 
 def name_to_username(first_name, last_name):
@@ -392,3 +398,29 @@ def signup_disabled(request):
 def recalculate_priorities(request):
     Singer.ordering.calculate_positions()
     return redirect('admin/song_signup/songrequest')
+
+
+@user_passes_test(_is_superuser)
+def upload_lineapp_orders(request):
+    if request.method == 'POST' and 'file' in request.FILES:
+        try:
+            orders_processed = _process_orders(request.FILES['file'])
+        except Exception as e:
+            return render(request, 'song_signup/upload_lineapp_orders.html', {'form': FileUploadForm(), 'error_message': traceback.format_exc()})
+
+        return HttpResponse(f'PROCESSED {orders_processed} orders successfully')
+
+    return render(request, 'song_signup/upload_lineapp_orders.html', {'form': FileUploadForm()})
+
+
+def _process_orders(spreadsheet_file):
+    # TODO Count how many orders (not sub ticket types) were processed as well, so I can compare to the excel. And say how many are duplicates and how many new.
+    # TODO, Also say how many were singing tickets and how many regular.
+    orders_processed = 0
+    worksheet = load_workbook(spreadsheet_file).active
+    for row in worksheet.iter_rows(min_row=2, values_only=2):
+        order_id, event_sku, event_name, ticket_type_name, num_tickets, ticket_type_sku = row
+        print(f"Order ID: {order_id}, Event SKU: {event_sku}, Event Name: {event_name}, Ticket Type Name: {ticket_type_name}, Num Tickets: {num_tickets}, Ticket Type SKU: {ticket_type_sku}")
+        orders_processed += 1
+
+    return orders_processed
