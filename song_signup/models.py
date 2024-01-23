@@ -15,6 +15,7 @@ from django.db.models import (
     Model,
     TextField,
     URLField,
+    CharField
 )
 
 from song_signup.managers import (
@@ -22,6 +23,9 @@ from song_signup.managers import (
     SongRequestManager,
     SongSuggestionManager,
 )
+
+SING_SKU = 'SING'
+NOSING_SKU = 'ATTN'
 
 
 class Singer(AbstractUser):
@@ -260,3 +264,18 @@ class SongLyrics(Model):
                 self.group_song_request.lyrics.update(default=False)
 
         super().save(*args, **kwargs)
+
+
+class TicketOrder(Model):
+    """
+    Represents the group of tickets of the same type within a Lineapp order
+    """
+    order_id = IntegerField()
+    event_sku = CharField(max_length=20)
+    event_name = CharField(max_length=100)
+    num_tickets = IntegerField()
+    ticket_type = CharField(max_length=20, choices=[(SING_SKU, 'Singer'), (NOSING_SKU, 'Audience')])
+    customer_name = CharField(max_length=100)
+
+    class Meta:
+        unique_together = ('order_id', 'event_sku', 'ticket_type')

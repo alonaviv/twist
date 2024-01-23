@@ -13,13 +13,30 @@ source ./.venv/bin/activate
 pip install -r requirements.txt
 ```
 
-2. Run docker-compose to spin up dev environment. Containers include django, postgres database, redis database, and celery workers. The following script destroys the containers (including volumes!), spins them back up, and sets up two superusers (`Alon` and `Shani`) along with all other settings required for running the site. 
+2. Run docker-compose to spin up dev environment. Containers include django, postgres database, redis database, and celery workers. The following script destroys the containers spins them back up, and sets up two superusers (`Alon` and `Shani`) along with all other settings required for running the site. Passing `-v` to the script will destroy the docker volumes as well. 
 
 ```sh
-./run-dev.sh
+./run-dev.sh [-v]
 ```
 
 Django server is now accessible on localhost:8000 
+
+3. Stop containers in the same way:
+```sh
+./stop-dev.sh [-v]
+```
+
+4. In order to make migrations, run the following script and exit with Ctrl-C when done.
+You can then run `run-dev.sh` to apply migrations.
+```sh
+./makemigrations.sh
+```
+
+5. Connect PyCharm to Docker to run tests:
+   * Settings -> Python interpreter -> Add interpreter -> On docker-compose.
+   * Select Docker service, add `docker-compose.dev.yml` as configuration file, and select `django` container as service.
+   * Select python interpreter within the container, and run tests from within IDE.
+
 
 ## Production environment inital setup
 

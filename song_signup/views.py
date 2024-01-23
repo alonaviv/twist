@@ -6,7 +6,7 @@ from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import Group
 from django.core.management import call_command
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
 from flags.state import enable_flag, disable_flag, flag_disabled
@@ -16,7 +16,7 @@ from rest_framework.response import Response
 from titlecase import titlecase
 
 from .forms import FileUploadForm
-from .models import GroupSongRequest, SongLyrics, SongRequest, Singer, SongSuggestion
+from .models import GroupSongRequest, SongLyrics, SongRequest, Singer, SongSuggestion, TicketOrder, SING_SKU
 from .serializers import SongSuggestionSerializer, SongRequestSerializer, SingerSerializer
 
 logger = logging.getLogger(__name__)
@@ -404,23 +404,65 @@ def recalculate_priorities(request):
 def upload_lineapp_orders(request):
     if request.method == 'POST' and 'file' in request.FILES:
         try:
-            orders_processed = _process_orders(request.FILES['file'])
+            processing_data = _process_orders(request.FILES['file'])
         except Exception as e:
             return render(request, 'song_signup/upload_lineapp_orders.html', {'form': FileUploadForm(), 'error_message': traceback.format_exc()})
 
-        return HttpResponse(f'PROCESSED {orders_processed} orders successfully')
+        return HttpResponse(f"""
+<h3>{processing_data['num_orders']} Orders Processed Successfully</h3>
+<ul>
+<li>Num orders: {processing_data['num_orders']}</li>
+<li> Num ticket orders (lines in spreadsheet): {processing_data['num_ticket_orders']}</li>
+<br>
+<li> Num ticket orders that already existed in DB: {processing_data['num_existing_ticket_orders']}</li>
+<li> Num new ticket orders added to DB: {processing_data['num_new_ticket_orders']}</li>
+<br>
+<li> Num singing tickets in spreadsheet: {processing_data['num_singing_tickets']}</li>
+<li> Num audience tickets in spreadsheet: {processing_data['num_audience_tickets']}</li>
+""")
 
     return render(request, 'song_signup/upload_lineapp_orders.html', {'form': FileUploadForm()})
 
 
+@transaction.atomic
 def _process_orders(spreadsheet_file):
-    # TODO Count how many orders (not sub ticket types) were processed as well, so I can compare to the excel. And say how many are duplicates and how many new.
-    # TODO, Also say how many were singing tickets and how many regular.
-    orders_processed = 0
+    orders = set()  # Order made by a single person
+    num_ticket_orders = 0  # Groups of ticket types within the orders
+    num_existing_ticket_orders = 0
+    num_new_ticket_orders = 0
+    num_singing_tickets = 0
+    num_audience_tickets = 0
+
     worksheet = load_workbook(spreadsheet_file).active
     for row in worksheet.iter_rows(min_row=2, values_only=2):
-        order_id, event_sku, event_name, ticket_type_name, num_tickets, ticket_type_sku = row
-        print(f"Order ID: {order_id}, Event SKU: {event_sku}, Event Name: {event_name}, Ticket Type Name: {ticket_type_name}, Num Tickets: {num_tickets}, Ticket Type SKU: {ticket_type_sku}")
-        orders_processed += 1
+        order_id, event_sku, event_name, num_tickets, ticket_type, first_name, last_name = row
+        orders.add(order_id)
+        num_ticket_orders += 1
 
-    return orders_processed
+        ticket_order, created = TicketOrder.objects.get_or_create(
+            order_id=order_id,
+            event_sku=event_sku,
+            ticket_type=ticket_type,
+            event_name=event_name,
+            num_tickets=num_tickets,
+            customer_name=' '.join([first_name, last_name])
+        )
+        if created:
+            num_new_ticket_orders += 1
+        else:
+            num_existing_ticket_orders += 1
+
+        if ticket_type == SING_SKU:
+            num_singing_tickets += num_tickets
+        else:
+            num_audience_tickets += num_tickets
+
+        ticket_order.save()
+
+    return dict(num_orders=len(orders),
+                num_ticket_orders=num_ticket_orders,
+                num_new_ticket_orders=num_new_ticket_orders,
+                num_existing_ticket_orders=num_existing_ticket_orders,
+                num_singing_tickets=num_singing_tickets,
+                num_audience_tickets=num_audience_tickets
+                )

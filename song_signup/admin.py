@@ -4,7 +4,7 @@ from django.urls import reverse
 from django.utils.safestring import mark_safe
 
 from .managers import LATE_SINGER_CYCLE
-from .models import SongLyrics, SongRequest, Singer, GroupSongRequest, SongSuggestion
+from .models import SongLyrics, SongRequest, Singer, GroupSongRequest, SongSuggestion, TicketOrder
 
 
 def set_performed(modeladmin, request, queryset):
@@ -159,3 +159,8 @@ class LyricsAdmin(admin.ModelAdmin):
     def link(self, obj):
         return mark_safe(f'<a href="{reverse("lyrics_by_id", args=(obj.id,))}">Link</a>')
     link.short_description = "Link"
+
+
+@admin.register(TicketOrder)
+class OrdersAdmin(admin.ModelAdmin):
+    list_display = ['order_id', 'event_name', 'event_sku', 'num_tickets', 'ticket_type', 'customer_name']
