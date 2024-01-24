@@ -317,7 +317,7 @@ def tip_us(request):
 
 def login(request):
     # This is the root endpoint. If already logged in, go straight to home.
-    evening_started = bool(config.PASSCODE)
+    evening_started = bool(config.PASSCODE) and bool(config.EVENT_SKU)
     if request.user.is_authenticated and not request.user.is_anonymous and evening_started:
         return redirect('home')
 
@@ -376,6 +376,8 @@ def reset_database(request):
     call_command('dbbackup')
     call_command('reset_db')
     enable_flag('CAN_SIGNUP')
+    config.PASSCODE = ''
+    config.EVENT_SKU = ''
     return redirect('admin/song_signup/songrequest')
 
 

@@ -131,3 +131,4 @@ dmypy.json
 
 local_settings.py
 /static
+/db_backups

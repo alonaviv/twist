@@ -37,4 +37,5 @@ if __name__ == '__main__':
     singers_group, _ = Group.objects.get_or_create(name='singers')
     singers_group.permissions.add(Permission.objects.get(codename='view_songrequest'))
     constance.config.PASSCODE = 'dev'
+    constance.config.EVENT_SKU = 'EVENTSKU1234'
     enable_flag('CAN_SIGNUP')
