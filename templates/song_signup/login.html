@@ -17,7 +17,6 @@
                {% csrf_token %}
                 <input autocomplete="false" name="hidden" type="text" style="display:none;">
 
-
                 <div class="form-control">
                     <input type="text" name="first-name" id="first-name" placeholder="First Name" autocomplete="off" required>
                 </div>
@@ -27,10 +26,17 @@
                 <div class="form-control">
                     <input type="text" name="passcode" id="passcode" placeholder="Tonight's Secret Word" autocomplete="off" required>
                 </div>
+                <div class="form-control">
+                    <input type="text" name="order-id" id="order-id" placeholder="Order Number (from your ticket)" autocomplete="off" required>
+                </div>
                 <div class="checkboxes">
                     <div class="checkbox">
                         <input type="checkbox" name="logged-in" id="logged-in">
                         <label for="logged-in">I already logged in tonight</label>
+                    </div>
+                    <div class="checkbox">
+                        <input type="checkbox" name="is-singer" id="is-singer">
+                        <label for="is-singer">I have a singer ticket</label>
                     </div>
                     <div class="checkbox">
                         <input type="checkbox" name="no-upload" id="no-upload">

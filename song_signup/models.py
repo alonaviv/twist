@@ -6,6 +6,7 @@ from django.contrib.postgres.fields import CITextField
 from django.db.models import (
     CASCADE,
     SET_NULL,
+    PROTECT,
     BooleanField,
     DateTimeField,
     FloatField,
@@ -25,7 +26,32 @@ from song_signup.managers import (
 )
 
 SING_SKU = 'SING'
-NOSING_SKU = 'ATTN'
+ATTN_SKU = 'ATTN'
+
+
+class TicketsDepleted(Exception):
+    pass
+
+class AlreadyLoggedIn(Exception):
+    pass
+
+
+class TicketOrder(Model):
+    """
+    Represents the group of tickets of the same type within a Lineapp order
+    """
+    order_id = IntegerField()
+    event_sku = CharField(max_length=20)
+    event_name = CharField(max_length=100)
+    num_tickets = IntegerField()
+    ticket_type = CharField(max_length=20, choices=[(SING_SKU, 'Singer'), (ATTN_SKU, 'Audience')])
+    customer_name = CharField(max_length=100)
+
+    class Meta:
+        unique_together = ('order_id', 'event_sku', 'ticket_type')
+
+    def __str__(self):
+        return f"Order {self.order_id}; Type {self.ticket_type}"
 
 
 class Singer(AbstractUser):
@@ -37,6 +63,24 @@ class Singer(AbstractUser):
     cy3_position = IntegerField(blank=True, null=True)
     no_image_upload = BooleanField(default=False)
     placeholder = BooleanField(default=False)
+    ticket_order = ForeignKey(TicketOrder, related_name='singers', on_delete=PROTECT, null=True)
+
+    def save(self, *args, **kwargs):
+        # Only validate on creation:
+        if not self.pk:
+            if not self.is_superuser and self.ticket_order is None:
+                raise ValueError("Non-superusers must have a ticket_order value")
+
+            if Singer.objects.filter(first_name=self.first_name, last_name=self.last_name).exists():
+                raise AlreadyLoggedIn("The name that you're trying to login with already exists."
+                "Did you already login with us tonight? If so, check the box below.")
+
+            if self.ticket_order.singers.count() >= self.ticket_order.num_tickets:
+                ticket_type = 'singer' if self.ticket_order.ticket_type == SING_SKU else 'audience'
+                raise TicketsDepleted(f"Sorry, looks like all ticket holders for this order number already logged in. "
+                                      f"Are you sure your ticket is of type '{ticket_type}'?")
+
+        super().save(*args, **kwargs)
 
     @property
     def all_songs(self):
@@ -264,18 +308,3 @@ class SongLyrics(Model):
                 self.group_song_request.lyrics.update(default=False)
 
         super().save(*args, **kwargs)
-
-
-class TicketOrder(Model):
-    """
-    Represents the group of tickets of the same type within a Lineapp order
-    """
-    order_id = IntegerField()
-    event_sku = CharField(max_length=20)
-    event_name = CharField(max_length=100)
-    num_tickets = IntegerField()
-    ticket_type = CharField(max_length=20, choices=[(SING_SKU, 'Singer'), (NOSING_SKU, 'Audience')])
-    customer_name = CharField(max_length=100)
-
-    class Meta:
-        unique_together = ('order_id', 'event_sku', 'ticket_type')

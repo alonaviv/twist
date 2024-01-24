@@ -1,22 +1,34 @@
 import logging
 import traceback
-from openpyxl import load_workbook
+
 from constance import config
 from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import Group
 from django.core.management import call_command
-from django.db import IntegrityError, transaction
+from django.db import transaction
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
 from flags.state import enable_flag, disable_flag, flag_disabled
+from openpyxl import load_workbook
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from titlecase import titlecase
 
 from .forms import FileUploadForm
-from .models import GroupSongRequest, SongLyrics, SongRequest, Singer, SongSuggestion, TicketOrder, SING_SKU
+from .models import (
+    GroupSongRequest,
+    SongLyrics,
+    SongRequest,
+    Singer,
+    SongSuggestion,
+    TicketOrder,
+    SING_SKU,
+    ATTN_SKU,
+    TicketsDepleted,
+    AlreadyLoggedIn
+)
 from .serializers import SongSuggestionSerializer, SongRequestSerializer, SingerSerializer
 
 logger = logging.getLogger(__name__)
@@ -322,46 +334,64 @@ def login(request):
         return redirect('home')
 
     if request.method == 'POST':
-        first_name = _sanitize_string(request.POST['first-name'])
-        last_name = _sanitize_string(request.POST['last-name'])
-        passcode = _sanitize_string(request.POST['passcode'])
-        logged_in = request.POST.get('logged-in') == 'on'
-        no_image_upload = request.POST.get('no-upload') == 'on'
+        try:
+            first_name = _sanitize_string(request.POST['first-name'])
+            last_name = _sanitize_string(request.POST['last-name'])
+            passcode = _sanitize_string(request.POST['passcode'])
+            order_id = request.POST['order-id']
+            logged_in = request.POST.get('logged-in') == 'on'
+            is_singer = request.POST.get('is-singer') == 'on'
+            no_image_upload = request.POST.get('no-upload') == 'on'
 
-        if passcode.lower() != config.PASSCODE.lower():
-            return JsonResponse({
-                'error': "Wrong passcode - Shani will reveal tonight's passcode at the event"
-            }, status=400)
-
-        if logged_in:
-            try:
-                singer = Singer.objects.get(first_name=first_name, last_name=last_name)
-                singer.is_active = True
-                singer.save()
-            except Singer.DoesNotExist:
-                return JsonResponse(
-                    {'error': "The name that you logged in with previously does not match your current one"},
-                    status=400)
-
-        else:
-            try:
-                singer = Singer.objects.create_user(
-                    name_to_username(first_name, last_name),
-                    first_name=first_name,
-                    last_name=last_name,
-                    is_staff=True,
-                    no_image_upload=no_image_upload
-                )
-            except IntegrityError:
+            if passcode.lower() != config.PASSCODE.lower():
                 return JsonResponse({
-                    'error': "The name that you're trying to login with already exists.\n"
-                             "Did you already login with us tonight? If so, check the box below."
+                    'error': "Wrong passcode - Shani will reveal tonight's passcode at the event"
                 }, status=400)
 
-        group = Group.objects.get(name='singers')
-        group.user_set.add(singer)
-        auth_login(request, singer)
-        return HttpResponse()
+            if logged_in:
+                try:
+                    singer = Singer.objects.get(first_name=first_name, last_name=last_name)
+                    singer.is_active = True
+                    singer.save()
+                except Singer.DoesNotExist:
+                    return JsonResponse(
+                        {'error': "The name that you logged in with previously does not match your current one"},
+                        status=400)
+
+            else:
+                try:
+                    ticket_order = TicketOrder.objects.get(order_id=order_id,
+                                                           event_sku=config.EVENT_SKU,
+                                                           ticket_type=SING_SKU if is_singer else ATTN_SKU)
+                except (TicketOrder.DoesNotExist, ValueError):
+                    return JsonResponse({
+                        'error': "You order number does not exist. Are you sure you entered the correct one? It should be in the title of the tickets email"
+                    }, status=400)
+
+                try:
+                    singer = Singer.objects.create_user(
+                        name_to_username(first_name, last_name),
+                        first_name=first_name,
+                        last_name=last_name,
+                        is_staff=True,
+                        no_image_upload=no_image_upload,
+                        ticket_order=ticket_order
+                    )
+                except (TicketsDepleted, AlreadyLoggedIn) as e:
+                    return JsonResponse({
+                        'error': str(e)
+                    }, status=400)
+
+            group = Group.objects.get(name='singers')
+            group.user_set.add(singer)
+            auth_login(request, singer)
+            return HttpResponse()
+
+        except Exception as e:
+            logger.exception("Exception: ")
+            return JsonResponse(
+                {'error': "An unexpected error occurred (you can blame Alon..) Refreshing the page might help"},
+                status=400)
 
     return render(request, 'song_signup/login.html', context={'evening_started': evening_started})
 

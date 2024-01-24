@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.utils import timezone
 from django.urls import reverse
 from django.utils.safestring import mark_safe
+from django.utils.html import format_html
 
 from .managers import LATE_SINGER_CYCLE
 from .models import SongLyrics, SongRequest, Singer, GroupSongRequest, SongSuggestion, TicketOrder
@@ -149,8 +150,7 @@ class SongRequestAdmin(admin.ModelAdmin):
 
 @admin.register(Singer)
 class SingerAdmin(admin.ModelAdmin):
-    list_display = ['username', 'cy1_position', 'cy2_position', 'cy3_position',
-                    'date_joined', 'is_superuser', 'no_image_upload']
+    list_display = ['username', 'date_joined', 'is_superuser', 'no_image_upload', 'ticket_order']
 
 @admin.register(SongLyrics)
 class LyricsAdmin(admin.ModelAdmin):
@@ -163,4 +163,10 @@ class LyricsAdmin(admin.ModelAdmin):
 
 @admin.register(TicketOrder)
 class OrdersAdmin(admin.ModelAdmin):
-    list_display = ['order_id', 'event_name', 'event_sku', 'num_tickets', 'ticket_type', 'customer_name']
+    list_display = ['order_id', 'event_name', 'event_sku', 'num_tickets', 'ticket_type', 'customer_name', 'get_singers']
+
+    def get_singers(self, obj):
+        singers = obj.singers.all()
+        return format_html("<br>".join([f"""<a href="{reverse('admin:song_signup_singer_change', args=[singer.pk])}">{singer}</a>""" for singer in singers]))
+    get_singers.short_description = 'singers'
+
