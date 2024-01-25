@@ -7,8 +7,12 @@ WORKDIR /twist/
 
 COPY ./requirements.txt .
 
+RUN apt-get update && apt-get install -y postgresql-client # In order to use pg_dump
+RUN apt-get update && apt-get install -y nodejs npm
+RUN apt-get clean && rm -rf /var/lib/apt/lists/* # Clean up the cache to reduce layer size
+RUN npm install -g node-sass
+
 RUN pip install --no-cache-dir -r requirements.txt
 
-RUN apt-get update && apt-get install -y postgresql-client # In order to use pg_dump
-
 EXPOSE 8000
+EXPOSE 35729

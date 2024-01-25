@@ -73,13 +73,14 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'livereload',
     'django.contrib.staticfiles',
     'constance',
     'song_signup.apps.SongSignupConfig',
     'easy_select2',
     'dbbackup',
     'flags',
-    'rest_framework'
+    'rest_framework',
 ]
 
 CONSTANCE_CONFIG = {
@@ -94,6 +95,7 @@ CONSTANCE_REDIS_CONNECTION = {'host': 'redis'}  # Connect to the docker containe
 DBBACKUP_STORAGE = 'django.core.files.storage.FileSystemStorage'
 DBBACKUP_STORAGE_OPTIONS = {'location': './db_backups'}
 
+
 MIDDLEWARE = [
     'song_signup.middleware.timezone_middleware.TimezoneMiddleware',
     'django.middleware.security.SecurityMiddleware',
@@ -103,6 +105,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'livereload.middleware.LiveReloadScript',
 ]
 
 ROOT_URLCONF = 'twist.urls'

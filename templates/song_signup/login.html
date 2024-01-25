@@ -11,8 +11,16 @@
         </div>
         {% if evening_started %}
         <div id="form-messages"></div>
+        <h3>Let's get this party started!</h3>
+        <div class="toggle-container">
+            <input type="checkbox" id="ticket-type-toggle" class="toggle-checkbox">
+            <label for="ticket-type-toggle" class="toggle-label"></label>
+            <span class="toggle-text">Audience</span>
+            <span class="toggle-slider"></span>
+            <span class="toggle-text">Singer</span>
+        </div>
+
         <div id="login-form-wrapper">
-            <h3>Let's get this party started!</h3>
             <form action="" method="POST" id="login-form" autocomplete="off">
                {% csrf_token %}
                 <input autocomplete="false" name="hidden" type="text" style="display:none;">
