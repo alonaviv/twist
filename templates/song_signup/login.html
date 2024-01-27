@@ -12,12 +12,17 @@
         {% if evening_started %}
         <div id="form-messages"></div>
         <h3>Let's get this party started!</h3>
+        <h2>What ticket do you have?</h2>
         <div class="toggle-container">
             <input type="checkbox" id="ticket-type-toggle" class="toggle-checkbox">
-            <label for="ticket-type-toggle" class="toggle-label"></label>
-            <span class="toggle-text">Audience</span>
-            <span class="toggle-slider"></span>
-            <span class="toggle-text">Singer</span>
+            <label for="ticket-type-toggle" class="toggle-label">
+                <span class="toggle-text">Audience</span>
+                <span class="toggle-slider"></span>
+                <span class="toggle-text">Singer</span>
+            </label>
+        </div>
+        <div id="audience-wrapper" class="active">
+            <button class="login-btn">Come on in!</button>
         </div>
 
         <div id="login-form-wrapper">
@@ -35,7 +40,7 @@
                     <input type="text" name="passcode" id="passcode" placeholder="Tonight's Secret Word" autocomplete="off" required>
                 </div>
                 <div class="form-control">
-                    <input type="text" name="order-id" id="order-id" placeholder="Order Number (from your ticket)" autocomplete="off" required>
+                    <input type="text" name="order-id" id="order-id" placeholder="Order Number (on your ticket)" autocomplete="off" required>
                 </div>
                 <div class="checkboxes">
                     <div class="checkbox">
@@ -43,15 +48,11 @@
                         <label for="logged-in">I already logged in tonight</label>
                     </div>
                     <div class="checkbox">
-                        <input type="checkbox" name="is-singer" id="is-singer">
-                        <label for="is-singer">I have a singer ticket</label>
-                    </div>
-                    <div class="checkbox">
                         <input type="checkbox" name="no-upload" id="no-upload">
                         <label for="no-upload">Please don't upload images of me</label>
                     </div>
                 </div>
-                <input type="submit" value="Let me in!" class="btn">
+                <input type="submit" value="Come on in!" class="login-btn">
             </form>
         </div>
         {% else %}

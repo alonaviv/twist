@@ -1,4 +1,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Anton&family=Oleo+Script+Swash+Caps&family=Roboto:ital,wght@0,300;0,400;0,500;1,300&display=swap");
+:root {
+  --slider-width: 50%; }
+
 .container {
   width: 100vw;
   padding: 0 20px;
@@ -126,6 +129,44 @@
         font-size: 20px; }
   .checkbox label {
     font-size: inherit; }
+
+.toggle-container {
+  margin: 20px auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80vw;
+  height: 10vh;
+  font-family: Arial, Helvetica, sans-serif; }
+  .toggle-container .toggle-checkbox {
+    display: none; }
+  .toggle-container .toggle-label {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    background-color: #00b3c5;
+    border-radius: 34px;
+    padding: 0 20px;
+    position: relative; }
+    .toggle-container .toggle-label .toggle-text {
+      margin: auto;
+      width: 50%;
+      color: black;
+      font-size: 25px;
+      z-index: 3; }
+    .toggle-container .toggle-label .toggle-slider {
+      position: absolute;
+      height: 100%;
+      left: 0;
+      width: var(--slider-width);
+      background-color: #00C575;
+      border-radius: 34px;
+      opacity: 0.9;
+      z-index: 2;
+      border: 1px black solid;
+      transition: left 0.3s ease; }
 
 nav {
   position: relative; }
@@ -359,10 +400,19 @@ nav {
       margin-bottom: 30px;
       font-size: 20px;
       font-weight: 900;
-      letter-spacing: 1px;
-      color: orange; }
+      letter-spacing: 1px; }
     #login-hero #login-wrapper #login-form-wrapper {
       padding: 10px 40px; }
+      #login-hero #login-wrapper #login-form-wrapper #login-form {
+        opacity: 0;
+        transform: translateY(-40px);
+        visibility: hidden;
+        display: none;
+        transition: opacity 0.5s ease, transform 0.5s ease; }
+        #login-hero #login-wrapper #login-form-wrapper #login-form.active {
+          opacity: 1;
+          visibility: visible;
+          transform: translateY(0); }
       #login-hero #login-wrapper #login-form-wrapper form {
         width: 100%; }
         #login-hero #login-wrapper #login-form-wrapper form label {
@@ -389,18 +439,30 @@ nav {
     box-shadow: 0px 0px 15px 3px #ffff3d; }
   100% {
     box-shadow: 0px 0px 15px 1px #ffff3d; } }
-        #login-hero #login-wrapper #login-form-wrapper form .btn[type="submit"] {
-          margin: 20px 0;
-          width: 90%;
-          height: 40px;
-          background-color: #555;
-          color: #fff;
-          font-size: 18px;
-          animation-name: pulsate;
-          animation-duration: 1.5s;
-          animation-iteration-count: infinite;
-          animation-fill-mode: backwards;
-          animation-timing-function: ease-in; }
+
+.login-btn {
+  margin: 20px 0;
+  width: 90%;
+  height: 40px;
+  background-color: #555;
+  color: #fff;
+  font-size: 18px;
+  animation-name: pulsate;
+  animation-duration: 1.5s;
+  animation-iteration-count: infinite;
+  animation-fill-mode: backwards;
+  animation-timing-function: ease-in; }
+
+#audience-wrapper {
+  padding: 10px 40px;
+  opacity: 0;
+  visibility: hidden;
+  max-height: 0;
+  transition: opacity 0.5s ease; }
+  #audience-wrapper.active {
+    opacity: 1;
+    visibility: visible;
+    max-height: 500px; }
 
 #manage-songs-wrapper {
   height: 100%;
