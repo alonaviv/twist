@@ -15,7 +15,9 @@
     </head>
 
     <body>
+        {% with is_singer=request.user.is_authenticated %}
         {% block content %} {% endblock %}
+        {% endwith %}
     </body>
 
 </html>

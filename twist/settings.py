@@ -27,6 +27,9 @@ SECRET_KEY = '!rnw+)o%3f(r%!!qt0-y!@ao8dt!7ex5o064cz$f@&)g1c$o@y'
 DEBUG = True
 TEMPLATE_DEBUG = True
 
+SESSION_COOKIE_AGE = 86400  # 24 hours
+
+
 INTERNAL_IPS = [
     "127.0.0.1",
 ]

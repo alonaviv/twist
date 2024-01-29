@@ -1,10 +1,9 @@
 import logging
 import traceback
-
+from functools import wraps
 from constance import config
 from django.contrib.auth import login as auth_login, logout as auth_logout
-from django.contrib.auth.decorators import login_required, user_passes_test
-from django.contrib.auth.models import Group
+from django.contrib.auth.decorators import user_passes_test
 from django.core.management import call_command
 from django.db import transaction
 from django.http import JsonResponse, HttpResponse
@@ -25,13 +24,26 @@ from .models import (
     SongSuggestion,
     TicketOrder,
     SING_SKU,
-    ATTN_SKU,
     TicketsDepleted,
     AlreadyLoggedIn
 )
 from .serializers import SongSuggestionSerializer, SongRequestSerializer, SingerSerializer
 
 logger = logging.getLogger(__name__)
+
+AUDIENCE_SESSION = 'audience-logged-in'
+
+
+def bwt_login_required(login_url):
+    def decorator(view_func):
+        @wraps(view_func)
+        def wrapper(request, *args, **kwargs):
+            if not(request.user.is_authenticated or request.session.get(AUDIENCE_SESSION)):
+                return redirect(login_url)
+
+            return view_func(request, *args, **kwargs)
+        return wrapper
+    return decorator
 
 
 def _is_superuser(user):
@@ -42,7 +54,7 @@ def name_to_username(first_name, last_name):
     return f'{first_name.lower()}_{last_name.lower()}'
 
 
-@login_required(login_url='login')
+@bwt_login_required('login')
 def home(request, new_song=None, is_group_song=False):
     return render(request, 'song_signup/home.html', {
         "new_song": new_song,
@@ -50,10 +62,7 @@ def home(request, new_song=None, is_group_song=False):
     })
 
 
-def dashboard_data(request):
-    singer = request.user
-
-    user_next_song = singer.next_song
+def spotlight_data(request):
     current_song = SongRequest.objects.current_song()
     next_song = SongRequest.objects.next_song()
 
@@ -61,8 +70,13 @@ def dashboard_data(request):
         {
             "current_song": current_song and current_song.basic_data,
             "next_song": next_song and next_song.basic_data,
-            "user_next_song": user_next_song and user_next_song.basic_data,
         })
+
+def dashboard_data(request):
+    singer = request.user
+    user_next_song = singer.next_song
+
+    return JsonResponse({"user_next_song": user_next_song and user_next_song.basic_data})
 
 
 def _sanitize_string(name, title=False):
@@ -156,17 +170,17 @@ def rename_song(request):
         return Response({'error': f"Song with ID {song_id} does not exist"}, status=status.HTTP_400_BAD_REQUEST)
 
 
-@login_required(login_url='login')
+@bwt_login_required('login')
 def manage_songs(request):
     return render(request, 'song_signup/manage_songs.html')
 
 
-@login_required(login_url='login')
+@bwt_login_required('login')
 def view_suggestions(request):
     return render(request, 'song_signup/view_suggestions.html')
 
 
-@login_required(login_url='login')
+@bwt_login_required('login')
 def add_song(request):
     class HostSinger:
         def __init__(self, user_obj):
@@ -214,7 +228,7 @@ def _sort_lyrics(song: SongRequest | GroupSongRequest):
     return default + exact_matches + left_matches + right_matches + lyrics
 
 
-@login_required(login_url='login')
+@bwt_login_required('login')
 def lyrics(request, song_pk):
     try:
         song_request = SongRequest.objects.get(pk=song_pk)
@@ -225,7 +239,7 @@ def lyrics(request, song_pk):
     return render(request, 'song_signup/lyrics.html', {"lyrics": lyrics and lyrics[0], "song": song_request})
 
 
-@login_required(login_url='login')
+@bwt_login_required('login')
 def group_lyrics(request, song_pk):
     try:
         song_request = GroupSongRequest.objects.get(pk=song_pk)
@@ -236,7 +250,7 @@ def group_lyrics(request, song_pk):
     return render(request, 'song_signup/lyrics.html', {"lyrics": lyrics and lyrics[0], "group_song": song_request})
 
 
-@login_required(login_url='login')
+@bwt_login_required('login')
 def lyrics_by_id(request, lyrics_id):
     try:
         lyrics = SongLyrics.objects.get(id=lyrics_id)
@@ -250,7 +264,7 @@ def lyrics_by_id(request, lyrics_id):
     })
 
 
-@login_required(login_url='login')
+@bwt_login_required('login')
 def alternative_lyrics(request, song_pk):
     try:
         song_request = SongRequest.objects.get(pk=song_pk)
@@ -261,7 +275,7 @@ def alternative_lyrics(request, song_pk):
     return render(request, 'song_signup/alternative_lyrics.html', {"lyrics": lyrics, "song": song_request})
 
 
-@login_required(login_url='login')
+@bwt_login_required('login')
 def alternative_group_lyrics(request, song_pk):
     try:
         song_request = GroupSongRequest.objects.get(pk=song_pk)
@@ -286,7 +300,7 @@ def default_lyrics(request):
     return Response({}, status=status.HTTP_200_OK)
 
 
-@login_required(login_url='login')
+@bwt_login_required('login')
 def suggest_song(request):
     current_user = request.user
 
@@ -311,6 +325,10 @@ def suggest_song(request):
 
 def logout(request):
     user = request.user
+    if user.is_anonymous:
+        del request.session[AUDIENCE_SESSION]
+        return redirect('login')
+
     if not user.is_superuser:
         user.is_active = False
     user.save()
@@ -330,69 +348,74 @@ def tip_us(request):
 def login(request):
     # This is the root endpoint. If already logged in, go straight to home.
     evening_started = bool(config.PASSCODE) and bool(config.EVENT_SKU)
-    if request.user.is_authenticated and not request.user.is_anonymous and evening_started:
+    if evening_started and (request.user.is_authenticated or request.session.get(AUDIENCE_SESSION)):
         return redirect('home')
 
     if request.method == 'POST':
         try:
-            first_name = _sanitize_string(request.POST['first-name'])
-            last_name = _sanitize_string(request.POST['last-name'])
-            passcode = _sanitize_string(request.POST['passcode'])
-            order_id = request.POST['order-id']
-            logged_in = request.POST.get('logged-in') == 'on'
-            is_singer = request.POST.get('is-singer') == 'on'
-            no_image_upload = request.POST.get('no-upload') == 'on'
+            ticket_type = request.POST['ticket-type']
 
-            if passcode.lower() != config.PASSCODE.lower():
-                return JsonResponse({
-                    'error': "Wrong passcode - Shani will reveal tonight's passcode at the event"
-                }, status=400)
+            if ticket_type == 'audience':
+                request.session[AUDIENCE_SESSION] = True
+                return redirect('home')
 
-            if logged_in:
-                try:
-                    singer = Singer.objects.get(first_name=first_name, last_name=last_name)
-                    singer.is_active = True
-                    singer.save()
-                except Singer.DoesNotExist:
-                    return JsonResponse(
-                        {'error': "The name that you logged in with previously does not match your current one"},
-                        status=400)
+            elif ticket_type == 'singer':
+                first_name = _sanitize_string(request.POST['first-name'])
+                last_name = _sanitize_string(request.POST['last-name'])
+                passcode = _sanitize_string(request.POST['passcode'])
+                order_id = request.POST['order-id']
+                logged_in = request.POST.get('logged-in') == 'on'
+                no_image_upload = request.POST.get('no-upload') == 'on'
 
+                if passcode.lower() != config.PASSCODE.lower():
+                    return JsonResponse({
+                        'error': "Wrong passcode - Shani will reveal tonight's passcode at the event"
+                    }, status=400)
+
+                if logged_in:
+                    try:
+                        singer = Singer.objects.get(first_name=first_name, last_name=last_name)
+                        singer.is_active = True
+                        singer.save()
+                    except Singer.DoesNotExist:
+                        return JsonResponse(
+                            {'error': "The name that you logged in with previously does not match your current one"},
+                            status=400)
+
+                else:
+                    try:
+                        ticket_order = TicketOrder.objects.get(order_id=order_id,
+                                                               event_sku=config.EVENT_SKU,
+                                                               ticket_type=SING_SKU)
+                    except (TicketOrder.DoesNotExist, ValueError):
+                        return JsonResponse({
+                            'error': "Your order number is incorrect. It should be in the title of the tickets email"
+                        }, status=400)
+
+                    try:
+                        singer = Singer.objects.create_user(
+                            name_to_username(first_name, last_name),
+                            first_name=first_name,
+                            last_name=last_name,
+                            is_staff=True,
+                            no_image_upload=no_image_upload,
+                            ticket_order=ticket_order
+                        )
+                    except (TicketsDepleted, AlreadyLoggedIn) as e:
+                        return JsonResponse({
+                            'error': str(e)
+                        }, status=400)
+
+                auth_login(request, singer)
+                return HttpResponse('', status=200)
             else:
-                try:
-                    ticket_order = TicketOrder.objects.get(order_id=order_id,
-                                                           event_sku=config.EVENT_SKU,
-                                                           ticket_type=SING_SKU if is_singer else ATTN_SKU)
-                except (TicketOrder.DoesNotExist, ValueError):
-                    return JsonResponse({
-                        'error': "You order number does not exist. Are you sure you entered the correct one? It should be in the title of the tickets email"
-                    }, status=400)
-
-                try:
-                    singer = Singer.objects.create_user(
-                        name_to_username(first_name, last_name),
-                        first_name=first_name,
-                        last_name=last_name,
-                        is_staff=True,
-                        no_image_upload=no_image_upload,
-                        ticket_order=ticket_order
-                    )
-                except (TicketsDepleted, AlreadyLoggedIn) as e:
-                    return JsonResponse({
-                        'error': str(e)
-                    }, status=400)
-
-            group = Group.objects.get(name='singers')
-            group.user_set.add(singer)
-            auth_login(request, singer)
-            return HttpResponse()
+                raise ValueError("Invalid ticket type")
 
         except Exception as e:
             logger.exception("Exception: ")
             return JsonResponse(
                 {'error': "An unexpected error occurred (you can blame Alon..) Refreshing the page might help"},
                 status=400)
-
     return render(request, 'song_signup/login.html', context={'evening_started': evening_started})
 
 

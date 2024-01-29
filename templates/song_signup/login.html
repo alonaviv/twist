@@ -21,14 +21,20 @@
                 <span class="toggle-text">Singer</span>
             </label>
         </div>
-        <div id="audience-wrapper" class="active">
-            <button class="login-btn">Come on in!</button>
+         <div id="audience-wrapper" class="active">
+            <form action="" method="POST" id="audience-login-form" autocomplete="off">
+                {% csrf_token %}
+                <input type="hidden" name="ticket-type" value="audience">
+                <input type="submit" value="Come on in!" class="login-btn">
+            </form>
         </div>
 
         <div id="login-form-wrapper">
-            <form action="" method="POST" id="login-form" autocomplete="off">
+            <form action="" method="POST" id="singer-login-form" autocomplete="off">
                {% csrf_token %}
                 <input autocomplete="false" name="hidden" type="text" style="display:none;">
+
+                <input type="hidden" name="ticket-type" value="singer">
 
                 <div class="form-control">
                     <input type="text" name="first-name" id="first-name" placeholder="First Name" autocomplete="off" required>
@@ -79,7 +85,6 @@
         {% endif %}
     </div>
 </div>
-
 
 <script src="{% static "js/login.js" %}"></script>
 {% endblock %}

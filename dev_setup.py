@@ -10,6 +10,7 @@ from django.contrib.auth import get_user_model
 from flags.state import enable_flag
 
 from song_signup.views import name_to_username
+from song_signup.models import TicketOrder
 from django.contrib.auth.models import Group, Permission
 
 ALON_USER = ('Alon', 'Aviv', os.environ.get('ALON_PASSWORD'))
@@ -39,3 +40,6 @@ if __name__ == '__main__':
     constance.config.PASSCODE = 'dev'
     constance.config.EVENT_SKU = 'EVENTSKU1234'
     enable_flag('CAN_SIGNUP')
+    TicketOrder.objects.create(order_id=123456, event_sku='EVENTSKU1234', event_name='dev event',
+                               num_tickets=1000, ticket_type='SING', customer_name="Alon Aviv")
+

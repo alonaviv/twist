@@ -5,25 +5,6 @@ async function loadWait(promiseCallback) {
   document.body.style.display = "block";
 }
 
-// Open up dashboard tips
-const tips = document.getElementById("tips");
-const dashboardWrapper = document.getElementById("dashboard-wrapper");
-expandTips = false;
-const originalHeight = window.getComputedStyle(dashboardWrapper).height;
-
-document.getElementById("expand-tips").addEventListener("click", toggleTips);
-
-function toggleTips() {
-  if (!expandTips) {
-    tips.style.transform = "scaleY(1)";
-    dashboardWrapper.style.height = "75vh";
-    expandTips = true;
-  } else {
-    tips.style.transform = "scaleY(0)";
-    dashboardWrapper.style.height = originalHeight;
-    expandTips = false;
-  }
-}
 
 // Fetch and populate data in the home page
 const currentSinger = document.querySelector(".headliner").firstElementChild;
@@ -35,16 +16,16 @@ const upNextElem = document.querySelector(".up-next");
 const dashboardElem = document.getElementById("dashboard");
 const noSongElem = document.getElementById("no-song");
 
-setInterval(populateNowSinging, 1000);
-window.addEventListener("DOMContentLoaded", loadWait(populateNowSinging));
+setInterval(populateSpotlight, 1000);
+window.addEventListener("DOMContentLoaded", loadWait(populateSpotlight));
 
-function populateNowSinging() {
-  return fetch("/dashboard_data")
+
+function populateSpotlight() {
+  return fetch("/spotlight_data")
     .then((response) => response.json())
     .then((data) => {
       const currentSongData = data.current_song;
       const nextSongData = data.next_song;
-      const userNextSong = data.user_next_song;
 
       if (currentSongData) {
         currentSinger.innerHTML = currentSongData.singer;
@@ -63,6 +44,14 @@ function populateNowSinging() {
       } else {
         upNextElem.style.visibility = "hidden";
       }
+    });
+}
+
+function populateDashboard() {
+  return fetch("/dashboard_data")
+    .then((response) => response.json())
+    .then((data) => {
+      const userNextSong = data.user_next_song;
 
       if (userNextSong) {
         dashboardElem.classList.remove("hidden");
@@ -83,6 +72,31 @@ function populateNowSinging() {
         noSongElem.classList.remove("hidden");
       }
     });
+}
+
+if (isSinger) {
+    setInterval(populateDashboard, 1000);
+    window.addEventListener("DOMContentLoaded", loadWait(populateDashboard));
+
+    // Open up dashboard tips
+    const tips = document.getElementById("tips");
+    const dashboardWrapper = document.getElementById("dashboard-wrapper");
+    let expandTips = false;
+    const originalHeight = window.getComputedStyle(dashboardWrapper).height;
+
+    document.getElementById("expand-tips").addEventListener("click", toggleTips);
+
+    function toggleTips() {
+        if (!expandTips) {
+            tips.style.transform = "scaleY(1)";
+            dashboardWrapper.style.height = "75vh";
+            expandTips = true;
+        } else {
+            tips.style.transform = "scaleY(0)";
+            dashboardWrapper.style.height = originalHeight;
+            expandTips = false;
+        }
+    }
 }
 
 // If new song added banner is on page - remove it after a few seconds

@@ -43,6 +43,7 @@
         </div>
         {% endif %}
     {% endif %}
+    {% if is_singer %}
     <div id="dashboard-wrapper" class="dark-card">
         <div id="dashboard">
             <div>
@@ -73,6 +74,7 @@
             </ul>
         </div>
     </div>
+    {% endif %}
     <a href="https://links.broadwaywithatwist.xyz/whatsapp?utm_source=home-page&utm_campaign=webapp&utm_content=whatsapp-banner">
         <div id="whatsapp" class="flex-card light-card">
             <div class="row">
@@ -125,6 +127,7 @@
     </footer>
 </main>
 
+<script type="text/javascript">const isSinger = {{ is_singer|yesno:"true,false" }};</script>
 <script src="{% static "js/home.js" %}"></script>
 <script src="{% static "js/navbar.js" %}"></script>
 

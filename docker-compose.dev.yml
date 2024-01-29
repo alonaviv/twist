@@ -49,7 +49,7 @@ services:
     build:
       context: .
       dockerfile: docker/dev/Dockerfile.django
-    command: sh -c "./dev_setup.py && npm run sass & ./manage.py livereload --host=0.0.0.0 & ./manage.py runserver 0.0.0.0:8000 && tail -f /dev/null" # Keep container running
+    command: sh -c "./dev_setup.py && npm run sass & ./manage.py livereload --host=0.0.0.0 && tail -f /dev/null" # Keep container running
     ports:
       - "8000:8000"
       - "35729:35729"

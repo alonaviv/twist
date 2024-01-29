@@ -117,7 +117,7 @@
     #login-form-wrapper {
       padding: 10px 40px;
 
-      #login-form{
+      #singer-login-form{
         opacity: 0;
         transform: translateY(-40px);
         visibility: hidden;
@@ -188,6 +188,14 @@
     animation-iteration-count: infinite;
     animation-fill-mode: backwards;
     animation-timing-function: ease-in;
+
+    &:active{
+        box-shadow: none;
+        transform: none;
+        outline: none;
+        border-color: transparent;
+    }
+
 }
 
 #audience-wrapper{ 
