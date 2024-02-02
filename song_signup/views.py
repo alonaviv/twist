@@ -301,6 +301,11 @@ def default_lyrics(request):
 
 
 @bwt_login_required('login')
+def lineup(request):
+    return HttpResponse("<h1>Lineup Page</h1>")
+
+
+@bwt_login_required('login')
 def suggest_song(request):
     current_user = request.user
 

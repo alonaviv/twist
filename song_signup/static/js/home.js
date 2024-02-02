@@ -33,7 +33,7 @@ function populateSpotlight() {
         document.getElementById("current-song-lyrics").href = "/lyrics/" + currentSongData.id;
       } else {
         currentSinger.innerHTML = "No One Yet";
-        currentSong.innerHTML = "We're waiting for you! Pick a Song!";
+        currentSong.innerHTML = "We're waiting the first brave soul!";
       }
 
       if (nextSongData) {

@@ -12,10 +12,12 @@
                     <li {% if current == 'home' %} class="hidden" {% endif %}>
                         <a href="{% url 'home' %}">Home</a>
                     </li>
+                    {% if is_singer %}
                     <li {% if current == 'manage-songs' %} class="hidden" {% endif %}>
                         <a href="{% url 'manage_songs' %}">Manage Songs</a>
                     </li>
-                    <li><a href="/admin/song_signup/songrequest">Lineup</a></li>
+                    {% endif %}
+                    <li><a href="{% url 'lineup' %}">Lineup</a></li>
                     <li {% if current == 'suggest-song' %} class="hidden" {% endif %}>
                         <a href="{% url 'suggest_song' %}">Suggest a Song</a>
                     </li>

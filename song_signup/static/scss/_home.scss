@@ -1,213 +1,210 @@
 #now-singing-wrapper {
-  background: url("../img/main/mic.jpeg") center center/cover;
-  height: $now-singing-height;
-  width: 100%;
-  position: relative;
-
-  &::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 100%;
+    background: url("../img/main/mic.jpeg") center center/cover;
+    height: $half-page;
     width: 100%;
-    background: rgba(0, 0, 0, 0.6);
-    z-index: 1;
-    text-align: center;
-  }
+    position: relative;
 
-  #now-singing {
-    z-index: 2;
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    padding: 3% 0;
-
-    .container {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-
-      h2 {
-        display: block;
+    &::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        z-index: 1;
         text-align: center;
-        font-size: 36px;
-        font-weight: 300;
-        color: #fff;
-      }
-
-      .headliner {
-        text-align: center;
-        font-size: 24px;
-        font-weight: 500;
-        color: $third-color;
-      }
     }
 
-    .current-song {
-      display: block;
-      text-align: center;
-      line-height: 1;
-      margin-top: 2%;
-      margin-bottom: 5%;
-      font-weight: 200;
-      font-size: 16px;
-      color: $third-color;
-    }
+    #now-singing {
+        z-index: 2;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        padding: 3% 0;
 
-    .up-next {
-      display: block;
-      margin-top: 20%;
-      font-size: 16px;
-      font-weight: 500;
-      color: #fff;
-      text-align: center;
+        .container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+
+            h2 {
+                display: block;
+                text-align: center;
+                font-size: 36px;
+                font-weight: 300;
+                color: #fff;
+            }
+
+            .headliner {
+                text-align: center;
+                font-size: 24px;
+                font-weight: 500;
+                color: $third-color;
+            }
+        }
+
+        .current-song {
+            display: block;
+            text-align: center;
+            line-height: 1;
+            margin-top: 2%;
+            margin-bottom: 5%;
+            font-weight: 200;
+            font-size: 16px;
+            color: $third-color;
+        }
+
+        .up-next {
+            display: block;
+            margin-top: 20%;
+            font-size: 16px;
+            font-weight: 500;
+            color: #fff;
+            text-align: center;
+        }
     }
-  }
 }
 
 #dashboard-wrapper {
-  height: $dashboard-height;
-  transition: all 0.3s ease;
-  color: $primary-color;
+    height: $quarter-page;
+    transition: all 0.3s ease;
+    color: $primary-color;
 
-  #dashboard {
-    padding: 5% 5%;
-    width: 100%;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-around;
+    #home-dashboard {
+        padding: 5% 5%;
+        width: 100%;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
 
-    #user-next-song-name{
-      margin-top: 1%;
-      font-weight: 500;
-      font-size: 18px;
+        #user-next-song-name {
+            margin-top: 1%;
+            font-weight: 500;
+            font-size: 18px;
+        }
+
+        div:last-child {
+            padding-top: 5%;
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+        }
+    }
+    #no-song {
+        padding: 5% 5%;
+        width: 100%;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+
+        div:last-child {
+            padding-top: 3%;
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
     }
 
-    div:last-child {
-      padding-top: 5%;
-      display: flex;
-      flex-direction: row;
-      justify-content: space-between;
-      align-items: center;
+    #home-tips {
+        margin-top: 1%;
+        transform: scaleY(0);
+        height: 0;
+        transition: inherit;
+        ul {
+            margin: 0 10% 10% 10%;
+            li {
+                margin-top: 5%;
+            }
+            li:last-child {
+                margin-bottom: 5%;
+            }
+        }
     }
-  }
-  #no-song {
-    padding: 5% 5%;
-    width: 100%;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-
-    div:last-child {
-      padding-top: 3%;
-      display: flex;
-      flex-direction: row-reverse;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 10px;
-      margin-bottom: 10px;
-    }
-  }
-
-  #tips {
-    margin-top: 1%;
-    transform: scaleY(0);
-    height: 0;
-    transition: inherit;
-    ul {
-      margin: 0 10% 10% 10%;
-      li{
-          margin-top: 5%;
-
-      }
-      li:last-child {
-        margin-bottom: 5%;
-      }
-    }
-  }
 }
 
-#whatsapp {
-  height: $wa-banner-height;
-  position: relative;
-  
+.home-card{
+    position: relative;
+    height: $eighth-page;
 
-  .larger {
-    width: 70%;
-  }
-  .smaller {
-    width: 30%;
-  }
-
-  i {
-    color: #f4f4f4;
-  }
-  
-  .column-1 {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-  }
-
-  .column-2 {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-
-    #no-spam {
-      position: absolute;
-      left: 72%;
-      top: 25%;
-      z-index: 10;
-      font-size: 13px;
-      transform: rotate(-47deg);
-      font-weight: 500;
-      color: #fff;
+    .larger {
+        width: 70%;
     }
-  }
-}
-
-#tip-us {
-  height: $paybox-banner-height;
-  .larger {
-    width: 70%;
-  }
-  .smaller {
-    width: 30%;
-  }
-
-  .column-1 {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-  }
-
-  .column-2 {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
+    .smaller {
+        width: 30%;
+    }
+    .column-1 {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    .column-2 {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+    }
 
     img {
-      object-fit: cover;
-      height: auto;
-      width: 65%;
+        object-fit: contain;
+        height: 100%;
+        width: 100%;
     }
-  }
+}
+
+#home-whatsapp {
+    i {
+        color: #f4f4f4;
+    }
+
+    #no-spam {
+        position: absolute;
+        left: 72%;
+        top: 25%;
+        z-index: 10;
+        font-size: 13px;
+        transform: rotate(-47deg);
+        font-weight: 500;
+        color: #fff;
+    }
+}
+
+#home-lineup {
+    &.audience {
+        height: $quarter-page;
+    }
+    img {
+        object-fit: contain;
+        object-position: right;
+        height: 100%;
+        width: 100%;
+    }
+}
+
+#home-suggest-song {
+    .column-2{
+        // padding: 10px 0px 10px 10px;
+    }
+    img {
+        object-position: right;
+    }
 }
 
 #song-added {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  padding: 10px 0;
-  .song-name {
-    font-weight: 500;
-  }
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 10px 0;
+    .song-name {
+        font-weight: 500;
+    }
 }

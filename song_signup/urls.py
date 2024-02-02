@@ -34,6 +34,7 @@ urlpatterns = [
     path('disable_signup', views.disable_signup, name='disable_signup'),
     path('signup_disabled', views.signup_disabled, name='signup_disabled'),
     path('recalculate_priorities', views.recalculate_priorities, name='recalculate_priorities'),
-    path('upload_lineapp_orders', views.upload_lineapp_orders, name='upload_lineapp_orders')
+    path('upload_lineapp_orders', views.upload_lineapp_orders, name='upload_lineapp_orders'),
+    path('lineup', views.lineup, name='lineup'),
 ]
 

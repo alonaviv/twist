@@ -64,7 +64,7 @@
                 <a href="{% url 'add_song' %}" class="btn" id="manage-songs-btn">I want to sing!</a>
             </div>
         </div>
-        <div id="tips" class="expand">
+        <div id="home-tips" class="expand">
             <ul>
                 <li>Look at our pianist as the songs starts - he'll help you come in correctly</li>
                 <li>If you want people to hear you - hold the mic <strong>very</strong> close to your mouth</li>
@@ -75,13 +75,53 @@
         </div>
     </div>
     {% endif %}
-    <a href="https://links.broadwaywithatwist.xyz/whatsapp?utm_source=home-page&utm_campaign=webapp&utm_content=whatsapp-banner">
-        <div id="whatsapp" class="flex-card light-card">
+    <a href="{% url 'lineup' %}">
+        <div id="home-lineup" class="flex-card home-card {% if is_singer %} secondary-card{% else %}dark-card audience{% endif %}">
             <div class="row">
                 <div class="column larger">
                     <div class="column-1">
-                        <h3>When's next time??</h3>
-                        <p>Stay informed in our broadcast</p>
+                        <h3>Check out the lineup</h3>
+                        <p>What's in store for us tonight?</p>
+                    </div>
+                </div>
+                <div class="column smaller">
+                    <div class="column-2">
+                        {% if is_singer %} <!-- Blue background -->
+                        <img src="{% static 'img/main/lineup-black.png' %}" alt="">
+                        {% else %} <!-- Dark background -->
+                        <img src="{% static 'img/main/lineup-green.png' %}" alt="">
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </a>
+    {% if not is_singer %}
+    <a href="{% url 'suggest_song' %}">
+        <div id="home-suggest-song" class="flex-card secondary-card home-card {% if not is_singer %}audience{% endif %}">
+            <div class="row">
+                <div class="column larger">
+                    <div class="column-1">
+                        <h3>Suggest a song</h3>
+                        <p>Have an idea for a group song?</p>
+                    </div>
+                </div>
+                <div class="column smaller">
+                    <div class="column-2">
+                        <img src="{% static 'img/main/suggest-song-black.png' %}" alt="">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </a>
+    {% endif %}
+    <a href="https://links.broadwaywithatwist.xyz/whatsapp?utm_source=home-page&utm_campaign=webapp&utm_content=whatsapp-banner">
+        <div id="home-whatsapp" class="flex-card light-card home-card">
+            <div class="row">
+                <div class="column larger">
+                    <div class="column-1">
+                        <h3>When's the next time??</h3>
+                        <p>Join our silent group!</p>
                     </div>
                 </div>
                 <div class="column smaller">
@@ -94,26 +134,10 @@
             </div>
         </div>
     </a>
-    <a href="{% url 'tip_us' %}">
-        <div id="tip-us" class="flex-card secondary-card">
-            <div class="row">
-                <div class="column larger">
-                    <div class="column-1">
-                        <h3>Tip and make us smile</h3>
-                    </div>
-                </div>
-                <div class="column smaller">
-                    <div class="column-2">
-                        <img src="{% static 'img/main/tip-icon-outline.png' %}" alt="">
-                    </div>
-                </div>
-            </div>
-        </div>
-    </a>
     <footer>
         <div class="container dark-card">
             <div id="copywrite-wrapper">
-                <p>Copyright &copy; 2023 - Broadway With a Twist</p>
+                <p>Copyright &copy; 2024 - Broadway With a Twist</p>
             </div>
         <div id="footer-links">
             <a href="https://tinyurl.com/webapp-footer-icon-facebook"><i

@@ -616,18 +616,18 @@ nav {
   height: 22vh;
   transition: all 0.3s ease;
   color: #00C575; }
-  #dashboard-wrapper #dashboard {
+  #dashboard-wrapper #home-dashboard {
     padding: 5% 5%;
     width: 100%;
     overflow: hidden;
     display: flex;
     flex-direction: column;
     justify-content: space-around; }
-    #dashboard-wrapper #dashboard #user-next-song-name {
+    #dashboard-wrapper #home-dashboard #user-next-song-name {
       margin-top: 1%;
       font-weight: 500;
       font-size: 18px; }
-    #dashboard-wrapper #dashboard div:last-child {
+    #dashboard-wrapper #home-dashboard div:last-child {
       padding-top: 5%;
       display: flex;
       flex-direction: row;
@@ -648,63 +648,62 @@ nav {
       align-items: center;
       margin-top: 10px;
       margin-bottom: 10px; }
-  #dashboard-wrapper #tips {
+  #dashboard-wrapper #home-tips {
     margin-top: 1%;
     transform: scaleY(0);
     height: 0;
     transition: inherit; }
-    #dashboard-wrapper #tips ul {
+    #dashboard-wrapper #home-tips ul {
       margin: 0 10% 10% 10%; }
-      #dashboard-wrapper #tips ul li {
+      #dashboard-wrapper #home-tips ul li {
         margin-top: 5%; }
-      #dashboard-wrapper #tips ul li:last-child {
+      #dashboard-wrapper #home-tips ul li:last-child {
         margin-bottom: 5%; }
 
-#whatsapp {
-  height: 11vh;
-  position: relative; }
-  #whatsapp .larger {
+.home-card {
+  position: relative;
+  height: 11vh; }
+  .home-card .larger {
     width: 70%; }
-  #whatsapp .smaller {
+  .home-card .smaller {
     width: 30%; }
-  #whatsapp i {
-    color: #f4f4f4; }
-  #whatsapp .column-1 {
+  .home-card .column-1 {
     display: flex;
     flex-direction: column;
     justify-content: center; }
-  #whatsapp .column-2 {
+  .home-card .column-2 {
     display: flex;
     justify-content: flex-end;
     align-items: center; }
-    #whatsapp .column-2 #no-spam {
-      position: absolute;
-      left: 72%;
-      top: 25%;
-      z-index: 10;
-      font-size: 13px;
-      transform: rotate(-47deg);
-      font-weight: 500;
-      color: #fff; }
+  .home-card img {
+    object-fit: contain;
+    height: 100%;
+    width: 100%; }
 
-#tip-us {
-  height: 11vh; }
-  #tip-us .larger {
-    width: 70%; }
-  #tip-us .smaller {
-    width: 30%; }
-  #tip-us .column-1 {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center; }
-  #tip-us .column-2 {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center; }
-    #tip-us .column-2 img {
-      object-fit: cover;
-      height: auto;
-      width: 65%; }
+#home-whatsapp i {
+  color: #f4f4f4; }
+
+#home-whatsapp #no-spam {
+  position: absolute;
+  left: 72%;
+  top: 25%;
+  z-index: 10;
+  font-size: 13px;
+  transform: rotate(-47deg);
+  font-weight: 500;
+  color: #fff; }
+
+#home-lineup.audience {
+  height: 22vh; }
+
+#home-lineup img {
+  object-fit: contain;
+  object-position: right;
+  height: 100%;
+  width: 100%; }
+
+#home-suggest-song img {
+  object-position: right; }
 
 #song-added {
   display: flex;

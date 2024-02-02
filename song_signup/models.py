@@ -67,9 +67,9 @@ class Singer(AbstractUser):
 
     def save(self, *args, **kwargs):
         # Only validate on creation:
-        if not self.pk:
-            if not self.is_superuser and self.ticket_order is None:
-                raise ValueError("Non-superusers must have a ticket_order value")
+        if not self.pk and not self.is_superuser:
+            if self.ticket_order is None:
+                raise ValueError("You must have a ticket order number in order to sign in")
 
             if Singer.objects.filter(first_name=self.first_name, last_name=self.last_name).exists():
                 raise AlreadyLoggedIn("The name that you're trying to login with already exists."
