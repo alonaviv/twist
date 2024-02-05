@@ -5,7 +5,7 @@ from django.utils.safestring import mark_safe
 from django.utils.html import format_html
 
 from .managers import LATE_SINGER_CYCLE
-from .models import SongLyrics, SongRequest, Singer, GroupSongRequest, SongSuggestion, TicketOrder
+from .models import SongLyrics, SongRequest, Singer, GroupSongRequest, TicketOrder
 
 
 def set_performed(modeladmin, request, queryset):
@@ -63,19 +63,19 @@ class GroupSongRequestAdmin(admin.ModelAdmin):
     ordering = ['request_time']
 
 
-@admin.register(SongSuggestion)
-class SongSuggestionAdmin(admin.ModelAdmin):
-    list_display = (
-        'song_name', 'musical', 'suggested_by', 'get_request_time', 'is_used',
-    )
-
-    def get_request_time(self, obj):
-        return obj.request_time.astimezone(timezone.get_current_timezone()).strftime("%H:%M %p")
-
-    get_request_time.short_description = 'Request Time'
-    get_request_time.admin_order_field = 'request_time'
-
-    ordering = ['request_time']
+# @admin.register(SongSuggestion)
+# class SongSuggestionAdmin(admin.ModelAdmin):
+#     list_display = (
+#         'song_name', 'musical', 'suggested_by', 'get_request_time', 'is_used',
+#     )
+#
+#     def get_request_time(self, obj):
+#         return obj.request_time.astimezone(timezone.get_current_timezone()).strftime("%H:%M %p")
+#
+#     get_request_time.short_description = 'Request Time'
+#     get_request_time.admin_order_field = 'request_time'
+#
+#     ordering = ['request_time']
 
 
 @admin.register(SongRequest)

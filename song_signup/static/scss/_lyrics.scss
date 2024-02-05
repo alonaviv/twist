@@ -1,0 +1,23 @@
+#lyrics-wrapper {
+    height: 100%;
+    width: 100%;
+    background: #00b3c5;
+    color: #000;
+    margin-bottom: 5vh;
+    padding: 2% 0% 2% 0%;
+
+    .container {
+        overflow: wrap;
+        height: 100%;
+        width: 100%;
+    }
+
+}
+
+@media only screen and (min-width: 768px) {
+    /* Make the font big but keep room for movement on screen */
+    #lyrics-wrapper .container #lyrics {
+        max-width: 60%;
+        font-size: 50px;
+    }
+}

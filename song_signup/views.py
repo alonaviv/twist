@@ -306,26 +306,23 @@ def lineup(request):
 
 
 @bwt_login_required('login')
-def suggest_song(request):
+def suggest_group_song(request):
     current_user = request.user
 
     if request.method == 'POST':
         song_name = _sanitize_string(request.POST['song-name'], title=True)
         musical = _sanitize_string(request.POST['musical'], title=True)
 
-        if request.POST.get('group-song') == 'on':
-            GroupSongRequest.objects.create(song_name=song_name, musical=musical, suggested_by=current_user)
-            return home(request, song_name, is_group_song=True)
+        if current_user.is_authenticated:
+            suggested_by = str(current_user)
+        else:
+            suggested_by = request.POST.get('suggested_by') or '-'
 
-        _, created = SongSuggestion.objects.get_or_create(song_name=song_name, musical=musical,
-                                                          suggested_by=current_user)
-        if created:
-            SongSuggestion.objects.check_used_suggestions()
-
-        return redirect('view_suggestions')
+        GroupSongRequest.objects.create(song_name=song_name, musical=musical, suggested_by=suggested_by)
+        return home(request, song_name, is_group_song=True)
 
     else:
-        return render(request, 'song_signup/suggest_song.html')
+        return render(request, 'song_signup/suggest_group_song.html')
 
 
 def logout(request):

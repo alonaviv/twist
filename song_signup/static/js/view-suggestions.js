@@ -47,7 +47,7 @@ async function populateSuggestionList() {
                     <p id="explanation-text">No suggestions yet :(<br><br>
                     What would you love to hear tonight? <br> Give someone an idea for great song to sing!</p>
                     <div class="center">
-                        <a href="/suggest_song" class="btn btn-secondary-inverted" id="suggest-again-btn">Suggest a Song</a> 
+                        <a href="/suggest_group_song" class="btn btn-secondary-inverted" id="suggest-again-btn">Suggest a Song</a> 
                     </div>
             `
     } else {
@@ -56,7 +56,7 @@ async function populateSuggestionList() {
                 <p id="explanation-text">Wondering what to sing tonight? <br> Select an audience suggestion with a click</p>
                 <ul id="suggestion-list"></ul>
                 <div class="center">
-                    <a href="/suggest_song" class="btn btn-secondary-inverted" id="suggest-again-btn">Make Another Suggestion</a> 
+                    <a href="/suggest_group_song" class="btn btn-secondary-inverted" id="suggest-again-btn">Make Another Suggestion</a> 
                 </div>
         `
         document.getElementById('suggestion-list').replaceChildren(...get_song_lis(data));

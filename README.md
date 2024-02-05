@@ -32,7 +32,7 @@ Django server is now accessible on localhost:8000. Login as a singer with passco
 ```
 
 5. In order to make migrations, run the following script and exit with Ctrl-C when done.
-You can then run `run-dev.sh` to apply migrations.
+You can then run `start-dev.sh` to apply migrations.
 ```sh
 ./makemigrations.sh
 ```

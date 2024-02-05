@@ -13,7 +13,7 @@ const nextSinger = document.getElementById("next-singer");
 const nextSong = document.getElementById("next-song");
 const upNextElem = document.querySelector(".up-next");
 
-const dashboardElem = document.getElementById("dashboard");
+const dashboardElem = document.getElementById("home-dashboard");
 const noSongElem = document.getElementById("no-song");
 
 setInterval(populateSpotlight, 1000);
@@ -79,7 +79,7 @@ if (isSinger) {
     window.addEventListener("DOMContentLoaded", loadWait(populateDashboard));
 
     // Open up dashboard tips
-    const tips = document.getElementById("tips");
+    const tips = document.getElementById("home-tips");
     const dashboardWrapper = document.getElementById("dashboard-wrapper");
     let expandTips = false;
     const originalHeight = window.getComputedStyle(dashboardWrapper).height;
@@ -102,5 +102,5 @@ if (isSinger) {
 // If new song added banner is on page - remove it after a few seconds
 const songAddedElem = document.getElementById("song-added");
 if (songAddedElem) {
-  setTimeout(() => (songAddedElem.style.display = "none"), 5000);
+  setTimeout(() => (songAddedElem.style.display = "none"), 10000);
 }

@@ -6,8 +6,13 @@
         <div id="overlay"></div>
         <div id="menu">
             <div id="menu-content">
+                {% if is_singer %}
                 <h2>Hi {{ user.first_name }}!</h2>
                 <h3>Ready to Sing?</h3>
+                {% else%}
+                <h2>Hey There!</h2>
+                <h3>Let's hear some showtunes!</h3>
+                {% endif %}
                 <ul>
                     <li {% if current == 'home' %} class="hidden" {% endif %}>
                         <a href="{% url 'home' %}">Home</a>
@@ -19,7 +24,7 @@
                     {% endif %}
                     <li><a href="{% url 'lineup' %}">Lineup</a></li>
                     <li {% if current == 'suggest-song' %} class="hidden" {% endif %}>
-                        <a href="{% url 'suggest_song' %}">Suggest a Song</a>
+                        <a href="{% url 'suggest_group_song' %}">Suggest a Group Song</a>
                     </li>
                     <li {% if current == 'faq' %} class="hidden" {% endif %}>
                         <a href="{% url 'faq' %}">FAQ</a></li>

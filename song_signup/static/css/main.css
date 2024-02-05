@@ -130,6 +130,11 @@
   .checkbox label {
     font-size: inherit; }
 
+.aside-text {
+  font-size: 20px;
+  font-style: italic;
+  font-weight: bold; }
+
 .toggle-container {
   margin: 20px auto;
   display: flex;
@@ -168,8 +173,12 @@
       border: 1px black solid;
       transition: left 0.3s ease; }
 
+.link {
+  text-decoration: underline; }
+
 nav {
-  position: relative; }
+  position: relative;
+  height: 8vh; }
 
 #menu-wrapper {
   position: fixed;
@@ -846,14 +855,15 @@ nav {
     #add-song-wrapper #suggest-song-header a {
       font-size: 14px; }
   #add-song-wrapper #add-song-text {
-    font-size: 16px;
-    margin-bottom: 5%; }
+    font-size: 20px;
+    margin-bottom: 10%; }
   #add-song-wrapper form {
     width: 100%; }
     #add-song-wrapper form #submit-wrapper {
       display: flex;
       justify-content: center;
-      align-items: center; }
+      align-items: center;
+      margin-top: 25px; }
     #add-song-wrapper form .checkbox {
       margin: 30px 0px; }
       #add-song-wrapper form .checkbox input[type="checkbox"] {
@@ -861,7 +871,7 @@ nav {
     #add-song-wrapper form .form-control {
       margin-bottom: 15px;
       transition: all 2s ease; }
-      #add-song-wrapper form .form-control input[type=text] {
+      #add-song-wrapper form .form-control input[type="text"] {
         width: 100%;
         padding: 4px;
         height: 40px;
@@ -871,7 +881,7 @@ nav {
         color: #fff;
         font-size: 18px;
         transition: inherit; }
-        #add-song-wrapper form .form-control input[type=text]::placeholder {
+        #add-song-wrapper form .form-control input[type="text"]::placeholder {
           color: #aaa;
           font-size: 18px; }
       #add-song-wrapper form .form-control select {
@@ -884,6 +894,8 @@ nav {
         color: #fff;
         font-size: 14px;
         transition: inherit; }
+  #add-song-wrapper #suggest-song-bottom {
+    margin-top: 10%; }
 
 #explanation-text {
   font-size: 18px;
@@ -925,6 +937,24 @@ nav {
         #suggestion-list-wrapper .container ul li.claimed {
           color: #666;
           pointer-events: none; }
+
+#lyrics-wrapper {
+  height: 100%;
+  width: 100%;
+  background: #00b3c5;
+  color: #000;
+  margin-bottom: 5vh;
+  padding: 2% 0% 2% 0%; }
+  #lyrics-wrapper .container {
+    overflow: wrap;
+    height: 100%;
+    width: 100%; }
+
+@media only screen and (min-width: 768px) {
+  /* Make the font big but keep room for movement on screen */
+  #lyrics-wrapper .container #lyrics {
+    max-width: 60%;
+    font-size: 50px; } }
 
 * {
   box-sizing: border-box;

@@ -9,13 +9,13 @@
 <main>
     <div id="add-song-wrapper">
         <div id="suggest-song-header">
-            <h2>Suggest a Song</h2>
-            <a href={% url 'view_suggestions' %} class="btn btn-inverted">View Suggestions</a>
+            <h2>Suggest a Group Song</h2>
         </div>
         
-        <p id="add-song-text">Is there a song you'd like to hear tonight? Maybe someone will select it!</p>
+        <p id="add-song-text">What group song will bring down the house tonight?<p?
+        </p>
         <div id="new-song-form-wrapper">
-            <form action="/suggest_song" method="POST" id="new-song-form" autocomplete="off">
+            <form action="/suggest_group_song" method="POST" id="new-song-form" autocomplete="off">
                 {% csrf_token %}
                 <input autocomplete="false" name="hidden" type="text" style="display:none;">
                 <div class="form-control">
@@ -24,14 +24,20 @@
                 <div class="form-control">
                     <input type="text" name="musical" id="musical" placeholder="Where's it from?" required>
                 </div>
-                <div class="checkbox">
-                    <input type="checkbox" name="group-song" id="group-song">
-                    <label for="group-song">This is a group song - for everyone</label>
+                {% if not is_singer %}
+                <div class="form-control">
+                    <input type="text" name="suggested_by" id="suggested_by" placeholder="Optional: Your name, for credit 🙂">
                 </div>
+                {% endif %}
                 <div class="form-control" id="submit-wrapper">
                         <input type="submit" value="Suggest" class="btn btn-inverted">
                 </div>
             </form>
+        </div>
+        <div id="suggest-song-bottom">
+            <div class="aside-text">
+                * Only Shani will see the suggestions and chooses according to the flow of the evening.
+            </div>
         </div>
     </div>
 </main>

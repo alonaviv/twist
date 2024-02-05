@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from song_signup.models import SongRequest, Singer
+from song_signup.models import SongRequest, Singer, SongLyrics
 
 
 class Command(BaseCommand):
@@ -7,5 +7,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         SongRequest.objects.all().delete()
+        SongLyrics.objects.all().delete()
         Singer.objects.filter(is_superuser=False).delete()
 

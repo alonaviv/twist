@@ -172,7 +172,7 @@ class Singer(AbstractUser):
 class GroupSongRequest(Model):
     song_name = CITextField(max_length=50, null=False, blank=False)
     musical = CITextField(max_length=50, null=False, blank=False)
-    suggested_by = ForeignKey(settings.AUTH_USER_MODEL, on_delete=CASCADE)
+    suggested_by = CITextField(max_length=50, null=True, default='-')
     request_time = DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):

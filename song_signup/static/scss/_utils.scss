@@ -180,6 +180,12 @@
     }
 }
 
+.aside-text {
+    font-size: 20px;
+    font-style: italic;
+    font-weight: bold; 
+}
+
 .toggle-container { 
     margin: 20px auto;
     display: flex;
@@ -227,4 +233,8 @@
 
         }
     }
+}
+
+.link {
+  text-decoration: underline;
 }

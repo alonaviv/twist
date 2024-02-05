@@ -1,0 +1,79 @@
+#add-song-wrapper {
+    background: $primary-color;
+    color: set-text-color($primary-color);
+    height: 100%;
+    width: 100%;
+    padding: 3% 7%;
+    position: relative;
+
+    #suggest-song-header {
+        display: flex;
+        justify-content: space-between;
+        margin: 10px 0px 25px;
+
+        a {
+            font-size: 14px;
+        }
+    }
+
+    #add-song-text {
+        font-size: 20px;
+        margin-bottom: 10%;
+    }
+
+    form {
+        width: 100%;
+
+        #submit-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 25px;
+        }
+
+        .checkbox {
+            margin: 30px 0px;
+
+            input[type="checkbox"] {
+                background-color: #333;
+            }
+        }
+
+        .form-control {
+            margin-bottom: 15px;
+            transition: all 2s ease;
+
+            input[type="text"] {
+                width: 100%;
+                padding: 4px;
+                height: 40px;
+                border: #333 2px solid;
+                border-radius: 5px;
+                background: #333;
+                color: #fff;
+                font-size: 18px;
+                &::placeholder {
+                    color: #aaa;
+                    font-size: 18px;
+                }
+                transition: inherit;
+            }
+
+            select {
+                margin-top: 10px;
+                margin-bottom: 10px;
+                width: 100%;
+                height: 30px;
+                padding: 4px;
+                background: #333;
+                color: #fff;
+                font-size: 14px;
+                transition: inherit;
+            }
+        }
+    }
+
+    #suggest-song-bottom{
+        margin-top: 10%;
+    }
+}
