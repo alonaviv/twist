@@ -34,11 +34,11 @@ logger = logging.getLogger(__name__)
 AUDIENCE_SESSION = 'audience-logged-in'
 
 
-def bwt_login_required(login_url):
+def bwt_login_required(login_url, singer_only=False):
     def decorator(view_func):
         @wraps(view_func)
         def wrapper(request, *args, **kwargs):
-            if not(request.user.is_authenticated or request.session.get(AUDIENCE_SESSION)):
+            if not(request.user.is_authenticated or (not singer_only and request.session.get(AUDIENCE_SESSION))):
                 return redirect(login_url)
 
             return view_func(request, *args, **kwargs)
@@ -170,7 +170,7 @@ def rename_song(request):
         return Response({'error': f"Song with ID {song_id} does not exist"}, status=status.HTTP_400_BAD_REQUEST)
 
 
-@bwt_login_required('login')
+@bwt_login_required('login', singer_only=True)
 def manage_songs(request):
     return render(request, 'song_signup/manage_songs.html')
 
@@ -180,7 +180,7 @@ def view_suggestions(request):
     return render(request, 'song_signup/view_suggestions.html')
 
 
-@bwt_login_required('login')
+@bwt_login_required('login', singer_only=True)
 def add_song(request):
     class HostSinger:
         def __init__(self, user_obj):
