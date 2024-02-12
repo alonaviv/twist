@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block content %}
+
+{% include "partials/_navbar.html" with current="lineup" %}
+<main>
+    <div id="lineup-wrapper">
+        <div id="explanation-overlay"></div>
+        <div id="explanation-label">
+            <p>?</p>
+        </div>
+        <div id="explanation-body">
+            <ul>
+                <li>Each singer appears once.<br> After singing, they'll enter the list again with their next song.</li>
+                <hr>
+                <li>About an hour before the end, we'll bump all singers who haven't yet sung to the top of the list.</li>
+                <hr>
+                <li>We'll post the full song list tomorrow on <a href="https://www.facebook.com/groups/763859465058650/?utm_campaign=webapp&utm_medium=website&utm_source=webapp-lineup&utm_content=lineup-facebook-group">Facebook</a> and <a href="https://www.instagram.com/bwtisrael/?utm_campaign=webapp&utm_medium=website&utm_source=webapp-lineup&utm_content=lineup-instagram">Instagram</a>!</li>
+            </ul>
+        </div>
+        <div class="container">
+            <h1>Tonight's Lineup</h1>
+            <h2>Now performing</h2>
+            <div id="currently-singing" class="broadway-lights"></div>
+            <div id="lineup-list"></div>
+        </div>
+        </div>
+    </div>
+</main>
+
+{% include "partials/_footer.html"  %}
+
+<script type="module" src="{% static "js/lineup.js" %}"></script>
+<script src="{% static "js/navbar.js" %}"></script>
+        
+{% endblock %}

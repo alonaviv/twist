@@ -81,8 +81,8 @@ class GroupSongRequestAdmin(admin.ModelAdmin):
 @admin.register(SongRequest)
 class SongRequestAdmin(admin.ModelAdmin):
     list_display = (
-        'position', 'allows_filming', 'singer', 'song_name', 'musical', 'duet_partner', 'get_notes', 'get_additional_singers',
-        'suggested_by', 'get_performance_time', 'lyrics', 'get_request_time', 'get_initial_signup'
+        'position', 'lyrics', 'singer', 'song_name', 'musical', 'duet_partner', 'get_notes', 'get_additional_singers',
+        'suggested_by', 'get_performance_time', 'get_request_time', 'get_initial_signup'
     )
     list_filter = (NotYetPerformedFilter,)
     actions = [set_performed, set_not_performed]

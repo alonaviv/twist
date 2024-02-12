@@ -9,6 +9,7 @@ from django.db import transaction
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
 from flags.state import enable_flag, disable_flag, flag_disabled
+from django.contrib.auth.models import Group
 from openpyxl import load_workbook
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -27,7 +28,7 @@ from .models import (
     TicketsDepleted,
     AlreadyLoggedIn
 )
-from .serializers import SongSuggestionSerializer, SongRequestSerializer, SingerSerializer
+from .serializers import SongSuggestionSerializer, SongRequestSerializer, SingerSerializer, SongRequestLineupSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -145,6 +146,17 @@ def get_song(request, song_pk):
         return Response(serialized.data, status=status.HTTP_200_OK)
     except SongRequest.DoesNotExist:
         return Response({'error': f"Song with ID {song_pk} does not exist"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["GET"])
+def get_lineup(request):
+    song_requests = SongRequest.objects.filter(position__isnull=False).order_by('position')
+    current_song = song_requests.first()
+
+    return Response({
+        'current_song': SongRequestLineupSerializer(song_requests.first()).data if current_song else None,
+        'next_songs': SongRequestLineupSerializer(song_requests[1:], many=True).data
+    }, status=status.HTTP_200_OK)
 
 
 @api_view(["PUT"])
@@ -302,7 +314,7 @@ def default_lyrics(request):
 
 @bwt_login_required('login')
 def lineup(request):
-    return HttpResponse("<h1>Lineup Page</h1>")
+    return render(request, 'song_signup/lineup.html')
 
 
 @bwt_login_required('login')
@@ -408,6 +420,8 @@ def login(request):
                             'error': str(e)
                         }, status=400)
 
+                group = Group.objects.get(name='singers')
+                group.user_set.add(singer)
                 auth_login(request, singer)
                 return HttpResponse('', status=200)
             else:

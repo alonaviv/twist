@@ -1,17 +1,10 @@
-import { getCookie } from "./utils.js";
+import {getCookie, loadWait} from "./utils.js";
 
 const csrftoken = getCookie('csrftoken');
 
 const songListUl = document.getElementById("song-list");
 
 window.addEventListener("DOMContentLoaded", loadWait(populateSongList));
-
-// In order to prevent flickering, disable entire body until promise is complete
-async function loadWait(promiseCallback) {
-  document.body.style.display = "none";
-  await promiseCallback();
-  document.body.style.display = "block";
-}
 
 
 async function get_current_user() {

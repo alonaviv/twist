@@ -132,9 +132,13 @@
     }
 }
 
-.home-card{
+.home-card {
     position: relative;
     height: $eighth-page;
+
+    &.audience {
+        height: 17.6vh;
+    }
 
     .larger {
         width: 70%;
@@ -164,6 +168,9 @@
     i {
         color: #f4f4f4;
     }
+    &.audience {
+        height: 8.8vh;
+    }
 
     #no-spam {
         position: absolute;
@@ -179,7 +186,7 @@
 
 #home-lineup {
     &.audience {
-        height: $quarter-page;
+        height: 17.6vh;
     }
     img {
         object-fit: contain;
@@ -190,7 +197,7 @@
 }
 
 #home-suggest-song {
-    .column-2{
+    .column-2 {
         // padding: 10px 0px 10px 10px;
     }
     img {

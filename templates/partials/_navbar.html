@@ -22,7 +22,8 @@
                         <a href="{% url 'manage_songs' %}">Manage Songs</a>
                     </li>
                     {% endif %}
-                    <li><a href="{% url 'lineup' %}">Lineup</a></li>
+                    <li {% if current == 'lineup' %} class="hidden" {% endif %}>
+                        <a href="{% url 'lineup' %}">Lineup</a></li>
                     <li {% if current == 'suggest-song' %} class="hidden" {% endif %}>
                         <a href="{% url 'suggest_group_song' %}">Suggest a Group Song</a>
                     </li>
@@ -36,10 +37,10 @@
                 <a href="https://links.broadwaywithatwist.xyz/whatsapp?utm_source=hamburger-menu&utm_campaign=webapp&utm_content=hamburger-menu-whatsapp"><i class="fa-brands fa-whatsapp"></i> Next Event Updates</a>
             </div>
             <div id="navbar-social">
-                <a href="https://tinyurl.com/webapp-hamburger-menu-fb"><i class="fa-brands fa-facebook"></i></a>
+                <a href="https://www.facebook.com/groups/763859465058650/?utm_campaign=webapp&utm_medium=website&utm_source=hamburger-menu&utm_content=hamburger-menu-facebook-group"><i class="fa-brands fa-facebook"></i></a>
                 <div id="navbar-instagram">
-                    <a href="https://tinyurl.com/webapp-hamburger-instagram" id="navbar-instagram"><i class="fa-brands fa-instagram"></i></a>
-                    <a href="https://tinyurl.com/webapp-hamburger-instagram" id="navbar-instagram"><p>@bwtisrael</p></a>
+                    <a href="https://www.instagram.com/bwtisrael/?utm_campaign=webapp&utm_medium=website&utm_source=hamburger-menu&utm_content=hamburger-menu-instagram"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="https://www.instagram.com/bwtisrael/?utm_campaign=webapp&utm_medium=website&utm_source=hamburger-menu&utm_content=hamburger-menu-instagram"><p>@bwtisrael</p></a>
                 </div>
                 </div>
             </div>

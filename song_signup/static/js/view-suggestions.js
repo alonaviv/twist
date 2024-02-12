@@ -1,15 +1,10 @@
+import {loadWait} from "./utils.js";
+
 const suggestionListWrapper = document.getElementById("suggestion-list-wrapper");
 const suggestionContainer = suggestionListWrapper.querySelector('.container');
 
 window.addEventListener("DOMContentLoaded", loadWait(populateSuggestionList));
 setInterval(populateSuggestionList, 10000);
-
-// In order to prevent flickering, disable entire body until promise is complete
-async function loadWait(promiseCallback) {
-  document.body.style.display = "none";
-  await promiseCallback();
-  document.body.style.display = "block";
-}
 
 function get_song_lis(data) {
     const lis = data.map((song) => {

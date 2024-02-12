@@ -116,7 +116,7 @@
     </a>
     {% endif %}
     <a href="https://links.broadwaywithatwist.xyz/whatsapp?utm_source=home-page&utm_campaign=webapp&utm_content=whatsapp-banner">
-        <div id="home-whatsapp" class="flex-card light-card home-card">
+        <div id="home-whatsapp" class="flex-card light-card home-card {% if not is_singer %}audience{% endif %}">
             <div class="row">
                 <div class="column larger">
                     <div class="column-1">
@@ -140,9 +140,9 @@
                 <p>Copyright &copy; 2024 - Broadway With a Twist</p>
             </div>
         <div id="footer-links">
-            <a href="https://tinyurl.com/webapp-footer-icon-facebook"><i
+            <a href="https://www.facebook.com/groups/763859465058650/?utm_campaign=webapp&utm_medium=website&utm_source=webapp-footer&utm_content=footer-facebook-group"><i
                     class="fa-brands fa-facebook"></i></a>
-            <a href="https://tinyurl.com/webapp-footer-icon-igram"><i
+            <a href="https://www.instagram.com/bwtisrael/?utm_campaign=webapp&utm_medium=website&utm_source=webapp-footer&utm_content=footer-instagram"><i
                     class="fa-brands fa-instagram"></i></a>
             <a href="https://links.broadwaywithatwist.xyz/whatsapp?utm_source=footer&utm_campaign=webapp&utm_content=footer-whatsapp"><i
                     class="fa-brands fa-whatsapp"></i></a>
@@ -152,7 +152,7 @@
 </main>
 
 <script type="text/javascript">const isSinger = {{ is_singer|yesno:"true,false" }};</script>
-<script src="{% static "js/home.js" %}"></script>
+<script type="module" src="{% static "js/home.js" %}"></script>
 <script src="{% static "js/navbar.js" %}"></script>
 
 {% endblock %}

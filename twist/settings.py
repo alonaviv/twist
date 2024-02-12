@@ -35,7 +35,7 @@ INTERNAL_IPS = [
 ]
 
 
-ALLOWED_HOSTS = ['192.168.1.111', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['*']
 DOMAIN = 'http://localhost:8000'
 
 FLAGS = {
@@ -58,9 +58,14 @@ LOGGING = {
             'filename': os.path.join(BASE_DIR, 'twist-logs/debug.log'),
             'formatter': 'simple'
         },
+        'console': {
+            'class': 'logging.StreamHandler',
+            'level': 'INFO',
+            'formatter': 'simple',
+        },
     },
     'root': {
-        'handlers': ['file'],
+        'handlers': ['file', 'console'] if DEBUG else ['file'],
         'level': 'DEBUG',
     },
 }

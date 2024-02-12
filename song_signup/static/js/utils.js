@@ -13,3 +13,13 @@ export function getCookie(name) {
     }
     return cookieValue;
 }
+
+// In order to prevent flickering, disable entire body until promise is complete
+export async function loadWait(promiseCallback) {
+    document.body.classList.add('loading');
+    try {
+        await promiseCallback();
+    } finally {
+        document.body.classList.remove('loading');
+    }
+}

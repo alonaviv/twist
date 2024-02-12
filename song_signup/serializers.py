@@ -1,5 +1,6 @@
-from rest_framework.serializers import ModelSerializer
+from rest_framework.serializers import ModelSerializer, SerializerMethodField
 from song_signup.models import SongSuggestion, Singer, SongRequest
+from twist.utils import is_hebrew
 
 
 class SingerSerializer(ModelSerializer):
@@ -23,3 +24,23 @@ class SongRequestSerializer(ModelSerializer):
     class Meta:
         model = SongRequest
         fields = "__all__"
+
+
+class SongRequestLineupSerializer(ModelSerializer):
+    singers = SerializerMethodField()
+
+    def get_singers(self, obj):
+        if obj.duet_partner:
+            if is_hebrew(obj.duet_partner.get_full_name()):
+                connector = 'ו'
+            else:
+                connector = 'and '
+
+            return f"{obj.singer.get_full_name()} {connector}{obj.duet_partner.get_full_name()}"
+
+        else:
+            return obj.singer.get_full_name()
+
+    class Meta:
+        model = SongRequest
+        fields = ['position', 'singers', 'song_name', 'musical']

@@ -1,0 +1,169 @@
+#lineup-wrapper {
+    height: 100%;
+    width: 100%;
+    background: $primary-color;
+    color: set-text-color($primary-color);
+    position: relative;
+
+    hr {
+        border: 1px black solid;
+        width: 50%;
+        margin: 5% auto 5% auto;
+    }
+
+    .container {
+        position: relative;
+        overflow-x: hidden;
+        overflow-y: scroll;
+        height: 100%;
+        width: 100%;
+        padding: 5% 5%;
+
+        h1 {
+            position: relative;
+            margin-bottom: 5%;
+        }
+
+        h2 {
+            text-decoration: underline;
+        }
+
+        ol {
+            margin-top: 5%;
+            width: 100%;
+            counter-reset: song-counter;
+
+            li {
+                display: flex;
+                flex-direction: column;
+                counter-increment: song-counter;
+                text-align: center;
+
+                .song-wrapper {
+                    &::before {
+                        content: counter(song-counter) ".  ";
+                        margin-right: 5px;
+                    }
+                    display: flex;
+                    width: 100%;
+                    justify-content: space-between;
+                    font-size: 20px;
+                    padding-bottom: 2px;
+                }
+            }
+        }
+    }
+}
+
+.song-details {
+    display: inline-block;
+    width: 100%;
+
+    .song-name {
+        font-weight: 500;
+        font-size: 20px;
+        font-weight: bold;
+    }
+    .singers {
+        font-size: 20px;
+    }
+    .song-musical {
+        font-style: italic;
+        font-size: 18px;
+    }
+}
+
+#currently-singing {
+    $shadow-color: #007646;
+    box-sizing: border-box;
+    margin: 8% auto 15% auto;
+    padding: 15px;
+    width: 90%;
+    display: flex;
+    justify-content: center;
+    background-color: #b2edd5;
+    border-radius: 10px;
+    box-shadow: 0 0 15px $shadow-color, /* Central light */ 0 0 25px $shadow-color,
+        /* Outer glow */ 0 8px 20px $shadow-color,
+        /* Top light */ 0 -8px 20px $shadow-color,
+        /* Bottom light */ 8px 0 20px $shadow-color,
+        /* Right light */ -8px 0 20px $shadow-color; /* Left light */
+}
+
+#explanation-overlay {
+    background-color: $secondary-color;
+    border-radius: 100px;
+    height: 200px;
+    width: 200px;
+    position: fixed;
+    top: -50px;
+    right: -100px;
+    transition: all 0.5s ease-in-out;
+    opacity: 1;
+    z-index: 1;
+
+    &.expanded {
+        width: 200%;
+        height: 200%;
+        opacity: 0.95;
+    }
+}
+
+#explanation-label {
+    position: fixed;
+    top: 55px;
+    right: 30px;
+    font-weight: bold;
+    font-size: 50px;
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.3s ease-in-out 0.3s, visibility 0.3s ease-in-out 0.3s;
+    pointer-events: none;
+    z-index: 2;
+
+    &.expanded {
+        transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+        visibility: hidden;
+        opacity: 0;
+    }
+}
+
+#explanation-body {
+    position: fixed;
+    height: 90%;
+    width: 100%;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+    z-index: 2;
+    padding: 10px 30px 10px 30px;
+    pointer-events: none;
+
+    &.expanded {
+        visibility: visible;
+        opacity: 1;
+        transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+    }
+
+    ul {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+        align-items: center;
+        text-align: center;
+        list-style: none;
+        padding:50px 0 70px 0;
+    }
+    li {
+        font-size: 25px;
+        font-weight: 400;
+    }
+
+    a {
+        pointer-events: auto;
+        font-weight: 900;
+        // color: #0051c5;
+    }
+}

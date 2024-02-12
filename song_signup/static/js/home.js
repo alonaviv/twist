@@ -1,10 +1,4 @@
-// In order to prevent flickering, disable entire body until promise is complete
-async function loadWait(promiseCallback) {
-  document.body.style.display = "none";
-  await promiseCallback();
-  document.body.style.display = "block";
-}
-
+import {loadWait} from "./utils.js";
 
 // Fetch and populate data in the home page
 const currentSinger = document.querySelector(".headliner").firstElementChild;

@@ -12,84 +12,99 @@
 @import "suggest_group_song";
 @import "view-suggestions";
 @import "lyrics";
-
+@import "lineup";
 
 * {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
 }
 
-html{
+html {
     min-height: 100%;
 }
 
 body {
-  max-width: 100%;
-  min-height: 100%;
-  font-family: "Roboto", sans-serif;
-  background: #333;
-  color: #333;
-  line-height: 1.6;
+    max-width: 100%;
+    min-height: 100%;
+    font-family: "Roboto", sans-serif;
+    background: #333;
+    background-color: #333;
+    color: #333;
+    line-height: 1.6;
+
+    &.loading {
+        position: relative;
+        &:before {
+            content: "";
+            background-color: #333;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1000;
+        }
+    }
 }
 
 a {
-  text-decoration: none;
-  color: inherit;
+    text-decoration: none;
+    color: inherit;
 }
 
 input:focus {
-  outline: none;
+    outline: none;
 }
 
 // Styling for home page
 
 main {
-  position: absolute;
-  top: $navbar-height;
-  left: 0;
-  z-index: -2;
-  width: 100%;
-  height: 100vh -$navbar-height -$footer-height;
+    position: absolute;
+    top: $navbar-height;
+    left: 0;
+    z-index: -2;
+    width: 100%;
+    height: 100vh -$navbar-height -$footer-height;
 
-  &.nested-footer {
-    height: 100vh-$navbar-height;
-  }
+    &.nested-footer {
+        height: 100vh-$navbar-height;
+    }
 }
 
 footer {
-  width: 100%;
-  height: $footer-height;
-
-  &.regular {
-    position: fixed;
-    bottom: 0;
-  }
-
-  .container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
     width: 100%;
-    #copywrite-wrapper {
-      display: flex;
-      justify-content: flex-start;
-      text-align: center;
-      font-size: 10.666px;
+    height: $footer-height;
+
+    &.regular {
+        position: fixed;
+        bottom: 0;
     }
 
-    #footer-links {
-      height: 100%;
-      width: 20%;
-      display: flex;
-      flex-direction: row;
-      justify-content: space-between;
-      align-items: center;
+    .container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        #copywrite-wrapper {
+            display: flex;
+            justify-content: flex-start;
+            text-align: center;
+            font-size: 10.666px;
+        }
 
-      i {
-        height: 100%;
-        width: auto;
-      }
+        #footer-links {
+            height: 100%;
+            width: 20%;
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+
+            i {
+                height: 100%;
+                width: auto;
+            }
+        }
     }
-  }
 }
