@@ -36,3 +36,4 @@ if __name__ == '__main__':
     create_superuser(*SHANI_USER)
 
     enable_flag('CAN_SIGNUP')
+    call_command('collectstatic', '--noinput')

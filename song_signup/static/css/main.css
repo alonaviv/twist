@@ -347,6 +347,7 @@ nav {
   #login-hero #login-wrapper {
     text-align: center;
     color: #fff;
+    color: pink;
     display: flex;
     flex-direction: column;
     justify-content: space-around;
@@ -388,9 +389,9 @@ nav {
           justify-content: space-around;
           align-items: center; }
           #login-hero #login-wrapper #not-started-wrapper #login-icons #login-social #login-facebook {
-            color: #4267B2; }
+            color: #4267b2; }
           #login-hero #login-wrapper #not-started-wrapper #login-icons #login-social #login-instagram {
-            color: #E1306C;
+            color: #e1306c;
             display: flex;
             align-items: center; }
             #login-hero #login-wrapper #not-started-wrapper #login-icons #login-social #login-instagram p {

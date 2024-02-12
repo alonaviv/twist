@@ -1,181 +1,180 @@
 #login-hero {
-  background: url("../img/login/curtain.jpeg") no-repeat center center/cover;
-  min-height: 100vh;
-  width: 100%;
-  position: relative;
-  z-index: 1;
-
-  &::before {
-    content: "";
-    background: #000;
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 100%;
+    background: url("../img/login/curtain.jpeg") no-repeat center center/cover;
+    min-height: 100vh;
     width: 100%;
-    z-index: 2;
-    opacity: 0.4;
-  }
-
-  #login-wrapper {
-    text-align: center;
-    color: #fff;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-around;
-    width: 100%;
-    overflow-y: auto;
-    overflow-x: hidden;
     position: relative;
-    z-index: 3;
+    z-index: 1;
 
-    #login-title {
-      font-family: "Oleo Script Swash Caps", cursive;
-      font-size: 25px;
-      color: #ccc;
-      text-shadow: 7px 5px 30px $login;
+    &::before {
+        content: "";
+        background: #000;
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 100%;
+        z-index: 2;
+        opacity: 0.4;
     }
 
-    #not-started-wrapper {
+    #login-wrapper {
         text-align: center;
-        font-weight: 500;
-        font-size: 40px;
+        color: #fff;
+        color: pink;
         display: flex;
         flex-direction: column;
         justify-content: space-around;
+        width: 100%;
+        overflow-y: auto;
+        overflow-x: hidden;
+        position: relative;
+        z-index: 3;
 
-        #not-started-message{
-            margin-top: 70px;
-            color: $third-color;
+        #login-title {
+            font-family: "Oleo Script Swash Caps", cursive;
+            font-size: 25px;
+            color: #ccc;
+            text-shadow: 7px 5px 30px $login;
         }
 
-        #login-icons{
-            width: 100%;
-            margin-top: 80px;
-            align-self: flex-end;
+        #not-started-wrapper {
+            text-align: center;
+            font-weight: 500;
+            font-size: 40px;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
-            align-items: center;
+            justify-content: space-around;
 
-            #login-social {
+            #not-started-message {
+                margin-top: 70px;
+                color: $third-color;
+            }
+
+            #login-icons {
                 width: 100%;
-                text-align: center;
-                font-size: 40px;
-                margin: 0px 8%;
-
+                margin-top: 80px;
+                align-self: flex-end;
                 display: flex;
-                flex-direction: row-reverse;
-                justify-content: space-around;
+                flex-direction: column;
+                justify-content: space-between;
                 align-items: center;
 
-                #login-facebook{
-                    color: #4267B2;
-                }
+                #login-social {
+                    width: 100%;
+                    text-align: center;
+                    font-size: 40px;
+                    margin: 0px 8%;
 
-                #login-instagram{
-                    color: #E1306C;
                     display: flex;
+                    flex-direction: row-reverse;
+                    justify-content: space-around;
                     align-items: center;
+
+                    #login-facebook {
+                        color: #4267b2;
+                    }
+
+                    #login-instagram {
+                        color: #e1306c;
+                        display: flex;
+                        align-items: center;
                         p {
                             margin-left: 5px;
                             font-size: 30px;
                         }
+                    }
+                }
+                #login-whatsapp {
+                    color: #25d366;
+                    text-align: center;
+                    font-size: 30px;
+                    margin: 0px 8% 20px;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    i {
+                        font-size: 40px;
+                        margin-right: 3px;
+                    }
                 }
             }
-            #login-whatsapp {
-                color: #25d366;
-                text-align: center;
-                font-size: 30px;
-                margin: 0px 8% 20px;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                i {
-                    font-size: 40px;
-                    margin-right: 3px;
+        }
+
+        #form-messages {
+            padding: 20px 7%;
+            text-align: center;
+            color: $third-color;
+            font-weight: 500;
+            font-size: 20px;
+        }
+
+        h3 {
+            margin-bottom: 30px;
+            font-size: 20px;
+            font-weight: 900;
+            letter-spacing: 1px;
+        }
+
+        #login-form-wrapper {
+            padding: 10px 40px;
+
+            #singer-login-form {
+                opacity: 0;
+                transform: translateY(-40px);
+                visibility: hidden;
+                display: none;
+                transition: opacity 0.5s ease, transform 0.5s ease;
+
+                &.active {
+                    opacity: 1;
+                    visibility: visible;
+                    transform: translateY(0);
+                }
+            }
+
+            form {
+                width: 100%;
+
+                label {
+                    font-size: 18px;
+                }
+
+                .form-control {
+                    margin-bottom: 20px;
+
+                    input {
+                        width: 100%;
+                        padding: 4px;
+                        height: 40px;
+                        border: #333 2px solid;
+                        border-radius: 5px;
+                        background: #333;
+                        color: #fff;
+                        font-size: 18px;
+                        &::placeholder {
+                            color: #aaa;
+                            font-size: 18px;
+                        }
+                    }
+                }
+
+                @keyframes pulsate {
+                    0% {
+                        box-shadow: 0px 0px 15px 1px $login;
+                    }
+                    50% {
+                        box-shadow: 0px 0px 15px 3px $login;
+                    }
+                    100% {
+                        box-shadow: 0px 0px 15px 1px $login;
+                    }
                 }
             }
         }
     }
-
-    #form-messages {
-        padding: 20px 7%;
-        text-align: center;
-        color: $third-color;
-        font-weight: 500;
-        font-size: 20px;
-    }
-
-    h3 {
-    margin-bottom: 30px;
-    font-size: 20px;
-    font-weight: 900;
-    letter-spacing: 1px;
-    }
-
-    #login-form-wrapper {
-      padding: 10px 40px;
-
-      #singer-login-form{
-        opacity: 0;
-        transform: translateY(-40px);
-        visibility: hidden;
-        display: none;
-        transition: opacity 0.5s ease, transform 0.5s ease;
-
-        &.active {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-        }
-
-      }
-
-      form {
-        width: 100%;
-        
-        label {
-            font-size: 18px;
-        }
-
-        .form-control {
-          margin-bottom: 20px;
-
-          input {
-            width: 100%;
-            padding: 4px;
-            height: 40px;
-            border: #333 2px solid;
-            border-radius: 5px;
-            background: #333;
-            color: #fff;
-            font-size: 18px;
-            &::placeholder {
-              color: #aaa;
-              font-size: 18px;
-            }
-          }
-        }
-
-        @keyframes pulsate {
-          0% {
-            box-shadow: 0px 0px 15px 1px $login;
-          }
-          50% {
-            box-shadow: 0px 0px 15px 3px $login;
-          }
-          100% {
-            box-shadow: 0px 0px 15px 1px $login;
-          }
-        }
-
-      }
-    }
-  }
 }
 
-.login-btn{
+.login-btn {
     margin: 20px 0;
     width: 90%;
     height: 40px;
@@ -189,26 +188,24 @@
     animation-fill-mode: backwards;
     animation-timing-function: ease-in;
 
-    &:active{
+    &:active {
         box-shadow: none;
         transform: none;
         outline: none;
         border-color: transparent;
     }
-
 }
 
-#audience-wrapper{ 
+#audience-wrapper {
     padding: 10px 40px;
     opacity: 0;
     visibility: hidden;
     max-height: 0;
     transition: opacity 0.5s ease;
-    
-    &.active{
+
+    &.active {
         opacity: 1;
         visibility: visible;
         max-height: 500px;
-
     }
 }
