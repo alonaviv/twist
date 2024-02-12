@@ -347,7 +347,6 @@ nav {
   #login-hero #login-wrapper {
     text-align: center;
     color: #fff;
-    color: pink;
     display: flex;
     flex-direction: column;
     justify-content: space-around;
