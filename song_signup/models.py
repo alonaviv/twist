@@ -1,5 +1,5 @@
 import datetime
-
+from titlecase import titlecase
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.contrib.postgres.fields import CITextField
@@ -176,6 +176,8 @@ class GroupSongRequest(Model):
     request_time = DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
+        self.song_name = titlecase(self.song_name)
+        self.musical = titlecase(self.musical)
         super().save(*args, **kwargs)
 
         from song_signup.tasks import get_lyrics
@@ -222,8 +224,8 @@ class SongRequest(Model):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._original_song_name = self.song_name
-        self._original_musical = self.musical
+        self._original_song_name = titlecase(self.song_name)
+        self._original_musical = titlecase(self.musical)
 
     def get_additional_singers(self):
         return ", ".join([str(singer) for singer in self.additional_singers.all()])
@@ -271,6 +273,8 @@ class SongRequest(Model):
         ):
             fetch_lyrics = True
 
+        self.song_name = titlecase(self.song_name)
+        self.musical = titlecase(self.musical)
         super().save(*args, **kwargs)
 
         if fetch_lyrics:
