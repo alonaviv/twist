@@ -10,7 +10,6 @@ from django.contrib.auth import get_user_model
 from flags.state import enable_flag
 
 from song_signup.views import name_to_username
-from django.contrib.auth.models import Group, Permission
 from song_signup.models import TicketOrder
 
 ALON_USER = ('Alon', 'Aviv', os.environ.get('ALON_PASSWORD'))
@@ -35,8 +34,6 @@ if __name__ == '__main__':
     create_superuser(*ALON_USER)
     create_superuser(*SHANI_USER)
 
-    singers_group, _ = Group.objects.get_or_create(name='singers')
-    singers_group.permissions.add(Permission.objects.get(codename='view_songrequest'))
     constance.config.PASSCODE = 'dev'
     constance.config.EVENT_SKU = 'EVENTSKU1234'
     enable_flag('CAN_SIGNUP')

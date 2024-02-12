@@ -9,7 +9,6 @@ from django.db import transaction
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
 from flags.state import enable_flag, disable_flag, flag_disabled
-from django.contrib.auth.models import Group
 from openpyxl import load_workbook
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -420,8 +419,6 @@ def login(request):
                             'error': str(e)
                         }, status=400)
 
-                group = Group.objects.get(name='singers')
-                group.user_set.add(singer)
                 auth_login(request, singer)
                 return HttpResponse('', status=200)
             else:
