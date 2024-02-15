@@ -21,14 +21,14 @@
         {% endif %}
 
         <div class="center">
-            <div id="lyrics">
-            {% if lyrics %}
-                <h2>{{ lyrics.song_name}}</h1>
-                <h3>{{ lyrics.artist_name }}</h2><br>
-                <pre dir="auto">{{ lyrics.lyrics }}</pre>
-            {% else %}
-                <h1>Lyrics not found - wait 30 seconds</h1>
-            {% endif %}
+            <div id="lyrics-text">
+                {% if lyrics %}
+                    <h2>{{ lyrics.song_name }}</h2>
+                        <h3>{{ lyrics.artist_name }}</h3><br>
+                    <pre dir="auto">{{ lyrics.lyrics }}</pre>
+                {% else %}
+                    <h1>Lyrics not found - wait 30 seconds</h1>
+                {% endif %}
             </div>
         </div>
     </div>

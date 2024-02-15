@@ -1,5 +1,5 @@
 from rest_framework.serializers import ModelSerializer, SerializerMethodField
-from song_signup.models import SongSuggestion, Singer, SongRequest
+from song_signup.models import SongSuggestion, Singer, SongRequest, SongLyrics
 from twist.utils import is_hebrew
 
 
@@ -44,3 +44,9 @@ class SongRequestLineupSerializer(ModelSerializer):
     class Meta:
         model = SongRequest
         fields = ['position', 'singers', 'song_name', 'musical']
+
+
+class LyricsSerializer(ModelSerializer):
+    class Meta:
+        model = SongLyrics
+        fields = ['song_name', 'artist_name', 'lyrics']

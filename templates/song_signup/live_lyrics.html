@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block content %}
+{% include "partials/_navbar.html"%}
+<div id="lyrics-wrapper">
+    <div class="container">
+        <div class="center">
+            <div id="lyrics-text"></div>
+
+    </div>
+</div>
+{% include "partials/_footer.html"  %}
+<script type="module" src="{% static "js/live-lyrics.js" %}"></script>
+
+{% endblock %}
+

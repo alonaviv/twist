@@ -3,15 +3,23 @@
     width: 100%;
     background: #00b3c5;
     color: #000;
-    margin-bottom: 5vh;
+    margin-bottom: $footer-height;
     padding: 2% 0% 2% 0%;
 
     .container {
         overflow: wrap;
         height: 100%;
         width: 100%;
-    }
 
+        #lyrics-text {
+            width: 100%;
+
+            pre {
+                text-wrap: wrap;
+                line-height: 1.8em;
+            }
+        }
+    }
 }
 
 @media only screen and (min-width: 768px) {

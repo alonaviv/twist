@@ -27,7 +27,13 @@ from .models import (
     TicketsDepleted,
     AlreadyLoggedIn
 )
-from .serializers import SongSuggestionSerializer, SongRequestSerializer, SingerSerializer, SongRequestLineupSerializer
+from .serializers import (
+    SongSuggestionSerializer,
+    SongRequestSerializer,
+    SingerSerializer,
+    SongRequestLineupSerializer,
+    LyricsSerializer,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -309,6 +315,19 @@ def default_lyrics(request):
     lyric.default = True
     lyric.save()
     return Response({}, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+def get_current_lyrics(request):
+    current = SongRequest.objects.current_song()
+    print("HELLLLOOOOOOOO", current)
+    serialized = LyricsSerializer(current and _sort_lyrics(current)[0], many=False, read_only=True)
+    return Response(serialized.data, status=status.HTTP_200_OK)
+
+
+@bwt_login_required('login')
+def live_lyrics(request):
+    return render(request, 'song_signup/live_lyrics.html')
 
 
 @bwt_login_required('login')
