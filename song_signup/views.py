@@ -228,6 +228,9 @@ def _sort_lyrics(song: SongRequest | GroupSongRequest):
 
     Within each group just order by ID for consistency.
     """
+    if not song:
+        return
+
     lyrics = song.lyrics.order_by('id').all()
 
     default = [lyric for lyric in lyrics if lyric.default]
@@ -320,8 +323,9 @@ def default_lyrics(request):
 @api_view(["GET"])
 def get_current_lyrics(request):
     current = SongRequest.objects.current_song()
-    print("HELLLLOOOOOOOO", current)
-    serialized = LyricsSerializer(current and _sort_lyrics(current)[0], many=False, read_only=True)
+    lyrics = _sort_lyrics(current)
+
+    serialized = LyricsSerializer(lyrics[0] if lyrics else None, many=False, read_only=True)
     return Response(serialized.data, status=status.HTTP_200_OK)
 
 

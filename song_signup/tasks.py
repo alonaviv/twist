@@ -237,7 +237,6 @@ PARSERS = {parser.__name__: parser for parser in LyricsWebsiteParser.__subclasse
 
 @shared_task
 def get_lyrics(song_id: int | None = None, group_song_id: int | None = None):
-    import time; time.sleep(100)
     if song_id is not None:
         assert group_song_id is None
         song = SongRequest.objects.get(id=song_id)
