@@ -3,6 +3,7 @@ const lyricsWrapper = document.getElementById("lyrics-wrapper");
 const nav = document.querySelector("nav");
 const footer = document.querySelector("footer");
 const logo = document.querySelector(".fixed-logo");
+let currentSong = '';
 
 setInterval(populateLyrics, 1000);
 
@@ -20,7 +21,9 @@ async function populateLyrics() {
     const data = await res.json();
     if (data.song_name) {
         var lyrics = data.lyrics;
-        // From constance, defined in base.html
+        const resDrinking = await fetch("/drinking_word");
+        const drinkingWord = (await resDrinking.json()).drinking_word;
+
         if (drinkingWord !== "") {
             const regex = new RegExp(`\\b(${drinkingWord}s?)\\b`, 'gi');
             lyrics = data.lyrics.replace(regex, `<span class="drink-highlight">$1</span>`);
@@ -32,6 +35,11 @@ async function populateLyrics() {
     `
     } else {
         lyricsText.innerHTML = "<h2>Live lyrics not loaded yet</h2>"
+    }
+
+    if (data.song_name != currentSong) {
+        currentSong = data.song_name;
+        window.scrollTo(0, 0);
     }
 }
 

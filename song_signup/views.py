@@ -1,6 +1,8 @@
 import logging
 import traceback
 from functools import wraps
+
+import constance
 from constance import config
 from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.contrib.auth.decorators import user_passes_test
@@ -152,6 +154,12 @@ def get_suggested_songs(request):
 def get_current_user(request):
     serialized = SingerSerializer(request.user, read_only=True)
     return Response(serialized.data, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+def get_drinking_word(request):
+    drinking_word = constance.config.WORD
+    return Response({'drinking_word': drinking_word}, status=status.HTTP_200_OK)
 
 
 @api_view(["GET"])
