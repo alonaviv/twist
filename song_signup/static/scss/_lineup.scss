@@ -88,6 +88,12 @@
         /* Top light */ 0 -8px 20px $shadow-color,
         /* Bottom light */ 8px 0 20px $shadow-color,
         /* Right light */ -8px 0 20px $shadow-color; /* Left light */
+    
+    .view-lyrics {
+        margin-top: 10px;
+        font-style: italic;
+
+    }
 }
 
 #explanation-overlay {

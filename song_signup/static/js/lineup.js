@@ -27,7 +27,9 @@ function formatSong(song) {
     } else {
         content = `<p class="song-name">${song.song_name}</p>
                    <p class="song-musical">${song.musical}</p>
-                   <p class="singers"> - ${song.singers}</p>`;
+                   <p class="singers"> - ${song.singers}</p>
+                   <p class="view-lyrics">(Click for live lyrics)</p>
+                   `;
     }
 
     return `

@@ -13,6 +13,7 @@
         </div>
     </div>
     <div id="now-singing-wrapper">
+        <a href="{% url "live_lyrics" %}">
         <div id="now-singing">
             <div class="container">
                 <h2>Now Performing:</h2>
@@ -20,13 +21,14 @@
                     <p></p>
                 </div>
                 <div class="current-song">
-                    <a id="current-song-lyrics" class="link"><p></p></a>
+                    <p></p>
                 </div>
                 <div class="up-next">
-                    <p>(Coming up next - <span id="next-singer"></span> with <a id="next-song-lyrics" class="link"><span id="next-song"></span></a>)</p>
+                    <p>(Coming up next - <span id="next-singer"></span> with <span id="next-song"></span>)</p>
                 </div>
             </div>
         </div>
+        </a>
     </div>
     {% if new_song != None %}
         {% if is_group_song %}
