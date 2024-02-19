@@ -76,7 +76,7 @@ footer {
     width: 100%;
     height: $footer-height;
 
-    .screen {
+    &.screen {
         display: none;
     }
 

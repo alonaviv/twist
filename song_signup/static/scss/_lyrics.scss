@@ -1,3 +1,17 @@
+.fixed-logo {
+    display: none;
+
+    &.screen {
+        position: fixed;
+        display: block; 
+        img {
+            height: 30%;
+            width: 30%;
+            padding: 15px 0px 0px 15px;
+        }
+    }
+}
+
 .drink-highlight {
     color: white;
     background-color: $primary-color;
@@ -16,8 +30,8 @@
         font-weight: 900;
         content: "\f57b";
         position: absolute;
-        top: -5px;
-        left: -7px;
+        top: -25%;
+        left: -20%;
         rotate: (30deg);
     }
 }
@@ -41,6 +55,10 @@
             pre {
                 text-wrap: wrap;
                 line-height: 1.8em;
+            }
+
+            &.screen {
+                font-size: 30px;
             }
         }
     }

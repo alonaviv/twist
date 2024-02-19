@@ -188,7 +188,7 @@ nav {
   position: relative;
   height: 8vh;
   z-index: 100; }
-  nav .screen {
+  nav.screen {
     display: none; }
 
 #menu-wrapper {
@@ -954,6 +954,16 @@ nav {
           color: #666;
           pointer-events: none; }
 
+.fixed-logo {
+  display: none; }
+  .fixed-logo.screen {
+    position: fixed;
+    display: block; }
+    .fixed-logo.screen img {
+      height: 30%;
+      width: 30%;
+      padding: 15px 0px 0px 15px; }
+
 .drink-highlight {
   color: white;
   background-color: #00C575;
@@ -971,8 +981,8 @@ nav {
     font-weight: 900;
     content: "\f57b";
     position: absolute;
-    top: -5px;
-    left: -7px;
+    top: -25%;
+    left: -20%;
     rotate: 30deg; }
 
 #lyrics-wrapper {
@@ -991,6 +1001,8 @@ nav {
       #lyrics-wrapper .container #lyrics-text pre {
         text-wrap: wrap;
         line-height: 1.8em; }
+      #lyrics-wrapper .container #lyrics-text.screen {
+        font-size: 30px; }
 
 @media only screen and (min-width: 768px) {
   /* Make the font big but keep room for movement on screen */
@@ -1178,7 +1190,7 @@ main {
 footer {
   width: 100%;
   height: 4vh; }
-  footer .screen {
+  footer.screen {
     display: none; }
   footer.regular {
     position: fixed;
