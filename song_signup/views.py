@@ -329,7 +329,6 @@ def get_current_lyrics(request):
     return Response(serialized.data, status=status.HTTP_200_OK)
 
 
-@bwt_login_required('login')
 def live_lyrics(request):
     return render(request, 'song_signup/live_lyrics.html')
 
