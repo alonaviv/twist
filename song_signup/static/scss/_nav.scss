@@ -1,181 +1,182 @@
 nav {
-  position: relative;
-  height: 8vh;
+    position: relative;
+    height: 8vh;
+    z-index: 100;
 }
 
 #menu-wrapper {
-  position: fixed;
-  height: 100%;
-  visibility: hidden;
-  top: 0;
-  width: 0;
-  z-index: 1;
+    position: fixed;
+    height: 100%;
+    visibility: hidden;
+    top: 0;
+    width: 0;
+    z-index: 1;
 
-  &.extend {
-    visibility: visible;
+    &.extend {
+        visibility: visible;
+        #overlay {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        #menu {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
     #overlay {
-      transform: translateX(0);
-      opacity: 1;
+        background-color: rgba($primary-color, 0.95);
+        height: 100vh;
+        width: 100vw;
+        position: absolute;
+        top: 0;
+        left: 0;
+        transform: translateX(100vw);
+        opacity: 0;
+        transition: all 0.3s ease;
     }
+
     #menu {
-      transform: translateX(0);
-      opacity: 1;
-    }
-  }
-
-  #overlay {
-    background-color: rgba($primary-color, 0.95);
-    height: 100vh;
-    width: 100vw;
-    position: absolute;
-    top: 0;
-    left: 0;
-    transform: translateX(100vw);
-    opacity: 0;
-    transition: all 0.3s ease;
-  }
-
-  #menu {
-    position: absolute;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    top: 0;
-    left: 0;
-    height: 100vh;
-    width: 100vw;
-    padding: 30px 0px 10px;
-    opacity: 0;
-    transition: all 0.3s ease;
-    transform: translateX(50vw);
-
-    #menu-content {
-      padding: 0px 40px;
-      color: set-text-color($secondary-color);
-      h2 {
-        font-size: 40px;
-        font-weight: 900;
-      }
-      h3 {
-        font-size: 25px;
-        margin-bottom: 35px;
-      }
-
-      li {
-        margin: 20px 0;
-        font-size: 30px;
-        font-weight: 900;
-      }
-    }
-    #navbar-icons{
-        width: 100%;
-        margin-top: 30px;
-        align-self: flex-end;
+        position: absolute;
         display: flex;
         flex-direction: column;
-        justify-content: space-between;
-        align-items: center;
+        overflow: hidden;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: 100vw;
+        padding: 30px 0px 10px;
+        opacity: 0;
+        transition: all 0.3s ease;
+        transform: translateX(50vw);
 
-        #navbar-social {
+        #menu-content {
+            padding: 0px 40px;
+            color: set-text-color($secondary-color);
+            h2 {
+                font-size: 40px;
+                font-weight: 900;
+            }
+            h3 {
+                font-size: 25px;
+                margin-bottom: 35px;
+            }
+
+            li {
+                margin: 20px 0;
+                font-size: 30px;
+                font-weight: 900;
+            }
+        }
+        #navbar-icons {
             width: 100%;
-            text-align: center;
-            font-size: 40px;
-            margin: 0px 8%;
-
+            margin-top: 30px;
+            align-self: flex-end;
             display: flex;
-            flex-direction: row-reverse;
-            justify-content: space-around;
+            flex-direction: column;
+            justify-content: space-between;
             align-items: center;
 
-            #navbar-instagram{
+            #navbar-social {
+                width: 100%;
+                text-align: center;
+                font-size: 40px;
+                margin: 0px 8%;
+
                 display: flex;
+                flex-direction: row-reverse;
+                justify-content: space-around;
                 align-items: center;
+
+                #navbar-instagram {
+                    display: flex;
+                    align-items: center;
                     p {
                         margin-left: 5px;
                         font-size: 30px;
                     }
+                }
+            }
+            #navbar-whatsapp {
+                text-align: center;
+                font-size: 30px;
+                margin: 0px 8% 10px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
             }
         }
-        #navbar-whatsapp {
-            text-align: center;
-            font-size: 30px;
-            margin: 0px 8% 10px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
     }
-  }
 }
 
 #navbar {
-  position: fixed;
-  background: $dark-bg;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 5px 15px;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: $navbar-height;
-  transition: all 0.4s ease;
-  z-index: 0;
+    position: fixed;
+    background: $dark-bg;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 15px;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: $navbar-height;
+    transition: all 0.4s ease;
+    z-index: 0;
 
-  .logo {
-    color: $primary-color;
-    font-family: "Anton", sans-serif;
-    font-size: 30px;
-    letter-spacing: 1.5px;
-    transition: inherit;
-  }
+    .logo {
+        color: $primary-color;
+        font-family: "Anton", sans-serif;
+        font-size: 30px;
+        letter-spacing: 1.5px;
+        transition: inherit;
+    }
 }
 
 #hamburger-wrapper {
-  width: 30px;
-  padding: 5px;
-  position: fixed;
-  z-index: 10;
-  top: $navbar-height/3;
-  right: $navbar-height/3;
+    width: 30px;
+    padding: 5px;
+    position: fixed;
+    z-index: 10;
+    top: $navbar-height/3;
+    right: $navbar-height/3;
 
-  #hamburger {
-    width: 100%;
-    height: 2.5px;
-    background-color: $primary-color;
-    position: relative;
-    transition: transform 0.3s ease;
+    #hamburger {
+        width: 100%;
+        height: 2.5px;
+        background-color: $primary-color;
+        position: relative;
+        transition: transform 0.3s ease;
 
-    &::before {
-      position: absolute;
-      content: "";
-      top: -7px;
-      width: 100%;
-      height: 100%;
-      background: inherit;
-      transition: inherit;
+        &::before {
+            position: absolute;
+            content: "";
+            top: -7px;
+            width: 100%;
+            height: 100%;
+            background: inherit;
+            transition: inherit;
+        }
+        &::after {
+            position: absolute;
+            content: "";
+            top: 7px;
+            width: 100%;
+            height: 100%;
+            background: inherit;
+            transition: inherit;
+        }
+
+        &.close {
+            transform: rotate(-45deg);
+            background-color: #000;
+
+            &::before {
+                top: 0;
+            }
+            &::after {
+                top: 0;
+                transform: rotate(90deg);
+            }
+        }
     }
-    &::after {
-      position: absolute;
-      content: "";
-      top: 7px;
-      width: 100%;
-      height: 100%;
-      background: inherit;
-      transition: inherit;
-    }
-
-    &.close {
-      transform: rotate(-45deg);
-      background-color: #000;
-
-      &::before {
-        top: 0;
-      }
-      &::after {
-        top: 0;
-        transform: rotate(90deg);
-      }
-    }
-  }
 }

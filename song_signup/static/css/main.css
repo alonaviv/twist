@@ -186,7 +186,8 @@
 
 nav {
   position: relative;
-  height: 8vh; }
+  height: 8vh;
+  z-index: 100; }
 
 #menu-wrapper {
   position: fixed;
@@ -951,8 +952,29 @@ nav {
           color: #666;
           pointer-events: none; }
 
+.drink-highlight {
+  color: white;
+  background-color: #00C575;
+  border-radius: 20%;
+  padding: 5px;
+  position: relative;
+  display: inline-block; }
+  .drink-highlight::before {
+    display: inline-block;
+    font-style: normal;
+    font-variant: normal;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    content: "\f57b";
+    position: absolute;
+    top: -5px;
+    left: -7px;
+    rotate: 30deg; }
+
 #lyrics-wrapper {
-  height: 100vh;
+  min-height: 100vh;
   width: 100%;
   background: #00b3c5;
   color: #000;
