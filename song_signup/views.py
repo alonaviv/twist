@@ -51,6 +51,17 @@ def bwt_login_required(login_url, singer_only=False):
         return wrapper
     return decorator
 
+def superuser_required(login_url):
+    def decorator(view_func):
+        @wraps(view_func)
+        def wrapper(request, *args, **kwargs):
+            if not request.user.is_superuser:
+                return redirect(login_url)
+
+            return view_func(request, *args, **kwargs)
+        return wrapper
+    return decorator
+
 
 def _is_superuser(user):
     return user.is_authenticated and user.is_superuser
@@ -248,7 +259,7 @@ def _sort_lyrics(song: SongRequest | GroupSongRequest):
     return default + exact_matches + left_matches + right_matches + lyrics
 
 
-@bwt_login_required('login')
+@superuser_required('login')
 def lyrics(request, song_pk):
     try:
         song_request = SongRequest.objects.get(pk=song_pk)
@@ -259,7 +270,7 @@ def lyrics(request, song_pk):
     return render(request, 'song_signup/lyrics.html', {"lyrics": lyrics and lyrics[0], "song": song_request})
 
 
-@bwt_login_required('login')
+@superuser_required('login')
 def group_lyrics(request, song_pk):
     try:
         song_request = GroupSongRequest.objects.get(pk=song_pk)
@@ -270,7 +281,7 @@ def group_lyrics(request, song_pk):
     return render(request, 'song_signup/lyrics.html', {"lyrics": lyrics and lyrics[0], "group_song": song_request})
 
 
-@bwt_login_required('login')
+@superuser_required('login')
 def lyrics_by_id(request, lyrics_id):
     try:
         lyrics = SongLyrics.objects.get(id=lyrics_id)
@@ -284,7 +295,7 @@ def lyrics_by_id(request, lyrics_id):
     })
 
 
-@bwt_login_required('login')
+@superuser_required('login')
 def alternative_lyrics(request, song_pk):
     try:
         song_request = SongRequest.objects.get(pk=song_pk)
@@ -295,7 +306,7 @@ def alternative_lyrics(request, song_pk):
     return render(request, 'song_signup/alternative_lyrics.html', {"lyrics": lyrics, "song": song_request})
 
 
-@bwt_login_required('login')
+@superuser_required('login')
 def alternative_group_lyrics(request, song_pk):
     try:
         song_request = GroupSongRequest.objects.get(pk=song_pk)
