@@ -2,6 +2,10 @@ nav {
     position: relative;
     height: 8vh;
     z-index: 100;
+
+    .screen {
+        display: none;
+    }
 }
 
 #menu-wrapper {

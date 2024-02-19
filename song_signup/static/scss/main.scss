@@ -76,6 +76,10 @@ footer {
     width: 100%;
     height: $footer-height;
 
+    .screen {
+        display: none;
+    }
+
     &.regular {
         position: fixed;
         bottom: 0;

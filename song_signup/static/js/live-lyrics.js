@@ -1,6 +1,16 @@
 const lyricsText = document.getElementById("lyrics-text");
+const nav = document.querySelector("nav");
+const footer = document.querySelector("footer");
 
 setInterval(populateLyrics, 1000);
+
+// Allow dragging on computers - useful for projector screen
+if( !/Android|iPhone/i.test(navigator.userAgent) ) {
+    $("#lyrics-text").draggable({ containment: "#lyrics-wrapper"});
+} else {
+    nav.classList.add('screen');
+    footer.classList.add('screen');
+}
 
 async function populateLyrics() {
     if (drinkingWord === '') { // From constance, defined in base.html

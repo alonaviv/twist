@@ -188,6 +188,8 @@ nav {
   position: relative;
   height: 8vh;
   z-index: 100; }
+  nav .screen {
+    display: none; }
 
 #menu-wrapper {
   position: fixed;
@@ -1176,6 +1178,8 @@ main {
 footer {
   width: 100%;
   height: 4vh; }
+  footer .screen {
+    display: none; }
   footer.regular {
     position: fixed;
     bottom: 0; }
