@@ -3,7 +3,7 @@
 
     &.screen {
         position: fixed;
-        display: block; 
+        display: block;
         img {
             height: 30%;
             width: 30%;
@@ -43,6 +43,11 @@
     color: #000;
     margin-bottom: $footer-height;
     padding: 2% 0% 2% 0%;
+    &.screen {
+        font-size: 30px;
+        padding-bottom: 50vh;
+        margin-bottom: 0px;
+    }
 
     .container {
         overflow: wrap;
@@ -55,10 +60,6 @@
             pre {
                 text-wrap: wrap;
                 line-height: 1.8em;
-            }
-
-            &.screen {
-                font-size: 30px;
             }
         }
     }

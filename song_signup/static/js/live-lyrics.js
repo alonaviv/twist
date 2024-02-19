@@ -1,4 +1,5 @@
 const lyricsText = document.getElementById("lyrics-text");
+const lyricsWrapper = document.getElementById("lyrics-wrapper");
 const nav = document.querySelector("nav");
 const footer = document.querySelector("footer");
 const logo = document.querySelector(".fixed-logo");
@@ -10,7 +11,7 @@ if (!/Android|iPhone/i.test(navigator.userAgent)) {
     $("#lyrics-text").draggable({ containment: "#lyrics-wrapper" });
     nav.classList.add('screen');
     footer.classList.add('screen');
-    lyricsText.classList.add('screen');
+    lyricsWrapper.classList.add('screen');
     logo.classList.add('screen');
 }
 
