@@ -22,7 +22,7 @@ window.addEventListener('DOMContentLoaded', loadWait(populateLineup));
 
 function formatSong(song) {
     let content;
-    if (!song) {
+    if (!song.song_name) {
         content = `<p class="song-name">No songs chosen yet!</p>`;
     } else {
         content = `<p class="song-name">${song.song_name}</p>

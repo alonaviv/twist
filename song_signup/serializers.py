@@ -1,4 +1,4 @@
-from rest_framework.serializers import ModelSerializer, SerializerMethodField
+from rest_framework.serializers import ModelSerializer, SerializerMethodField, CharField
 from song_signup.models import SongSuggestion, Singer, SongRequest, SongLyrics
 from twist.utils import is_hebrew
 
@@ -44,6 +44,14 @@ class SongRequestLineupSerializer(ModelSerializer):
     class Meta:
         model = SongRequest
         fields = ['position', 'singers', 'song_name', 'musical']
+
+
+class GroupSongRequestLineupSerializer(ModelSerializer):
+    singers = CharField(default="Group Song", read_only=True)
+
+    class Meta:
+        model = SongRequest
+        fields = ['singers', 'song_name', 'musical']
 
 
 class LyricsSerializer(ModelSerializer):

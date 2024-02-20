@@ -35,6 +35,7 @@ from .serializers import (
     SongRequestSerializer,
     SingerSerializer,
     SongRequestLineupSerializer,
+    GroupSongRequestLineupSerializer,
     LyricsSerializer,
 )
 
@@ -176,11 +177,18 @@ def get_song(request, song_pk):
 @api_view(["GET"])
 def get_lineup(request):
     song_requests = SongRequest.objects.filter(position__isnull=False).order_by('position')
-    current_song = song_requests.first()
+    current_song = _get_current_song()
+
+    if isinstance(current_song, GroupSongRequest):
+        current_song_data = GroupSongRequestLineupSerializer(current_song).data
+        next_songs_data = SongRequestLineupSerializer(song_requests, many=True).data
+    else:
+        current_song_data = SongRequestLineupSerializer(current_song).data
+        next_songs_data = SongRequestLineupSerializer(song_requests[1:], many=True).data
 
     return Response({
-        'current_song': SongRequestLineupSerializer(song_requests.first()).data if current_song else None,
-        'next_songs': SongRequestLineupSerializer(song_requests[1:], many=True).data
+        'current_song': current_song_data,
+        'next_songs': next_songs_data
     }, status=status.HTTP_200_OK)
 
 
@@ -349,7 +357,6 @@ def _get_current_song():
 
 @api_view(["GET"])
 def get_current_lyrics(request):
-    _get_current_song()
     current = _get_current_song()
     lyrics = _sort_lyrics(current)
 

@@ -32,7 +32,7 @@ def set_group_performed(modeladmin, request, queryset):
     if queryset.count() == 1:
         group_song = queryset.first()
         group_song.performance_time = timezone.now()
-        group_song.save()
+        group_song.save(get_lyrics=False)
 
         CurrentGroupSong.objects.all().delete()
         CurrentGroupSong.objects.create(group_song=group_song)
@@ -60,16 +60,24 @@ class NotYetPerformedFilter(admin.SimpleListFilter):
 @admin.register(GroupSongRequest)
 class GroupSongRequestAdmin(admin.ModelAdmin):
     list_display = (
-        'song_name', 'musical', 'suggested_by', 'get_request_time', 'lyrics'
+        'lyrics', 'song_name', 'musical', 'suggested_by', 'get_request_time', 'get_performance_time'
     )
     actions = [set_group_performed]
     change_list_template = "admin/group_song_request_changelist.html"
 
     def get_request_time(self, obj):
         return obj.request_time.astimezone(timezone.get_current_timezone()).strftime("%H:%M %p")
-
     get_request_time.short_description = 'Request Time'
     get_request_time.admin_order_field = 'request_time'
+
+    def get_performance_time(self, obj):
+        if obj.performance_time:
+            return obj.performance_time.astimezone(timezone.get_current_timezone()).strftime("%H:%M %p")
+
+        else:
+            return None
+    get_performance_time.short_description = 'Performance Time'
+    get_performance_time.admin_order_field = 'performance_time'
 
     def lyrics(self, obj):
         return mark_safe(f'<a href="{reverse("group_lyrics", args=(obj.id,))}">Lyrics</a>')

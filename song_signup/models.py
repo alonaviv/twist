@@ -177,14 +177,14 @@ class GroupSongRequest(Model):
     request_time = DateTimeField(auto_now_add=True)
     performance_time = DateTimeField(default=None, null=True, blank=True)
 
-    def save(self, *args, **kwargs):
+    def save(self, get_lyrics=True, *args, **kwargs):
         self.song_name = titlecase(self.song_name)
         self.musical = titlecase(self.musical)
         super().save(*args, **kwargs)
 
-        from song_signup.tasks import get_lyrics
-
-        get_lyrics.delay(group_song_id=self.id)
+        if get_lyrics:
+            from song_signup.tasks import get_lyrics
+            get_lyrics.delay(group_song_id=self.id)
 
 
 class CurrentGroupSong(Model):
