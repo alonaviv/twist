@@ -30,8 +30,8 @@
         font-weight: 900;
         content: "\f57b";
         position: absolute;
-        top: -25%;
-        left: -20%;
+        top: -30%;
+        left: -25%;
         rotate: (30deg);
     }
 }
@@ -55,7 +55,6 @@
 
         #lyrics-text {
             width: 100%;
-
             pre {
                 text-wrap: wrap;
                 line-height: 1.8em;
@@ -64,6 +63,9 @@
             &.screen {
                 font-size: 50px;
                 max-width: 60%;
+                pre {
+                    line-height: 1.6em;
+                }
             }
         }
     }

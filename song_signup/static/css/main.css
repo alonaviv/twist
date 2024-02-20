@@ -981,8 +981,8 @@ nav {
     font-weight: 900;
     content: "\f57b";
     position: absolute;
-    top: -25%;
-    left: -20%;
+    top: -30%;
+    left: -25%;
     rotate: 30deg; }
 
 #lyrics-wrapper {
@@ -1007,6 +1007,8 @@ nav {
       #lyrics-wrapper .container #lyrics-text.screen {
         font-size: 50px;
         max-width: 60%; }
+        #lyrics-wrapper .container #lyrics-text.screen pre {
+          line-height: 1.6em; }
 
 #lineup-wrapper {
   height: 100%;
