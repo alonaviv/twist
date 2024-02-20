@@ -155,6 +155,11 @@ class TheMusicalLyricsParser(LyricsWebsiteParser):
     URL_FORMAT = re.compile("themusicallyrics\.com\/.*\/.*-lyrics\/.*-lyrics\.html$")
     SITE = "themusicallyrics.com"
 
+    def fix_url(self, url):
+        # Something is broken with the SSL cert on this site when using
+        # requests (but not when using browser). For now just use http
+        return url.replace("https://", "http://")
+
     def parse_lyrics(self, soup: bs4.BeautifulSoup) -> str:
         page_title = soup.find("title").text
         artist, title = page_title.split("-")[:2]
