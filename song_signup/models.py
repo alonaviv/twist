@@ -1,3 +1,4 @@
+import re
 import datetime
 from titlecase import titlecase
 from django.conf import settings
@@ -318,6 +319,9 @@ class SongLyrics(Model):
         verbose_name_plural = "Song lyrics"
 
     def save(self, *args, **kwargs):
+        # Limit consecutive newlines to three
+        self.lyrics = re.sub(r'\n{4,}', '\n'*3, self.lyrics)
+
         # Only one can be default
         if self.default:
             if self.song_request:

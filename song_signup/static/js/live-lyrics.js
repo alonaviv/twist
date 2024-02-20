@@ -35,7 +35,7 @@ async function populateLyrics() {
         <pre dir="auto">${lyrics}</pre>
     `
     } else {
-        lyricsText.innerHTML = "<h2>Live lyrics not loaded yet</h2>"
+        lyricsText.innerHTML = "<h2>Loading Lyrics...</h2>"
     }
 
     if (data.song_name != currentSong) {
