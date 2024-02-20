@@ -5,27 +5,40 @@ from django.utils.safestring import mark_safe
 from django.utils.html import format_html
 
 from .managers import LATE_SINGER_CYCLE
-from .models import SongLyrics, SongRequest, Singer, GroupSongRequest, TicketOrder
+from .models import SongLyrics, SongRequest, Singer, GroupSongRequest, TicketOrder, CurrentGroupSong
 
 
-def set_performed(modeladmin, request, queryset):
+def set_solo_performed(modeladmin, request, queryset):
     for song in queryset:
         song.performance_time = timezone.now()
         song.save()
         Singer.ordering.calculate_positions()
 
 
-def set_not_performed(modeladmin, request, queryset):
+def set_solo_not_performed(modeladmin, request, queryset):
     for song in queryset:
         song.performance_time = None
         song.save()
         Singer.ordering.calculate_positions()
 
 
-set_performed.short_description = 'Mark song as performed'
-set_performed.allowed_permissions = ['change']
-set_not_performed.short_description = 'Mark song as not performed'
-set_not_performed.allowed_permissions = ['change']
+set_solo_performed.short_description = 'Mark song as performed'
+set_solo_performed.allowed_permissions = ['change']
+set_solo_not_performed.short_description = 'Mark song as not performed'
+set_solo_not_performed.allowed_permissions = ['change']
+
+
+def set_group_performed(modeladmin, request, queryset):
+    if queryset.count() == 1:
+        group_song = queryset.first()
+        group_song.performance_time = timezone.now()
+        group_song.save()
+
+        CurrentGroupSong.objects.all().delete()
+        CurrentGroupSong.objects.create(group_song=group_song)
+set_group_performed.short_description = 'Perform Group Song'
+set_group_performed.allowed_permissions = ['change']
+
 
 
 class NotYetPerformedFilter(admin.SimpleListFilter):
@@ -49,6 +62,8 @@ class GroupSongRequestAdmin(admin.ModelAdmin):
     list_display = (
         'song_name', 'musical', 'suggested_by', 'get_request_time', 'lyrics'
     )
+    actions = [set_group_performed]
+    change_list_template = "admin/group_song_request_changelist.html"
 
     def get_request_time(self, obj):
         return obj.request_time.astimezone(timezone.get_current_timezone()).strftime("%H:%M %p")
@@ -85,7 +100,7 @@ class SongRequestAdmin(admin.ModelAdmin):
         'suggested_by', 'get_performance_time', 'get_request_time', 'get_initial_signup'
     )
     list_filter = (NotYetPerformedFilter,)
-    actions = [set_performed, set_not_performed]
+    actions = [set_solo_performed, set_solo_not_performed]
     ordering = ['position']
     change_list_template = "admin/song_request_changelist.html"
 

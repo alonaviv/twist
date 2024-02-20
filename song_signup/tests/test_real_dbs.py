@@ -3,7 +3,7 @@ from collections import defaultdict
 from django.utils import timezone
 from freezegun import freeze_time
 
-from song_signup.admin import set_performed
+from song_signup.admin import set_solo_performed
 from song_signup.models import SongRequest, Singer
 from django.test import TestCase
 from song_signup.views import disable_signup
@@ -107,7 +107,7 @@ class TestRealDB(TestCase):
                 Singer.ordering.calculate_positions()
 
                 current_song = get_current_song()
-                set_performed(None, None, [current_song])
+                set_solo_performed(None, None, [current_song])
 
                 if INTERACTIVE:
                     print(f"\n\nMarking {current_song} as performed at {convert_time(performance_time)}. "

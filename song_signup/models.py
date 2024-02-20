@@ -16,7 +16,8 @@ from django.db.models import (
     Model,
     TextField,
     URLField,
-    CharField
+    CharField,
+    OneToOneField,
 )
 
 from song_signup.managers import (
@@ -174,6 +175,7 @@ class GroupSongRequest(Model):
     musical = CITextField(max_length=50, null=False, blank=False)
     suggested_by = CITextField(max_length=50, null=True, default='-')
     request_time = DateTimeField(auto_now_add=True)
+    performance_time = DateTimeField(default=None, null=True, blank=True)
 
     def save(self, *args, **kwargs):
         self.song_name = titlecase(self.song_name)
@@ -183,6 +185,18 @@ class GroupSongRequest(Model):
         from song_signup.tasks import get_lyrics
 
         get_lyrics.delay(group_song_id=self.id)
+
+
+class CurrentGroupSong(Model):
+    """
+    Singleton model to get the group song currently being performed.
+    """
+    group_song = OneToOneField(GroupSongRequest, on_delete=CASCADE, null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        if CurrentGroupSong.objects.exists() and not self.pk:
+            return
+        return super().save(*args, **kwargs)
 
 
 class SongSuggestion(Model):

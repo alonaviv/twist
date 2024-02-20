@@ -27,7 +27,8 @@ from .models import (
     TicketOrder,
     SING_SKU,
     TicketsDepleted,
-    AlreadyLoggedIn
+    AlreadyLoggedIn,
+    CurrentGroupSong
 )
 from .serializers import (
     SongSuggestionSerializer,
@@ -338,14 +339,27 @@ def default_lyrics(request):
     lyric.save()
     return Response({}, status=status.HTTP_200_OK)
 
+def _get_current_song():
+    curr_group_song = CurrentGroupSong.objects.all().first()
+    if curr_group_song:
+        return curr_group_song.group_song
+    else:
+        return SongRequest.objects.current_song()
+
 
 @api_view(["GET"])
 def get_current_lyrics(request):
-    current = SongRequest.objects.current_song()
+    _get_current_song()
+    current = _get_current_song()
     lyrics = _sort_lyrics(current)
 
     serialized = LyricsSerializer(lyrics[0] if lyrics else None, many=False, read_only=True)
     return Response(serialized.data, status=status.HTTP_200_OK)
+
+
+def end_group_song(request):
+    CurrentGroupSong.objects.all().delete()
+    return redirect('admin/song_signup/groupsongrequest')
 
 
 def live_lyrics(request):
