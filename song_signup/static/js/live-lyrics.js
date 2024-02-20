@@ -13,6 +13,7 @@ if (!/Android|iPhone/i.test(navigator.userAgent)) {
     nav.classList.add('screen');
     footer.classList.add('screen');
     lyricsWrapper.classList.add('screen');
+    lyricsText.classList.add('screen');
     logo.classList.add('screen');
 }
 

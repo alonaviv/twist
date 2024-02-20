@@ -993,7 +993,6 @@ nav {
   margin-bottom: 4vh;
   padding: 2% 0% 2% 0%; }
   #lyrics-wrapper.screen {
-    font-size: 30px;
     padding-bottom: 50vh;
     margin-bottom: 0px; }
   #lyrics-wrapper .container {
@@ -1005,12 +1004,9 @@ nav {
       #lyrics-wrapper .container #lyrics-text pre {
         text-wrap: wrap;
         line-height: 1.8em; }
-
-@media only screen and (min-width: 768px) {
-  /* Make the font big but keep room for movement on screen */
-  #lyrics-wrapper .container #lyrics-text {
-    max-width: 60%;
-    font-size: 50px; } }
+      #lyrics-wrapper .container #lyrics-text.screen {
+        font-size: 50px;
+        max-width: 60%; }
 
 #lineup-wrapper {
   height: 100%;

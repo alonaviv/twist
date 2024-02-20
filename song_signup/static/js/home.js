@@ -57,7 +57,6 @@ function populateDashboard() {
                     }`;
                 document.getElementById("user-next-song-name").innerHTML =
                     userNextSong.name;
-                document.getElementById("user-next-song-lyrics").href = "/lyrics/" + userNextSong.id;
             } else {
                 dashboardElem.classList.add("hidden");
                 noSongElem.classList.remove("hidden");
