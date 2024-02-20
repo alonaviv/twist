@@ -10,7 +10,7 @@ from django.core.management import call_command
 from django.db import transaction
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
-from flags.state import enable_flag, disable_flag, flag_disabled
+from flags.state import enable_flag, disable_flag, flag_disabled, flag_enabled
 from openpyxl import load_workbook
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -504,6 +504,7 @@ def reset_database(request):
     call_command('dbbackup')
     call_command('reset_db')
     enable_flag('CAN_SIGNUP')
+    disable_flag('STARTED')
     config.PASSCODE = ''
     config.EVENT_SKU = ''
     return redirect('admin/song_signup/songrequest')
@@ -523,6 +524,20 @@ def disable_signup(request):
 
 def signup_disabled(request):
     return JsonResponse({"result": flag_disabled('CAN_SIGNUP')})
+
+
+def start_evening(request):
+    enable_flag('STARTED')
+    return redirect('admin/song_signup/songrequest')
+
+
+def end_evening(request):
+    disable_flag('STARTED')
+    return redirect('admin/song_signup/songrequest')
+
+
+def evening_started(request):
+    return JsonResponse({"started": flag_enabled('STARTED')})
 
 
 def recalculate_priorities(request):

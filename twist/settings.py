@@ -39,7 +39,8 @@ ALLOWED_HOSTS = ['*']
 DOMAIN = 'http://localhost:8000'
 
 FLAGS = {
-    'CAN_SIGNUP': []
+    'CAN_SIGNUP': [],
+    'STARTED': []
 }
 
 LOGGING = {

@@ -10,6 +10,31 @@
             padding: 15px 0px 0px 15px;
         }
     }
+
+    &.not-started {
+        position: inherit;
+        display: flex;
+        background-color: $secondary-color;
+        flex-direction: column;
+        justify-content: start;
+        align-items: center;
+        height: 100vh;
+        width: 100vw;
+        img {
+            height: 80%;
+            width: 80%;
+            padding: 0;
+            object-fit: contain;
+        }
+
+        &.screen {
+            display: block;
+            img {
+                height: 100%;
+                width: 100%;
+            }
+        }
+    }
 }
 
 .drink-highlight {

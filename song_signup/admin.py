@@ -193,3 +193,20 @@ class OrdersAdmin(admin.ModelAdmin):
         return format_html("<br>".join([f"""<a href="{reverse('admin:song_signup_singer_change', args=[singer.pk])}">{singer}</a>""" for singer in singers]))
     get_singers.short_description = 'singers'
 
+
+@admin.register(CurrentGroupSong)
+class CurrentGroupSongAdmin(admin.ModelAdmin):
+    list_display = ['get_song_name', 'get_musical', 'get_suggested_by']
+
+    def get_song_name(self, obj):
+        return obj.group_song.song_name
+    get_song_name.short_description = "Song Name"
+
+    def get_musical(self, obj):
+        return obj.group_song.musical
+    get_musical.short_description = "Musical"
+
+    def get_suggested_by(self, obj):
+        return obj.group_song.suggested_by
+    get_suggested_by.short_description = "Suggested By"
+

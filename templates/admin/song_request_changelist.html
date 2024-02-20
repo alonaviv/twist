@@ -2,20 +2,27 @@
 
 
 {% block object-tools-items %}
+            {% load feature_flags %}
             {{ block.super }}
             {% if request.user.is_superuser %}
+            <li>
+                {% flag_enabled 'STARTED' as started %}
+                {% if started %}
+                    <a href="{% url 'end_evening' %}">End Evening</a>
+                {% else %}
+                    <a href="{% url 'start_evening' %}">Start Evening</a>
+                {% endif %}
+            </li>
             <li>
                 <a href="{% url 'recalculate_priorities' %}">Recalulate</a>
             </li>
             <li>
-                {% load feature_flags %}
                 {% flag_enabled 'CAN_SIGNUP' as can_signup %}
                 {% if can_signup %}
                 <a href="{% url 'disable_signup' %}">Stop Additional Signups</a>
                 {% else %}
                 <a href="{% url 'enable_signup' %}">Allow More Signups</a>
                 {% endif %}
-
             </li>
             <li>
                 <a href="{% url 'reset_database' %}"

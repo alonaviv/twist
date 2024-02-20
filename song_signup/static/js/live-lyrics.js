@@ -18,28 +18,39 @@ if (!/Android|iPhone/i.test(navigator.userAgent)) {
 }
 
 async function populateLyrics() {
-    const res = await fetch("/current_lyrics");
-    const data = await res.json();
-    if (data.song_name) {
-        var lyrics = data.lyrics;
+    const startedRes = await fetch("/evening_started");
+    const eveningStarted = (await startedRes.json()).started
+    if (!eveningStarted) {
+        logo.classList.add('not-started');
+        lyricsText.innerHTML = ""
+        return;
+    }
+    else {
+        logo.classList.remove('not-started');
+    }
+
+    const lyricsRes = await fetch("/current_lyrics");
+    const lyricsData = await lyricsRes.json();
+    if (lyricsData.song_name) {
+        var lyrics = lyricsData.lyrics;
         const resDrinking = await fetch("/drinking_word");
         const drinkingWord = (await resDrinking.json()).drinking_word;
 
         if (drinkingWord !== "") {
             const regex = new RegExp(`\\b(${drinkingWord}s?)\\b`, 'gi');
-            lyrics = data.lyrics.replace(regex, `<span class="drink-highlight">$1</span>`);
+            lyrics = lyricsData.lyrics.replace(regex, `<span class="drink-highlight">$1</span>`);
         }
         lyricsText.innerHTML = `
-        <h2>${data.song_name}</h2>
-            <h3>${data.artist_name}</h3><br>
+        <h2>${lyricsData.song_name}</h2>
+            <h3>${lyricsData.artist_name}</h3><br>
         <pre dir="auto">${lyrics}</pre>
     `
     } else {
         lyricsText.innerHTML = "<h2>Loading Lyrics...</h2>"
     }
 
-    if (data.song_name != currentSong) {
-        currentSong = data.song_name;
+    if (lyricsData.song_name != currentSong) {
+        currentSong = lyricsData.song_name;
         window.scrollTo(0, 0);
     }
 }
