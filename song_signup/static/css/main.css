@@ -1008,7 +1008,7 @@ nav {
 
 @media only screen and (min-width: 768px) {
   /* Make the font big but keep room for movement on screen */
-  #lyrics-wrapper .container #lyrics {
+  #lyrics-wrapper .container #lyrics-text {
     max-width: 60%;
     font-size: 50px; } }
 
