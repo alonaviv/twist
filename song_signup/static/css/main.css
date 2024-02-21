@@ -66,6 +66,10 @@
   background-color: #333;
   color: #00C575; }
 
+.dark-card-secondary-text {
+  background-color: #333;
+  color: #00b3c5; }
+
 .light-card {
   background-color: #00C575;
   color: #000; }
@@ -683,8 +687,6 @@ nav {
 .home-card {
   position: relative;
   height: 11vh; }
-  .home-card.audience {
-    height: 17.6vh; }
   .home-card .larger {
     width: 70%; }
   .home-card .smaller {
@@ -705,9 +707,6 @@ nav {
 #home-whatsapp i {
   color: #f4f4f4; }
 
-#home-whatsapp.audience {
-  height: 8.8vh; }
-
 #home-whatsapp #no-spam {
   position: absolute;
   left: 70%;
@@ -717,9 +716,6 @@ nav {
   transform: rotate(-47deg);
   font-weight: 500;
   color: #fff; }
-
-#home-lineup.audience {
-  height: 17.6vh; }
 
 #home-lineup img {
   object-fit: contain;

@@ -82,8 +82,8 @@
             <div class="row">
                 <div class="column larger">
                     <div class="column-1">
-                        <h3>Check out the lineup</h3>
-                        <p>What's in store for us tonight?</p>
+                        <h3>Lineup</h3>
+                        <p>What's in store tonight?</p>
                     </div>
                 </div>
                 <div class="column smaller">
@@ -99,18 +99,35 @@
         </div>
     </a>
     {% if not is_singer %}
-    <a href="{% url 'suggest_group_song' %}">
-        <div id="home-suggest-song" class="flex-card secondary-card home-card {% if not is_singer %}audience{% endif %}">
+    <a href="{% url 'live_lyrics' %}">
+        <div id="home-suggest-song" class="flex-card secondary-card home-card audience">
             <div class="row">
                 <div class="column larger">
                     <div class="column-1">
-                        <h3>Suggest a group song</h3>
+                        <h3>Live lyrics</h3>
+                        <p>Follow along!</p>
+                    </div>
+                </div>
+                <div class="column smaller">
+                    <div class="column-2">
+                        <img src="{% static 'img/main/lyrics.png' %}" alt="">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </a>
+    <a href="{% url 'suggest_group_song' %}">
+        <div id="home-suggest-song" class="flex-card dark-card-secondary-text home-card audience">
+            <div class="row">
+                <div class="column larger">
+                    <div class="column-1">
+                        <h3>Suggest a song</h3>
                         <p>Have an idea for us?</p>
                     </div>
                 </div>
                 <div class="column smaller">
                     <div class="column-2">
-                        <img src="{% static 'img/main/suggest-song-black.png' %}" alt="">
+                        <img src="{% static 'img/main/suggest-song-blue.png' %}" alt="">
                     </div>
                 </div>
             </div>

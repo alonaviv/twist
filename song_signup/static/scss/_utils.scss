@@ -99,6 +99,11 @@
     color: $primary-color;
 }
 
+.dark-card-secondary-text {
+    background-color: $dark-bg;
+    color: $secondary-color;
+}
+
 .light-card {
     background-color: $primary-color;
     color: set-text-color($primary-color);
@@ -207,7 +212,7 @@
         border-radius: 34px;
         position: relative;
 
-        .inner-toggle{
+        .inner-toggle {
             display: flex;
             flex-direction: row;
             width: 100%;

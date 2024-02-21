@@ -43,8 +43,29 @@ function formatSong(song) {
 
 const currentlySinging = document.getElementById("currently-singing");
 const linupList = document.getElementById("lineup-list");
+const nowPerforming = document.getElementById("now-performing");
 
 async function populateLineup() {
+    const startedRes = await fetch("/evening_started");
+    const eveningStarted = (await startedRes.json()).started
+
+    if (!eveningStarted) {
+        currentlySinging.innerHTML = `
+        <div class="song-wrapper">
+            <div class="song-details">
+                <p class="song-name" >Wait for it, wait for it..</p>
+                <p class="song-musical">Grab a beer, we'll soon begin :)</p>
+            </div>
+        </div>
+        `
+        nowPerforming.classList.add('hidden');
+        linupList.classList.add('hidden');
+        return;
+    } else {
+        nowPerforming.classList.remove('hidden');
+        linupList.classList.remove('hidden');
+    }
+
     const res = await fetch("/get_lineup");
     const data = await res.json();
 
