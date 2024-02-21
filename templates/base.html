@@ -9,6 +9,10 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <script src="https://kit.fontawesome.com/4078bed46b.js" crossorigin="anonymous"></script>
+        <script type="text/javascript">
+        var isSuperuser = {{ request.user.is_superuser|lower }};
+        </script>
+
         <link rel="stylesheet" href="{% static 'css/main.css' %}">
         <title>Broadway With a Twist</title>
         {% livereload_script %}

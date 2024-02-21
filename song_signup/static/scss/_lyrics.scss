@@ -1,7 +1,7 @@
 #passcode-reveal-wrapper {
     display: none;
 
-    &.screen {
+    &.displayed {
         display: block;
         position: absolute;
         right: 70px;

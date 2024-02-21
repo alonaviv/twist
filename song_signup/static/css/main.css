@@ -952,7 +952,7 @@ nav {
 
 #passcode-reveal-wrapper {
   display: none; }
-  #passcode-reveal-wrapper.screen {
+  #passcode-reveal-wrapper.displayed {
     display: block;
     position: absolute;
     right: 70px;

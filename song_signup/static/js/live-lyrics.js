@@ -6,6 +6,7 @@ const logo = document.querySelector(".fixed-logo");
 const passcodeWrapper = document.getElementById("passcode-reveal-wrapper");
 const passcodeReveal = document.getElementById("passcode-reveal");
 let currentSong = '';
+let showPasscode = false;
 
 setInterval(populateLyrics, 1000);
 
@@ -17,7 +18,9 @@ if (!/Android|iPhone/i.test(navigator.userAgent)) {
     lyricsWrapper.classList.add('screen');
     lyricsText.classList.add('screen');
     logo.classList.add('screen');
-    passcodeWrapper?.classList?.add('screen');
+    if (isSuperuser) {
+        showPasscode = true;
+    }
 }
 
 async function populateLyrics() {
@@ -27,20 +30,21 @@ async function populateLyrics() {
         logo.classList.add('not-started');
         lyricsText.innerHTML = ""
 
-        if (passcodeWrapper) {
+        if (showPasscode) {
             const passcodeRes = await fetch("/passcode");
             const passcode = (await passcodeRes.json()).passcode;
-            if (passcode === '') {
-                passcodeWrapper.classList.add('hidden');
-            } else {
-                passcodeWrapper.classList.remove('hidden');
+            if (passcode !== '') {
+                passcodeWrapper.classList.add('displayed');
                 passcodeReveal.innerHTML = passcode;
+            } else {
+                passcodeWrapper.classList.remove('displayed');
             }
         }
         return;
     }
     else {
         logo.classList.remove('not-started');
+        passcodeWrapper.classList.remove('displayed');
     }
 
     const lyricsRes = await fetch("/current_lyrics");
