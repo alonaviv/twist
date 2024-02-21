@@ -27,6 +27,7 @@ urlpatterns = [
     path('current_lyrics', views.get_current_lyrics, name='current_lyrics'),
     path('live_lyrics', views.live_lyrics, name='live_lyrics'),
     path('drinking_word', views.get_drinking_word, name='drinking_word'),
+    path('passcode', views.get_passcode, name='passcode'),
     path('group_lyrics/<int:song_pk>', views.group_lyrics, name='group_lyrics'),
     path('alternative_lyrics/<int:song_pk>', views.alternative_lyrics, name='alternative_lyrics'),
     path('alternative_group_lyrics/<int:song_pk>', views.alternative_group_lyrics, name='alternative_group_lyrics'),

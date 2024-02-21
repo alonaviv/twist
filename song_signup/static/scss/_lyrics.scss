@@ -1,3 +1,20 @@
+#passcode-reveal-wrapper {
+    display: none;
+
+    &.screen {
+        display: block;
+        position: absolute;
+        right: 70px;
+        top: 30px;
+        border: dotted 5px black;
+        box-sizing: border-box;
+        padding: 20px;
+        font-weight: bolder;
+        font-size: 25px;
+        text-align: center;
+    }
+}
+
 .fixed-logo {
     display: none;
 

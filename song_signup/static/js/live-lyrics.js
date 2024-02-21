@@ -3,6 +3,8 @@ const lyricsWrapper = document.getElementById("lyrics-wrapper");
 const nav = document.querySelector("nav");
 const footer = document.querySelector("footer");
 const logo = document.querySelector(".fixed-logo");
+const passcodeWrapper = document.getElementById("passcode-reveal-wrapper");
+const passcodeReveal = document.getElementById("passcode-reveal");
 let currentSong = '';
 
 setInterval(populateLyrics, 1000);
@@ -15,6 +17,7 @@ if (!/Android|iPhone/i.test(navigator.userAgent)) {
     lyricsWrapper.classList.add('screen');
     lyricsText.classList.add('screen');
     logo.classList.add('screen');
+    passcodeWrapper?.classList?.add('screen');
 }
 
 async function populateLyrics() {
@@ -23,6 +26,17 @@ async function populateLyrics() {
     if (!eveningStarted) {
         logo.classList.add('not-started');
         lyricsText.innerHTML = ""
+
+        if (passcodeWrapper) {
+            const passcodeRes = await fetch("/passcode");
+            const passcode = (await passcodeRes.json()).passcode;
+            if (passcode === '') {
+                passcodeWrapper.classList.add('hidden');
+            } else {
+                passcodeWrapper.classList.remove('hidden');
+                passcodeReveal.innerHTML = passcode;
+            }
+        }
         return;
     }
     else {

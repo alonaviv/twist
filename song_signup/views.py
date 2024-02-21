@@ -13,7 +13,8 @@ from django.shortcuts import render, redirect
 from flags.state import enable_flag, disable_flag, flag_disabled, flag_enabled
 from openpyxl import load_workbook
 from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 from titlecase import titlecase
 
@@ -162,6 +163,12 @@ def get_current_user(request):
 def get_drinking_word(request):
     drinking_word = constance.config.WORD
     return Response({'drinking_word': drinking_word}, status=status.HTTP_200_OK)
+
+@api_view(["GET"])
+@permission_classes([IsAdminUser])
+def get_passcode(request):
+    passcode = constance.config.PASSCODE
+    return Response({'passcode': passcode}, status=status.HTTP_200_OK)
 
 
 @api_view(["GET"])
@@ -369,6 +376,7 @@ def end_group_song(request):
     return redirect('admin/song_signup/groupsongrequest')
 
 
+@bwt_login_required('login')
 def live_lyrics(request):
     return render(request, 'song_signup/live_lyrics.html')
 

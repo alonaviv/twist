@@ -4,6 +4,12 @@
 
 {% block content %}
 {% include "partials/_navbar.html" with current="live-lyrics" %}
+{% if request.user.is_superuser %}
+<div id="passcode-reveal-wrapper">
+    <p>Tonight's Secret Word:<p>
+    <p id="passcode-reveal"></p>
+</div>
+{% endif %}
 <div class="fixed-logo">
     <img src="{% static 'img/logo.png' %}">
 </div>
