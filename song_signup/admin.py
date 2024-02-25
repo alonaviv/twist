@@ -85,6 +85,9 @@ class GroupSongRequestAdmin(admin.ModelAdmin):
 
     ordering = ['request_time']
 
+    class Media:
+        js = ["js/admin-reload.js"]
+
 
 # @admin.register(SongSuggestion)
 # class SongSuggestionAdmin(admin.ModelAdmin):
@@ -171,6 +174,9 @@ class SongRequestAdmin(admin.ModelAdmin):
         return mark_safe(f'<a href="{reverse("lyrics", args=(obj.id,))}">Lyrics</a>')
     lyrics.short_description = "Lyrics"
 
+    class Media:
+        js = ["js/admin-reload.js"]
+
 @admin.register(Singer)
 class SingerAdmin(admin.ModelAdmin):
     list_display = ['username', 'date_joined', 'is_superuser', 'no_image_upload', 'ticket_order']
@@ -209,4 +215,7 @@ class CurrentGroupSongAdmin(admin.ModelAdmin):
     def get_suggested_by(self, obj):
         return obj.group_song.suggested_by
     get_suggested_by.short_description = "Suggested By"
+
+    class Media:
+        js = ["js/admin-reload.js"]
 
