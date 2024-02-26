@@ -118,6 +118,12 @@ class SongRequestAdmin(admin.ModelAdmin):
     def changelist_view(self, request, extra_context=None):
         extra_context = extra_context or {}
         extra_context['new_singers_num'] = Singer.ordering.new_singers_num()
+
+        group_song = CurrentGroupSong.objects.first()
+        if group_song:
+            extra_context['group_song'] = group_song.group_song.song_name
+
+
         return super().changelist_view(request, extra_context=extra_context)
 
     def has_delete_permission(self, request, obj=None):
