@@ -44,10 +44,11 @@ class TicketOrder(Model):
     """
     order_id = IntegerField()
     event_sku = CharField(max_length=20)
-    event_name = CharField(max_length=100)
+    event_name = CharField(max_length=100, null=True)
     num_tickets = IntegerField()
     ticket_type = CharField(max_length=20, choices=[(SING_SKU, 'Singer'), (ATTN_SKU, 'Audience')])
     customer_name = CharField(max_length=100)
+    is_freebee = BooleanField(default=False)  # Ticket group for giving singer access to those without singer tickets
 
     class Meta:
         unique_together = ('order_id', 'event_sku', 'ticket_type')
@@ -77,7 +78,7 @@ class Singer(AbstractUser):
                 raise AlreadyLoggedIn("The name that you're trying to login with already exists."
                 "Did you already login with us tonight? If so, check the box below.")
 
-            if self.ticket_order.singers.count() >= self.ticket_order.num_tickets:
+            if not self.ticket_order.is_freebee and self.ticket_order.singers.count() >= self.ticket_order.num_tickets:
                 ticket_type = 'singer' if self.ticket_order.ticket_type == SING_SKU else 'audience'
                 raise TicketsDepleted(f"Sorry, looks like all ticket holders for this order number already logged in. "
                                       f"Are you sure your ticket is of type '{ticket_type}'?")

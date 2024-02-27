@@ -49,12 +49,15 @@ def bwt_login_required(login_url, singer_only=False):
     def decorator(view_func):
         @wraps(view_func)
         def wrapper(request, *args, **kwargs):
-            if not(request.user.is_authenticated or (not singer_only and request.session.get(AUDIENCE_SESSION))):
+            if not (request.user.is_authenticated or (not singer_only and request.session.get(AUDIENCE_SESSION))):
                 return redirect(login_url)
 
             return view_func(request, *args, **kwargs)
+
         return wrapper
+
     return decorator
+
 
 def superuser_required(login_url):
     def decorator(view_func):
@@ -64,7 +67,9 @@ def superuser_required(login_url):
                 return redirect(login_url)
 
             return view_func(request, *args, **kwargs)
+
         return wrapper
+
     return decorator
 
 
@@ -93,6 +98,7 @@ def spotlight_data(request):
             "current_song": current_song and current_song.basic_data,
             "next_song": next_song and next_song.basic_data,
         })
+
 
 def dashboard_data(request):
     singer = request.user
@@ -163,6 +169,7 @@ def get_current_user(request):
 def get_drinking_word(request):
     drinking_word = constance.config.WORD
     return Response({'drinking_word': drinking_word}, status=status.HTTP_200_OK)
+
 
 @api_view(["GET"])
 @permission_classes([IsAdminUser])
@@ -299,7 +306,8 @@ def group_lyrics(request, song_pk):
     try:
         song_request = GroupSongRequest.objects.get(pk=song_pk)
     except GroupSongRequest.DoesNotExist:
-        return JsonResponse({'error': f"Group song with ID {song_pk} does not exist"}, status=status.HTTP_400_BAD_REQUEST)
+        return JsonResponse({'error': f"Group song with ID {song_pk} does not exist"},
+                            status=status.HTTP_400_BAD_REQUEST)
 
     lyrics = _sort_lyrics(song_request)
     return render(request, 'song_signup/lyrics.html', {"lyrics": lyrics and lyrics[0], "group_song": song_request})
@@ -324,7 +332,8 @@ def alternative_lyrics(request, song_pk):
     try:
         song_request = SongRequest.objects.get(pk=song_pk)
     except GroupSongRequest.DoesNotExist:
-        return JsonResponse({'error': f"Group song with ID {song_pk} does not exist"}, status=status.HTTP_400_BAD_REQUEST)
+        return JsonResponse({'error': f"Group song with ID {song_pk} does not exist"},
+                            status=status.HTTP_400_BAD_REQUEST)
 
     lyrics = _sort_lyrics(song_request)
     return render(request, 'song_signup/alternative_lyrics.html', {"lyrics": lyrics, "song": song_request})
@@ -335,7 +344,8 @@ def alternative_group_lyrics(request, song_pk):
     try:
         song_request = GroupSongRequest.objects.get(pk=song_pk)
     except GroupSongRequest.DoesNotExist:
-        return JsonResponse({'error': f"Group song with ID {song_pk} does not exist"}, status=status.HTTP_400_BAD_REQUEST)
+        return JsonResponse({'error': f"Group song with ID {song_pk} does not exist"},
+                            status=status.HTTP_400_BAD_REQUEST)
 
     lyrics = _sort_lyrics(song_request)
     return render(request, 'song_signup/alternative_lyrics.html', {"lyrics": lyrics, "song": song_request})
@@ -353,6 +363,7 @@ def default_lyrics(request):
     lyric.default = True
     lyric.save()
     return Response({}, status=status.HTTP_200_OK)
+
 
 def _get_current_song():
     curr_group_song = CurrentGroupSong.objects.all().first()
@@ -466,14 +477,25 @@ def login(request):
                             status=400)
 
                 else:
-                    try:
-                        ticket_order = TicketOrder.objects.get(order_id=order_id,
-                                                               event_sku=config.EVENT_SKU,
-                                                               ticket_type=SING_SKU)
-                    except (TicketOrder.DoesNotExist, ValueError):
-                        return JsonResponse({
-                            'error': "Your order number is incorrect. It should be in the title of the tickets email"
-                        }, status=400)
+                    if order_id == config.SINGER_PASS:
+                        ticket_order, _ = TicketOrder.objects.get_or_create(order_id=config.SINGER_PASS,
+                                                                            event_sku=config.EVENT_SKU,
+                                                                            event_name='FREEBEE-ORDER',
+                                                                            num_tickets=-1,
+                                                                            customer_name='FREEBE_ORDER',
+                                                                            ticket_type=SING_SKU,
+                                                                            is_freebee=True)
+
+                    else:
+                        try:
+                            ticket_order = TicketOrder.objects.get(order_id=order_id,
+                                                                   event_sku=config.EVENT_SKU,
+                                                                   ticket_type=SING_SKU)
+                        except (TicketOrder.DoesNotExist, ValueError):
+                            return JsonResponse({
+                                'error': "Your order number is incorrect. "
+                                         "It should be in the title of the tickets email"
+                            }, status=400)
 
                     try:
                         singer = Singer.objects.create_user(
@@ -513,8 +535,11 @@ def reset_database(request):
     call_command('reset_db')
     enable_flag('CAN_SIGNUP')
     disable_flag('STARTED')
+    CurrentGroupSong.objects.all().delete()
     config.PASSCODE = ''
     config.EVENT_SKU = ''
+    config.WORD = ''
+    config.SINGER_PASS = ''
     return redirect('admin/song_signup/songrequest')
 
 
@@ -559,7 +584,8 @@ def upload_lineapp_orders(request):
         try:
             processing_data = _process_orders(request.FILES['file'])
         except Exception as e:
-            return render(request, 'song_signup/upload_lineapp_orders.html', {'form': FileUploadForm(), 'error_message': traceback.format_exc()})
+            return render(request, 'song_signup/upload_lineapp_orders.html',
+                          {'form': FileUploadForm(), 'error_message': traceback.format_exc()})
 
         return HttpResponse(f"""
 <h3>{processing_data['num_orders']} Orders Processed Successfully</h3>
