@@ -166,9 +166,10 @@ def get_current_user(request):
 
 
 @api_view(["GET"])
-def get_drinking_word(request):
-    drinking_word = constance.config.WORD
-    return Response({'drinking_word': drinking_word}, status=status.HTTP_200_OK)
+def get_drinking_words(request):
+    drinking_words = constance.config.DRINKING_WORDS
+    return Response({'drinking_words': drinking_words.split(';') if drinking_words else []},
+                    status=status.HTTP_200_OK)
 
 
 @api_view(["GET"])
@@ -190,7 +191,7 @@ def get_song(request, song_pk):
 
 @api_view(["GET"])
 def get_lineup(request):
-    song_requests = SongRequest.objects.filter(position__isnull=False).order_by('position')
+    song_requests = SongRequest.objects.filter(position__isnull=False, skipped=False).order_by('position')
     current_song = _get_current_song()
 
     if isinstance(current_song, GroupSongRequest):
@@ -502,7 +503,7 @@ def login(request):
                             name_to_username(first_name, last_name),
                             first_name=first_name,
                             last_name=last_name,
-                            is_staff=True,
+                            is_staff=False,
                             no_image_upload=no_image_upload,
                             ticket_order=ticket_order
                         )
@@ -538,7 +539,7 @@ def reset_database(request):
     CurrentGroupSong.objects.all().delete()
     config.PASSCODE = ''
     config.EVENT_SKU = ''
-    config.WORD = ''
+    config.DRINKING_WORDS = ''
     config.SINGER_PASS = ''
     return redirect('admin/song_signup/songrequest')
 
@@ -578,7 +579,7 @@ def recalculate_priorities(request):
     return redirect('admin/song_signup/songrequest')
 
 
-@user_passes_test(_is_superuser)
+@superuser_required('login')
 def upload_lineapp_orders(request):
     if request.method == 'POST' and 'file' in request.FILES:
         try:

@@ -237,6 +237,7 @@ class SongRequest(Model):
     position = IntegerField(null=True, blank=True)  # Absolute position in entire list
     cycle = FloatField(null=True, blank=True)  # The cycle where song was scheduled
     placeholder = BooleanField(default=False)
+    skipped = BooleanField(default=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

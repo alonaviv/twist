@@ -1,8 +1,8 @@
 from django.contrib import admin
-from django.utils import timezone
 from django.urls import reverse
-from django.utils.safestring import mark_safe
+from django.utils import timezone
 from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 
 from .managers import LATE_SINGER_CYCLE
 from .models import SongLyrics, SongRequest, Singer, GroupSongRequest, TicketOrder, CurrentGroupSong
@@ -28,6 +28,24 @@ set_solo_not_performed.short_description = 'Mark song as not performed'
 set_solo_not_performed.allowed_permissions = ['change']
 
 
+def set_solo_skipped(modeladmin, request, queryset):
+    for song in queryset:
+        song.skipped = True
+        song.save()
+
+
+def set_solo_unskipped(modeladmin, request, queryset):
+    for song in queryset:
+        song.skipped = False
+        song.save()
+
+
+set_solo_skipped.short_description = 'Mark song as skipped'
+set_solo_skipped.allowed_permissions = ['change']
+set_solo_unskipped.short_description = 'Mark song as unskipped'
+set_solo_unskipped.allowed_permissions = ['change']
+
+
 def set_group_performed(modeladmin, request, queryset):
     if queryset.count() == 1:
         group_song = queryset.first()
@@ -36,9 +54,10 @@ def set_group_performed(modeladmin, request, queryset):
 
         CurrentGroupSong.objects.all().delete()
         CurrentGroupSong.objects.create(group_song=group_song)
+
+
 set_group_performed.short_description = 'Perform Group Song'
 set_group_performed.allowed_permissions = ['change']
-
 
 
 class NotYetPerformedFilter(admin.SimpleListFilter):
@@ -67,6 +86,7 @@ class GroupSongRequestAdmin(admin.ModelAdmin):
 
     def get_request_time(self, obj):
         return obj.request_time.astimezone(timezone.get_current_timezone()).strftime("%H:%M %p")
+
     get_request_time.short_description = 'Request Time'
     get_request_time.admin_order_field = 'request_time'
 
@@ -76,11 +96,13 @@ class GroupSongRequestAdmin(admin.ModelAdmin):
 
         else:
             return None
+
     get_performance_time.short_description = 'Performance Time'
     get_performance_time.admin_order_field = 'performance_time'
 
     def lyrics(self, obj):
         return mark_safe(f'<a href="{reverse("group_lyrics", args=(obj.id,))}">Lyrics</a>')
+
     lyrics.short_description = "Lyrics"
 
     ordering = ['request_time']
@@ -107,13 +129,18 @@ class GroupSongRequestAdmin(admin.ModelAdmin):
 @admin.register(SongRequest)
 class SongRequestAdmin(admin.ModelAdmin):
     list_display = (
-        'position', 'lyrics', 'singer', 'song_name', 'musical', 'duet_partner', 'get_notes', 'get_additional_singers',
-        'suggested_by', 'get_performance_time', 'get_request_time', 'get_initial_signup'
+        'position', 'get_skipped', 'lyrics', 'singer', 'song_name', 'musical', 'duet_partner', 'get_notes',
+        'get_additional_singers', 'suggested_by', 'get_performance_time', 'get_request_time', 'get_initial_signup'
     )
     list_filter = (NotYetPerformedFilter,)
-    actions = [set_solo_performed, set_solo_not_performed]
+    actions = [set_solo_performed, set_solo_not_performed, set_solo_skipped, set_solo_unskipped]
     ordering = ['position']
     change_list_template = "admin/song_request_changelist.html"
+
+    def get_skipped(self, obj):
+        if obj.skipped:
+            return mark_safe('<img src="/static/img/admin/forward.png" style="height: 16px;" />')
+    get_skipped.short_description = 'Skipped'
 
     def changelist_view(self, request, extra_context=None):
         extra_context = extra_context or {}
@@ -122,7 +149,6 @@ class SongRequestAdmin(admin.ModelAdmin):
         group_song = CurrentGroupSong.objects.first()
         if group_song:
             extra_context['group_song'] = group_song.group_song.song_name
-
 
         return super().changelist_view(request, extra_context=extra_context)
 
@@ -178,21 +204,25 @@ class SongRequestAdmin(admin.ModelAdmin):
 
     def lyrics(self, obj):
         return mark_safe(f'<a href="{reverse("lyrics", args=(obj.id,))}">Lyrics</a>')
+
     lyrics.short_description = "Lyrics"
 
     class Media:
         js = ["js/admin-reload.js"]
 
+
 @admin.register(Singer)
 class SingerAdmin(admin.ModelAdmin):
-    list_display = ['username', 'date_joined', 'is_superuser', 'no_image_upload', 'ticket_order']
+    list_display = ['username', 'date_joined', 'is_active', 'no_image_upload', 'ticket_order']
+
 
 @admin.register(SongLyrics)
 class LyricsAdmin(admin.ModelAdmin):
-    list_display = ['song_name', 'link', 'artist_name', 'url', 'song_request','group_song_request', 'default']
+    list_display = ['song_name', 'link', 'artist_name', 'url', 'song_request', 'group_song_request', 'default']
 
     def link(self, obj):
         return mark_safe(f'<a href="{reverse("lyrics_by_id", args=(obj.id,))}">Link</a>')
+
     link.short_description = "Link"
 
 
@@ -202,7 +232,10 @@ class OrdersAdmin(admin.ModelAdmin):
 
     def get_singers(self, obj):
         singers = obj.singers.all()
-        return format_html("<br>".join([f"""<a href="{reverse('admin:song_signup_singer_change', args=[singer.pk])}">{singer}</a>""" for singer in singers]))
+        return format_html("<br>".join(
+            [f"""<a href="{reverse('admin:song_signup_singer_change', args=[singer.pk])}">{singer}</a>""" for singer in
+             singers]))
+
     get_singers.short_description = 'singers'
 
 
@@ -212,16 +245,18 @@ class CurrentGroupSongAdmin(admin.ModelAdmin):
 
     def get_song_name(self, obj):
         return obj.group_song.song_name
+
     get_song_name.short_description = "Song Name"
 
     def get_musical(self, obj):
         return obj.group_song.musical
+
     get_musical.short_description = "Musical"
 
     def get_suggested_by(self, obj):
         return obj.group_song.suggested_by
+
     get_suggested_by.short_description = "Suggested By"
 
     class Media:
         js = ["js/admin-reload.js"]
-
