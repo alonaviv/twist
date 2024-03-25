@@ -26,7 +26,6 @@ function flushCss(...elements) {
 }
 
 function toggleMenu() {
-    console.log("HELLLO");
     let navbarRBG;
     if (!showMenu) {
         hamburger.classList.add("close");
