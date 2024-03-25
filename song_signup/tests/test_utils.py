@@ -1,4 +1,5 @@
 import datetime
+import random
 from itertools import chain
 from typing import Union, List
 
@@ -6,25 +7,60 @@ import pytz
 from django.test import TestCase
 
 from song_signup.managers import LATE_SINGER_CYCLE
-from song_signup.models import Singer, SongRequest, SongSuggestion
-from song_signup.views import enable_signup
+from song_signup.models import Singer, SongRequest, SongSuggestion, TicketOrder, SING_SKU
+from song_signup.views import enable_signup, _sanitize_string
 
 CYCLE_NAMES = ['cy1', 'cy2', 'lscy', 'cy3']
 PLACEHOLDER = 'PLACEHOLDER'
 TEST_START_TIME = datetime.datetime(year=2022, month=7, day=10, tzinfo=pytz.UTC)
+EVENT_SKU = "EVT123"
+PASSCODE = 'dev'
+
+
+def create_order(num_singers, order_id: int = None):
+    if not order_id:
+        order_id = random.randint(111111, 999999)
+    return TicketOrder.objects.create(
+        order_id=order_id,
+        event_sku=EVENT_SKU,
+        event_name="Test Event",
+        num_tickets=num_singers,
+        customer_name="Test Customer",
+        ticket_type=SING_SKU,
+        is_freebie=False
+    )
+
+
+def create_temp_singer(order=None):
+    if not order:
+        order = create_order(1)
+
+    user_id = random.randint(1000, 2000)
+    return Singer.objects.create_user(
+        username=f"temp_user_{user_id}",
+        first_name=_sanitize_string(f"temp_user_{user_id}"),
+        last_name=_sanitize_string("temp_user_last_name"),
+        ticket_order=order
+    )
+
+
+def get_temp_singer(singer: Singer):
+    return Singer.objects.get(username=singer.username)
 
 
 def create_singers(singer_ids: Union[int, list], frozen_time=None, num_songs=None):
     if isinstance(singer_ids, int):
         singer_ids = range(1, singer_ids + 1)
 
+    order = create_order(len(singer_ids))
+
     singers = []
     for i in singer_ids:
         singers.append(Singer.objects.create_user(
             username=f"user_{i}",
-            first_name=f"user_{i}",
-            last_name="last_name",
-            is_staff=True,
+            first_name=_sanitize_string(f"user_{i}"),
+            last_name=_sanitize_string("last_name"),
+            ticket_order=order
         ))
         if frozen_time:
             frozen_time.tick()
@@ -185,7 +221,7 @@ def assert_song_positions(testcase, expected_songs):
 
     # Assert that all songs are as expected and in order
     testcase.assertEqual([song.song_name for song in all_songs],
-                         [f"song_{expected[0]}_{expected[1]}" for expected in expected_songs])
+                         [f"Song_{expected[0]}_{expected[1]}" for expected in expected_songs])
 
     # Assert that positions are sequential
     positions = [song.position for song in all_songs]
@@ -193,7 +229,7 @@ def assert_song_positions(testcase, expected_songs):
 
 
 def add_song_suggestions():
-    suggester = Singer.objects.create_user('suggester')
+    suggester = create_temp_singer()
     SongSuggestion.objects.create(song_name='suggested_song_1', musical='a musical', suggested_by=suggester)
     SongSuggestion.objects.create(song_name='suggested_song_2', musical='a musical', suggested_by=suggester)
 
@@ -208,7 +244,6 @@ def login(singer_id):
     singer = get_singer(singer_id)
     singer.is_active = True
     singer.save()
-
 
 
 class SongRequestTestCase(TestCase):

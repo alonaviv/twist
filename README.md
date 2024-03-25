@@ -78,6 +78,17 @@ and choose a different SSH port number (not 22).
 3. If needed, delete all docker volumes with `sudo  docker compose -f docker-compose.prod.yml down -v`. This shouldn't delete the db backups mounted locally, but best make copies first.
 4. Run `sudo ./deploy` to pull branch changes, rebuild docker images and run docker-compose. 
 
+## Testing
+1. Run song_signup/tests from pycharm after selecting the docker compose file.
+2. If you get the error `database "test_twist_db" already exists`, delete all volumes with the command `./stop-dev.sh -v`
+
+
+## Testing with coverage
+1. Start containers with `./start-dev.sh`
+3. Connect to django container with `docker exec -it twist-django-1  /bin/bash`
+4. In container, run `coverage run --source='.' manage.py test song_signup && coverage html`
+5. Exit container and run `open ./htmlcov/index.html` locally
+
 
 
 

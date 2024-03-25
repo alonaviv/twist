@@ -5,7 +5,6 @@ from functools import wraps
 import constance
 from constance import config
 from django.contrib.auth import login as auth_login, logout as auth_logout
-from django.contrib.auth.decorators import user_passes_test
 from django.core.management import call_command
 from django.db import transaction
 from django.http import JsonResponse, HttpResponse
@@ -478,14 +477,14 @@ def login(request):
                             status=400)
 
                 else:
-                    if order_id == config.SINGER_PASS:
-                        ticket_order, _ = TicketOrder.objects.get_or_create(order_id=config.SINGER_PASS,
+                    if config.FREEBIE_TICKET and order_id == config.FREEBIE_TICKET:
+                        ticket_order, _ = TicketOrder.objects.get_or_create(order_id=config.FREEBIE_TICKET,
                                                                             event_sku=config.EVENT_SKU,
-                                                                            event_name='FREEBEE-ORDER',
+                                                                            event_name='FREEBIE-ORDER',
                                                                             num_tickets=-1,
-                                                                            customer_name='FREEBE_ORDER',
+                                                                            customer_name='FREEBIE_ORDER',
                                                                             ticket_type=SING_SKU,
-                                                                            is_freebee=True)
+                                                                            is_freebie=True)
 
                     else:
                         try:
@@ -513,7 +512,8 @@ def login(request):
                         }, status=400)
 
                 auth_login(request, singer)
-                return HttpResponse('', status=200)
+                return redirect('home')
+
             else:
                 raise ValueError("Invalid ticket type")
 
@@ -540,7 +540,7 @@ def reset_database(request):
     config.PASSCODE = ''
     config.EVENT_SKU = ''
     config.DRINKING_WORDS = ''
-    config.SINGER_PASS = ''
+    config.FREEBIE_TICKET = ''
     return redirect('admin/song_signup/songrequest')
 
 
