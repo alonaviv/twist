@@ -44,6 +44,10 @@ logger = logging.getLogger(__name__)
 AUDIENCE_SESSION = 'audience-logged-in'
 
 
+class TwistApiException(Exception):
+    pass
+
+
 def bwt_login_required(login_url, singer_only=False):
     def decorator(view_func):
         @wraps(view_func)
@@ -439,10 +443,39 @@ def tip_us(request):
     return render(request, 'song_signup/tip_us.html')
 
 
+def _login_existing_singer(first_name, last_name):
+    try:
+        singer = Singer.objects.get(first_name=first_name, last_name=last_name)
+        singer.is_active = True
+        singer.save()
+        return singer
+    except Singer.DoesNotExist:
+        raise TwistApiException("The name that you logged in with previously does not match your current one")
+
+
+def _get_order(order_id):
+    if config.FREEBIE_TICKET and order_id == config.FREEBIE_TICKET:
+        return TicketOrder.objects.get_or_create(order_id=config.FREEBIE_TICKET,
+                                                 event_sku=config.EVENT_SKU,
+                                                 event_name='FREEBIE-ORDER',
+                                                 num_tickets=-1,
+                                                 customer_name='FREEBIE_ORDER',
+                                                 ticket_type=SING_SKU,
+                                                 is_freebie=True)[0]
+
+    try:
+        return TicketOrder.objects.get(order_id=order_id,
+                                       event_sku=config.EVENT_SKU,
+                                       ticket_type=SING_SKU)
+    except (TicketOrder.DoesNotExist, ValueError):
+        raise TwistApiException("Your order number is incorrect. "
+                                "It should be in the title of the tickets email")
+
+
 def login(request):
     # This is the root endpoint. If already logged in, go straight to home.
-    evening_started = bool(config.PASSCODE) and bool(config.EVENT_SKU)
-    if evening_started and (request.user.is_authenticated or request.session.get(AUDIENCE_SESSION)):
+    constants_chosen = bool(config.PASSCODE) and bool(config.EVENT_SKU)
+    if constants_chosen and (request.user.is_authenticated or request.session.get(AUDIENCE_SESSION)):
         return redirect('home')
 
     if request.method == 'POST':
@@ -462,67 +495,44 @@ def login(request):
                 no_image_upload = request.POST.get('no-upload') == 'on'
 
                 if passcode.lower() != config.PASSCODE.lower():
-                    return JsonResponse({
-                        'error': "Wrong passcode - Shani will reveal tonight's passcode at the event"
-                    }, status=400)
+                    raise TwistApiException("Wrong passcode - Shani will reveal tonight's passcode at the event")
 
                 if logged_in:
-                    try:
-                        singer = Singer.objects.get(first_name=first_name, last_name=last_name)
-                        singer.is_active = True
-                        singer.save()
-                    except Singer.DoesNotExist:
-                        return JsonResponse(
-                            {'error': "The name that you logged in with previously does not match your current one"},
-                            status=400)
-
+                    singer = _login_existing_singer(first_name, last_name)
                 else:
-                    if config.FREEBIE_TICKET and order_id == config.FREEBIE_TICKET:
-                        ticket_order, _ = TicketOrder.objects.get_or_create(order_id=config.FREEBIE_TICKET,
-                                                                            event_sku=config.EVENT_SKU,
-                                                                            event_name='FREEBIE-ORDER',
-                                                                            num_tickets=-1,
-                                                                            customer_name='FREEBIE_ORDER',
-                                                                            ticket_type=SING_SKU,
-                                                                            is_freebie=True)
-
-                    else:
-                        try:
-                            ticket_order = TicketOrder.objects.get(order_id=order_id,
-                                                                   event_sku=config.EVENT_SKU,
-                                                                   ticket_type=SING_SKU)
-                        except (TicketOrder.DoesNotExist, ValueError):
-                            return JsonResponse({
-                                'error': "Your order number is incorrect. "
-                                         "It should be in the title of the tickets email"
-                            }, status=400)
-
-                    try:
-                        singer = Singer.objects.create_user(
-                            name_to_username(first_name, last_name),
-                            first_name=first_name,
-                            last_name=last_name,
-                            is_staff=False,
-                            no_image_upload=no_image_upload,
-                            ticket_order=ticket_order
-                        )
-                    except (TicketsDepleted, AlreadyLoggedIn) as e:
-                        return JsonResponse({
-                            'error': str(e)
-                        }, status=400)
+                    singer = _login_new_singer(first_name, last_name, no_image_upload, order_id)
 
                 auth_login(request, singer)
                 return redirect('home')
-
             else:
-                raise ValueError("Invalid ticket type")
+                raise TwistApiException("Invalid ticket type")
 
         except Exception as e:
             logger.exception("Exception: ")
-            return JsonResponse(
-                {'error': "An unexpected error occurred (you can blame Alon..) Refreshing the page might help"},
-                status=400)
-    return render(request, 'song_signup/login.html', context={'evening_started': evening_started})
+            if isinstance(e, TwistApiException):
+                msg = str(e)
+            else:
+                msg = "An unexpected error occurred (you can blame Alon..) Refreshing the page might help"
+            return JsonResponse({'error': msg}, status=400)
+
+    return render(request, 'song_signup/login.html', context={'evening_started': constants_chosen})
+
+
+def _login_new_singer(first_name, last_name, no_image_upload, order_id):
+    ticket_order = _get_order(order_id)
+    try:
+        singer = Singer.objects.create_user(
+            name_to_username(first_name, last_name),
+            first_name=first_name,
+            last_name=last_name,
+            is_staff=False,
+            no_image_upload=no_image_upload,
+            ticket_order=ticket_order
+        )
+
+    except (TicketsDepleted, AlreadyLoggedIn) as e:
+        raise TwistApiException(str(e))
+    return singer
 
 
 def delete_song(request, song_pk):

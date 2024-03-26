@@ -2,16 +2,25 @@ from django.test import TestCase, Client
 from django.urls import reverse
 from constance.test import override_config
 from song_signup.tests.test_utils import (
-    create_temp_singer,
     EVENT_SKU,
     PASSCODE,
     create_order,
-    get_temp_singer
+    create_singers,
+    get_song_obj_raw,
+    remove_keys,
+    get_json,
+    add_songs_to_singer
 )
 from song_signup.views import AUDIENCE_SESSION
 from song_signup.models import Singer, TicketOrder
 
 evening_started = override_config(PASSCODE=PASSCODE, EVENT_SKU=EVENT_SKU)
+
+
+def login_user(testcase, user_id=1, num_songs=None):
+    [user] = create_singers([user_id], num_songs=num_songs)
+    testcase.client.force_login(user)
+    return user
 
 
 @evening_started
@@ -20,15 +29,10 @@ class TestLogin(TestCase):
         if not msg:
             msg = "An unexpected error occurred (you can blame Alon..) Refreshing the page might help"
         self.assertEqual(response.status_code, 400)
-        self.assertJSONEqual(str(response.content, encoding='utf8'),
-                             {
-                                 'error': msg
-                             })
+        self.assertJSONEqual(response.content, {'error': msg})
 
     def test_singer_redirect(self):
-        temp_singer = create_temp_singer()
-        self.client.force_login(temp_singer)
-
+        login_user(self)
         response = self.client.get(reverse('login'))
         self.assertRedirects(response, reverse('home'))
 
@@ -46,7 +50,7 @@ class TestLogin(TestCase):
 
     def test_invalid_ticket_type(self):
         response = self.client.post(reverse('login'), {'ticket-type': 'unexpected_error'})
-        self._assert_user_error(response)
+        self._assert_user_error(response, 'Invalid ticket type')
 
     def test_wrong_passcode(self):
         response = self.client.post(reverse('login'), {
@@ -101,19 +105,19 @@ class TestLogin(TestCase):
                                           "It should be in the title of the tickets email")
 
     def test_singer_valid_login(self):
-            create_order(num_singers=1, order_id=12345)
-            response = self.client.post(reverse('login'), {
-                'ticket-type': ['singer'],
-                'first-name': ['Valid'],
-                'last-name': ['Singer'],
-                'passcode': [PASSCODE],
-                'order-id': ['12345']
-            })
-            self.assertRedirects(response, reverse('home'))
-            new_singer = Singer.objects.get(username='valid_singer')
-            self.assertIsNotNone(new_singer)
-            self.assertTrue(new_singer.is_active)
-            self.assertFalse(new_singer.no_image_upload)
+        create_order(num_singers=1, order_id=12345)
+        response = self.client.post(reverse('login'), {
+            'ticket-type': ['singer'],
+            'first-name': ['Valid'],
+            'last-name': ['Singer'],
+            'passcode': [PASSCODE],
+            'order-id': ['12345']
+        })
+        self.assertRedirects(response, reverse('home'))
+        new_singer = Singer.objects.get(username='valid_singer')
+        self.assertIsNotNone(new_singer)
+        self.assertTrue(new_singer.is_active)
+        self.assertFalse(new_singer.no_image_upload)
 
     def test_hebrew_singer_valid_login(self):
         create_order(num_singers=1, order_id=12345)
@@ -146,10 +150,9 @@ class TestLogin(TestCase):
         self.assertTrue(new_singer.is_active)
         self.assertEqual((new_singer.first_name, new_singer.last_name), ('Lowcase', 'Person'))
 
-
     def test_additional_singer_valid_login(self):
         order = create_order(num_singers=2, order_id=12345)
-        create_temp_singer(order)
+        create_singers(1, order=order)
 
         response = self.client.post(reverse('login'), {
             'ticket-type': ['singer'],
@@ -162,8 +165,7 @@ class TestLogin(TestCase):
 
     def test_additional_singer_depleted_ticket(self):
         order = create_order(num_singers=2, order_id=12345)
-        create_temp_singer(order)
-        create_temp_singer(order)
+        create_singers(2, order=order)
 
         response = self.client.post(reverse('login'), {
             'ticket-type': ['singer'],
@@ -176,23 +178,22 @@ class TestLogin(TestCase):
                                           "logged in. Are you sure your ticket is of type 'singer'?")
 
     def test_singer_logged_in_box(self):
-        temp_singer = create_temp_singer()
-        temp_singer.is_active = False
-        temp_singer.save()
-
-        self.client.force_login(temp_singer)
+        user = login_user(self)
+        user.is_active = False
+        user.save()
 
         response = self.client.post(reverse('login'), {
             'ticket-type': ['singer'],
-            'first-name': [temp_singer.first_name],
-            'last-name': [temp_singer.last_name],
+            'first-name': [user.first_name],
+            'last-name': [user.last_name],
             'passcode': [PASSCODE],
-            'order-id': [temp_singer.ticket_order.order_id],
+            'order-id': [user.ticket_order.order_id],
             'logged-in': ['on']
         })
         self.assertRedirects(response, reverse('home'))
-        self.assertTrue(get_temp_singer(temp_singer).is_active)
 
+        user.refresh_from_db()
+        self.assertTrue(user.is_active)
 
     def test_new_singer_logged_in_box(self):
         response = self.client.post(reverse('login'), {
@@ -238,3 +239,59 @@ class TestLogin(TestCase):
         freebie_query = TicketOrder.objects.filter(is_freebie=True)
         self.assertEqual(freebie_query.count(), 1)
         self.assertTrue(freebie_query.first().is_freebie)
+
+
+class TestJsonRes(TestCase):
+    def _remove_song_keys(self, json):
+        ignore_keys = ['id', 'wait_amount']
+        for song in json.values():
+            remove_keys(song, ignore_keys)
+
+        return json
+
+    def test_spotlight_empty(self):
+        response = self.client.get(reverse('spotlight_data'))
+        self.assertEqual(response.status_code, 200)
+        self.assertJSONEqual(response.content, {"current_song": None, "next_song": None})
+
+    def test_spotlight(self):
+        create_singers(2, num_songs=1)
+        response = self.client.get(reverse('spotlight_data'))
+        self.assertEqual(response.status_code, 200)
+
+        res_json = get_json(response)
+        expected_json = {
+            "current_song": get_song_obj_raw(1, 1),
+            "next_song": get_song_obj_raw(2, 1)
+        }
+        self.assertDictEqual(self._remove_song_keys(res_json), self._remove_song_keys(expected_json))
+
+    def test_spotlight_single_song(self):
+        create_singers(1, num_songs=1)
+        response = self.client.get(reverse('spotlight_data'))
+        self.assertEqual(response.status_code, 200)
+
+        json = get_json(response)
+        remove_keys(json['current_song'], ignore_keys)
+
+        self.assertDictEqual(json, {
+            "current_song": remove_keys(get_song_obj_raw(1, 1), ignore_keys),
+            "next_song": None
+        })
+
+    def test_dashboard_empty(self):
+        login_user(self)
+        response = self.client.get(reverse('dashboard_data'))
+        self.assertEqual(response.status_code, 200)
+        self.assertJSONEqual(response.content, {"user_next_song": None})
+
+    def test_dashboard_one_song(self):
+        user = login_user(self, user_id=1)
+        add_songs_to_singer(1, 1)
+        response = self.client.get(reverse('dashboard_data'))
+
+        json = get_json(response)
+        remove_keys(json['user_next_song'], ignore_keys)
+        self.assertEqual(response.status_code, 200)
+        # self.assertJSONEqual(response.content, {"user_next_song":
+        #                                             })

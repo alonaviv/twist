@@ -1,3 +1,4 @@
+import json
 import datetime
 import random
 from itertools import chain
@@ -31,28 +32,24 @@ def create_order(num_singers, order_id: int = None):
     )
 
 
-def create_temp_singer(order=None):
-    if not order:
-        order = create_order(1)
+def get_singer_str(singer_id: int):
+    return f'User_{singer_id} Last_name'
 
-    user_id = random.randint(1000, 2000)
-    return Singer.objects.create_user(
-        username=f"temp_user_{user_id}",
-        first_name=_sanitize_string(f"temp_user_{user_id}"),
-        last_name=_sanitize_string("temp_user_last_name"),
-        ticket_order=order
-    )
+def get_song_str(singer_id: int, song_id: int):
+    return f'Song_{singer_id}_{song_id}'
 
 
-def get_temp_singer(singer: Singer):
-    return Singer.objects.get(username=singer.username)
+def get_song_obj_raw(singer_id: int, song_id: int, obj_id: int = None, wait_amount: int = None):
+    return {'id': obj_id or 1, 'name': get_song_str(singer_id, song_id),
+            'singer': get_singer_str(singer_id), "wait_amount": wait_amount or 0}
 
 
-def create_singers(singer_ids: Union[int, list], frozen_time=None, num_songs=None):
+def create_singers(singer_ids: Union[int, list], frozen_time=None, num_songs=None, order=None):
     if isinstance(singer_ids, int):
         singer_ids = range(1, singer_ids + 1)
 
-    order = create_order(len(singer_ids))
+    if not order:
+        order = create_order(len(singer_ids))
 
     singers = []
     for i in singer_ids:
@@ -229,7 +226,7 @@ def assert_song_positions(testcase, expected_songs):
 
 
 def add_song_suggestions():
-    suggester = create_temp_singer()
+    [suggester] = create_singers([-5]) # ID that won't conflict with others
     SongSuggestion.objects.create(song_name='suggested_song_1', musical='a musical', suggested_by=suggester)
     SongSuggestion.objects.create(song_name='suggested_song_2', musical='a musical', suggested_by=suggester)
 
@@ -256,3 +253,12 @@ class SongRequestTestCase(TestCase):
         self.assertEqual(suggestions.count(), 2)
         self.assertEqual(suggestions[0].song_name, 'suggested_song_1')
         self.assertEqual(suggestions[1].song_name, 'suggested_song_2')
+
+def remove_keys(mydict, keys: list):
+    for key in keys:
+        del mydict[key]
+
+    return mydict
+
+def get_json(response):
+    return json.loads(response.content)
