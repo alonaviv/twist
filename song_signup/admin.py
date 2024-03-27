@@ -46,7 +46,7 @@ set_solo_unskipped.short_description = 'Mark song as unskipped'
 set_solo_unskipped.allowed_permissions = ['change']
 
 
-def set_group_performed(modeladmin, request, queryset):
+def start_group_song(modeladmin, request, queryset):
     if queryset.count() == 1:
         group_song = queryset.first()
         group_song.performance_time = timezone.now()
@@ -56,8 +56,8 @@ def set_group_performed(modeladmin, request, queryset):
         CurrentGroupSong.objects.create(group_song=group_song)
 
 
-set_group_performed.short_description = 'Perform Group Song'
-set_group_performed.allowed_permissions = ['change']
+start_group_song.short_description = 'Start Group Song (End it with the button above)'
+start_group_song.allowed_permissions = ['change']
 
 
 class NotYetPerformedFilter(admin.SimpleListFilter):
@@ -81,8 +81,16 @@ class GroupSongRequestAdmin(admin.ModelAdmin):
     list_display = (
         'lyrics', 'song_name', 'musical', 'suggested_by', 'get_request_time', 'get_performance_time'
     )
-    actions = [set_group_performed]
+    actions = [start_group_song]
     change_list_template = "admin/group_song_request_changelist.html"
+
+    def changelist_view(self, request, extra_context=None):
+        extra_context = extra_context or {}
+        group_song = CurrentGroupSong.objects.first()
+        if group_song:
+            extra_context['group_song'] = group_song.group_song.song_name
+
+        return super().changelist_view(request, extra_context=extra_context)
 
     def get_request_time(self, obj):
         return obj.request_time.astimezone(timezone.get_current_timezone()).strftime("%H:%M %p")

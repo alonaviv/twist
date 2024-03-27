@@ -8,7 +8,8 @@ import pytz
 from django.test import TestCase
 
 from song_signup.managers import LATE_SINGER_CYCLE
-from song_signup.models import Singer, SongRequest, SongSuggestion, TicketOrder, SING_SKU
+from song_signup.models import (Singer, SongRequest, SongSuggestion, TicketOrder, SING_SKU, GroupSongRequest,
+                                CurrentGroupSong)
 from song_signup.views import enable_signup, _sanitize_string
 
 CYCLE_NAMES = ['cy1', 'cy2', 'lscy', 'cy3']
@@ -32,19 +33,19 @@ def create_order(num_singers, order_id: int = None):
     )
 
 
-def get_singer_str(singer_id: int):
-    return f'User_{singer_id} Last_name'
+def get_singer_str(singer_id: int, hebrew=False):
+    return f'User_{singer_id} Last_name' if not hebrew else f'משתמש_{singer_id} שם משפחה'
 
 def get_song_str(singer_id: int, song_id: int):
     return f'Song_{singer_id}_{song_id}'
 
 
-def get_song_obj_raw(singer_id: int, song_id: int, obj_id: int = None, wait_amount: int = None):
+def get_song_basic_data(singer_id: int, song_id: int, obj_id: int = None, wait_amount: int = None):
     return {'id': obj_id or 1, 'name': get_song_str(singer_id, song_id),
             'singer': get_singer_str(singer_id), "wait_amount": wait_amount or 0}
 
 
-def create_singers(singer_ids: Union[int, list], frozen_time=None, num_songs=None, order=None):
+def create_singers(singer_ids: Union[int, list], frozen_time=None, num_songs=None, order=None, hebrew=False):
     if isinstance(singer_ids, int):
         singer_ids = range(1, singer_ids + 1)
 
@@ -54,21 +55,21 @@ def create_singers(singer_ids: Union[int, list], frozen_time=None, num_songs=Non
     singers = []
     for i in singer_ids:
         singers.append(Singer.objects.create_user(
-            username=f"user_{i}",
-            first_name=_sanitize_string(f"user_{i}"),
-            last_name=_sanitize_string("last_name"),
+            username=f"user_{i}" if not hebrew else f"משתמש_{i}",
+            first_name=_sanitize_string(f"user_{i}" if not hebrew else f"משתמש_{i}"),
+            last_name=_sanitize_string("last_name" if not hebrew else "שם משפחה"),
             ticket_order=order
         ))
         if frozen_time:
             frozen_time.tick()
         if num_songs:
-            add_songs_to_singer(i, num_songs)
+            add_songs_to_singer(i, num_songs, hebrew=hebrew)
 
     return singers
 
 
-def get_singer(singer_id):
-    return Singer.objects.get(username=f"user_{singer_id}")
+def get_singer(singer_id, hebrew=False):
+    return Singer.objects.get(username=f"user_{singer_id}" if not hebrew else f"משתמש_{singer_id}")
 
 
 def get_song(singer_id, song_num):
@@ -90,8 +91,8 @@ def assign_positions_cycles(singer_positions):
             position += 1
 
 
-def add_songs_to_singer(singer_id, songs_ids: Union[int, list], frozen_time=None):
-    singer = get_singer(singer_id)
+def add_songs_to_singer(singer_id, songs_ids: Union[int, list], frozen_time=None, hebrew=False):
+    singer = get_singer(singer_id, hebrew=hebrew)
 
     if isinstance(songs_ids, int):
         songs_ids = range(1, songs_ids + 1)
@@ -110,7 +111,19 @@ def set_performed(singer_id, song_id, frozen_time=None):
 
     song = get_song(singer_id, song_id)
     song.performance_time = datetime.datetime.now(tz=pytz.UTC)
+    song.save()
     Singer.ordering.calculate_positions()
+
+
+def set_skipped(singer_id, song_id):
+    song = get_song(singer_id, song_id)
+    song.skipped = True
+    song.save()
+
+
+def set_unskipped(singer_id, song_id):
+    song = get_song(singer_id, song_id)
+    song.skipped = False
     song.save()
 
 
@@ -142,8 +155,8 @@ def add_singers_to_cycle(singers):
         placeholder_singer._add_to_cycle()
 
 
-def add_duet(duet_singer_id, primary_singer_id, song_num, frozen_time=None):
-    duet_singer = get_singer(duet_singer_id)
+def add_duet(duet_singer_id, primary_singer_id, song_num, frozen_time=None, hebrew=False):
+    duet_singer = get_singer(duet_singer_id, hebrew=hebrew)
 
     if frozen_time:
         frozen_time.tick()
@@ -231,6 +244,13 @@ def add_song_suggestions():
     SongSuggestion.objects.create(song_name='suggested_song_2', musical='a musical', suggested_by=suggester)
 
 
+def add_current_group_song(song_name, musical):
+    [suggester] = create_singers([-50]) # ID that won't conflict with others
+    group_song = GroupSongRequest.objects.create(song_name=song_name, musical=musical,
+                                                 suggested_by=suggester)
+    CurrentGroupSong.objects.create(group_song=group_song)
+
+
 def logout(singer_id):
     singer = get_singer(singer_id)
     singer.is_active = False
@@ -256,7 +276,8 @@ class SongRequestTestCase(TestCase):
 
 def remove_keys(mydict, keys: list):
     for key in keys:
-        del mydict[key]
+        if key in mydict:
+            del mydict[key]
 
     return mydict
 

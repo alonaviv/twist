@@ -76,10 +76,6 @@ def superuser_required(login_url):
     return decorator
 
 
-def _is_superuser(user):
-    return user.is_authenticated and user.is_superuser
-
-
 def name_to_username(first_name, last_name):
     return f'{first_name.lower()}_{last_name.lower()}'
 
@@ -472,6 +468,23 @@ def _get_order(order_id):
                                 "It should be in the title of the tickets email")
 
 
+def _login_new_singer(first_name, last_name, no_image_upload, order_id):
+    ticket_order = _get_order(order_id)
+    try:
+        singer = Singer.objects.create_user(
+            name_to_username(first_name, last_name),
+            first_name=first_name,
+            last_name=last_name,
+            is_staff=False,
+            no_image_upload=no_image_upload,
+            ticket_order=ticket_order
+        )
+
+    except (TicketsDepleted, AlreadyLoggedIn) as e:
+        raise TwistApiException(str(e))
+    return singer
+
+
 def login(request):
     # This is the root endpoint. If already logged in, go straight to home.
     constants_chosen = bool(config.PASSCODE) and bool(config.EVENT_SKU)
@@ -516,23 +529,6 @@ def login(request):
             return JsonResponse({'error': msg}, status=400)
 
     return render(request, 'song_signup/login.html', context={'evening_started': constants_chosen})
-
-
-def _login_new_singer(first_name, last_name, no_image_upload, order_id):
-    ticket_order = _get_order(order_id)
-    try:
-        singer = Singer.objects.create_user(
-            name_to_username(first_name, last_name),
-            first_name=first_name,
-            last_name=last_name,
-            is_staff=False,
-            no_image_upload=no_image_upload,
-            ticket_order=ticket_order
-        )
-
-    except (TicketsDepleted, AlreadyLoggedIn) as e:
-        raise TwistApiException(str(e))
-    return singer
 
 
 def delete_song(request, song_pk):
