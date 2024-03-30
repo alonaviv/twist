@@ -17,12 +17,11 @@
             <form action="" id="new-song-form" autocomplete="off">
                 {% csrf_token %}
                 <input autocomplete="false" name="hidden" type="text" style="display:none;">
-                <input type="hidden" id="suggested_by" name="suggested_by" value="{{ request.GET.suggested_by }}">
                 <div class="form-control">
-                    <input type="text" name="song-name" id="song-name" placeholder="Song name" {% if request.GET.song_name %} value="{{ request.GET.song_name }}" {% endif %} required>
+                    <input type="text" name="song-name" id="song-name" placeholder="Song name" required>
                 </div>
                 <div class="form-control">
-                    <input type="text" name="musical" id="musical" placeholder="Where's it from?" {% if request.GET.musical %} value="{{ request.GET.musical }}" {% endif %} required>
+                    <input type="text" name="musical" id="musical" placeholder="Where's it from?" required>
                 </div>
                 <div class="form-control">
                     <input type="text" name="notes" id="notes" placeholder="Additional notes for us">
@@ -40,7 +39,6 @@
                 <div class="form-control">
                     <label for="additional-singers">Smaller parts - <u>Doesn't count as a turn</u></label>
                     <select name="additional-singers" id="additional-singers" multiple>
-                        {% comment %} <option disabled selected value> -- Helping Singers -- </option> {% endcomment %}
                         {% for singer in other_singers %}
                         <option value="{{ singer.id }}">{{ singer }}</option>
                         {% endfor %}

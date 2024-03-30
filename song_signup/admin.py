@@ -138,7 +138,7 @@ class GroupSongRequestAdmin(admin.ModelAdmin):
 class SongRequestAdmin(admin.ModelAdmin):
     list_display = (
         'position', 'get_skipped', 'lyrics', 'singer', 'song_name', 'musical', 'duet_partner', 'get_notes',
-        'get_additional_singers', 'suggested_by', 'get_performance_time', 'get_request_time', 'get_initial_signup'
+        'get_additional_singers', 'get_performance_time', 'get_request_time', 'get_initial_signup'
     )
     list_filter = (NotYetPerformedFilter,)
     actions = [set_solo_performed, set_solo_not_performed, set_solo_skipped, set_solo_unskipped]

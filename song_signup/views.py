@@ -111,6 +111,7 @@ def _sanitize_string(name, title=False):
     return titlecase(sanitized) if title else sanitized
 
 
+@bwt_login_required('login', singer_only=True)
 def add_song_request(request):
     current_user = request.user
 
@@ -120,7 +121,6 @@ def add_song_request(request):
         notes = request.POST.get('notes')
         duet_partner = request.POST.get('duet-partner')
         additional_singers = request.POST.getlist('additional-singers')
-        suggested_by = request.POST.get('suggested_by')
 
         try:
             song_request = SongRequest.objects.get(song_name=song_name, musical=musical)
@@ -129,15 +129,15 @@ def add_song_request(request):
                                     status=400)
             elif song_request.singer == current_user:
                 return JsonResponse({"error": "You already signed up with this song tonight"}, status=400)
+            else:
+                pass # Deal with same song - Here's the bug..
 
         except SongRequest.DoesNotExist:
             song_request = SongRequest.objects.create(song_name=song_name, musical=musical, singer=current_user,
-                                                      duet_partner_id=duet_partner, notes=notes,
-                                                      suggested_by_id=suggested_by)
+                                                      duet_partner_id=duet_partner, notes=notes)
             song_request.additional_singers.set(additional_singers)
 
             Singer.ordering.calculate_positions()
-            SongSuggestion.objects.check_used_suggestions()
 
         return JsonResponse({
             'requested_song': song_request.song_name,
@@ -382,6 +382,7 @@ def get_current_lyrics(request):
     return Response(serialized.data, status=status.HTTP_200_OK)
 
 
+@superuser_required('login')
 def end_group_song(request):
     CurrentGroupSong.objects.all().delete()
     return redirect('admin/song_signup/groupsongrequest')
@@ -531,12 +532,14 @@ def login(request):
     return render(request, 'song_signup/login.html', context={'evening_started': constants_chosen})
 
 
+@bwt_login_required('login', singer_only=True)
 def delete_song(request, song_pk):
     SongRequest.objects.filter(pk=song_pk).delete()
     Singer.ordering.calculate_positions()
     return HttpResponse()
 
 
+@superuser_required('login')
 def reset_database(request):
     call_command('dbbackup')
     call_command('reset_db')
@@ -550,12 +553,14 @@ def reset_database(request):
     return redirect('admin/song_signup/songrequest')
 
 
+@superuser_required('login')
 def enable_signup(request):
     enable_flag('CAN_SIGNUP')
     Singer.ordering.calculate_positions()
     return redirect('admin/song_signup/songrequest')
 
 
+@superuser_required('login')
 def disable_signup(request):
     disable_flag('CAN_SIGNUP')
     Singer.ordering.calculate_positions()
@@ -566,11 +571,13 @@ def signup_disabled(request):
     return JsonResponse({"result": flag_disabled('CAN_SIGNUP')})
 
 
+@superuser_required('login')
 def start_evening(request):
     enable_flag('STARTED')
     return redirect('admin/song_signup/songrequest')
 
 
+@superuser_required('login')
 def end_evening(request):
     disable_flag('STARTED')
     return redirect('admin/song_signup/songrequest')

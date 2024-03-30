@@ -1,10 +1,11 @@
 from constance.test import override_config
-from django.http import HttpResponse, HttpRequest
+from django.http import HttpResponse
 from django.test import TestCase, Client
 from django.urls import reverse
 from freezegun import freeze_time
+from mock import patch
 
-from song_signup.models import Singer, TicketOrder, CurrentGroupSong
+from song_signup.models import Singer, TicketOrder, CurrentGroupSong, GroupSongRequest, SongRequest
 from song_signup.tests.test_utils import (
     EVENT_SKU,
     PASSCODE,
@@ -22,7 +23,7 @@ from song_signup.tests.test_utils import (
     add_duet,
     add_current_group_song
 )
-from song_signup.views import AUDIENCE_SESSION, bwt_login_required, superuser_required
+from song_signup.views import AUDIENCE_SESSION
 
 evening_started = override_config(PASSCODE=PASSCODE, EVENT_SKU=EVENT_SKU)
 
@@ -636,4 +637,125 @@ class TestDecorators(TestCase):
         response = self.client.get(reverse('lyrics', kwargs={'song_pk': 1})) # @bwt_superuser_required('login')
         self.assertEqual(response.status_code, 302)
 
+
+class TestSuggestGroupSong(TestCase):
+    @patch('song_signup.views.home', return_value=HttpResponse())
+    def test_singer(self, home_mock):
+        login_singer(self, user_id=1)
+        response = self.client.post(reverse('suggest_group_song'), {'song-name': ["Brotherhood of man"],
+                                                                    'musical': ['How to succeed in business without '
+                                                                               'really trying']})
+        self.assertEqual(GroupSongRequest.objects.count(), 1)
+        created_song = GroupSongRequest.objects.first()
+        self.assertEqual(created_song.song_name, 'Brotherhood of Man')
+        self.assertEqual(created_song.musical, 'How to Succeed in Business Without Really Trying')
+        self.assertEqual(created_song.suggested_by, get_singer_str(1))
+
+        call_args, call_kwargs = home_mock.call_args
+        self.assertIn('Brotherhood of Man', call_args)
+        self.assertTrue(call_kwargs['is_group_song'])
+
+
+    def test_audience(self):
+        login_audience(self)
+        response = self.client.post(reverse('suggest_group_song'), {'song-name': ["Brotherhood of man"],
+                                                                    'musical': ['How to succeed in business without '
+                                                                               'really trying'],
+                                                                    'suggested_by': ['']
+        })
+        self.assertEqual(GroupSongRequest.objects.count(), 1)
+        created_song = GroupSongRequest.objects.first()
+        self.assertEqual(created_song.suggested_by, '-')
+
+
+    def test_named_audience(self):
+        login_audience(self)
+        response = self.client.post(reverse('suggest_group_song'), {'song-name': ["Brotherhood of man"],
+                                                                    'musical': ['How to succeed in business without '
+                                                                               'really trying'],
+                                                                    'suggested_by': ["some audience person"]
+        })
+        self.assertEqual(GroupSongRequest.objects.count(), 1)
+        created_song = GroupSongRequest.objects.first()
+        self.assertEqual(created_song.suggested_by, 'some audience person')
+
+    def test_get(self):
+        login_audience(self)
+        response = self.client.get(reverse('suggest_group_song'))
+        self.assertTemplateUsed(response, 'song_signup/suggest_group_song.html')
+
+
+class TestAddSongRequest(TestCase):
+    def test_only_required_fields(self):
+        singer = login_singer(self, user_id=1)
+        response = self.client.post(reverse('add_song_request'), {'song-name': ["defying gravity"],
+                                                                  'musical': ['wicked'],
+                                                                  'notes': ['']
+        })
+        self.assertEqual(SongRequest.objects.count(), 1)
+        created_song = SongRequest.objects.first()
+        self.assertEqual(created_song.song_name, 'Defying Gravity')
+        self.assertEqual(created_song.musical, 'Wicked')
+        self.assertEqual(created_song.singer.id, singer.id)
+        self.assertFalse(created_song.skipped)
+        self.assertIsNone(created_song.duet_partner)
+        self.assertEqual(created_song.notes, '')
+        self.assertEqual(created_song.additional_singers.count(), 0)
+        self.assertJSONEqual(response.content, {'requested_song': 'Defying Gravity'})
+        self.assertEqual(response.status_code, 200)
+
+    def test_all_fields(self):
+        user = login_singer(self, user_id=1)
+        create_singers([2, 3, 4])
+        response = self.client.post(reverse('add_song_request'), {'song-name': ["defying gravity"],
+                                                                  'musical': ['wicked'],
+                                                                  'notes': ["solo version"],
+                                                                  'duet-partner': ['2'],
+                                                                  'additional-singers': ['3', '4']
+
+
+        })
+        self.assertEqual(SongRequest.objects.count(), 1)
+        created_song = SongRequest.objects.first()
+        self.assertEqual(created_song.song_name, 'Defying Gravity')
+        self.assertEqual(created_song.musical, 'Wicked')
+        self.assertEqual(created_song.singer.id, user.id)
+        self.assertFalse(created_song.skipped)
+        self.assertEqual(created_song.duet_partner.id, 2)
+        self.assertEqual(created_song.notes, 'solo version')
+        self.assertEqual(set(created_song.additional_singers.values_list('id', flat=True)), {3, 4})
+        self.assertJSONEqual(response.content, {'requested_song': 'Defying Gravity'})
+        self.assertEqual(response.status_code, 200)
+
+    def test_duet_singer_signed(self):
+        user = login_singer(self, user_id=1)
+        dueter, *_ = create_singers([2, 3, 4])
+        SongRequest.objects.create(song_name='Defying Gravity', musical='Wicked', singer=dueter,
+                                   duet_partner_id=user.id, notes='Duet partner signed up first')
+
+        response = self.client.post(reverse('add_song_request'), {'song-name': ["defying gravity"],
+                                                                  'musical': ['wicked'],
+                                                                  'notes': ["solo version"],
+                                                                  'duet-partner': ['2'],
+                                                                  'additional-singers': ['3', '4']
+        })
+        self.assertEqual(response.status_code, 400)
+        self.assertJSONEqual(response.content, {'error': f'Apparently, {get_singer_str(2)} already signed you up for this song'})
+
+
+    def test_signed_up_twice(self):
+        user = login_singer(self, user_id=1)
+        dueter, *_ = create_singers([2, 3, 4])
+        response = self.client.post(reverse('add_song_request'), {'song-name': ["Defying Gravity"],
+                                                                  'musical': ['Wicked']
+        })
+
+        response = self.client.post(reverse('add_song_request'), {'song-name': ["defying gravity"],
+                                                                  'musical': ['wicked'],
+                                                                  'notes': ["solo version"],
+                                                                  'duet-partner': ['2'],
+                                                                  'additional-singers': ['3', '4']
+        })
+        self.assertEqual(response.status_code, 400)
+        self.assertJSONEqual(response.content, {'error': f'You already signed up with this song tonight'})
 
