@@ -3,7 +3,6 @@ const dialogModal = document.getElementById('duplicate-song-dialog');
 const dialogReset = dialogModal.querySelector('.reset');
 const dialogContinue = dialogModal.querySelector('.continue');
 
-dialogModal.showModal();
 
 function getUserModalRes() {
     return new Promise((resolve, reject) => {
