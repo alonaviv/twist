@@ -7,6 +7,15 @@
 
 {% include "partials/_navbar.html" with current="manage-songs" %}
 <main>
+    <dialog id="duplicate-song-dialog">
+        <form method="dialog">
+            <p>Sorry, someone already selected this song. Do you want to choose a different one?</p>
+            <div class='buttons-wrapper'>
+                <button value="reset" class="reset">I'll choose another song</button>
+                <button value="continue" class="continue">I still want to sing it</button>
+            </div>
+        </form>
+    </dialog>
     <div id="add-song-wrapper">
         <div id="singups-disabled">
             <p>Signup is<br>now closed</p>

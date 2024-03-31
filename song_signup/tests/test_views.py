@@ -759,3 +759,36 @@ class TestAddSongRequest(TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertJSONEqual(response.content, {'error': f'You already signed up with this song tonight'})
 
+    def test_duplicate_song(self):
+        user = login_singer(self, user_id=1)
+        [other_singer] = create_singers([2])
+        SongRequest.objects.create(song_name='Defying Gravity', musical='Wicked', singer=other_singer,
+                                   notes='Other singer signed up first')
+
+        response = self.client.post(reverse('add_song_request'), {'song-name': ["defying gravity"],
+                                                                  'musical': ['wicked'],
+                                                                  'notes': ["solo version"]
+        })
+        self.assertEqual(response.status_code, 202)
+        self.assertJSONEqual(response.content, {'duplicate': True})
+
+
+    def test_duplicate_song_approve(self):
+        user = login_singer(self, user_id=1)
+        [other_singer] = create_singers([2])
+        SongRequest.objects.create(song_name='Defying Gravity', musical='Wicked', singer=other_singer,
+                                   notes='Other singer signed up first')
+
+        response = self.client.post(reverse('add_song_request'), {'song-name': ["defying gravity"],
+                                                                  'musical': ['wicked'],
+                                                                  'notes': ["solo version"],
+                                                                  'approve-duplicate': [True]
+        })
+        self.assertEqual(SongRequest.objects.count(), 2)
+        created_song1, created_song2 = SongRequest.objects.all()
+        self.assertEqual(created_song1.song_name, created_song2.song_name, 'Defying Gravity')
+        self.assertEqual(created_song1.musical, created_song2.musical, 'Wicked')
+        self.assertEqual(created_song2.singer.id, user.id)
+        self.assertEqual(created_song1.singer.id, other_singer.id)
+        self.assertJSONEqual(response.content, {'requested_song': 'Defying Gravity'})
+        self.assertEqual(response.status_code, 200)

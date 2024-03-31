@@ -121,27 +121,27 @@ def add_song_request(request):
         notes = request.POST.get('notes')
         duet_partner = request.POST.get('duet-partner')
         additional_singers = request.POST.getlist('additional-singers')
+        approve_duplicate = request.POST.get('approve-duplicate')
 
-        try:
-            song_request = SongRequest.objects.get(song_name=song_name, musical=musical)
+        song_request = SongRequest.objects.filter(song_name=song_name, musical=musical).first()
+        if not song_request or approve_duplicate:
+            new_song_request = SongRequest.objects.create(song_name=song_name, musical=musical, singer=current_user,
+                                                      duet_partner_id=duet_partner, notes=notes)
+            new_song_request.additional_singers.set(additional_singers)
+
+            Singer.ordering.calculate_positions()
+            return JsonResponse({
+                'requested_song': new_song_request.song_name,
+            })
+
+        else:
             if current_user == song_request.duet_partner:
                 return JsonResponse({"error": f"Apparently, {song_request.singer} already signed you up for this song"},
                                     status=400)
             elif song_request.singer == current_user:
                 return JsonResponse({"error": "You already signed up with this song tonight"}, status=400)
             else:
-                pass # Deal with same song - Here's the bug..
-
-        except SongRequest.DoesNotExist:
-            song_request = SongRequest.objects.create(song_name=song_name, musical=musical, singer=current_user,
-                                                      duet_partner_id=duet_partner, notes=notes)
-            song_request.additional_singers.set(additional_singers)
-
-            Singer.ordering.calculate_positions()
-
-        return JsonResponse({
-            'requested_song': song_request.song_name,
-        })
+                return JsonResponse({"duplicate": True}, status=202)
 
 
 @api_view(["GET"])

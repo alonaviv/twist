@@ -829,7 +829,7 @@ nav {
     #add-song-wrapper form .form-control {
       margin-bottom: 15px;
       transition: all 2s ease; }
-      #add-song-wrapper form .form-control input[type=text] {
+      #add-song-wrapper form .form-control input[type="text"] {
         width: 100%;
         padding: 4px;
         height: 40px;
@@ -839,7 +839,7 @@ nav {
         color: #fff;
         font-size: 18px;
         transition: inherit; }
-        #add-song-wrapper form .form-control input[type=text]::placeholder {
+        #add-song-wrapper form .form-control input[type="text"]::placeholder {
           color: #aaa;
           font-size: 18px; }
       #add-song-wrapper form .form-control select {
@@ -852,6 +852,41 @@ nav {
         color: #fff;
         font-size: 14px;
         transition: inherit; }
+
+#duplicate-song-dialog {
+  border-radius: 8px;
+  padding: 20px;
+  width: 90%;
+  max-width: 400px;
+  box-sizing: border-box;
+  margin: 0 auto;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); }
+  #duplicate-song-dialog form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center; }
+  #duplicate-song-dialog p {
+    margin: 0 0 20px;
+    text-align: center; }
+  #duplicate-song-dialog .buttons-wrapper {
+    display: flex;
+    flex-direction: column; }
+    #duplicate-song-dialog .buttons-wrapper button {
+      cursor: pointer;
+      margin-bottom: 15px;
+      padding: 10px 20px;
+      border: 1px solid #ddd;
+      background-color: #f9f9f9;
+      border-radius: 4px; }
+      #duplicate-song-dialog .buttons-wrapper button:hover {
+        background-color: #f0f0f0; }
+
+::backdrop {
+  background-color: rgba(0, 0, 0, 0.5); }
 
 #add-song-wrapper {
   background: #00C575;
