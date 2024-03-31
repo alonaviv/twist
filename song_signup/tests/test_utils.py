@@ -3,7 +3,7 @@ import datetime
 import random
 from itertools import chain
 from typing import Union, List
-
+from flags.state import enable_flag
 import pytz
 from django.test import TestCase
 
@@ -265,7 +265,7 @@ def login(singer_id):
 
 class SongRequestTestCase(TestCase):
     def setUp(self):
-        enable_signup(None)
+        enable_flag('CAN_SIGNUP')
         add_song_suggestions()
 
     def tearDown(self):

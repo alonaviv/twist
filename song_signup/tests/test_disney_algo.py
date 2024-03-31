@@ -7,8 +7,7 @@ from song_signup.tests.test_utils import (
     set_performed, add_duet, add_songs_to_singers, get_singer, assert_song_positions, add_songs_to_singer,
     login, logout,
 )
-from song_signup.views import disable_signup
-
+from flags.state import disable_flag
 
 class TestDisneylandOrdering(SongRequestTestCase):
     def test_active_singers(self):
@@ -127,7 +126,7 @@ class TestDisneylandOrdering(SongRequestTestCase):
 
             # Shani stops signup, which pushes all the people who haven't sung yet to the start of the list
 
-            disable_signup(None)
+            disable_flag('CAN_SIGNUP')
             assert_singers_in_disney(self, [5, 6, 7, 8, 10, 9, 2, 3, 4, 1])
             self.assertEqual(Singer.ordering.new_singers_num(), 6)
 
@@ -375,7 +374,7 @@ class TestSimulatedEvenings(SongRequestTestCase):
                                          (11, 1), (2, 3), (3, 2), (15, 1), (16, 1), (6, 2)])
 
             # Shani closes signup - all new singers jump to start of list. Note - 7 isn't a new singer, she sang a duet
-            disable_signup(None)
+            disable_flag('CAN_SIGNUP')
             assert_song_positions(self, [(8, 1), (9, 1), (12, 1), (13, 1), (14, 1), (5, 1),
                                          (11, 1), (15, 1), (16, 1), (1, 3), (4, 2), (7, 1), (2, 3), (3, 2), (6, 2)])
 
