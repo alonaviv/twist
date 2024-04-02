@@ -549,7 +549,6 @@ def reset_database(request):
     config.PASSCODE = ''
     config.EVENT_SKU = ''
     config.DRINKING_WORDS = ''
-    config.FREEBIE_TICKET = ''
     return redirect('admin/song_signup/songrequest')
 
 
