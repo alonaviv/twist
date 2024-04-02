@@ -254,6 +254,54 @@ class TestLogin(TestCase):
         self.assertEqual(freebie_query.count(), 1)
         self.assertTrue(freebie_query.first().is_freebie)
 
+    def test_singer_change_video(self):
+        create_order(num_singers=1, order_id=12345)
+        response = self.client.post(reverse('login'), {
+            'ticket-type': ['singer'],
+            'first-name': ['Valid'],
+            'last-name': ['Singer'],
+            'passcode': [PASSCODE],
+            'order-id': ['12345']
+        })
+        self.assertRedirects(response, reverse('home'))
+        new_singer = Singer.objects.get(username='valid_singer')
+        self.assertIsNotNone(new_singer)
+        self.assertTrue(new_singer.is_active)
+        self.assertFalse(new_singer.no_image_upload)
+
+        # Login again with still no video checkbox
+        self.client.get(reverse('logout'))
+        response = self.client.post(reverse('login'), {
+            'ticket-type': ['singer'],
+            'first-name': ['Valid'],
+            'last-name': ['Singer'],
+            'passcode': [PASSCODE],
+            'order-id': ['12345'],
+            'logged-in': ['on']
+        })
+        self.assertRedirects(response, reverse('home'))
+        new_singer = Singer.objects.get(username='valid_singer')
+        self.assertIsNotNone(new_singer)
+        self.assertTrue(new_singer.is_active)
+        self.assertFalse(new_singer.no_image_upload)
+
+        # Login again and add video checkbox
+        self.client.get(reverse('logout'))
+        response = self.client.post(reverse('login'), {
+            'ticket-type': ['singer'],
+            'first-name': ['Valid'],
+            'last-name': ['Singer'],
+            'passcode': [PASSCODE],
+            'order-id': ['12345'],
+            'no-upload': ['on'],
+            'logged-in': ['on']
+        })
+        self.assertRedirects(response, reverse('home'))
+        new_singer = Singer.objects.get(username='valid_singer')
+        self.assertIsNotNone(new_singer)
+        self.assertTrue(new_singer.is_active)
+        self.assertTrue(new_singer.no_image_upload)
+
 
 class TestJsonRes(TestCase):
     def _remove_song_keys(self, json):

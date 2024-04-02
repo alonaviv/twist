@@ -440,10 +440,11 @@ def tip_us(request):
     return render(request, 'song_signup/tip_us.html')
 
 
-def _login_existing_singer(first_name, last_name):
+def _login_existing_singer(first_name, last_name, no_image_upload):
     try:
         singer = Singer.objects.get(first_name=first_name, last_name=last_name)
         singer.is_active = True
+        singer.no_image_upload = no_image_upload
         singer.save()
         return singer
     except Singer.DoesNotExist:
@@ -512,7 +513,7 @@ def login(request):
                     raise TwistApiException("Wrong passcode - Shani will reveal tonight's passcode at the event")
 
                 if logged_in:
-                    singer = _login_existing_singer(first_name, last_name)
+                    singer = _login_existing_singer(first_name, last_name, no_image_upload)
                 else:
                     singer = _login_new_singer(first_name, last_name, no_image_upload, order_id)
 
