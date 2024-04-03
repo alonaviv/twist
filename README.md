@@ -77,6 +77,8 @@ and choose a different SSH port number (not 22).
 2. Run migration with `sudo ./migrate.sh`
 3. If needed, delete all docker volumes with `sudo  docker compose -f docker-compose.prod.yml down -v`. This shouldn't delete the db backups mounted locally, but best make copies first.
 4. Run `sudo ./deploy` to pull branch changes, rebuild docker images and run docker-compose. 
+5. If you run out of space at any point - run `sudo docker system prune -a` and then `sudo ./deploy` (It won't 
+   delete your volumes, will just re-download the images). 
 
 ## Testing
 1. Run song_signup/tests from pycharm after selecting the docker compose file.
