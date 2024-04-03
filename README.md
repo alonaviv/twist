@@ -91,7 +91,7 @@ and choose a different SSH port number (not 22).
 
 ## Uploading Lineapp orders
 1. Go to Lineapp website: צפיה בהכל or הזמנות -> ניהול הזמנות
-2. Filter according to the relevant event, the correct dates (default is only 2 weeks back!) and שולם 
+2. Filter according to the relevant event, the correct dates (default is only 2 weeks back!) and שולם + מומש
 3. Download excel with ייצוא מותאם אישית using the BWT template
 4. Login as admin and go to uploads in "Upload Lineapp" (in Song requests)
 5. Upload excel. The ticket orders are persistant through DB resets. 
