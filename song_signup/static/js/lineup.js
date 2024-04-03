@@ -20,7 +20,7 @@ overlay.addEventListener("click", expandExplanation);
 setInterval(populateLineup, 1000);
 window.addEventListener('DOMContentLoaded', loadWait(populateLineup));
 
-function formatSong(song) {
+function formatSong(song, current_song = false) {
     let content;
     if (!song.song_name) {
         content = `<p class="song-name">No songs chosen yet!</p>`;
@@ -28,7 +28,7 @@ function formatSong(song) {
         content = `<p class="song-name">${song.song_name}</p>
                    <p class="song-musical">${song.musical}</p>
                    <p class="singers"> - ${song.singers}</p>
-                   <p class="view-lyrics">(Click for live lyrics)</p>
+                   ${current_song ? '<p class="view-lyrics">(Click for live lyrics)</p>' : ''}
                    `;
     }
 
@@ -69,7 +69,7 @@ async function populateLineup() {
     const res = await fetch("/get_lineup");
     const data = await res.json();
 
-    currentlySinging.innerHTML = formatSong(data.current_song);
+    currentlySinging.innerHTML = formatSong(data.current_song, true);
 
     if (data.next_songs.length !== 0) {
         linupList.innerHTML = '<h2>Up next</h2>';
