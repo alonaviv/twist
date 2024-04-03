@@ -367,7 +367,7 @@ def default_lyrics(request):
 
 def _get_current_song():
     curr_group_song = CurrentGroupSong.objects.all().first()
-    if curr_group_song:
+    if curr_group_song and curr_group_song.is_active:
         return curr_group_song.group_song
     else:
         return SongRequest.objects.current_song()
@@ -383,8 +383,14 @@ def get_current_lyrics(request):
 
 
 @superuser_required('login')
+def start_group_song(request):
+    CurrentGroupSong.start_song()
+    return redirect('admin/song_signup/groupsongrequest')
+
+
+@superuser_required('login')
 def end_group_song(request):
-    CurrentGroupSong.objects.all().delete()
+    CurrentGroupSong.end_song()
     return redirect('admin/song_signup/groupsongrequest')
 
 

@@ -44,9 +44,10 @@
             <p style="font-size:20px; margin: 0;">{{ new_singers_num }} new singers</p>
         </div>
         {% if group_song %}
-        <div style="margin: 20px; border: 3px solid purple; width: fit-content; padding: 10px;">
-            <p style="font-size:20px; margin: 0;">Current Group song: {{ group_song }}</p>
-        </div>
+            <div style="margin: 20px; border: 3px solid purple; width: fit-content; padding: 10px;">
+                <p style="font-size:20px; margin: 0;">Current Group song: {% if group_song %} {{ group_song }} - {% if is_active %} Running {% else %} Not Running {% endif %}
+                    {% else %} None {% endif %}</p>
+            </div>
         {% endif %}
     </div>
 {% endblock %}

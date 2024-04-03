@@ -4,6 +4,9 @@
 {% block object-tools-items %}
             {{ block.super }}
             <li>
+                <a href="{% url 'start_group_song' %}">Start Group Song</a>
+            </li>
+            <li>
                 <a href="{% url 'end_group_song' %}">End Group Song</a>
             </li>
 {% endblock %}
@@ -12,7 +15,7 @@
     {{ block.super }}
     <div style="display: flex">
             <div style="margin: 20px; border: 3px solid purple; width: fit-content; padding: 10px;">
-                <p style="font-size:20px; margin: 0;">Current Group song: {% if group_song %} {{ group_song }}
+                <p style="font-size:20px; margin: 0;">Current Group song: {% if group_song %} {{ group_song }} - {% if is_active %} Running {% else %} Not Running {% endif %}
                     {% else %} None {% endif %}</p>
             </div>
     </div>

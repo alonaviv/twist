@@ -4,6 +4,7 @@ from titlecase import titlecase
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.contrib.postgres.fields import CITextField
+from django.utils import timezone
 from django.db.models import (
     CASCADE,
     SET_NULL,
@@ -194,11 +195,28 @@ class CurrentGroupSong(Model):
     Singleton model to get the group song currently being performed.
     """
     group_song = OneToOneField(GroupSongRequest, on_delete=CASCADE, null=True, blank=True)
+    is_active = BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         if CurrentGroupSong.objects.exists() and not self.pk:
             return
         return super().save(*args, **kwargs)
+
+    @classmethod
+    def start_song(cls):
+        instance = cls.objects.all().first()
+
+        if instance:
+            instance.is_active = True
+            instance.save()
+            instance.group_song.performance_time = timezone.now()
+            instance.group_song.save(get_lyrics=False)
+
+    @classmethod
+    def end_song(cls):
+        instance = cls.objects.all().first()
+        if instance:
+            instance.delete()
 
 
 class SongSuggestion(Model):

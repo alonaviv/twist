@@ -46,18 +46,15 @@ set_solo_unskipped.short_description = 'Mark song as unskipped'
 set_solo_unskipped.allowed_permissions = ['change']
 
 
-def start_group_song(modeladmin, request, queryset):
+def prepare_group_song(modeladmin, request, queryset):
     if queryset.count() == 1:
         group_song = queryset.first()
-        group_song.performance_time = timezone.now()
-        group_song.save(get_lyrics=False)
-
         CurrentGroupSong.objects.all().delete()
         CurrentGroupSong.objects.create(group_song=group_song)
 
 
-start_group_song.short_description = 'Start Group Song (End it with the button above)'
-start_group_song.allowed_permissions = ['change']
+prepare_group_song.short_description = 'Prepare group song (Need to actually start it with button above)'
+prepare_group_song.allowed_permissions = ['change']
 
 
 class NotYetPerformedFilter(admin.SimpleListFilter):
@@ -81,14 +78,15 @@ class GroupSongRequestAdmin(admin.ModelAdmin):
     list_display = (
         'lyrics', 'song_name', 'musical', 'suggested_by', 'get_request_time', 'get_performance_time'
     )
-    actions = [start_group_song]
+    actions = [prepare_group_song]
     change_list_template = "admin/group_song_request_changelist.html"
 
     def changelist_view(self, request, extra_context=None):
         extra_context = extra_context or {}
-        group_song = CurrentGroupSong.objects.first()
-        if group_song:
-            extra_context['group_song'] = group_song.group_song.song_name
+        current_group_song = CurrentGroupSong.objects.first()
+        if current_group_song:
+            extra_context['group_song'] = current_group_song.group_song.song_name
+            extra_context['is_active'] = current_group_song.is_active
 
         return super().changelist_view(request, extra_context=extra_context)
 
@@ -154,9 +152,10 @@ class SongRequestAdmin(admin.ModelAdmin):
         extra_context = extra_context or {}
         extra_context['new_singers_num'] = Singer.ordering.new_singers_num()
 
-        group_song = CurrentGroupSong.objects.first()
-        if group_song:
-            extra_context['group_song'] = group_song.group_song.song_name
+        current_group_song = CurrentGroupSong.objects.first()
+        if current_group_song:
+            extra_context['group_song'] = current_group_song.group_song.song_name
+            extra_context['is_active'] = current_group_song.is_active
 
         return super().changelist_view(request, extra_context=extra_context)
 
@@ -250,7 +249,7 @@ class OrdersAdmin(admin.ModelAdmin):
 
 @admin.register(CurrentGroupSong)
 class CurrentGroupSongAdmin(admin.ModelAdmin):
-    list_display = ['get_song_name', 'get_musical', 'get_suggested_by']
+    list_display = ['get_song_name', 'get_musical', 'get_suggested_by', 'is_active']
 
     def get_song_name(self, obj):
         return obj.group_song.song_name
