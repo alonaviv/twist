@@ -54,7 +54,7 @@ class TicketOrder(Model):
         unique_together = ('order_id', 'event_sku', 'ticket_type')
 
     def __str__(self):
-        return f"Order {self.order_id}; Type {self.ticket_type}"
+        return f"SKU: {self.event_sku}; Order #{self.order_id}; Type {'FREEBIE' if self.is_freebie else self.ticket_type}"
 
 
 class Singer(AbstractUser):
