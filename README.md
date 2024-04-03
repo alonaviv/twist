@@ -89,6 +89,12 @@ and choose a different SSH port number (not 22).
 4. In container, run `coverage run --source='.' manage.py test song_signup && coverage html`
 5. Exit container and run `open ./htmlcov/index.html` locally
 
+## Uploading Lineapp orders
+1. Go to Lineapp website: צפיה בהכל or הזמנות -> ניהול הזמנות
+2. Filter according to the relevant event, the correct dates (default is only 2 weeks back!) and שולם 
+3. Download excel with ייצוא מותאם אישית using the BWT template
+4. Login as admin and go to url ./upload_lineapp_orders
+
 
 
 
