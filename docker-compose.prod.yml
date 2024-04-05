@@ -68,7 +68,7 @@ services:
       context: .
       dockerfile: docker/prod/Dockerfile.caddy
     volumes:
-      - django_static_vol:/usr/share/caddy/django_static
+      - django_static_vol:/usr/share/caddy/django_static/static
     ports:
       - "80:80"
       - "443:443"
