@@ -62,20 +62,20 @@ services:
       redis:
         condition: service_healthy
 
-caddy:
-  restart: always
-  build:
-    context: .
-    dockerfile: docker/prod/Dockerfile.caddy
-  volumes:
-    - django_static_vol:/usr/share/caddy/django_static
-  ports:
-    - "80:80"
-    - "443:443"
-  depends_on:
-    - django
-  logging:
-    driver: "json-file"
-    options:
-      max-size: "200k"
-      max-file: "10"
+  caddy:
+    restart: always
+    build:
+      context: .
+      dockerfile: docker/prod/Dockerfile.caddy
+    volumes:
+      - django_static_vol:/usr/share/caddy/django_static
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - django
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
