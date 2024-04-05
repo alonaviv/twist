@@ -1,0 +1,6 @@
+broadwaywithatwist.xyz {
+    root * /usr/share/caddy/django_static
+    file_server /static/*
+
+    reverse_proxy / http://django:8000
+}
