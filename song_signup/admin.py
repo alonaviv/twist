@@ -136,7 +136,7 @@ class GroupSongRequestAdmin(admin.ModelAdmin):
 class SongRequestAdmin(admin.ModelAdmin):
     list_display = (
         'position', 'get_skipped', 'allows_filming', 'lyrics', 'singer', 'song_name', 'musical', 'duet_partner', 'get_notes',
-        'get_additional_singers', 'get_performance_time', 'get_request_time', 'get_initial_signup'
+        'get_additional_singers', 'default_lyrics', 'get_performance_time', 'get_request_time', 'get_initial_signup',
     )
     list_filter = (NotYetPerformedFilter,)
     actions = [set_solo_performed, set_solo_not_performed, set_solo_skipped, set_solo_unskipped]
@@ -208,6 +208,12 @@ class SongRequestAdmin(admin.ModelAdmin):
     allows_filming.short_description = 'Filming?'
     allows_filming.admin_order_field = 'allows_filming'
     allows_filming.boolean = True
+
+    def default_lyrics(self, obj):
+        return obj.has_default_lyrics()
+
+    default_lyrics.short_description = 'Default lyrics'
+    default_lyrics.boolean = True
 
     def lyrics(self, obj):
         return mark_safe(f'<a href="{reverse("lyrics", args=(obj.id,))}">Lyrics</a>')
