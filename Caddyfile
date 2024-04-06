@@ -1,6 +1,8 @@
 broadwaywithatwist.xyz {
-    root * /usr/share/caddy/django_static
-    file_server /static/*
+    handle_path /static/* {
+        root * /usr/share/caddy/django_static
+        file_server
+   }
 
-    reverse_proxy / http://django:8000
+    reverse_proxy http://django:8000
 }
