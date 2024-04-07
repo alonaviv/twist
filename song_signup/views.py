@@ -362,6 +362,8 @@ def default_lyrics(request):
 
     lyric.default = True
     lyric.save()
+    lyric.song_request.has_default_lyrics = True
+    lyric.song_request.save()
     return Response({}, status=status.HTTP_200_OK)
 
 

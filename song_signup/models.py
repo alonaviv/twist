@@ -254,6 +254,7 @@ class SongRequest(Model):
     cycle = FloatField(null=True, blank=True)  # The cycle where song was scheduled
     placeholder = BooleanField(default=False)
     skipped = BooleanField(default=False)
+    has_default_lyrics = BooleanField(default=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -317,8 +318,6 @@ class SongRequest(Model):
             self._original_song_name = self.song_name
             self._original_musical = self.musical
 
-    def has_default_lyrics(self):
-        return any(lyric.default for lyric in self.lyrics.all())
 
     class Meta:
         unique_together = ('song_name', 'musical', 'singer', 'cycle', 'position')

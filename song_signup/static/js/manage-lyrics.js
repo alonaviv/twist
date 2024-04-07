@@ -19,7 +19,7 @@ async function setLyricsAsDefault(e) {
       }),
     })
       .then((_) => {
-        location.reload();
+        location.replace('/admin/song_signup/songrequest');
       })
       .catch((error) => {
         alert(`Error: ${error}`);

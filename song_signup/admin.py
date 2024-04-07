@@ -139,6 +139,7 @@ class SongRequestAdmin(admin.ModelAdmin):
         'get_additional_singers', 'default_lyrics', 'get_performance_time', 'get_request_time', 'get_initial_signup',
     )
     list_filter = (NotYetPerformedFilter,)
+    list_editable = ('has_default_lyrics',)
     actions = [set_solo_performed, set_solo_not_performed, set_solo_skipped, set_solo_unskipped]
     ordering = ['position']
     change_list_template = "admin/song_request_changelist.html"
@@ -209,16 +210,16 @@ class SongRequestAdmin(admin.ModelAdmin):
     allows_filming.admin_order_field = 'allows_filming'
     allows_filming.boolean = True
 
-    def default_lyrics(self, obj):
-        return obj.has_default_lyrics()
-
-    default_lyrics.short_description = 'Default lyrics'
-    default_lyrics.boolean = True
 
     def lyrics(self, obj):
         return mark_safe(f'<a href="{reverse("lyrics", args=(obj.id,))}">Lyrics</a>')
 
     lyrics.short_description = "Lyrics"
+
+    def default_lyrics(self, obj):
+        return obj.has_default_lyrics
+
+    default_lyrics.short_description = "Did Lyrics"
 
     class Media:
         js = ["js/admin-reload.js"]
