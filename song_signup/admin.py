@@ -136,10 +136,10 @@ class GroupSongRequestAdmin(admin.ModelAdmin):
 class SongRequestAdmin(admin.ModelAdmin):
     list_display = (
         'position', 'get_skipped', 'allows_filming', 'lyrics', 'singer', 'song_name', 'musical', 'duet_partner', 'get_notes',
-        'get_additional_singers', 'default_lyrics', 'get_performance_time', 'get_request_time', 'get_initial_signup',
+        'get_additional_singers', 'default_lyrics', 'found_music', 'get_performance_time', 'get_request_time', 'get_initial_signup',
     )
     list_filter = (NotYetPerformedFilter,)
-    list_editable = ('has_default_lyrics',)
+    list_editable = ('default_lyrics', 'found_music')
     actions = [set_solo_performed, set_solo_not_performed, set_solo_skipped, set_solo_unskipped]
     ordering = ['position']
     change_list_template = "admin/song_request_changelist.html"
@@ -219,7 +219,8 @@ class SongRequestAdmin(admin.ModelAdmin):
     def default_lyrics(self, obj):
         return obj.has_default_lyrics
 
-    default_lyrics.short_description = "Did Lyrics"
+    default_lyrics.short_description = "Set Default Lyrics"
+    default_lyrics.admin_order_field = "has_default_lyrics"
 
     class Media:
         js = ["js/admin-reload.js"]

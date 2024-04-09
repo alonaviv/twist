@@ -189,6 +189,10 @@ class GroupSongRequest(Model):
             from song_signup.tasks import get_lyrics
             get_lyrics.delay(group_song_id=self.id)
 
+    @property
+    def basic_data(self):
+        return {'id': self.id, 'name': self.song_name, 'singer': "GROUP SONG", 'wait_amount': None}
+
 
 class CurrentGroupSong(Model):
     """
@@ -254,7 +258,8 @@ class SongRequest(Model):
     cycle = FloatField(null=True, blank=True)  # The cycle where song was scheduled
     placeholder = BooleanField(default=False)
     skipped = BooleanField(default=False)
-    has_default_lyrics = BooleanField(default=False)
+    default_lyrics = BooleanField(default=False)
+    found_music = BooleanField(default=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

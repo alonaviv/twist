@@ -29,17 +29,13 @@
                    onclick="return confirm('Are you sure you want to erase the entire database?')">Reset
                     Database</a>
             </li>
-            <li>
-                <a href="{% url 'upload_lineapp_orders' %}">Upload Lineapp</a>
-            </li>
-
             {% endif %}
 {% endblock %}
 
 
 {% block object-tools %}
 {{ block.super }}
-    <div style="display: flex">
+    <div style="display: flex; flex-wrap: wrap;">
         <div style="margin: 20px; border: 3px solid purple; width: fit-content; padding: 10px;">
             <p style="font-size:20px; margin: 0;">{{ new_singers_num }} new singers</p>
         </div>
@@ -49,6 +45,29 @@
                     {% else %} None {% endif %}</p>
             </div>
         {% endif %}
+        <!-- Toggle Button -->
+        <button id="toggleBgBtn" type="button" style="margin: 20px; padding: 10px; font-size: 20px; cursor: pointer;">
+            Start Transposition
+        </button>
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var initialColor = localStorage.getItem('bgColor') || '';
+            var initialText = localStorage.getItem('btnText') || 'Start Transposition';
+            document.body.style.backgroundColor = initialColor;
+            document.getElementById('toggleBgBtn').textContent = initialText;
+
+            document.getElementById('toggleBgBtn').addEventListener('click', function() {
+                var currentColor = document.body.style.backgroundColor;
+                var newColor = currentColor === 'red' ? '' : 'red';
+                document.body.style.backgroundColor = newColor;
+                localStorage.setItem('bgColor', newColor);
+
+                var newText = newColor === 'red' ? 'Stop Transposition' : 'Start Transposition';
+                this.textContent = newText;
+                localStorage.setItem('btnText', newText);
+            });
+        });
+    </script>
 {% endblock %}
 

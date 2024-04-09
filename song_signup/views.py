@@ -89,8 +89,12 @@ def home(request, new_song=None, is_group_song=False):
 
 
 def spotlight_data(request):
-    current_song = SongRequest.objects.current_song()
-    next_song = SongRequest.objects.next_song()
+    current_song, is_group_song = _get_current_song()
+
+    if is_group_song:
+        next_song = SongRequest.objects.current_song()
+    else:
+        next_song = SongRequest.objects.next_song()
 
     return JsonResponse(
         {
@@ -191,9 +195,9 @@ def get_song(request, song_pk):
 @api_view(["GET"])
 def get_lineup(request):
     song_requests = SongRequest.objects.filter(position__isnull=False, skipped=False).order_by('position')
-    current_song = _get_current_song()
+    current_song, is_group_song = _get_current_song()
 
-    if isinstance(current_song, GroupSongRequest):
+    if is_group_song:
         current_song_data = GroupSongRequestLineupSerializer(current_song).data
         next_songs_data = SongRequestLineupSerializer(song_requests, many=True).data
     else:
@@ -362,22 +366,28 @@ def default_lyrics(request):
 
     lyric.default = True
     lyric.save()
-    lyric.song_request.has_default_lyrics = True
-    lyric.song_request.save()
-    return Response({}, status=status.HTTP_200_OK)
+
+    if lyric.song_request:
+        lyric.song_request.default_lyrics = True
+        lyric.song_request.save()
+
+    return Response({'is_group_song': bool(lyric.group_song_request)}, status=status.HTTP_200_OK)
 
 
 def _get_current_song():
+    """
+    Return current_song, is_group_song
+    """
     curr_group_song = CurrentGroupSong.objects.all().first()
     if curr_group_song and curr_group_song.is_active:
-        return curr_group_song.group_song
+        return curr_group_song.group_song, True
     else:
-        return SongRequest.objects.current_song()
+        return SongRequest.objects.current_song(), False
 
 
 @api_view(["GET"])
 def get_current_lyrics(request):
-    current = _get_current_song()
+    current, _ = _get_current_song()
     lyrics = _sort_lyrics(current)
 
     serialized = LyricsSerializer(lyrics[0] if lyrics else None, many=False, read_only=True)
