@@ -40,7 +40,8 @@ DOMAIN = 'http://localhost:8000'
 
 FLAGS = {
     'CAN_SIGNUP': [],
-    'STARTED': []
+    'STARTED': [],
+    'BOHO': []
 }
 
 LOGGING = {

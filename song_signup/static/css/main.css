@@ -1,4 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Anton&family=Oleo+Script+Swash+Caps&family=Roboto:ital,wght@0,300;0,400;0,500;1,300&display=swap");
+@import url("https://fonts.cdnfonts.com/css/8bit-wonder");
 :root {
   --slider-width: 50%; }
 
@@ -1073,6 +1074,29 @@ nav {
         max-width: 60%; }
         #lyrics-wrapper .container #lyrics-text.screen pre {
           line-height: 1.6em; }
+  #lyrics-wrapper.boho {
+    background-color: #0000aa; }
+    #lyrics-wrapper.boho #lyrics-text,
+    #lyrics-wrapper.boho pre {
+      color: #fff;
+      font-family: "8BIT WONDER", sans-serif;
+      margin-top: 40px; }
+      #lyrics-wrapper.boho #lyrics-text #bsod-title,
+      #lyrics-wrapper.boho pre #bsod-title {
+        font-size: 18px;
+        background-color: #666;
+        width: fit-content;
+        margin: auto; }
+      #lyrics-wrapper.boho #lyrics-text #bsod-text,
+      #lyrics-wrapper.boho pre #bsod-text {
+        text-align: left;
+        font-size: 25px;
+        line-height: 2em;
+        margin-bottom: 100px; }
+      #lyrics-wrapper.boho #lyrics-text.screen,
+      #lyrics-wrapper.boho pre.screen {
+        font-size: 40px;
+        max-width: 80%; }
 
 #lineup-wrapper {
   height: 100%;

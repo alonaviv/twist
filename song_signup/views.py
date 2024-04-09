@@ -601,8 +601,24 @@ def end_evening(request):
     return redirect('admin/song_signup/songrequest')
 
 
+@superuser_required('login')
+def start_boho(request):
+    enable_flag('BOHO')
+    return redirect('admin/song_signup/songrequest')
+
+
+@superuser_required('login')
+def stop_boho(request):
+    disable_flag('BOHO')
+    return redirect('admin/song_signup/songrequest')
+
+
 def evening_started(request):
     return JsonResponse({"started": flag_enabled('STARTED')})
+
+
+def boho_started(request):
+    return JsonResponse({"boho": flag_enabled('BOHO')})
 
 
 def recalculate_priorities(request):

@@ -13,6 +13,14 @@
                     <a href="{% url 'start_evening' %}">Start Evening</a>
                 {% endif %}
             </li>
+                <li>
+                    {% flag_enabled 'BOHO' as boho %}
+                    {% if boho %}
+                        <a href="{% url 'stop_boho' %}">Stop Boho</a>
+                    {% else %}
+                        <a href="{% url 'start_boho' %}">Start Boho</a>
+                    {% endif %}
+                </li>
             <li>
                 <a href="{% url 'recalculate_priorities' %}">Recalulate</a>
             </li>
