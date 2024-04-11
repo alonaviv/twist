@@ -55,6 +55,11 @@ class GroupSongRequestLineupSerializer(ModelSerializer):
 
 
 class LyricsSerializer(ModelSerializer):
+    is_group_song = SerializerMethodField()
+
+    def get_is_group_song(self, instance):
+        return self.context.get('is_group_song', False)
+
     class Meta:
         model = SongLyrics
-        fields = ['song_name', 'artist_name', 'lyrics']
+        fields = ['song_name', 'artist_name', 'lyrics', 'is_group_song']

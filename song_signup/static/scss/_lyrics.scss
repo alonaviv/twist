@@ -87,6 +87,15 @@
     color: #000;
     margin-bottom: $footer-height;
     padding: 2% 0% 2% 0%;
+
+    &.group-song {
+        background: $primary-color;
+
+        .drink-highlight {
+            color: white;
+            background-color: $secondary-color;
+        }
+    }
     &.screen {
         padding-bottom: 50vh;
         margin-bottom: 0px;
@@ -99,6 +108,14 @@
 
         #lyrics-text {
             width: 100%;
+
+            #group-song-title {
+                font-size: 100px;
+                margin-bottom: 50px;
+                margin-top: 30px;
+                font-weight: 900;
+            }
+
             pre {
                 text-wrap: wrap;
                 line-height: 1.8em;

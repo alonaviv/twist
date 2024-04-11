@@ -1074,6 +1074,11 @@ nav {
   color: #000;
   margin-bottom: 4vh;
   padding: 2% 0% 2% 0%; }
+  #lyrics-wrapper.group-song {
+    background: #00C575; }
+    #lyrics-wrapper.group-song .drink-highlight {
+      color: white;
+      background-color: #00b3c5; }
   #lyrics-wrapper.screen {
     padding-bottom: 50vh;
     margin-bottom: 0px; }
@@ -1083,6 +1088,11 @@ nav {
     width: 100%; }
     #lyrics-wrapper .container #lyrics-text {
       width: 100%; }
+      #lyrics-wrapper .container #lyrics-text #group-song-title {
+        font-size: 100px;
+        margin-bottom: 50px;
+        margin-top: 30px;
+        font-weight: 900; }
       #lyrics-wrapper .container #lyrics-text pre {
         text-wrap: wrap;
         line-height: 1.8em; }
