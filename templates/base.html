@@ -19,7 +19,7 @@
     </head>
 
     <body>
-        {% with is_singer=request.user.is_authenticated %}
+        {% with is_singer=request.user.is_authenticated username=request.user.username %}
         {% block content %} {% endblock %}
         {% endwith %}
     </body>

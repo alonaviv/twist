@@ -9,34 +9,53 @@ const upNextElem = document.querySelector(".up-next");
 
 const dashboardElem = document.getElementById("home-dashboard");
 const noSongElem = document.getElementById("no-song");
+const spotlightElem = document.getElementById("now-singing-wrapper");
 
 setInterval(populateSpotlight, 1000);
 window.addEventListener("DOMContentLoaded", loadWait(populateSpotlight));
 
 
-function populateSpotlight() {
-    return fetch("/spotlight_data")
-        .then((response) => response.json())
-        .then((data) => {
-            const currentSongData = data.current_song;
-            const nextSongData = data.next_song;
+async function populateSpotlight() {
 
-            if (currentSongData) {
-                currentSinger.innerHTML = currentSongData.singer;
-                currentSong.innerHTML = currentSongData.name;
-            } else {
-                currentSinger.innerHTML = "No One Yet";
-                currentSong.innerHTML = "We're waiting the first brave soul!";
-            }
+    const startedRes = await fetch("/evening_started");
+    const eveningStarted = (await startedRes.json()).started;
 
-            if (nextSongData) {
-                upNextElem.style.visibility = "visible";
-                nextSinger.innerHTML = nextSongData.singer;
-                nextSong.innerHTML = nextSongData.name;
-            } else {
-                upNextElem.style.visibility = "hidden";
-            }
-        });
+    if (!eveningStarted) {
+        const nextSingerRes = await fetch("/next_singer");
+        const nextSingerUsername = (await nextSingerRes.json()).next_singer
+        spotlightElem.classList.add('curtain');
+        spotlightElem.firstElementChild.classList.add('hidden')
+        if (djangoUsername === nextSingerUsername) {
+            spotlightElem.classList.add('first-singer');
+        }
+        return;
+    } else {
+        spotlightElem.classList.remove('curtain');
+        spotlightElem.firstElementChild.classList.remove('hidden')
+        spotlightElem.classList.remove('first-singer');
+    }
+
+
+    const spotlightRes = await fetch("/spotlight_data");
+    const spotlightData = await spotlightRes.json()
+    const currentSongData = spotlightData.current_song;
+    const nextSongData = spotlightData.next_song;
+
+    if (currentSongData) {
+        currentSinger.innerHTML = currentSongData.singer;
+        currentSong.innerHTML = currentSongData.name;
+    } else {
+        currentSinger.innerHTML = "No One Yet";
+        currentSong.innerHTML = "We're waiting the first brave soul!";
+    }
+
+    if (nextSongData) {
+        upNextElem.style.visibility = "visible";
+        nextSinger.innerHTML = nextSongData.singer;
+        nextSong.innerHTML = nextSongData.name;
+    } else {
+        upNextElem.style.visibility = "hidden";
+    }
 }
 
 function populateDashboard() {
@@ -52,9 +71,9 @@ function populateDashboard() {
                 document.getElementById(
                     "user-next-song-title"
                 ).innerHTML = `Your next song ${userNextSong.wait_amount
-                        ? `(coming up in ${userNextSong.wait_amount} songs):`
-                        : ":"
-                    }`;
+                    ? `(coming up in ${userNextSong.wait_amount} songs):`
+                    : ":"
+                }`;
                 document.getElementById("user-next-song-name").innerHTML =
                     userNextSong.name;
             } else {

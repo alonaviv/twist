@@ -49,5 +49,6 @@ urlpatterns = [
     path('get_lineup', views.get_lineup, name='get_lineup'),
     path('end_group_song', views.end_group_song, name='end_group_song'),
     path('start_group_song', views.start_group_song, name='start_group_song'),
+    path('next_singer', views.next_singer, name='next_singer'),
 ]
 

@@ -586,6 +586,23 @@ nav {
   height: 44vh;
   width: 100%;
   position: relative; }
+  #now-singing-wrapper.curtain {
+    background: url("../img/main/spotlight-curtain.webp") center center/cover; }
+    #now-singing-wrapper.curtain::before {
+      display: none; }
+    #now-singing-wrapper.curtain.first-singer::after {
+      content: "Psst... Get ready! You're the the next one up! ";
+      position: absolute;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #fff;
+      text-align: center;
+      background-color: rgba(0, 0, 0, 0.7);
+      padding: 10px 20px;
+      border: 2px solid #fff;
+      border-radius: 10px;
+      font-size: 20px; }
   #now-singing-wrapper::before {
     content: "";
     position: absolute;

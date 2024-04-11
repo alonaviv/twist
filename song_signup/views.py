@@ -103,6 +103,17 @@ def spotlight_data(request):
         })
 
 
+def next_singer(request):
+    """
+    Return username of next singer
+    """
+    next_song = SongRequest.objects.current_song()
+    return JsonResponse({
+        "next_singer": next_song.singer.username
+    })
+
+
+
 def dashboard_data(request):
     singer = request.user
     user_next_song = singer.next_song

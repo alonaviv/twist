@@ -54,7 +54,7 @@ async function populateLineup() {
         <div class="song-wrapper">
             <div class="song-details">
                 <p class="song-name" >Wait for it, wait for it..</p>
-                <p class="song-musical">Grab a beer, we'll soon begin :)</p>
+                <p class="song-musical">Grab a beer and get comfy, <br> the magic is about to happen :)</p>
             </div>
         </div>
         `
