@@ -28,7 +28,7 @@ function formatSong(song, current_song = false) {
         content = `<p class="song-name">${song.song_name}</p>
                    <p class="song-musical">${song.musical}</p>
                    <p class="singers"> - ${song.singers}</p>
-                   ${current_song ? '<p class="view-lyrics">(Click for live lyrics)</p>' : ''}
+                   ${current_song ? '<p class="view-lyrics">(Click for lyrics)</p>' : ''}
                    `;
     }
 

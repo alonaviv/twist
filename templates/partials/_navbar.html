@@ -19,17 +19,17 @@
                     </li>
                     {% if is_singer %}
                     <li {% if current == 'manage-songs' %} class="hidden" {% endif %}>
-                        <a href="{% url 'manage_songs' %}">Manage Songs</a>
+                        <a href="{% url 'manage_songs' %}">My Songs</a>
                     </li>
                     {% endif %}
                     <li {% if current == 'lineup' %} class="hidden" {% endif %}>
                         <a href="{% url 'lineup' %}">Lineup</a>
                     </li>
                     <li {% if current == 'live-lyrics' %} class="hidden" {% endif %}>
-                        <a href="{% url 'live_lyrics' %}">Live Lyrics</a>
+                        <a href="{% url 'live_lyrics' %}">Lyrics</a>
                     </li>
                     <li {% if current == 'suggest-song' %} class="hidden" {% endif %}>
-                        <a href="{% url 'suggest_group_song' %}">Suggest a Song</a>
+                        <a href="{% url 'suggest_group_song' %}">Suggest Group Song</a>
                     </li>
                     <li {% if current == 'faq' %} class="hidden" {% endif %}>
                         <a href="{% url 'faq' %}">FAQ</a></li>
