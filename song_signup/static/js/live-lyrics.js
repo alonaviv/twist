@@ -34,6 +34,17 @@ In the meantime.. You know what to do:
 <h2>Boho Days</h2>
 <h3>Tick, Tick... Boom!</h3>
 <pre dir="auto">
+
+Clap-clap, clap
+Clap-clap, clap
+Clap-clap, clap
+Clap-clap, clap
+
+This is the life, bo-bo, bo bo bo
+This is the life, bo-bo, bo bo bo
+This is the life, bo-bo, bo bo bo
+Bohemia
+
 Don't step on Simone, Renaud, and Philipe
 They're still on the living room floor, asleep
 Flight was delayed but they got it so cheap
