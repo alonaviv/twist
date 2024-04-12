@@ -76,7 +76,7 @@ class NotYetPerformedFilter(admin.SimpleListFilter):
 @admin.register(GroupSongRequest)
 class GroupSongRequestAdmin(admin.ModelAdmin):
     list_display = (
-        'lyrics', 'song_name', 'musical', 'suggested_by', 'type', 'get_request_time', 'get_performance_time'
+        'id', 'lyrics', 'song_name', 'musical', 'suggested_by', 'type', 'get_request_time', 'get_performance_time'
     )
     list_filter = ('type',)
     actions = [prepare_group_song]

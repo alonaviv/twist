@@ -98,7 +98,13 @@ and choose a different SSH port number (not 22).
 2. Filter according to the relevant event, the correct dates (default is only 2 weeks back!) and שולם + מומש
 3. Download excel with ייצוא מותאם אישית using the BWT template
 4. Login as admin and go to `/upload_lineapp_orders`
-5. Upload excel. The ticket orders are persistant through DB resets. 
+5. Upload excel. The ticket orders are persistant through DB resets.
+
+## Adding group songs from csv
+1. We saved our group songs list on a Google Drive spreadsheet in `Broadway With a Twist/Good Group Songs` 
+2. Download as CSV (make sure you filled the type with the correct option) to `/twist/group-songs.csv`
+3. Connect to django container with `docker exec -it twist-django-1  /bin/bash`
+4. Run `./manage.py import_group_songs` to import from the path above. Can also pass in a custom path. 
 
 
 
