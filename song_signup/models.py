@@ -1,10 +1,9 @@
-import re
 import datetime
-from titlecase import titlecase
+import re
+
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.contrib.postgres.fields import CITextField
-from django.utils import timezone
 from django.db.models import (
     CASCADE,
     SET_NULL,
@@ -21,6 +20,8 @@ from django.db.models import (
     CharField,
     OneToOneField,
 )
+from django.utils import timezone
+from titlecase import titlecase
 
 from song_signup.managers import (
     DisneylandOrdering,
@@ -34,6 +35,7 @@ ATTN_SKU = 'ATTN'
 
 class TicketsDepleted(Exception):
     pass
+
 
 class AlreadyLoggedIn(Exception):
     pass
@@ -77,7 +79,7 @@ class Singer(AbstractUser):
 
             if Singer.objects.filter(first_name=self.first_name, last_name=self.last_name).exists():
                 raise AlreadyLoggedIn("The name that you're trying to login with already exists."
-                "Did you already login with us tonight? If so, check the box below.")
+                                      "Did you already login with us tonight? If so, check the box below.")
 
             if not self.ticket_order.is_freebie and self.ticket_order.singers.count() >= self.ticket_order.num_tickets:
                 ticket_type = 'singer' if self.ticket_order.ticket_type == SING_SKU else 'audience'
@@ -179,6 +181,10 @@ class GroupSongRequest(Model):
     suggested_by = CITextField(max_length=50, null=True, default='-')
     request_time = DateTimeField(auto_now_add=True)
     performance_time = DateTimeField(default=None, null=True, blank=True)
+    type = CITextField(max_length=20, choices=[('USER', 'USER'), ('REGULAR', 'REGULAR'),
+                                               ('DRINKING-SONG', 'DRINKING-SONG'),
+                                               ('OPENING', 'OPENING'), ('CLOSING', 'CLOSING')],
+                       default='USER')
 
     def save(self, get_lyrics=True, *args, **kwargs):
         self.song_name = titlecase(self.song_name)
@@ -306,9 +312,9 @@ class SongRequest(Model):
         # Update the lyxrics if the song was just added, or if its name or musical changed
         fetch_lyrics = False
         if (
-            self.id is None
-            or self._original_song_name != self.song_name
-            or self._original_musical != self.musical
+                self.id is None
+                or self._original_song_name != self.song_name
+                or self._original_musical != self.musical
         ):
             fetch_lyrics = True
 
@@ -322,7 +328,6 @@ class SongRequest(Model):
             get_lyrics.delay(song_id=self.id)
             self._original_song_name = self.song_name
             self._original_musical = self.musical
-
 
     class Meta:
         unique_together = ('song_name', 'musical', 'singer', 'cycle', 'position')
@@ -345,7 +350,7 @@ class SongLyrics(Model):
 
     def save(self, *args, **kwargs):
         # Limit consecutive newlines to three
-        self.lyrics = re.sub(r'\n{4,}', '\n'*3, self.lyrics)
+        self.lyrics = re.sub(r'\n{4,}', '\n' * 3, self.lyrics)
 
         # Only one can be default
         if self.default:
