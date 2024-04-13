@@ -587,7 +587,7 @@ nav {
   width: 100%;
   position: relative; }
   #now-singing-wrapper.curtain {
-    background: url("../img/main/spotlight-curtain.webp") center center/cover; }
+    background: url("../img/main/spotlight-curtain.jpeg") center center/cover; }
     #now-singing-wrapper.curtain::before {
       display: none; }
     #now-singing-wrapper.curtain.first-singer::after {
