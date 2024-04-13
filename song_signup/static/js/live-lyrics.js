@@ -69,13 +69,7 @@ Dino called yesterday, the rent is overdue
 ConEd and New York Telephone are mad too
 Better screen the calls for a day or two
 Or cough up your share
-You might also like
-Green Green Dress
-Jonathan Larson
-​yes, and?
-Ariana Grande
-Karma
-JoJo Siwa
+
 This is the life, bo-bo, bo bo bo
 This is the life, bo-bo, bo bo bo
 This is the life, bo-bo, bo bo bo
@@ -104,6 +98,7 @@ The cat's, Lucy, Mr. Beebe
 Bouncer, rest his soul
 And Finster, who took one look
 And stayed for days down in that hole
+
 This is the life, bo-bo, bo bo bo
 This is the life, bo-bo, bo bo bo
 This is the life, bo-bo, bo bo bo

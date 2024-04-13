@@ -401,7 +401,6 @@ def _get_current_song():
 @api_view(["GET"])
 def get_current_lyrics(request):
     current, is_group_song = _get_current_song()
-    print(f"Is group song: {is_group_song}")
     lyrics = _sort_lyrics(current)
     serialized = LyricsSerializer(lyrics[0] if lyrics else None, many=False, read_only=True,
                                   context={'is_group_song': is_group_song})
