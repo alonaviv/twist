@@ -1,60 +1,62 @@
-song_name,musical,type
+song_name,musical,"type (Choose from REGULAR, DRINKING-SONG', OPENING CLOSING)"
+Sucks To Be Me,Avenue Q,OPENING
+The Internet Is For Porn,Avenue Q,REGULAR
+Be Out Guest,Beauty and the Beast,OPENING
+Gaston,Beauty and the Beast,DRINKING-SONG
+Hello,Book of Mormon,OPENING
+All That Jazz,Chicago,REGULAR
+Sincerely Me,Dear Evan Hanson,REGULAR
+We don't talk about Bruno,Encanto,REGULAR
+To Life,Fiddler on the Roof,DRINKING-SONG
+We Go Together,Grease,REGULAR
+Greased Lightnin',Grease,REGULAR
+Summer Nights,Grease,REGULAR
+You're the one that I want,Grease,REGULAR
+Way Down Hadestown,Hadestown,REGULAR
+The Road to Hell ,Hadestown,REGULAR
+Wait for me,Hadestown,REGULAR
+Aquarius ,Hair,OPENING
+You Can't Stop the Beat,Hairspray,CLOSING
+Welcome to the 60s,Hairspray,REGULAR
+Good Morning Baltimore,Hairspray,OPENING
 Satisfied,Hamilton,REGULAR
 The Room Where It Happens,Hamilton,REGULAR
 Guns and Ships,Hamilton,REGULAR
-My Shot,Hamilton,REGULAR
-Story of Tonight,Hamilton,REGULAR
+My Shot,Hamilton,DRINKING-SONG
 RIght Hand Man,Hamilton,REGULAR
 The Schuyler Sisters,Hamilton,REGULAR
-One Day More,Les Mis,OPENING
-Do You Hear the People Sing?,Hamilton,OPENING
-Deliver Us,Prince of Egypt,OPENING
-The Plagues,Prince of Egypt,OPENING
-Look Down,Les Mis,OPENING
-What Is This Feeling?,Wicked,OPENING
-The Wizard and I,Wicked,OPENING
-Popular,Wicked,CLOSING
-All That Jazz,Chicago,CLOSING
-Cell Block Tango,Chicago,CLOSING
-When You're Good to Mama,Chicago,CLOSING
-Both Reached For the Gun,Chicago,CLOSING
-Sincerely Me,Dear Evan Hanson,CLOSING
-Sucks To Be Me,Avenue Q,CLOSING
-If You Were Gay,Avenue Q,CLOSING
-The Internet Is For Porn,Avenue Q,DRINKING-SONG
-Loud As The Hell You Want,Avenue Q,DRINKING-SONG
-You Can't Stop the Beat,Hairspray,DRINKING-SONG
-Welcome to the 60s,Hairspray,DRINKING-SONG
-Good Morning Baltimore,Hairspray,DRINKING-SONG
-The Nicest Kids In Town,Hairspray,DRINKING-SONG
-Under the Sea,The Little Mermaid,DRINKING-SONG
-Can't Wait To Be King,The Lion King,DRINKING-SONG
-The Circle of Life,The Lion King,DRINKING-SONG
-Hakuna Matata,The Lion King,DRINKING-SONG
-Be Out Guest,Beauty and the Beast,DRINKING-SONG
-Rent,Rent,DRINKING-SONG
-La Vie Boheme,Rent,DRINKING-SONG
-Yorktown,Hamilton,DRINKING-SONG
-We don't talk about Bruno,Encanto,DRINKING-SONG
-Brotherhood of Man,How to Succeed,DRINKING-SONG
-You Won't Succeed on Broadway,Spamalot,DRINKING-SONG
-Let's Do the Time Warp Again,The Rocky Horror Show,DRINKING-SONG
-Hello,Book of Mormon,DRINKING-SONG
-We Go Together,Grease,REGULAR
-Bend and Snap,Legally Blonde,REGULAR
-Tradition,Fiddler on the Roof,REGULAR
-Master of the House,Les Mis,REGULAR
-Song of Purple Summer,Spring Awakening,REGULAR
-Do Re Mi,The Sound of Music,REGULAR
-Chant,Hadestown,REGULAR
-Maria,The Sound of Music,REGULAR
-This Is Me,Greatest Showman,REGULAR
-Manchester England,Hair,REGULAR
-Prologue,Into the Woods,REGULAR
-Be a Man,Mulan,REGULAR
-Gaston,Beauty and the Beast,REGULAR
-To Life,Fiddler on the Roof,REGULAR
+Yorktown,Hamilton,REGULAR
 Non Stop,Hamilton,REGULAR
-Season of Love,Rent,REGULAR
+Hamilton,Hamilton,OPENING
+Prologue,Into the Woods,REGULAR
+Do You Hear the People Sing?,Les Mis,REGULAR
+One Day More,Les Mis,REGULAR
+Master of the House,Les Mis,DRINKING-SONG
+Confrontation,Les Mis,REGULAR
+Be a Man,Mulan,REGULAR
+In the Heights,In the Heights,REGULAR
+America,West Side Story,REGULAR
+Rent,Rent,REGULAR
+La Vie Boheme A,Rent,DRINKING-SONG
+Season of Love,Rent,CLOSING
+Ex-Wives,Six,REGULAR
+Six,Six,CLOSING
 The Bells of Notre Dame,The Hunchback of Notredame,REGULAR
+Can't Wait To Be King,The Lion King,REGULAR
+The Circle of Life,The Lion King,OPENING
+Hakuna Matata,The Lion King,OPENING
+Under the Sea,The Little Mermaid,REGULAR
+Time Warp,The Rocky Horror Show,REGULAR
+Do Re Mi,The Sound of Music,REGULAR
 "So Long, Farewell",The Sound of Music,CLOSING
+What Is This Feeling?,Wicked,REGULAR
+One Short Day,Wicked,REGULAR
+The Whole Being Dead Thing,Beetlejuice,REGULAR
+Um Pah Pah,Oliver,DRINKING-SONG
+Zero to Hero,Hercules,REGULAR
+The Gospel Truth,Hercules,OPENING
+A Star is Born,Hercules,REGULAR
+Prince Ali,Aladdin,REGULAR
+Belle,Beauty and the Beast,OPENING
+You've Got a Friend in Me,Toy Story ,ClOSING
+Happy Birthday,To Yaakov,REGULAR
