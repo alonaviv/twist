@@ -76,11 +76,15 @@ class NotYetPerformedFilter(admin.SimpleListFilter):
 @admin.register(GroupSongRequest)
 class GroupSongRequestAdmin(admin.ModelAdmin):
     list_display = (
-        'id', 'lyrics', 'song_name', 'musical', 'suggested_by', 'type', 'get_request_time', 'get_performance_time'
+        'display_id', 'lyrics', 'song_name', 'musical', 'suggested_by', 'type', 'get_request_time', 'get_performance_time'
     )
     list_filter = ('type',)
     actions = [prepare_group_song]
     change_list_template = "admin/group_song_request_changelist.html"
+
+    def display_id(self, obj):
+        return obj.id
+    display_id.short_description = "#"
 
     def changelist_view(self, request, extra_context=None):
         extra_context = extra_context or {}
@@ -136,7 +140,7 @@ class GroupSongRequestAdmin(admin.ModelAdmin):
 @admin.register(SongRequest)
 class SongRequestAdmin(admin.ModelAdmin):
     list_display = (
-        'position', 'get_skipped', 'allows_filming', 'lyrics', 'singer', 'song_name', 'musical', 'duet_partner', 'get_notes',
+        'display_position', 'get_skipped', 'allows_filming', 'lyrics', 'singer', 'song_name', 'musical', 'duet_partner', 'get_notes',
         'get_additional_singers', 'default_lyrics', 'found_music', 'get_performance_time', 'get_request_time', 'get_initial_signup',
     )
     list_filter = (NotYetPerformedFilter,)
@@ -223,6 +227,10 @@ class SongRequestAdmin(admin.ModelAdmin):
     default_lyrics.short_description = "Set Default Lyrics"
     default_lyrics.admin_order_field = "has_default_lyrics"
 
+    def display_position(self, obj):
+        return obj.position
+    display_position.short_description = "#"
+
     class Media:
         js = ["js/admin-reload.js"]
 
@@ -234,7 +242,8 @@ class SingerAdmin(admin.ModelAdmin):
 
 @admin.register(SongLyrics)
 class LyricsAdmin(admin.ModelAdmin):
-    list_display = ['song_name', 'link', 'artist_name', 'url', 'song_request', 'group_song_request', 'default']
+    list_display = ['song_name', 'artist_name', 'default', 'url', 'link', 'song_request', 'group_song_request']
+    list_filter = ('default', 'song_name')
 
     def link(self, obj):
         return mark_safe(f'<a href="{reverse("lyrics_by_id", args=(obj.id,))}">Link</a>')

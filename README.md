@@ -103,6 +103,7 @@ and choose a different SSH port number (not 22).
 ## Adding group songs from csv
 1. We saved our group songs list on a Google Drive spreadsheet in `Broadway With a Twist/Good Group Songs` 
 2. Download as CSV (make sure you filled the type with the correct option) to `/twist/group-songs.csv`
+3. Push to origin and restart container (the files need to be recopyied into the container)
 3. Connect to django container with `docker exec -it twist-django-1  /bin/bash`
 4. Run `./manage.py import_group_songs` to import from the path above. Can also pass in a custom path. 
 
