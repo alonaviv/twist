@@ -10,7 +10,7 @@ from celery import shared_task
 from .models import GroupSongRequest, SongLyrics, SongRequest
 
 GENIUS_URL_FORMAT = re.compile("genius\.com\/.*-lyrics$")
-USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36"
 
 
 @dataclasses.dataclass
@@ -35,7 +35,13 @@ class LyricsWebsiteParser:
     def get_lyrics(self, song_name: str, author: str) -> Iterable[LyricsResult]:
         seen_urls = set()
         search_query = "{} lyrics {} site:{}".format(song_name, author, self.SITE)
-        search_results = Bing(search_query, USER_AGENT)
+
+        for _ in range(3):
+            search_results = Bing(search_query, USER_AGENT)
+            if len(search_query) > 0:
+                break
+            print("No search results, retrying")
+
         for result in search_results:
             url = self.fix_url(result)
 
