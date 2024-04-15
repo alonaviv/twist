@@ -577,11 +577,6 @@ def reset_database(request):
     call_command('reset_db')
     enable_flag('CAN_SIGNUP')
     disable_flag('STARTED')
-    # Leave only our permanent group songs. If a group song was changed to one of our types (adding to the
-    # permanent group, it does so without the original suggestor).
-    CurrentGroupSong.objects.all().delete()
-    GroupSongRequest.objects.filter(type='USER').delete()
-    GroupSongRequest.objects.update(suggested_by='-')
     config.PASSCODE = ''
     config.EVENT_SKU = ''
     config.DRINKING_WORDS = ''
