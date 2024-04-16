@@ -204,7 +204,9 @@ class LyricsTranslateParser(LyricsWebsiteParser):
             br.replace_with("\n")
 
         return LyricsResult(
-            lyrics=soup.find("div", {"id": "song-body"}).text.strip(),
+            lyrics="\n\n".join(
+                verse.get_text() for verse in soup.find_all("div", {"class": "par"})
+            ),
             artist=artist,
             title=title,
             url=None,
