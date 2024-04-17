@@ -1,6 +1,8 @@
 version: '3.8'
 
 volumes:
+  caddy_static_vol:
+    driver: local
   django_static_vol:
     driver: local
   db:
@@ -69,6 +71,7 @@ services:
       dockerfile: docker/prod/Dockerfile.caddy
     volumes:
       - django_static_vol:/usr/share/caddy/django_static
+      - caddy_static_vol:/data
     ports:
       - "80:80"
       - "443:443"

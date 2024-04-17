@@ -1,8 +1,11 @@
 broadwaywithatwist.xyz {
+    log {
+            output file /srv/access.log
+    }
     handle_path /static/* {
         root * /usr/share/caddy/django_static
         file_server
-   }
-
+    }
+    encode gzip
     reverse_proxy http://django:8000
 }
