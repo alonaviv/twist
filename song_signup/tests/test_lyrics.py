@@ -1,11 +1,11 @@
 from django.test import TestCase
 from song_signup.tasks import GenuisParser
 
-SONG_NAME = "Mama I'm a Big Girl Now"
-MUSICAL = "Hairspray"
+SONG_NAME = "Hello"
+MUSICAL = "Book of Mormon"
 
 class TestParsers(TestCase):
-    def interactive_test_get_lyrics(self):
+    def test_get_lyrics(self):
         # For live testing. Don't run this as automation - it charges you on Bing.
         parser = GenuisParser()
 

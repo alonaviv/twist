@@ -7,11 +7,13 @@ import requests
 from celery import shared_task
 
 from .models import GroupSongRequest, SongLyrics, SongRequest
+from logging import getLogger
+
+logger = getLogger(__name__)
 
 GENIUS_URL_FORMAT = re.compile("genius\.com\/.*-lyrics$")
 USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36"
 SEARCH_MKT = 'en-US'
-LYRICS_PER_SITE = 2
 
 bing_endpoint = os.environ['BING_ENDPOINT']
 bing_key = os.environ['BING_KEY']
@@ -30,7 +32,8 @@ class LyricsWebsiteParser:
     SITE = ""
 
     def bing_api(self, query):
-        params = {'q': query, 'mkt': SEARCH_MKT, 'count': LYRICS_PER_SITE, 'responseFilter': 'Webpages'}
+        logger.info(f"Perform Bing search for site {self.SITE}")
+        params = {'q': query, 'mkt': SEARCH_MKT, 'responseFilter': 'Webpages'}
         headers = {'Ocp-Apim-Subscription-Key': bing_key}
         res = requests.get(bing_endpoint, headers=headers, params=params)
         return res.json()['webPages']['value']
@@ -72,6 +75,7 @@ class LyricsWebsiteParser:
                 result = self.parse_lyrics(soup)
 
                 if not result:
+                    logger.warning(f"Unable to parse search result {search_result['url']}")
                     # Something is broken in the parser, let's skip it
                     break
 
@@ -79,7 +83,7 @@ class LyricsWebsiteParser:
                 yield result
             except Exception as e:
                 # Skip exceptions in individual parsers
-                print(e)
+                logger.exception(f"Exception in parser for url {search_result['url']}")
 
 
 class GenuisParser(LyricsWebsiteParser):
@@ -299,3 +303,7 @@ def get_lyrics_for_provider(
             song_request=song if song_id is not None else None,
             group_song_request=song if group_song_id is not None else None,
         )
+
+        # 2 lyrics per site is plenty for now
+        if i == 1:
+            break
