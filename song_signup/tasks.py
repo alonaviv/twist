@@ -32,7 +32,7 @@ class LyricsWebsiteParser:
     SITE = ""
 
     def bing_api(self, query):
-        logger.info(f"Perform Bing search for site {self.SITE}")
+        logger.info(f"Perform Bingggg search for site {self.SITE}")
         params = {'q': query, 'mkt': SEARCH_MKT, 'responseFilter': 'Webpages'}
         headers = {'Ocp-Apim-Subscription-Key': bing_key}
         res = requests.get(bing_endpoint, headers=headers, params=params)
