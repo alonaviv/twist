@@ -12,7 +12,7 @@ from logging import getLogger
 logger = getLogger(__name__)
 
 GENIUS_URL_FORMAT = re.compile("genius\.com\/.*-lyrics$")
-USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36"
+USER_AGENT = "Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36"
 SEARCH_MKT = 'en-US'
 
 bing_endpoint = os.environ['BING_ENDPOINT']
@@ -53,7 +53,7 @@ class LyricsWebsiteParser:
             search_results = self.bing_api(search_query)
             if len(search_results) > 0:
                 break
-            print("No search results, retrying")
+            logger.info("No search results, retrying")
 
         for search_result in search_results:
             url = self.fix_url(search_result['url'])
