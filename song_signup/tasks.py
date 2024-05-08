@@ -56,6 +56,8 @@ class LyricsWebsiteParser:
             logger.info("No search results, retrying")
 
         for search_result in search_results:
+            if 'genius' in self.SITE:
+                logger.info(f"Working with search result {search_result}")
             url = self.fix_url(search_result['url'])
 
             if url in seen_urls:
@@ -70,6 +72,9 @@ class LyricsWebsiteParser:
                 continue
 
             soup = bs4.BeautifulSoup(r.content.decode(), features="html.parser")
+            if 'genius' in self.SITE:
+                logger.info(f"Request: {r}")
+                logger.info(f"Soup: {r}")
 
             try:
                 result = self.parse_lyrics(soup)
@@ -95,7 +100,6 @@ class GenuisParser(LyricsWebsiteParser):
         return url.removesuffix("/q/writer").removesuffix("/q/producer")
 
     def parse_lyrics(self, soup: bs4.BeautifulSoup) -> str:
-        logger.info(f"Parsing lyrics from soup: {soup}")
         page_title = soup.find("title").text
         artist, title = page_title.split("–")[:2]  # Note that this is a unicode character
         artist = artist.strip()
