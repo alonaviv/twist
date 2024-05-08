@@ -95,6 +95,7 @@ class GenuisParser(LyricsWebsiteParser):
         return url.removesuffix("/q/writer").removesuffix("/q/producer")
 
     def parse_lyrics(self, soup: bs4.BeautifulSoup) -> str:
+        logger.info(f"Parsing lyrics from soup: {soup}")
         page_title = soup.find("title").text
         artist, title = page_title.split("–")[:2]  # Note that this is a unicode character
         artist = artist.strip()
