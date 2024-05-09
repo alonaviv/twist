@@ -32,7 +32,6 @@ class LyricsWebsiteParser:
     SITE = ""
 
     def bing_api(self, query):
-        logger.info(f"PPPPerform Bingggg searchhhhh for site {self.SITE}")
         params = {'q': query, 'mkt': SEARCH_MKT, 'responseFilter': 'Webpages'}
         headers = {'Ocp-Apim-Subscription-Key': bing_key}
         res = requests.get(bing_endpoint, headers=headers, params=params)
@@ -56,8 +55,6 @@ class LyricsWebsiteParser:
             logger.info("No search results, retrying")
 
         for search_result in search_results:
-            if 'genius' in self.SITE:
-                logger.info(f"Working with search result {search_result}")
             url = self.fix_url(search_result['url'])
 
             if url in seen_urls:
@@ -68,13 +65,15 @@ class LyricsWebsiteParser:
                 continue
 
             r = requests.get(url, headers={"User-Agent": USER_AGENT})
+            if 'genius' in self.SITE:
+                logger.info(f"Request: {r}")
+
             if not r.status_code == 200:
                 continue
 
             soup = bs4.BeautifulSoup(r.content.decode(), features="html.parser")
             if 'genius' in self.SITE:
-                logger.info(f"Request: {r}")
-                logger.info(f"Soup: {r}")
+                logger.info(f"Soup: {soup}")
 
             try:
                 result = self.parse_lyrics(soup)
