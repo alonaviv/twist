@@ -211,8 +211,11 @@ class TheMusicalLyricsParser(LyricsWebsiteParser):
         for tag in soup.find_all("strong"):
             tag.replace_with("")
 
+        # The correct p has a script tag in the middle that injects a tracking tag
+        lyrics = [p for p in soup.find_all("p") if p.find("script")][0].text.strip()
+
         return LyricsResult(
-            lyrics=soup.find_all("p")[1].text.strip(),
+            lyrics=lyrics,
             artist=artist,
             title=title,
             url=None,
