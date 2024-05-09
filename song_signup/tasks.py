@@ -64,18 +64,12 @@ class LyricsWebsiteParser:
             if not self.URL_FORMAT.search(url):
                 continue
 
-            if 'genius' in self.SITE:
-                logger.info(f"Trying url: {url}")
             r = requests.get(url, headers={"User-Agent": USER_AGENT})
-            if 'genius' in self.SITE:
-                logger.info(f"Request: {r}. {r.json()}")
 
             if not r.status_code == 200:
                 continue
 
             soup = bs4.BeautifulSoup(r.content.decode(), features="html.parser")
-            if 'genius' in self.SITE:
-                logger.info(f"Soup: {soup}")
 
             try:
                 result = self.parse_lyrics(soup)
