@@ -2,7 +2,7 @@ import dataclasses
 import os
 import re
 from logging import getLogger
-from typing import Iterable
+from typing import Iterable, Optional
 
 import bs4
 import requests
@@ -49,8 +49,8 @@ class LyricsWebsiteParser:
         # Perform any necessary fixups on URL before requesting
         return url
 
-    def parse_lyrics(self, soup: bs4.BeautifulSoup) -> LyricsResult:
-        ...
+    def parse_lyrics(self, soup: bs4.BeautifulSoup) -> Optional[LyricsResult]:
+        return None
 
     def get_lyrics(self, song_name: str, author: str) -> Iterable[LyricsResult]:
         lock = sherlock.Lock(self.SITE)
@@ -108,7 +108,7 @@ class GenuisParser(LyricsWebsiteParser):
         # Common URLs that are close enough that we can just fixup
         return url.removesuffix("/q/writer").removesuffix("/q/producer")
 
-    def parse_lyrics(self, soup: bs4.BeautifulSoup) -> str:
+    def parse_lyrics(self, soup: bs4.BeautifulSoup) -> LyricsResult:
         page_title = soup.find("title").text
         artist, title = page_title.split("–")[
             :2
@@ -136,7 +136,7 @@ class AllMusicalsParser(LyricsWebsiteParser):
     URL_FORMAT = re.compile("allmusicals\.com\/lyrics\/.*\.htm$")
     SITE = "allmusicals.com"
 
-    def parse_lyrics(self, soup: bs4.BeautifulSoup) -> str:
+    def parse_lyrics(self, soup: bs4.BeautifulSoup) -> LyricsResult:
         page_title = soup.find("title").text
         title, artist = page_title.split("-")[:2]
 
@@ -163,7 +163,7 @@ class AzLyricsParser(LyricsWebsiteParser):
     URL_FORMAT = re.compile("azlyrics.com\/lyrics\/.*html$")
     SITE = "azlyrics.com"
 
-    def parse_lyrics(self, soup: bs4.BeautifulSoup) -> str:
+    def parse_lyrics(self, soup: bs4.BeautifulSoup) -> Optional[LyricsResult]:
         page_title = soup.find("title").text
         artist, title = page_title.split("-")[:2]
 
@@ -196,7 +196,7 @@ class TheMusicalLyricsParser(LyricsWebsiteParser):
         # requests (but not when using browser). For now just use http
         return url.replace("https://", "http://")
 
-    def parse_lyrics(self, soup: bs4.BeautifulSoup) -> str:
+    def parse_lyrics(self, soup: bs4.BeautifulSoup) -> LyricsResult:
         page_title = soup.find("title").text
         artist, title = page_title.split("-")[:2]
 
@@ -224,7 +224,7 @@ class LyricsTranslateParser(LyricsWebsiteParser):
     URL_FORMAT = re.compile("-lyrics\.html$")
     SITE = "lyricstranslate.com"
 
-    def parse_lyrics(self, soup: bs4.BeautifulSoup) -> str:
+    def parse_lyrics(self, soup: bs4.BeautifulSoup) -> LyricsResult:
         page_title = soup.find("title").text
         artist, title = page_title.split("-")[:2]
 
@@ -253,7 +253,7 @@ class ShironetParser(LyricsWebsiteParser):
     URL_FORMAT = re.compile("type=lyrics")
     SITE = "shironet.mako.co.il"
 
-    def parse_lyrics(self, soup: bs4.BeautifulSoup) -> str:
+    def parse_lyrics(self, soup: bs4.BeautifulSoup) -> LyricsResult:
         artist = ""
         title = ""
 
