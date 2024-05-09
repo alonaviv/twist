@@ -7,8 +7,8 @@ from typing import Iterable
 import bs4
 import requests
 import sherlock
-from redis import Redis
 from celery import shared_task
+from redis import Redis
 
 from .models import GroupSongRequest, SongLyrics, SongRequest
 
@@ -16,13 +16,15 @@ logger = getLogger(__name__)
 
 GENIUS_URL_FORMAT = re.compile("genius\.com\/.*-lyrics$")
 USER_AGENT = "Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36"
-SEARCH_MKT = 'en-US'
+SEARCH_MKT = "en-US"
 
-bing_endpoint = os.environ['BING_ENDPOINT']
-bing_key = os.environ['BING_KEY']
+bing_endpoint = os.environ["BING_ENDPOINT"]
+bing_key = os.environ["BING_KEY"]
 
 # Lock for throttling requests to the same site. Will only be acquired, not released, and then let to expire.
-sherlock.configure(backend=sherlock.backends.REDIS, expire=1, client=Redis(host='redis'))
+sherlock.configure(
+    backend=sherlock.backends.REDIS, expire=1, client=Redis(host="redis")
+)
 
 
 @dataclasses.dataclass
@@ -38,10 +40,10 @@ class LyricsWebsiteParser:
     SITE = ""
 
     def bing_api(self, query):
-        params = {'q': query, 'mkt': SEARCH_MKT, 'responseFilter': 'Webpages'}
-        headers = {'Ocp-Apim-Subscription-Key': bing_key}
+        params = {"q": query, "mkt": SEARCH_MKT, "responseFilter": "Webpages"}
+        headers = {"Ocp-Apim-Subscription-Key": bing_key}
         res = requests.get(bing_endpoint, headers=headers, params=params)
-        return res.json()['webPages']['value']
+        return res.json()["webPages"]["value"]
 
     def fix_url(self, url):
         # Perform any necessary fixups on URL before requesting
@@ -62,7 +64,7 @@ class LyricsWebsiteParser:
             logger.info("No search results, retrying")
 
         for search_result in search_results:
-            url = self.fix_url(search_result['url'])
+            url = self.fix_url(search_result["url"])
 
             if url in seen_urls:
                 continue
@@ -85,7 +87,9 @@ class LyricsWebsiteParser:
                 result = self.parse_lyrics(soup)
 
                 if not result:
-                    logger.warning(f"Unable to parse search result {search_result['url']}")
+                    logger.warning(
+                        f"Unable to parse search result {search_result['url']}"
+                    )
                     # Something is broken in the parser, let's skip it
                     break
 
@@ -106,7 +110,9 @@ class GenuisParser(LyricsWebsiteParser):
 
     def parse_lyrics(self, soup: bs4.BeautifulSoup) -> str:
         page_title = soup.find("title").text
-        artist, title = page_title.split("–")[:2]  # Note that this is a unicode character
+        artist, title = page_title.split("–")[
+            :2
+        ]  # Note that this is a unicode character
         artist = artist.strip()
         if "Lyrics" in title:
             title = title[: title.index("Lyrics")]
@@ -293,7 +299,7 @@ def get_lyrics(song_id: int | None = None, group_song_id: int | None = None):
 
 @shared_task(rate_limit="0.5/s")
 def get_lyrics_for_provider(
-        parser_name: str, song_id: int | None, group_song_id: int | None
+    parser_name: str, song_id: int | None, group_song_id: int | None
 ):
     parser = PARSERS[parser_name]
 
