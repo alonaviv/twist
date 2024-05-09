@@ -1,13 +1,16 @@
 import dataclasses
-import re
 import os
+import re
+from logging import getLogger
 from typing import Iterable
+
 import bs4
 import requests
+import sherlock
+from redis import Redis
 from celery import shared_task
 
 from .models import GroupSongRequest, SongLyrics, SongRequest
-from logging import getLogger
 
 logger = getLogger(__name__)
 
@@ -17,6 +20,9 @@ SEARCH_MKT = 'en-US'
 
 bing_endpoint = os.environ['BING_ENDPOINT']
 bing_key = os.environ['BING_KEY']
+
+# Lock for throttling requests to the same site. Will only be acquired, not released, and then let to expire.
+sherlock.configure(backend=sherlock.backends.REDIS, expire=1, client=Redis(host='redis'))
 
 
 @dataclasses.dataclass
@@ -45,6 +51,7 @@ class LyricsWebsiteParser:
         ...
 
     def get_lyrics(self, song_name: str, author: str) -> Iterable[LyricsResult]:
+        lock = sherlock.Lock(self.SITE)
         seen_urls = set()
         search_query = "{} lyrics {} site:{}".format(song_name, author, self.SITE)
 
@@ -64,9 +71,12 @@ class LyricsWebsiteParser:
             if not self.URL_FORMAT.search(url):
                 continue
 
+            lock.acquire()  # Expires on its own after an interval (for throttling)
+            logger.info(f"Performing query on {url}")
             r = requests.get(url, headers={"User-Agent": USER_AGENT})
 
             if not r.status_code == 200:
+                logger.warning(f"Received status {r.status_code} for URL {url}")
                 continue
 
             soup = bs4.BeautifulSoup(r.content.decode(), features="html.parser")
