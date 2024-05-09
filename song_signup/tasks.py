@@ -152,7 +152,7 @@ class AllMusicalsParser(LyricsWebsiteParser):
             element.replace_with("")
 
         return LyricsResult(
-            lyrics=soup.find("div", {"id": "page"}).text.strip(),
+            lyrics=soup.find("div", {"class": "main-text"}).text.strip(),
             artist=artist,
             title=title,
             url=None,
