@@ -40,100 +40,39 @@ Clap-clap, clap
 Clap-clap, clap
 Clap-clap, clap
 
-This is the life, bo-bo, bo bo bo
-This is the life, bo-bo, bo bo bo
-This is the life, bo-bo, bo bo bo
-Bohemia
-
-Don't step on Simone, Renaud, and Philipe
-They're still on the living room floor, asleep
-Flight was delayed but they got it so cheap
-In Amsterdam
-
-The cat jumped off of the fire escape
-He's a little shook up but he don't have a scrape
-Climb up to the roof, let's make a crepe
-You bring the jam
-
-This is the life, bo-bo, bo bo bo
-This is the life, bo-bo, bo bo bo
-This is the life, bo-bo, bo bo bo
+This is the life, bo-bo, bo-bo-bo
+This is the life, bo-bo, bo-bo-bo
+This is the life, bo-bo, bo-bo-bo
 Bohemia
 
 Shower's in the kitchen, there might be some soap
-Dishes in the sink, brush your teeth, if you can cope
+Dishes in the sink, brush your teeth if you can cope
 Toilet's in the closet, you better hope
-There's a light bulb in there, bo bo bo
+There's a light bulb in there ( not today )
 
-Dino called yesterday, the rent is overdue
-ConEd and New York Telephone are mad too
-Better screen the calls for a day or two
-Or cough up your share
+Revolving door roommates prick up your ears
+14 people in just four years
+Ann, and Max, and Jonathan, and Carolyn, and Kerri
+David, Tim, no, Tim was just a guest from June to January
+Margaret, Lisa, David, Susie, Stephen, Joe, and Sam
+And Elsa, the bill collector's dream who still is on the lam
 
-This is the life, bo-bo, bo bo bo
-This is the life, bo-bo, bo bo bo
-This is the life, bo-bo, bo bo bo
+Don't forget the neighbors, Michelle and Gay
+More like a family than your family, hey
+The time is flying and everything is dying
+I thought by now I'd have a dog, a kid, and wife
+The ship is sort of sinking, so let's start drinking
+Before we start thinking, "Is this the life?" ( Yeah )
+
+This is the life, bo-bo, bo-bo-bo
+This is the life, bo-bo, bo-bo-bo
+This is the life, bo-bo, bo-bo-bo
+Bohemia ( ya-ya-ya )
+
+Bohemia ( woo-oo-oo )
+One more time!
 Bohemia
-
-Revolving door roommates
-Prick up your ears
-Fourteen people in just four years
-
-Ann and Max and Jonathan
-And Carolyn and Kerri
-David, Tim, no Tim was just a guest
-From June to January
-
-Margaret, Lisa, David, Susie
-Stephen, Joe, and Sam
-And Elsa, the bill collector's dream
-Who is still on the lam
-
-Don't forget the neighbors
-Michelle and Gay
-More like a family
-Than a family, hey
-
-The cat's, Lucy, Mr. Beebe
-Bouncer, rest his soul
-And Finster, who took one look
-And stayed for days down in that hole
-
-This is the life, bo-bo, bo bo bo
-This is the life, bo-bo, bo bo bo
-This is the life, bo-bo, bo bo bo
-Bohemia
-
-The garbage trucks
-Have turned into limousines
-Rat infested diners
-Now are fancy restaurants
-
-The gallery opens
-You know what that means
-There goes the neighborhood
-Here come the debutantes
-
-But at 508 the halls
-Are still that dingy brown
-508, the walls are cracked or falling down
-508, we all know the day it changes
-Is the day we all should blow this town
-
-The time is flying
-And everything is dying
-I thought by now
-I'd have a dog, a kid, and wife
-The ship is sort of sinking
-So let's start drinking
-Before we start thinking
-Is this a life?
-
-Is this a life? Bo-bo, bo bo bo
-Is this a life? No no, no no no
-Is this a life? Bo-bo, bo bo bo
-Bohemia, Bohemia
-Bo-he-mi-a, bo, bo, bo, bo
+Bo-bo, bo-bo-bo, whoa!
 </pre>
 `
 
