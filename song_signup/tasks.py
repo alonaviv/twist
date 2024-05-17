@@ -19,6 +19,7 @@ SEARCH_MKT = "en-US"
 
 bing_endpoint = os.environ["BING_ENDPOINT"]
 bing_key = os.environ["BING_KEY"]
+genius_key = os.environ["GENIUS_KEY"]
 
 # Lock for throttling requests to the same site. Will only be acquired, not released, and then let to expire.
 sherlock.configure(
@@ -74,7 +75,12 @@ class LyricsWebsiteParser:
 
             lock.acquire()  # Expires on its own after an interval (for throttling)
             logger.info(f"Performing query on {url}")
-            r = requests.get(url, headers={"User-Agent": USER_AGENT})
+
+            try:
+                r = requests.get(url, headers={"User-Agent": USER_AGENT})
+            except Exception:
+                logger.exception(f"Received exception when requesting URL {url}")
+                continue
 
             if not r.status_code == 200:
                 logger.warning(f"Received status {r.status_code} for URL {url}")
@@ -100,35 +106,59 @@ class LyricsWebsiteParser:
 
 
 class GenuisParser(LyricsWebsiteParser):
-    URL_FORMAT = re.compile("genius\.com\/.*-lyrics$")
     SITE = "genius.com"
+    # Paying through rapidapi: https://rapidapi.com/Glavier/api/genius-song-lyrics1
 
-    def fix_url(self, url):
-        # Common URLs that are close enough that we can just fixup
-        return url.removesuffix("/q/writer").removesuffix("/q/producer")
+    @property
+    def api_headers(self):
+        return {
+            "X-RapidAPI-Key": genius_key,
+            "X-RapidAPI-Host": "genius-song-lyrics1.p.rapidapi.com"
+        }
 
-    def parse_lyrics(self, soup: bs4.BeautifulSoup) -> LyricsResult:
-        page_title = soup.find("title").text
-        artist, title = page_title.split("–")[
-            :2
-        ]  # Note that this is a unicode character
-        artist = artist.strip()
-        if "Lyrics" in title:
-            title = title[: title.index("Lyrics")]
-        title = title.strip()
+    def search_api(self, query) -> list:
+        """
+        Returns list of matching song ids
+        """
+        endpoint = "https://genius-song-lyrics1.p.rapidapi.com/search/"
+        params = {'q': query}
+        res = requests.get(endpoint, params=params, headers=self.api_headers)
+        return [hit['result']['id'] for hit in res.json()['hits']]
 
-        for br in soup.find_all("br"):
-            br.replace_with("\n")
 
-        return LyricsResult(
-            lyrics="\n\n".join(
-                verse.get_text()
-                for verse in soup.findAll("div", {"data-lyrics-container": "true"})
-            ),
-            artist=artist,
-            title=title,
-            url=None,
-        )
+    def lyric_api(self, song_id) -> dict:
+        endpoint = "https://genius-song-lyrics1.p.rapidapi.com/song/lyrics/"
+        params = {'id': song_id, 'text_format': 'plain'}
+        res = requests.get(endpoint, params=params, headers=self.api_headers)
+        return res.json()['lyrics']
+
+
+    def get_lyrics(self, song_name: str, author: str) -> Iterable[LyricsResult]:
+        search_query = f"{author} {song_name}"
+        song_ids = self.search_api(search_query)
+        for song_id in song_ids:
+            try:
+                res = self.lyric_api(song_id)
+
+            except Exception:
+                logger.exception(f"Exception when requesting lyrics via Genius API for song {song_id}")
+                continue
+
+            try:
+                lyrics = res['lyrics']['body']['plain']
+                title = res['tracking_data']['title']
+                album = res['tracking_data']['primary_album'] or res['tracking_data']['primary_artist']
+                url = self.SITE + res['path']
+            except Exception:
+                logger.exception(f"Exception when exctracting API lyrics data for song {song_id}")
+                continue
+
+            yield LyricsResult(
+                lyrics=lyrics,
+                artist=album or author,
+                title=title,
+                url=url,
+            )
 
 
 class AllMusicalsParser(LyricsWebsiteParser):

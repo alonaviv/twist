@@ -105,7 +105,19 @@ and choose a different SSH port number (not 22).
 2. Download as CSV (make sure you filled the type with the correct option) to `/twist/group-songs.csv`
 3. Push to origin and restart container (the files need to be recopyied into the container)
 3. Connect to django container with `docker exec -it twist-django-1  /bin/bash`
-4. Run `./manage.py import_group_songs` to import from the path above. Can also pass in a custom path. 
+4. Run `./manage.py import_group_songs` to import from the path above. Can also pass in a custom path.
+
+## Loading DB backup to local env
+1. Download DB backup from server to twist/db_backups:
+```sh
+$twist git:(master): scp digital-ocean-twist:~/db_backups/default-5e939168e488-2024-05-06-112039.psql 
+db_backups/16-4-24-friends.psql
+```
+2. Connect to running django container:
+`docker exec -it twist-django-1 /bin/bash`
+3. Run restore:
+`./manage.py dbrestore -I db_backups/16-4-24-friends.psql`
+4. Use restored DB on local system. Remember that your admin pass is now the production one. 
 
 
 
