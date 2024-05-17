@@ -185,6 +185,8 @@ class GroupSongRequest(Model):
                                                ('DRINKING-SONG', 'DRINKING-SONG'),
                                                ('OPENING', 'OPENING'), ('CLOSING', 'CLOSING')],
                        default='USER')
+    default_lyrics = BooleanField(default=False)
+    found_music = BooleanField(default=False)
 
     def save(self, get_lyrics=True, *args, **kwargs):
         self.song_name = titlecase(self.song_name)

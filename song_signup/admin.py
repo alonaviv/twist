@@ -76,9 +76,11 @@ class NotYetPerformedFilter(admin.SimpleListFilter):
 @admin.register(GroupSongRequest)
 class GroupSongRequestAdmin(admin.ModelAdmin):
     list_display = (
-        'display_id', 'lyrics', 'song_name', 'musical', 'suggested_by', 'type', 'get_request_time', 'get_performance_time'
+        'display_id', 'lyrics', 'song_name', 'musical', 'suggested_by', 'type', 'default_lyrics', 'found_music',
+        'get_request_time', 'get_performance_time'
     )
     list_filter = ('type',)
+    list_editable = ('default_lyrics', 'found_music')
     actions = [prepare_group_song]
     change_list_template = "admin/group_song_request_changelist.html"
 
@@ -140,8 +142,8 @@ class GroupSongRequestAdmin(admin.ModelAdmin):
 @admin.register(SongRequest)
 class SongRequestAdmin(admin.ModelAdmin):
     list_display = (
-        'display_position', 'get_skipped', 'allows_filming', 'lyrics', 'singer', 'song_name', 'musical', 'duet_partner', 'get_notes',
-        'get_additional_singers', 'default_lyrics', 'found_music', 'get_performance_time', 'get_request_time', 'get_initial_signup',
+        'display_position', 'get_skipped', 'lyrics', 'singer', 'song_name', 'musical', 'duet_partner', 'get_notes',
+        'get_additional_singers', 'default_lyrics', 'found_music', 'allows_filming', 'get_performance_time', 'get_request_time', 'get_initial_signup',
     )
     list_filter = (NotYetPerformedFilter,)
     list_editable = ('default_lyrics', 'found_music')

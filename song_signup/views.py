@@ -384,6 +384,10 @@ def default_lyrics(request):
         lyric.song_request.default_lyrics = True
         lyric.song_request.save()
 
+    if lyric.group_song_request:
+        lyric.group_song_request.default_lyrics = True
+        lyric.group_song_request.save()
+
     return Response({'is_group_song': bool(lyric.group_song_request)}, status=status.HTTP_200_OK)
 
 
