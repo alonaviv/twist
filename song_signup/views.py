@@ -582,7 +582,6 @@ def reset_database(request):
     enable_flag('CAN_SIGNUP')
     disable_flag('STARTED')
     config.PASSCODE = ''
-    config.EVENT_SKU = ''
     config.DRINKING_WORDS = ''
     return redirect('admin/song_signup/songrequest')
 
