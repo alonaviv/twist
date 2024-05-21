@@ -117,7 +117,14 @@ db_backups/16-4-24-friends.psql
 `docker exec -it twist-django-1 /bin/bash`
 3. Run restore:
 `./manage.py dbrestore -I db_backups/16-4-24-friends.psql`
-4. Use restored DB on local system. Remember that your admin pass is now the production one. 
+4. Use restored DB on local system. Remember that your admin pass is now the production one.
+
+## Stress testing production
+1. Run JMeter and open the JMX file in twist/jmeter
+2. Reset production DB and set passcode to `dev`
+3. Play on JMeter, and 100 threads (40 singers and 60 audience) will run. Singers use different names for each and 
+sign up with 2 different songs each (all data taken from CSV files in the twist/jmeter dir).
+4. Use AWS instances to run a more powerful stress test. 
 
 
 
