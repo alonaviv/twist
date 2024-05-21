@@ -124,7 +124,10 @@ db_backups/16-4-24-friends.psql
 2. Reset production DB and set passcode to `dev`
 3. Play on JMeter, and 100 threads (40 singers and 60 audience) will run. Singers use different names for each and 
 sign up with 2 different songs each (all data taken from CSV files in the twist/jmeter dir).
-4. Use AWS instances to run a more powerful stress test. 
+4. I have an AWS instance for this - `bwt-stress`. Has jmeter installed. TURN OFF INSTANCE WHEN DONE.
+5. scp the file `twist/jmeter.stress-test.jmx` to the instance's home path (user ubuntu). 
+6. Run the test from the instance like this: `jmeter -n -t stress-test.jmx  -l result.jtl -j jmeter.log`
+7. View failurs in `jmeter.log`
 
 
 
