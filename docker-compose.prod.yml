@@ -13,7 +13,6 @@ services:
     build:
       context: .
       dockerfile: docker/common/Dockerfile.db
-    platform: linux/amd64
     restart: always
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
