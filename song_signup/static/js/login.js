@@ -21,6 +21,7 @@ const formListner =  e => {
         })
         .catch(error => {
             formMessages.innerHTML = `<p>${error.message}</p>`;
+            window.scrollTo(0, 0);
         });
     }
 
