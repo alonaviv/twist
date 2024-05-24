@@ -38,6 +38,7 @@ from .serializers import (
     GroupSongRequestLineupSerializer,
     LyricsSerializer,
 )
+from .utils import split_drinking_words
 
 logger = logging.getLogger(__name__)
 
@@ -183,8 +184,7 @@ def get_current_user(request):
 
 @api_view(["GET"])
 def get_drinking_words(request):
-    drinking_words = constance.config.DRINKING_WORDS
-    return Response({'drinking_words': drinking_words.split(';') if drinking_words else []},
+    return Response({'drinking_words': split_drinking_words()},
                     status=status.HTTP_200_OK)
 
 

@@ -142,8 +142,9 @@ class GroupSongRequestAdmin(admin.ModelAdmin):
 @admin.register(SongRequest)
 class SongRequestAdmin(admin.ModelAdmin):
     list_display = (
-        'display_position', 'get_skipped', 'lyrics', 'singer', 'song_name', 'musical', 'duet_partner', 'get_notes',
-        'get_additional_singers', 'default_lyrics', 'found_music', 'allows_filming', 'get_performance_time', 'get_request_time', 'get_initial_signup',
+        'display_position', 'drinking_words', 'get_skipped', 'lyrics', 'singer', 'song_name', 'musical',
+        'duet_partner', 'get_notes', 'get_additional_singers', 'default_lyrics', 'found_music',
+        'allows_filming', 'get_performance_time', 'get_request_time', 'get_initial_signup',
     )
     list_filter = (NotYetPerformedFilter,)
     list_editable = ('default_lyrics', 'found_music')
@@ -232,6 +233,10 @@ class SongRequestAdmin(admin.ModelAdmin):
     def display_position(self, obj):
         return obj.position
     display_position.short_description = "#"
+
+    def drinking_words(self, obj):
+        breakpoint()
+
 
     class Media:
         js = ["js/admin-reload.js"]

@@ -28,6 +28,7 @@ from song_signup.managers import (
     SongRequestManager,
     SongSuggestionManager,
 )
+from song_signup.utils import split_drinking_words
 
 SING_SKU = 'SING'
 ATTN_SKU = 'ATTN'
@@ -346,16 +347,23 @@ class SongLyrics(Model):
     song_request = ForeignKey(SongRequest, on_delete=CASCADE, related_name='lyrics', null=True, blank=True)
     group_song_request = ForeignKey(GroupSongRequest, on_delete=CASCADE, related_name='lyrics', null=True, blank=True)
     default = BooleanField(default=False)
+    has_drinking_words = BooleanField(default=False)
 
     class Meta:
         verbose_name_plural = "Song lyrics"
+
+    def _has_drinking_words(self):
+        words = split_drinking_words()
+        return any(token in words for token in self.lyrics)
+
 
     def save(self, *args, **kwargs):
         # Limit consecutive newlines to three
         self.lyrics = re.sub(r'\n{4,}', '\n' * 3, self.lyrics)
 
-        # Only one can be default
         if self.default:
+            self.has_drinking_words = self._has_drinking_words()
+            # Only one can be default
             if self.song_request:
                 self.song_request.lyrics.update(default=False)
             if self.group_song_request:
