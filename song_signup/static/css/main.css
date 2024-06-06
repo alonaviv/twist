@@ -1010,12 +1010,16 @@ nav {
     position: absolute;
     right: 70px;
     top: 30px;
-    border: dotted 5px black;
+    border: dotted 10px #c51200;
     box-sizing: border-box;
     padding: 20px;
     font-weight: bolder;
-    font-size: 25px;
+    font-size: 45px;
     text-align: center; }
+    #passcode-reveal-wrapper.displayed #passcode-reveal {
+      font-size: 65px;
+      font-weight: 800;
+      letter-spacing: 3px; }
 
 .fixed-logo {
   display: none; }
