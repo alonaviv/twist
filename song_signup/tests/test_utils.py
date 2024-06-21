@@ -248,7 +248,8 @@ def add_current_group_song(song_name, musical):
     [suggester] = create_singers([-50]) # ID that won't conflict with others
     group_song = GroupSongRequest.objects.create(song_name=song_name, musical=musical,
                                                  suggested_by=suggester)
-    CurrentGroupSong.objects.create(group_song=group_song)
+    group_song = CurrentGroupSong.objects.create(group_song=group_song)
+    group_song.start_song()
 
 
 def logout(singer_id):
