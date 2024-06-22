@@ -165,6 +165,7 @@ class TestLogin(TestCase):
         self.assertEqual((new_singer.first_name, new_singer.last_name), ('Lowcase', 'Person'))
 
     def test_additional_singer_valid_login(self):
+        # TODO Problematic test - I create the singer, and then login creates it again.
         order = create_order(num_singers=2, order_id=12345)
         create_singers(1, order=order)
 

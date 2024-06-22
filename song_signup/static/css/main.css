@@ -591,7 +591,7 @@ nav {
     #now-singing-wrapper.curtain::before {
       display: none; }
     #now-singing-wrapper.curtain.first-singer::after {
-      content: "Psst... Get ready! You're the the next one up! ";
+      content: "Psst... Get ready! You're the the first one up!";
       position: absolute;
       top: 40%;
       left: 50%;

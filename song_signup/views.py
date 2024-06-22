@@ -120,7 +120,8 @@ def dashboard_data(request):
     singer = request.user
     user_next_song = singer.next_song
 
-    return JsonResponse({"user_next_song": user_next_song and user_next_song.basic_data})
+    return JsonResponse({"user_next_song": user_next_song and user_next_song.basic_data,
+                         "evening_started": flag_enabled('STARTED')})
 
 
 def _sanitize_string(name, title=False):

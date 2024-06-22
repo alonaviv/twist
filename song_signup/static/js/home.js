@@ -63,6 +63,7 @@ function populateDashboard() {
         .then((response) => response.json())
         .then((data) => {
             const userNextSong = data.user_next_song;
+            const eveningStarted = data.evening_started;
 
             if (userNextSong) {
                 dashboardElem.classList.remove("hidden");
@@ -70,8 +71,8 @@ function populateDashboard() {
 
                 document.getElementById(
                     "user-next-song-title"
-                ).innerHTML = `Your next song ${userNextSong.wait_amount
-                    ? `(coming up in ${userNextSong.wait_amount} songs):`
+                ).innerHTML = `Your next song${userNextSong.wait_amount && eveningStarted
+                    ? ` (coming up in ${userNextSong.wait_amount} songs):`
                     : ":"
                 }`;
                 document.getElementById("user-next-song-name").innerHTML =

@@ -19,6 +19,7 @@ from django.db.models import (
     URLField,
     CharField,
     OneToOneField,
+    DecimalField
 )
 from django.utils import timezone
 from titlecase import titlecase
@@ -262,7 +263,7 @@ class SongRequest(Model):
                               related_name='duet_songs')
     additional_singers = ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='songs_as_additional')
     priority = IntegerField(null=True, blank=True)  # Priority in each singer's list
-    position = IntegerField(null=True, blank=True)  # Absolute position in entire list
+    position = DecimalField(null=True, blank=True,decimal_places=1, max_digits=5)  # Absolute position in entire list
     cycle = FloatField(null=True, blank=True)  # The cycle where song was scheduled
     placeholder = BooleanField(default=False)
     skipped = BooleanField(default=False)

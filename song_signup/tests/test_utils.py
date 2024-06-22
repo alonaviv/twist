@@ -55,6 +55,7 @@ def create_singers(singer_ids: Union[int, list], frozen_time=None, num_songs=Non
     singers = []
     for i in singer_ids:
         singers.append(Singer.objects.create_user(
+            id=i,
             username=f"user_{i}" if not hebrew else f"משתמש_{i}",
             first_name=_sanitize_string(f"user_{i}" if not hebrew else f"משתמש_{i}"),
             last_name=_sanitize_string("last_name" if not hebrew else "שם משפחה"),
@@ -239,13 +240,13 @@ def assert_song_positions(testcase, expected_songs):
 
 
 def add_song_suggestions():
-    [suggester] = create_singers([-5]) # ID that won't conflict with others
+    [suggester] = create_singers([500]) # ID that won't conflict with others
     SongSuggestion.objects.create(song_name='suggested_song_1', musical='a musical', suggested_by=suggester)
     SongSuggestion.objects.create(song_name='suggested_song_2', musical='a musical', suggested_by=suggester)
 
 
 def add_current_group_song(song_name, musical):
-    [suggester] = create_singers([-50]) # ID that won't conflict with others
+    [suggester] = create_singers([5000]) # ID that won't conflict with others
     group_song = GroupSongRequest.objects.create(song_name=song_name, musical=musical,
                                                  suggested_by=suggester)
     group_song = CurrentGroupSong.objects.create(group_song=group_song)
