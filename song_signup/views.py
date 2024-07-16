@@ -238,6 +238,10 @@ def rename_song(request):
     try:
         song_request = SongRequest.objects.get(pk=song_id)
         serialized = SongRequestSerializer(song_request, read_only=True)
+        if song_request.song_name != new_name:
+            song_request.notes = None
+            song_request.found_music = False
+            song_request.default_lyrics = False
         song_request.song_name = new_name
         song_request.musical = new_musical
         song_request.save()
