@@ -94,7 +94,7 @@ async function populateLyrics() {
         if (showPasscode) {
             const passcodeRes = await fetch("/passcode");
             const passcode = (await passcodeRes.json()).passcode;
-            if (passcode !== '') {
+            if (passcode) {
                 passcodeWrapper.classList.add('displayed');
                 passcodeReveal.innerHTML = passcode;
             } else {
@@ -149,9 +149,7 @@ async function populateLyrics() {
             <h3>${lyricsData.artist_name}</h3><br>
         <pre dir="auto">${lyrics}</pre>
     `
-    } else {
-        lyricsText.innerHTML = "<h2>Loading Lyrics...</h2>"
-    }
+    } 
 
     if (lyricsData.song_name != currentSong) {
         currentSong = lyricsData.song_name;
