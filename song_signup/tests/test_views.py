@@ -2,6 +2,7 @@ from constance.test import override_config
 from django.http import HttpResponse
 from django.test import TestCase, Client
 from django.urls import reverse
+from flags.state import enable_flag, disable_flag
 from freezegun import freeze_time
 from mock import patch
 
@@ -165,9 +166,8 @@ class TestLogin(TestCase):
         self.assertEqual((new_singer.first_name, new_singer.last_name), ('Lowcase', 'Person'))
 
     def test_additional_singer_valid_login(self):
-        # TODO Problematic test - I create the singer, and then login creates it again.
         order = create_order(num_singers=2, order_id=12345)
-        create_singers(1, order=order)
+        create_singers([10], order=order)  # Using an ID for the first singer that won't clash with the additional one
 
         response = self.client.post(reverse('login'), {
             'ticket-type': ['singer'],
@@ -347,7 +347,7 @@ class TestJsonRes(TestCase):
         login_singer(self)
         response = self.client.get(reverse('dashboard_data'))
         self.assertEqual(response.status_code, 200)
-        self.assertJSONEqual(response.content, {"user_next_song": None})
+        self.assertJSONEqual(response.content, {"user_next_song": None, 'evening_started': False})
 
     def test_dashboard_one_song(self):
         user = login_singer(self, user_id=1)
@@ -355,7 +355,7 @@ class TestJsonRes(TestCase):
         response = self.client.get(reverse('dashboard_data'))
 
         res_json = get_json(response)
-        expected_json = {'user_next_song': get_song_basic_data(1, 1)}
+        expected_json = {'user_next_song': get_song_basic_data(1, 1), 'evening_started': False}
         self.assertDictEqual(self._remove_song_keys(res_json), self._remove_song_keys(expected_json))
 
     def test_dashboard_two_songs(self):
@@ -364,19 +364,25 @@ class TestJsonRes(TestCase):
         response = self.client.get(reverse('dashboard_data'))
 
         res_json = get_json(response)
-        expected_json = {'user_next_song': get_song_basic_data(1, 1)}
+        expected_json = {'user_next_song': get_song_basic_data(1, 1), 'evening_started': False}
         self.assertDictEqual(self._remove_song_keys(res_json), self._remove_song_keys(expected_json))
 
     def test_dashboard_one_performed(self):
-        create_singers(singer_ids=[1, 2], num_songs=3)
-        user = login_singer(self, user_id=3)
-        add_songs_to_singer(3, 2)
-        set_performed(3, 1)
-        response = self.client.get(reverse('dashboard_data'))
+        enable_flag('STARTED')
+        try:
+            create_singers(singer_ids=[1, 2], num_songs=3)
+            user = login_singer(self, user_id=3)
+            add_songs_to_singer(3, 2)
+            set_performed(3, 1)
+            response = self.client.get(reverse('dashboard_data'))
 
-        res_json = get_json(response)
-        expected_json = {'user_next_song': get_song_basic_data(3, 2)}
-        self.assertDictEqual(self._remove_song_keys(res_json), self._remove_song_keys(expected_json))
+            res_json = get_json(response)
+            expected_json = {'user_next_song': get_song_basic_data(3, 2),
+                             'evening_started': True}
+            self.assertDictEqual(self._remove_song_keys(res_json['user_next_song']),
+                                 self._remove_song_keys(expected_json['user_next_song']))
+        finally:
+            disable_flag('STARTED')
 
 
 class TestRestApi(TestCase):
