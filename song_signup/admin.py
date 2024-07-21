@@ -150,6 +150,7 @@ class SongRequestAdmin(admin.ModelAdmin):
     actions = [set_solo_performed, set_solo_not_performed, set_solo_skipped, set_solo_unskipped]
     ordering = ['position']
     change_list_template = "admin/song_request_changelist.html"
+    list_per_page = 500
 
     def get_skipped(self, obj):
         if obj.skipped:
