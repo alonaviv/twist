@@ -247,6 +247,7 @@ class SingerAdmin(admin.ModelAdmin):
 class LyricsAdmin(admin.ModelAdmin):
     list_display = ['song_name', 'artist_name', 'default', 'url', 'link', 'song_request', 'group_song_request']
     list_filter = ('default', 'song_name')
+    list_per_page = 500
 
     def link(self, obj):
         return mark_safe(f'<a href="{reverse("lyrics_by_id", args=(obj.id,))}">Link</a>')
