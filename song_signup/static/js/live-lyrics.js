@@ -149,10 +149,9 @@ async function populateLyrics() {
             <h3>${lyricsData.artist_name}</h3><br>
         <pre dir="auto">${lyrics}</pre>
     `
+        if (lyricsData.song_name != currentSong) {
+            currentSong = lyricsData.song_name;
+            window.scrollTo(0, 0);
+        }
     } 
-
-    if (lyricsData.song_name != currentSong) {
-        currentSong = lyricsData.song_name;
-        window.scrollTo(0, 0);
-    }
 }
