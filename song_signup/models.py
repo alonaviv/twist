@@ -61,12 +61,6 @@ class TicketOrder(Model):
 
 
 class Singer(AbstractUser):
-    # Abbreviation: cy == cycle, lscy == late-singers cycle
-    # There are three cycles in the evening. Each singer has a possible position in the lineup of each cycle
-    cy1_position = IntegerField(blank=True, null=True)
-    cy2_position = IntegerField(blank=True, null=True)
-    lscy_position = IntegerField(blank=True, null=True)
-    cy3_position = IntegerField(blank=True, null=True)
     no_image_upload = BooleanField(default=False)
     placeholder = BooleanField(default=False)
     ticket_order = ForeignKey(TicketOrder, related_name='singers', on_delete=PROTECT, null=True)
@@ -123,47 +117,6 @@ class Singer(AbstractUser):
             performance_time += datetime.timedelta(seconds=1)
 
         return performance_time
-
-    def _add_to_disneyland_lineup(self):
-        """
-        Function to add a new singer to the list when using the "Disneyland" algorithm.
-        """
-        pass
-
-    def _add_to_cycle(self):
-        """
-        Function to add a new singer to the list when using the "3 cycles" algorithm.
-        When a singer adds its first song request, the user is added to cycles 1 2 and 3, skipping cycles that are
-        already full.
-        Cycle 1 - First come, first served for the first 10
-        Cycle 2 - Singers of cycle 1 repeat, with new singers placed between them
-        (new singer in place 1, old singer in place 1, and so forth until 20)
-        Cycle LATE-SINGERS-SLOT - Only late new singers, that aren't in cycle 2
-        Cycle 3 - Repeat cycle 2
-
-        If cycle 3 is done - repeats cycle LATE-SINGERS + Cycle 3 again. (Happens in calculate_positions)
-        """
-        # Superusers don't participate in this game
-        if self.is_superuser or any([self.cy1_position, self.cy2_position, self.cy3_position]) or self.placeholder:
-            return
-        if not Singer.ordering.cy1_full():
-            self.cy1_position = Singer.ordering.next_pos_cy1()
-            self.cy2_position = self.cy1_position * 2  # Cycle one singers take the even places of cycle 2
-            self.cy3_position = self.cy2_position
-            self.save()
-        elif not Singer.ordering.cy2_full():
-            self.cy2_position = Singer.ordering.next_new_singer_pos_cy2()
-            self.cy3_position = self.cy2_position
-        else:
-            self.lscy_position = Singer.ordering.next_pos_lscy()
-
-        self.save()
-
-    def add_to_lineup(self):
-        """
-        Can choose which algorithm to use here
-        """
-        self._add_to_disneyland_lineup()
 
     def __str__(self):
         return f'{self.first_name} {self.last_name}'
@@ -263,7 +216,6 @@ class SongRequest(Model):
     additional_singers = ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='songs_as_additional')
     priority = IntegerField(null=True, blank=True)  # Priority in each singer's list
     position = IntegerField(null=True, blank=True)  # Absolute position in entire list
-    cycle = FloatField(null=True, blank=True)  # The cycle where song was scheduled
     placeholder = BooleanField(default=False)
     skipped = BooleanField(default=False)
     default_lyrics = BooleanField(default=False)
@@ -306,8 +258,6 @@ class SongRequest(Model):
         return {'id': self.id, 'name': self.song_name, 'singer': str(self.singer), 'wait_amount': self.wait_amount}
 
     def save(self, *args, **kwargs):
-        self.singer.add_to_lineup()  # Only used in the 3 cycles algo
-
         if not self.priority:
             self.priority = SongRequest.objects.next_priority(self)
 
@@ -332,7 +282,7 @@ class SongRequest(Model):
             self._original_musical = self.musical
 
     class Meta:
-        unique_together = ('song_name', 'musical', 'singer', 'cycle', 'position')
+        unique_together = ('song_name', 'musical', 'singer', 'position')
         ordering = ('position',)
 
     objects = SongRequestManager()

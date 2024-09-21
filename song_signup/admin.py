@@ -4,7 +4,6 @@ from django.utils import timezone
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 
-from .managers import LATE_SINGER_CYCLE
 from .models import SongLyrics, SongRequest, Singer, GroupSongRequest, TicketOrder, CurrentGroupSong
 
 
@@ -170,13 +169,6 @@ class SongRequestAdmin(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return False
-
-    def formatted_cycle(self, obj):
-        if obj.cycle == LATE_SINGER_CYCLE:
-            return 'NEW-SINGER-SLOTS'
-        return f'{obj.cycle:g}' if obj.cycle else ''
-
-    formatted_cycle.short_description = 'Cycle'
 
     def get_request_time(self, obj):
         return obj.request_time.astimezone(timezone.get_current_timezone()).strftime("%H:%M %p")
