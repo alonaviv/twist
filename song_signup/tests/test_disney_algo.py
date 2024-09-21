@@ -248,8 +248,7 @@ class TestCalculatePositionsDisney(SongRequestTestCase):
 
     def test_duets(self):
         """
-        If a singer also has a duet earlier in line, his song is skipped.
-        If a singer also has a duet later in line, nothing happens.
+        Ignoring duets now - doesn't affect the orcer.
         """
         create_singers(10)
         singer_ordering = [
@@ -271,9 +270,9 @@ class TestCalculatePositionsDisney(SongRequestTestCase):
                 (6, 1),
                 (2, 1),
                 (7, 1),
-                # 8 has a duet, so is skipped
-                (9, 1),  # Has a duet later, which doesn't affect her
-                (3, 1),  # Had a duet with 8, but 8's song was skipped, so no penalty
+                (8, 1),
+                (9, 1),
+                (3, 1),
                 (4, 1),
                 # 10 Doesn't have a primary song, only a duet
                 (1, 1)
@@ -282,6 +281,10 @@ class TestCalculatePositionsDisney(SongRequestTestCase):
 
 class TestSimulatedEvenings(SongRequestTestCase):
     def test_scenario1(self):
+        # NOTE - This was originally written with the old duet logic which penalized duet singers and counted them as
+        # a full turn. Now we changed it so duet singers are blocked from beind added to more than one song.
+        # This test was adjusted in order to reflect the change, so it ignores duet singers completely. The restriction
+        # on being added to more than one duet is tested elsewhere.
         with freeze_time(TEST_START_TIME, auto_tick_seconds=5) as frozen_time:
             # Singer 1 joins with 1 song #1
             create_singers([1], frozen_time, num_songs=1)
@@ -332,66 +335,75 @@ class TestSimulatedEvenings(SongRequestTestCase):
             create_singers([10, 11], frozen_time)
             assert_song_positions(self, [(3, 1), (4, 1), (2, 2), (8, 1), (1, 3), (7, 1), (9, 1)])
 
-            # 4 adds 7 as a duet partner - So 7's song disappears. 2 adds 3 as a duet partner - no effect.
+            # 4 adds 7 as a duet partner. 2 adds 3 as a duet partner. No effect.
             add_duet(7, 4, 1, frozen_time)
-            assert_song_positions(self, [(3, 1), (4, 1), (2, 2), (8, 1), (1, 3), (9, 1)])
+            assert_song_positions(self, [(3, 1), (4, 1), (2, 2), (8, 1), (1, 3), (7,1), (9, 1)])
             add_duet(3, 2, 2, frozen_time)
-            assert_song_positions(self, [(3, 1), (4, 1), (2, 2), (8, 1), (1, 3), (9, 1)])
+            assert_song_positions(self, [(3, 1), (4, 1), (2, 2), (8, 1), (1, 3), (7,1), (9, 1)])
 
             # Singer 6 logs back in
             login(6)
-            assert_song_positions(self, [(3, 1), (4, 1), (2, 2), (6, 1), (8, 1), (1, 3), (9, 1)])
+            assert_song_positions(self, [(3, 1), (4, 1), (2, 2), (6, 1), (8, 1), (1, 3), (7,1), (9, 1)])
 
-            # Singers 12-13 join while 3 is singing. 3 is a duet partner with 2, so his song doesn't appear at the end
-            # of the list.
+            # Singers 12-13 join while 3 is singing. 3 is a duet partner with 2, but now his song still comes back to
+            # the end of the list
             create_singers([12, 13], frozen_time, num_songs=2)
             assert_song_positions(self, [(3, 1), (4, 1), (2, 2), (6, 1), (8, 1), (1, 3), (9, 1), (12, 1), (13, 1)])
             set_performed(3, 1, frozen_time)
-            assert_song_positions(self, [(4, 1), (2, 2), (6, 1), (8, 1), (1, 3), (9, 1), (12, 1), (13, 1)])
+            assert_song_positions(self, [(4, 1), (2, 2), (6, 1), (8, 1), (1, 3), (7,1), (9, 1),
+                                         (12, 1), (13, 1), (3, 1)])
 
-            # Singer 14 joins as Singer 4 sings a duet with 7. 4 and 7 both get put at the end of the list, after 14.
-            # Note that singer 4 gets his second song, while 7 gets her first primary that she hasn't used
+            # Singer 14 joins as Singer 4 sings a duet with 7. 4 gets put at the end of the list, after 14.
+            # 7s position doesn't change.
             create_singers([14], frozen_time, num_songs=1)
             assert_song_positions(self, [(4, 1), (2, 2), (6, 1), (8, 1), (1, 3), (9, 1), (12, 1), (13, 1), (14, 1)])
             set_performed(4, 1, frozen_time)
-            assert_song_positions(self, [(2, 2), (6, 1), (8, 1), (1, 3), (9, 1), (12, 1), (13, 1), (14, 1), (4, 2), (7, 1)])
+            assert_song_positions(self, [(2, 2), (6, 1), (8, 1), (1, 3), (7,1), (9, 1), (12, 1),
+                                         (13, 1), (14, 1), (4, 2)])
 
             # Singers 5 and 11 decide to add their songs. They appear at the end of the list,
             # as the first song request is what counts
             add_songs_to_singer(5, 1, frozen_time)
-            assert_song_positions(self, [(2, 2), (6, 1), (8, 1), (1, 3), (9, 1), (12, 1), (13, 1), (14, 1), (4, 2), (7, 1), (5, 1)])
+            assert_song_positions(self, [(2, 2), (6, 1), (8, 1), (1, 3), (7,1), (9, 1), (12, 1), (13, 1), (14, 1), (4, 2), (7, 1), (5, 1)])
             add_songs_to_singer(11, 2, frozen_time)
-            assert_song_positions(self, [(2, 2), (6, 1), (8, 1), (1, 3), (9, 1), (12, 1), (13, 1), (14, 1), (4, 2), (7, 1), (5, 1), (11, 1)])
+            assert_song_positions(self, [(2, 2), (6, 1), (8, 1), (1, 3), (7,1), (9, 1), (12, 1), (13, 1), (14, 1),
+                                         (4, 2), (7, 1), (5, 1), (11, 1)])
 
             # Singer 2 duets with 3, and they both appear at the end of the list together.
             set_performed(2, 2, frozen_time)
-            assert_song_positions(self, [(6, 1), (8, 1), (1, 3), (9, 1), (12, 1), (13, 1), (14, 1), (4, 2), (7, 1), (5, 1), (11, 1), (2, 3), (3, 2)])
+            assert_song_positions(self, [(6, 1), (8, 1), (1, 3), (7, 1), (9, 1), (12, 1), (13, 1), (14, 1), (4, 2),
+                                         (7, 1), (5, 1), (11, 1), (2, 3), (3, 2)])
 
             # Singers 15-16 join as 6 sings.
             create_singers([15, 16], frozen_time, num_songs=1)
             set_performed(6, 1, frozen_time)
-            assert_song_positions(self, [(8, 1), (1, 3), (9, 1), (12, 1), (13, 1), (14, 1), (4, 2), (7, 1), (5, 1),
+            assert_song_positions(self, [(8, 1), (1, 3), (7, 1), (9, 1), (12, 1), (13, 1), (14, 1), (4, 2), (7, 1), (5, 1),
                                          (11, 1), (2, 3), (3, 2), (15, 1), (16, 1), (6, 2)])
 
-            # Shani closes signup - all new singers jump to start of list. Note - 7 isn't a new singer, she sang a duet
+            # Shani closes signup - all new singers jump to start of list, including 7 the duetor that hasn't
+            # sung her primary song yet.
             disable_flag('CAN_SIGNUP')
-            assert_song_positions(self, [(8, 1), (9, 1), (12, 1), (13, 1), (14, 1), (5, 1),
+            assert_song_positions(self, [(8, 1), (7, 1), (9, 1), (12, 1), (13, 1), (14, 1), (5, 1),
                                          (11, 1), (15, 1), (16, 1), (1, 3), (4, 2), (7, 1), (2, 3), (3, 2), (6, 2)])
 
-            # 9 adds a duet with 6, who already sang, so 6 disappears.
-            # 8 adds a duet with 11, who didn't sing yet, so 11 disappears.
-            # 1 adds a duet with 12, who is farther up, so nothing happens.
+            # 9 adds a duet with 6, 8 adds a duet with 11, 1 adds a duet with 12. Only 11 isn't in the list, so is added.
             add_duet(6, 9, 1, frozen_time)
             add_duet(11, 8, 1, frozen_time)
             add_duet(12, 1, 3, frozen_time)
-            assert_song_positions(self, [(8, 1), (9, 1), (12, 1), (13, 1), (14, 1), (5, 1),
-                                         (15, 1), (16, 1), (1, 3), (4, 2), (7, 1), (2, 3), (3, 2)])
+            assert_song_positions(self, [(8, 1), (7, 1), (9, 1), (12, 1), (13, 1), (14, 1), (5, 1),
+                                         (15, 1), (16, 1), (1, 3), (4, 2), (7, 1), (2, 3), (3, 2), (11, 1)])
 
-            # 8 Sings duet with 11 - they both go to the end, 11 with song 1 that he didn't sing yet.
-            # But since 8 didn't add a second song yet, he's hidden and doesn't appear before 11
+            # 8 Sings duet with 11.
             set_performed(8, 1, frozen_time)
+            assert_song_positions(self, [(7, 1), (9, 1), (12, 1), (13, 1), (14, 1), (5, 1),
+                                         (15, 1), (16, 1), (1, 3), (4, 2), (7, 1), (2, 3), (3, 2), (11, 1)])
+
+            # 7 sings
+        set_performed(7, 1, frozen_time)
             assert_song_positions(self, [(9, 1), (12, 1), (13, 1), (14, 1), (5, 1),
                                          (15, 1), (16, 1), (1, 3), (4, 2), (7, 1), (2, 3), (3, 2), (11, 1)])
+
+            # TODO GOT HERE WITH FIXES
 
             # 9 Sings duet with 6 - they both go to the end, 6 with song 2 that he didn't sing yet
             set_performed(9, 1, frozen_time)

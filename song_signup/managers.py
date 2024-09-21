@@ -59,28 +59,22 @@ class DisneylandOrdering(UserManager):
                     and singer.last_performance_time is None])
 
     def calculate_positions(self):
+        # Ignoring duets - only primary singer is relevant to the positioning.
+        # Duet enforcement is now done in the Model - a singer can be a duetor in at most one song.
         from song_signup.models import SongRequest
         SongRequest.objects.reset_positions()
 
         position = 1
         scheduled_songs = []
-        duet_singers = set()
         for singer in self.singer_disneyland_ordering():
-            # If singer has a duet earlier in the ordering, her primary song is skipped.
-            # Once the duet is over, her position will be tied to the position of the primary singer (as they both
-            # will have their last_performance_time updated , so she'll be rescheduled.
-            if singer not in duet_singers:
-                song_to_schedule = singer.songs.filter(performance_time__isnull=True,
-                                                       request_time__lte=timezone.now()).order_by('priority').first()
-                if song_to_schedule:
-                    song_to_schedule.position = position
-                    song_to_schedule.save()
-                    scheduled_songs.append(song_to_schedule)
+            song_to_schedule = singer.songs.filter(performance_time__isnull=True,
+                                                   request_time__lte=timezone.now()).order_by('priority').first()
+            if song_to_schedule:
+                song_to_schedule.position = position
+                song_to_schedule.save()
+                scheduled_songs.append(song_to_schedule)
 
-                    if song_to_schedule.duet_partner:
-                        duet_singers.add(song_to_schedule.duet_partner)
-
-                    position += 1
+                position += 1
 
     def singer_disneyland_ordering(self):
         """
