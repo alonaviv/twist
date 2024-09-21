@@ -754,12 +754,12 @@ class TestAddSongRequest(TestCase):
 
     def test_all_fields(self):
         user = login_singer(self, user_id=1)
-        create_singers([2, 3, 4])
+        s2, s3, s4 = create_singers([2, 3, 4])
         response = self.client.post(reverse('add_song_request'), {'song-name': ["defying gravity"],
                                                                   'musical': ['wicked'],
                                                                   'notes': ["solo version"],
-                                                                  'duet-partner': ['2'],
-                                                                  'additional-singers': ['3', '4']
+                                                                  'duet-partner': [str(s2.id)],
+                                                                  'additional-singers': [str(s3.id), str(s4.id)]
 
 
         })
@@ -769,9 +769,9 @@ class TestAddSongRequest(TestCase):
         self.assertEqual(created_song.musical, 'Wicked')
         self.assertEqual(created_song.singer.id, user.id)
         self.assertFalse(created_song.skipped)
-        self.assertEqual(created_song.duet_partner.id, 2)
+        self.assertEqual(created_song.duet_partner.id, s2.id)
         self.assertEqual(created_song.notes, 'solo version')
-        self.assertEqual(set(created_song.additional_singers.values_list('id', flat=True)), {3, 4})
+        self.assertEqual(set(created_song.additional_singers.values_list('id', flat=True)), {s3.id, s4.id})
         self.assertJSONEqual(response.content, {'requested_song': 'Defying Gravity'})
         self.assertEqual(response.status_code, 200)
 
