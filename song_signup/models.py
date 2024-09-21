@@ -103,20 +103,13 @@ class Singer(AbstractUser):
 
     @property
     def last_performance_time(self):
-        last_song = self.all_songs.filter(performance_time__isnull=False).order_by(
+        last_song = self.songs.all().filter(performance_time__isnull=False).order_by(
             'performance_time').last()
 
         if not last_song:
             return None
 
-        performance_time = last_song.performance_time
-
-        # For duets, set the secondary singer to be one second later,
-        # so she will be after the primary singer in the list
-        if last_song in self.duet_songs.all():
-            performance_time += datetime.timedelta(seconds=1)
-
-        return performance_time
+        return last_song.performance_time
 
     def __str__(self):
         return f'{self.first_name} {self.last_name}'

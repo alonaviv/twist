@@ -43,10 +43,10 @@ class TestSingerModel(SongRequestTestCase):
 
             frozen_time.tick()
             set_performed(1, 2)
-            # Duet singer appears to have performed one second later than the primary
+            # Duet singer's performance time remains None.
             self.assertEqual(primary_singer.last_performance_time, get_song(1, 2).performance_time)
             self.assertEqual(primary_singer.last_performance_time, TEST_START_TIME + datetime.timedelta(seconds=2))
-            self.assertEqual(secondary_singer.last_performance_time, TEST_START_TIME + datetime.timedelta(seconds=3))
+            self.assertIsNone(secondary_singer.last_performance_time)
 
             frozen_time.tick()
             frozen_time.tick()
