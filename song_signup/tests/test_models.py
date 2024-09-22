@@ -3,7 +3,7 @@ from freezegun import freeze_time
 
 from song_signup.tests.test_utils import (
     SongRequestTestCase, create_singers, add_songs_to_singer, set_performed,
-    get_song, add_songs_to_singers, add_duet, TEST_START_TIME
+    get_song, add_songs_to_singers, add_partners, TEST_START_TIME
 )
 
 
@@ -33,7 +33,7 @@ class TestSingerModel(SongRequestTestCase):
             primary_singer, secondary_singer = create_singers(2)
             add_songs_to_singers(2, 2)
             frozen_time.tick()
-            add_duet(2, 1, song_num=2)
+            add_partners(1, 2, song_num=2)
 
             set_performed(1, 1)
 

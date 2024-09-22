@@ -20,7 +20,7 @@ from song_signup.tests.test_utils import (
     get_singer_str,
     set_skipped,
     set_unskipped,
-    add_duet,
+    add_partners,
     add_current_group_song
 )
 from song_signup.views import AUDIENCE_SESSION
@@ -607,7 +607,7 @@ class TestRestApi(TestCase):
 
     def test_get_lineup_duets(self):
         create_singers(2, num_songs=1)
-        add_duet(2, 1, 1)
+        add_partners(1, 2, 1)
         response = self.client.get(reverse('get_lineup'))
         self.assertEqual(response.status_code, 200)
         self.assertJSONEqual(response.content, {
@@ -626,13 +626,13 @@ class TestRestApi(TestCase):
 
     def test_get_lineup_duets_hebrew(self):
         create_singers(2, num_songs=1, hebrew=True)
-        add_duet(2, 1, 1, hebrew=True)
+        add_partners(1, 2, 1, hebrew=True)
         response = self.client.get(reverse('get_lineup'))
         self.assertEqual(response.status_code, 200)
         self.assertJSONEqual(response.content, {
             'current_song': {
                 'position': 1, 'song_name': get_song_str(1, 1),
-                'singers': f"{get_singer_str(1, hebrew=True)} ו{get_singer_str(2, hebrew=True)}"
+                'singers': f"{get_singer_str(1, hebrew=True)} and {get_singer_str(2, hebrew=True)}"
                 , 'musical': ''
             },
             'next_songs': [
@@ -746,9 +746,8 @@ class TestAddSongRequest(TestCase):
         self.assertEqual(created_song.musical, 'Wicked')
         self.assertEqual(created_song.singer.id, singer.id)
         self.assertFalse(created_song.skipped)
-        self.assertIsNone(created_song.duet_partner)
         self.assertEqual(created_song.notes, '')
-        self.assertEqual(created_song.additional_singers.count(), 0)
+        self.assertEqual(created_song.partners.count(), 0)
         self.assertJSONEqual(response.content, {'requested_song': 'Defying Gravity'})
         self.assertEqual(response.status_code, 200)
 
@@ -758,10 +757,7 @@ class TestAddSongRequest(TestCase):
         response = self.client.post(reverse('add_song_request'), {'song-name': ["defying gravity"],
                                                                   'musical': ['wicked'],
                                                                   'notes': ["solo version"],
-                                                                  'duet-partner': [str(s2.id)],
-                                                                  'additional-singers': [str(s3.id), str(s4.id)]
-
-
+                                                                  'partners': [str(s2.id), str(s3.id), str(s4.id)]
         })
         self.assertEqual(SongRequest.objects.count(), 1)
         created_song = SongRequest.objects.first()
@@ -769,23 +765,21 @@ class TestAddSongRequest(TestCase):
         self.assertEqual(created_song.musical, 'Wicked')
         self.assertEqual(created_song.singer.id, user.id)
         self.assertFalse(created_song.skipped)
-        self.assertEqual(created_song.duet_partner.id, s2.id)
         self.assertEqual(created_song.notes, 'solo version')
-        self.assertEqual(set(created_song.additional_singers.values_list('id', flat=True)), {s3.id, s4.id})
+        self.assertEqual(set(created_song.partners.values_list('id', flat=True)), {s2.id, s3.id, s4.id})
         self.assertJSONEqual(response.content, {'requested_song': 'Defying Gravity'})
         self.assertEqual(response.status_code, 200)
 
     def test_duet_singer_signed(self):
         user = login_singer(self, user_id=1)
-        dueter, *_ = create_singers([2, 3, 4])
-        SongRequest.objects.create(song_name='Defying Gravity', musical='Wicked', singer=dueter,
-                                   duet_partner_id=user.id, notes='Duet partner signed up first')
+        singer2, singer3, singer4 = create_singers([2, 3, 4])
+        existing_song = SongRequest.objects.create(song_name='Defying Gravity', musical='Wicked', singer=singer2,
+                                                    notes='Duet partner signed up first')
+        existing_song.partners.set([user, singer2, singer3])
 
         response = self.client.post(reverse('add_song_request'), {'song-name': ["defying gravity"],
                                                                   'musical': ['wicked'],
                                                                   'notes': ["solo version"],
-                                                                  'duet-partner': ['2'],
-                                                                  'additional-singers': ['3', '4']
         })
         self.assertEqual(response.status_code, 400)
         self.assertJSONEqual(response.content, {'error': f'Apparently, {get_singer_str(2)} already signed you up for this song'})

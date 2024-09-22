@@ -36,18 +36,8 @@
                     <input type="text" name="notes" id="notes" placeholder="Additional notes for us">
                 </div>
                 <div class="form-control">
-                    <label for="duet-partner">Duet partner - <u>Counts as a turn!</u><br>You can also pick Shani or Alon 🙂</label>
-                    <select name="duet-partner" id="duet-partner">
-                        <option disabled selected value> -- Duet Partner -- </option>
-
-                        {% for singer in other_singers %}
-                        <option value="{{ singer.id }}">{{ singer }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="form-control">
-                    <label for="additional-singers">Smaller parts - <u>Doesn't count as a turn</u></label>
-                    <select name="additional-singers" id="additional-singers" multiple>
+                    <label for="partners">Singing partners - anyone coming with you on stage? Everyone can be a partner <u>Once</u> in an evening. </br> Don't have who to sing with? You can also pick Shani and Alon 🙂</u></label>
+                    <select name="partners" id="partners" multiple>
                         {% for singer in other_singers %}
                         <option value="{{ singer.id }}">{{ singer }}</option>
                         {% endfor %}

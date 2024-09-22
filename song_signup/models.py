@@ -84,7 +84,7 @@ class Singer(AbstractUser):
 
     @property
     def all_songs(self):
-        return self.songs.all() | self.duet_songs.all()
+        return self.songs.all() | self.songs_as_partner.all()
 
     @property
     def pending_songs(self):
@@ -204,9 +204,7 @@ class SongRequest(Model):
     request_time = DateTimeField(auto_now_add=True)
     performance_time = DateTimeField(default=None, null=True, blank=True)
     singer = ForeignKey(settings.AUTH_USER_MODEL, on_delete=CASCADE, related_name='songs', null=True)
-    duet_partner = ForeignKey(settings.AUTH_USER_MODEL, on_delete=SET_NULL, null=True, blank=True,
-                              related_name='duet_songs')
-    additional_singers = ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='songs_as_additional')
+    partners = ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name='songs_as_partner')
     priority = IntegerField(null=True, blank=True)  # Priority in each singer's list
     position = IntegerField(null=True, blank=True)  # Absolute position in entire list
     placeholder = BooleanField(default=False)
@@ -219,8 +217,8 @@ class SongRequest(Model):
         self._original_song_name = titlecase(self.song_name)
         self._original_musical = titlecase(self.musical)
 
-    def get_additional_singers(self):
-        return ", ".join([str(singer) for singer in self.additional_singers.all()])
+    def get_partners(self):
+        return ", ".join([str(singer) for singer in self.partners.all()])
 
     # Code for oxford comma, if you decide to bring back multiple extra users
     # additional_singers = [str(singer) for singer in
@@ -228,7 +226,7 @@ class SongRequest(Model):
     #
     # additional_singers_text = ', '.join(additional_singers[:-2] + [" and ".join(additional_singers[-2:])])
 
-    get_additional_singers.short_description = 'Additional Singers'
+    get_partners.short_description = 'Partners'
 
     @property
     def was_performed(self):
@@ -236,7 +234,7 @@ class SongRequest(Model):
 
     @property
     def all_singers(self):
-        return Singer.objects.filter(pk=self.singer.pk) | self.additional_singers.all()
+        return Singer.objects.filter(pk=self.singer.pk) | self.partners.all()
 
     def __str__(self):
         return f"Song request: {self.song_name} by {self.singer}"

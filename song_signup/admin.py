@@ -141,8 +141,8 @@ class GroupSongRequestAdmin(admin.ModelAdmin):
 @admin.register(SongRequest)
 class SongRequestAdmin(admin.ModelAdmin):
     list_display = (
-        'display_position', 'get_skipped', 'lyrics', 'singer', 'song_name', 'musical', 'duet_partner', 'get_notes',
-        'get_additional_singers', 'default_lyrics', 'found_music', 'allows_filming', 'get_performance_time', 'get_request_time', 'get_initial_signup',
+        'display_position', 'get_skipped', 'lyrics', 'singer', 'song_name', 'musical', 'get_partners', 'get_notes',
+        'default_lyrics', 'found_music', 'allows_filming', 'get_performance_time', 'get_request_time', 'get_initial_signup',
     )
     list_filter = (NotYetPerformedFilter,)
     list_editable = ('default_lyrics', 'found_music')
@@ -181,10 +181,10 @@ class SongRequestAdmin(admin.ModelAdmin):
 
     get_notes.short_description = 'Notes..................................'
 
-    def get_additional_singers(self, obj):
-        return ", ".join([f"{singer.first_name} {singer.last_name}" for singer in obj.additional_singers.all()])
+    def get_partners(self, obj):
+        return ", ".join([f"{singer.first_name} {singer.last_name}" for singer in obj.partners.all()])
 
-    get_additional_singers.short_description = 'Helping Singers'
+    get_partners.short_description = 'Partners'
 
     def get_initial_signup(self, obj):
         if not obj.singer.is_superuser:

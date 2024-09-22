@@ -4,7 +4,7 @@ from mock import patch
 from song_signup.models import Singer, SongRequest
 from song_signup.tests.test_utils import (
     SongRequestTestCase, TEST_START_TIME, create_singers, assert_singers_in_disney,
-    set_performed, add_duet, add_songs_to_singers, get_singer, assert_song_positions, add_songs_to_singer,
+    set_performed, add_partners, add_songs_to_singers, get_singer, assert_song_positions, add_songs_to_singer,
     login, logout,
 )
 from flags.state import disable_flag
@@ -66,7 +66,7 @@ class TestDisneylandOrdering(SongRequestTestCase):
         """
         with freeze_time(TEST_START_TIME, auto_tick_seconds=5) as frozen_time:
             create_singers(5, frozen_time, num_songs=3)
-            add_duet(5, 3, 1)
+            add_partners(3, 5, 1)
 
             set_performed(1, 1, frozen_time)
             assert_singers_in_disney(self, [2, 3, 4, 5, 1])
@@ -265,10 +265,10 @@ class TestCalculatePositionsDisney(SongRequestTestCase):
             # Adding songs and setting as performed invokes the calculate_positions method
             add_songs_to_singers(9, 3)  # Singer 10 only has a duet
 
-            add_duet(8, 6, 1)
-            add_duet(9, 4, 1)
-            add_duet(3, 8, 1)
-            add_duet(10, 7, 1)
+            add_partners(6, 8, 1)
+            add_partners(4, 9, 1)
+            add_partners(8, 3, 1)
+            add_partners(7, 10, 1)
 
             assert_song_positions(self, [
                 (5, 1),
@@ -343,9 +343,9 @@ class TestSimulatedEvenings(SongRequestTestCase):
             assert_song_positions(self, [(3, 1), (4, 1), (2, 2), (8, 1), (1, 3), (7, 1), (9, 1)])
 
             # 4 adds 7 as a duet partner. 2 adds 3 as a duet partner. No effect.
-            add_duet(7, 4, 1, frozen_time)
+            add_partners(4, 7, 1, frozen_time)
             assert_song_positions(self, [(3, 1), (4, 1), (2, 2), (8, 1), (1, 3), (7,1), (9, 1)])
-            add_duet(3, 2, 2, frozen_time)
+            add_partners(2, 3, 2, frozen_time)
             assert_song_positions(self, [(3, 1), (4, 1), (2, 2), (8, 1), (1, 3), (7,1), (9, 1)])
 
             # Singer 6 logs back in
@@ -396,9 +396,9 @@ class TestSimulatedEvenings(SongRequestTestCase):
                                          (11, 1), (15, 1), (16, 1), (1, 3), (3, 2), (4, 2), (2, 3), (6, 2)])
 
             # 9 adds a duet with 6, 8 adds a duet with 11, 1 adds a duet with 12. Changes nothing
-            add_duet(6, 9, 1, frozen_time)
-            add_duet(11, 8, 1, frozen_time)
-            add_duet(12, 1, 3, frozen_time)
+            add_partners(9, 6, 1, frozen_time)
+            add_partners(8, 11, 1, frozen_time)
+            add_partners(1, 12, 3, frozen_time)
             assert_song_positions(self, [(8, 1), (7, 1), (9, 1), (12, 1), (13, 1), (14, 1), (5, 1),
                                          (11, 1), (15, 1), (16, 1), (1, 3), (3, 2), (4, 2), (2, 3), (6, 2)])
 

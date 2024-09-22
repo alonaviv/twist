@@ -136,15 +136,14 @@ def add_song_request(request):
         song_name = _sanitize_string(request.POST['song-name'], title=True)
         musical = _sanitize_string(request.POST['musical'], title=True)
         notes = request.POST.get('notes')
-        duet_partner = request.POST.get('duet-partner')
-        additional_singers = request.POST.getlist('additional-singers')
+        partners = request.POST.getlist('partners')
         approve_duplicate = request.POST.get('approve-duplicate')
 
         song_request = SongRequest.objects.filter(song_name=song_name, musical=musical).first()
         if not song_request or approve_duplicate:
-            new_song_request = SongRequest.objects.create(song_name=song_name, musical=musical, singer=current_user,
-                                                      duet_partner_id=duet_partner, notes=notes)
-            new_song_request.additional_singers.set(additional_singers)
+            new_song_request = SongRequest.objects.create(song_name=song_name, musical=musical,
+                                                          singer=current_user, notes=notes)
+            new_song_request.partners.set(partners)
 
             Singer.ordering.calculate_positions()
             return JsonResponse({
@@ -152,7 +151,7 @@ def add_song_request(request):
             })
 
         else:
-            if current_user == song_request.duet_partner:
+            if current_user in song_request.partners.all():
                 return JsonResponse({"error": f"Apparently, {song_request.singer} already signed you up for this song"},
                                     status=400)
             elif song_request.singer == current_user:

@@ -1,6 +1,6 @@
 from rest_framework.serializers import ModelSerializer, SerializerMethodField, CharField
 from song_signup.models import SongSuggestion, Singer, SongRequest, SongLyrics
-from twist.utils import is_hebrew
+from twist.utils import is_hebrew, format_commas
 
 
 class SingerSerializer(ModelSerializer):
@@ -30,16 +30,7 @@ class SongRequestLineupSerializer(ModelSerializer):
     singers = SerializerMethodField()
 
     def get_singers(self, obj):
-        if obj.duet_partner:
-            if is_hebrew(obj.duet_partner.get_full_name()):
-                connector = 'ו'
-            else:
-                connector = 'and '
-
-            return f"{obj.singer.get_full_name()} {connector}{obj.duet_partner.get_full_name()}"
-
-        else:
-            return obj.singer.get_full_name()
+        return format_commas([obj.singer.get_full_name()] + [singer.get_full_name() for singer in obj.partners.all()])
 
     class Meta:
         model = SongRequest

@@ -121,14 +121,17 @@ def add_songs_to_singers(singers: Union[list, int], num_songs, frozen_time=None)
         add_songs_to_singer(singer_id, num_songs, frozen_time=frozen_time)
 
 
-def add_duet(duet_singer_id, primary_singer_id, song_num, frozen_time=None, hebrew=False):
-    duet_singer = get_singer(duet_singer_id, hebrew=hebrew)
+def add_partners(primary_singer_id, partners_ids, song_num, frozen_time=None, hebrew=False):
+    if isinstance(partners_ids, int):
+        partners_ids = [partners_ids]
+
+    partners = [get_singer(partner_id, hebrew=hebrew) for partner_id in partners_ids]
 
     if frozen_time:
         frozen_time.tick()
 
     song = get_song(primary_singer_id, song_num)
-    song.duet_partner = duet_singer
+    song.partners.set(partners)
     Singer.ordering.calculate_positions()
     song.save()
 
