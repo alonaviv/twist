@@ -18,8 +18,8 @@ class SongSuggestionSerializer(ModelSerializer):
 
 
 class SongRequestSerializer(ModelSerializer):
-    singer = SingerSerializer(read_only=True)
-    duet_partner = SingerSerializer(read_only=True)
+    singer = SingerSerializer()
+    partners = SingerSerializer(many=True)
 
     class Meta:
         model = SongRequest

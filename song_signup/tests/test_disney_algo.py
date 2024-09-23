@@ -2,7 +2,7 @@ from freezegun import freeze_time
 from mock import patch
 
 from song_signup.models import Singer, SongRequest
-from song_signup.tests.test_utils import (
+from song_signup.tests.utils_for_tests import (
     SongRequestTestCase, TEST_START_TIME, create_singers, assert_singers_in_disney,
     set_performed, add_partners, add_songs_to_singers, get_singer, assert_song_positions, add_songs_to_singer,
     login, logout,

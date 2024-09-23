@@ -2,11 +2,12 @@ from constance.test import override_config
 from django.http import HttpResponse
 from django.test import TestCase, Client
 from django.urls import reverse
+from django.forms.models import model_to_dict
 from freezegun import freeze_time
 from mock import patch
 
 from song_signup.models import Singer, TicketOrder, CurrentGroupSong, GroupSongRequest, SongRequest
-from song_signup.tests.test_utils import (
+from song_signup.tests.utils_for_tests import (
     EVENT_SKU,
     PASSCODE,
     create_order,
@@ -21,7 +22,9 @@ from song_signup.tests.test_utils import (
     set_skipped,
     set_unskipped,
     add_partners,
-    add_current_group_song
+    add_current_group_song,
+    get_song,
+    get_singer
 )
 from song_signup.views import AUDIENCE_SESSION
 
@@ -303,14 +306,23 @@ class TestLogin(TestCase):
         self.assertTrue(new_singer.no_image_upload)
 
 
-class TestJsonRes(TestCase):
-    def _remove_song_keys(self, json):
-        ignore_keys = ['id', 'wait_amount']
-        for song in json.values():
-            if song:
-                remove_keys(song, ignore_keys)
+def remove_song_keys(content, keys):
+    if isinstance(content, dict):
+        songs = content.values()
+    else:
+        songs = content
 
-        return json
+    for song in songs:
+        if song:
+            remove_keys(song, keys)
+
+    return content
+
+
+class TestJsonRes(TestCase):
+    IGNORE_SONG_KEYS = ['id', 'wait_amount']
+    def _remove_song_keys(self, json):
+        return remove_song_keys(json, keys=self.IGNORE_SONG_KEYS)
 
     def test_spotlight_empty(self):
         response = self.client.get(reverse('spotlight_data'))
@@ -352,6 +364,7 @@ class TestJsonRes(TestCase):
         user = login_singer(self, user_id=1)
         add_songs_to_singer(1, 1)
         response = self.client.get(reverse('dashboard_data'))
+        self.assertEqual(response.status_code, 200)
 
         res_json = get_json(response)
         expected_json = {'user_next_song': get_song_basic_data(1, 1)}
@@ -361,6 +374,7 @@ class TestJsonRes(TestCase):
         user = login_singer(self, user_id=1)
         add_songs_to_singer(1, 2)
         response = self.client.get(reverse('dashboard_data'))
+        self.assertEqual(response.status_code, 200)
 
         res_json = get_json(response)
         expected_json = {'user_next_song': get_song_basic_data(1, 1)}
@@ -372,11 +386,80 @@ class TestJsonRes(TestCase):
         add_songs_to_singer(3, 2)
         set_performed(3, 1)
         response = self.client.get(reverse('dashboard_data'))
+        self.assertEqual(response.status_code, 200)
 
         res_json = get_json(response)
         expected_json = {'user_next_song': get_song_basic_data(3, 2)}
         self.assertDictEqual(self._remove_song_keys(res_json), self._remove_song_keys(expected_json))
 
+class TestGetCurrentSongs(TestCase):
+    IGNORE_SONG_KEYS = ['request_time']
+    def _remove_song_keys(self, json):
+        return remove_song_keys(json, keys=self.IGNORE_SONG_KEYS)
+
+    def _get_song_json(self, singer_id, song_id, partner_ids=None):
+        SINGER_FIELDS = ['id', 'first_name', 'last_name']
+
+        song = get_song(singer_id, song_id)
+        singer = get_singer(singer_id)
+        song_json = model_to_dict(song)
+        song_json['singer'] = model_to_dict(singer, fields=SINGER_FIELDS)
+
+        if partner_ids:
+            partners = []
+            for partner_id in partner_ids:
+                partner = get_singer(partner_id)
+                partners.append(model_to_dict(partner, fields=SINGER_FIELDS))
+
+            song_json['partners'] = partners
+
+        return song_json
+
+    def test_no_songs(self):
+        user = login_singer(self, user_id=1)
+
+        response = self.client.get(reverse('get_current_songs'))
+        self.assertEqual(response.status_code, 200)
+
+        res_json = get_json(response)
+        self.assertEqual(res_json, [])
+
+    def test_get_current_songs(self):
+        user = login_singer(self, user_id=1, num_songs=3)
+
+        response = self.client.get(reverse('get_current_songs'))
+        self.assertEqual(response.status_code, 200)
+
+        res_json = get_json(response)
+
+        expected_json = [
+            self._get_song_json(1, 1),
+            self._get_song_json(1, 2),
+            self._get_song_json(1, 3)
+        ]
+
+        self.assertEqual(self._remove_song_keys(res_json), self._remove_song_keys(expected_json))
+
+    def test_songs_w_partners(self):
+        user = login_singer(self, user_id=1, num_songs=3)
+        create_singers([2, 3])
+        add_partners(1, [2], 1)
+        add_partners(1, [2, 3], 2)
+
+        response = self.client.get(reverse('get_current_songs'))
+        self.assertEqual(response.status_code, 200)
+
+        res_json = get_json(response)
+        # TODO: Strange problem - response returns 4 songs (1_2 appears twice) even though that doesn't seem to happen
+        # TODO in the model
+
+        expected_json = [
+            self._get_song_json(1, 1, partner_ids=[2]),
+            self._get_song_json(1, 2, partner_ids=[2, 3]),
+            self._get_song_json(1, 3)
+        ]
+
+        self.assertEqual(self._remove_song_keys(res_json), self._remove_song_keys(expected_json))
 
 class TestRestApi(TestCase):
     def test_drinking_words_empty(self):

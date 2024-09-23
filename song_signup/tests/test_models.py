@@ -1,7 +1,7 @@
 import datetime
 from freezegun import freeze_time
 
-from song_signup.tests.test_utils import (
+from song_signup.tests.utils_for_tests import (
     SongRequestTestCase, create_singers, add_songs_to_singer, set_performed,
     get_song, add_songs_to_singers, add_partners, TEST_START_TIME
 )
