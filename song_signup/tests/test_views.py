@@ -25,6 +25,7 @@ from song_signup.tests.utils_for_tests import (
     add_current_group_song,
     get_song,
     get_singer,
+    song_exists
 )
 from song_signup.views import AUDIENCE_SESSION
 from twist.utils import format_commas
@@ -1016,6 +1017,54 @@ class TestAddSongRequest(TestCase):
         self.assertEqual(set(created_song.partners.values_list('id', flat=True)), {s2.id, s3.id, s4.id})
         self.assertJSONEqual(response.content, {'requested_song': 'Defying Gravity'})
         self.assertEqual(response.status_code, 200)
+
+    def test_existing_partner(self):
+        user = login_singer(self, user_id=1)
+        s2, s3, s4 = create_singers([2, 3, 4], num_songs=1)
+        add_partners(3, ['4'], 1)
+        response = self.client.post(reverse('add_song_request'), {
+            'song-name': ["defying gravity"],
+            'musical': ['wicked'],
+            'partners': [str(s2.id), str(s3.id), str(s4.id)]
+        })
+        self.assertFalse(song_exists('defying gravity'))
+        self.assertEqual(response.status_code, 400)
+        self.assertJSONEqual(response.content,
+                             {'error': f"A singer can be selected as partner once per night, "
+                                                      f"and {s4} already used his/her slot."})
+
+    def test_superuser_partner(self):
+        user = login_singer(self, user_id=1)
+        s2, s3, s4 = create_singers([2, 3, 4], num_songs=3)
+        add_partners(3, ['4'], 1)
+        add_partners(3, ['4'], 2)
+        add_partners(2, ['4'], 1)
+
+        s4.is_superuser = True
+        s4.save()
+
+        add_partners(3, ['4'], 1)
+        response = self.client.post(reverse('add_song_request'), {
+            'song-name': ["defying gravity"],
+            'musical': ['wicked'],
+            'partners': [str(s2.id), str(s3.id), str(s4.id)]
+        })
+        self.assertTrue(song_exists('defying gravity'))
+        self.assertEqual(response.status_code, 200)
+        self.assertJSONEqual(response.content, {'requested_song': 'Defying Gravity'})
+
+    def test_partner_not_found(self):
+        user = login_singer(self, user_id=1)
+        response = self.client.post(reverse('add_song_request'), {
+            'song-name': ["defying gravity"],
+            'musical': ['wicked'],
+            'partners': ['2']
+        })
+        self.assertFalse(song_exists('defying gravity'))
+        self.assertEqual(response.status_code, 400)
+        self.assertJSONEqual(response.content,
+                             {'error': "Partner with id 2 does not exist. "
+                                 f"Show this to Alon - it seems like a bug.. :("})
 
     def test_duet_singer_signed(self):
         user = login_singer(self, user_id=1)

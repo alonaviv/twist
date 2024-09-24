@@ -257,7 +257,7 @@ class SongRequest(Model):
         if not self.priority:
             self.priority = SongRequest.objects.next_priority(self)
 
-        # Update the lyxrics if the song was just added, or if its name or musical changed
+        # Update the lyrics if the song was just added, or if its name or musical changed
         fetch_lyrics = False
         if (
                 self.id is None

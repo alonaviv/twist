@@ -90,7 +90,7 @@ and choose a different SSH port number (not 22).
 ## Testing with coverage
 1. Start containers with `./start-dev.sh`
 3. Connect to django container with `docker exec -it twist-django-1  /bin/bash`
-4. In container, run `coverage run --source='.' manage.py test song_signup && coverage html`
+4. In container, run `coverage run --source='.' manage.py test song_signup && coverage html --omit=song_signup/tests/interactive_test_real_dbs.py,song_signup/management/*,dev_setup.py,prod_setup.py,twist/asgi.py,twist/wsgi.py,song_signup/tests/*,manage.py,twist/celery.py`
 5. Exit container and run `open ./htmlcov/index.html` locally
 
 ## Uploading Lineapp orders

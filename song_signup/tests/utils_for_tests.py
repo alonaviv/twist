@@ -74,6 +74,15 @@ def get_song(singer_id, song_num):
     return SongRequest.objects.get(song_name=f"song_{singer_id}_{song_num}")
 
 
+def song_exists(song_name):
+    try:
+        SongRequest.objects.get(song_name=song_name)
+    except SongRequest.DoesNotExist:
+        return False
+
+    return True
+
+
 def add_songs_to_singer(singer_id, songs_ids: Union[int, list], frozen_time=None, hebrew=False):
     singer = get_singer(singer_id, hebrew=hebrew)
 

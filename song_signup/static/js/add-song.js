@@ -2,7 +2,7 @@ const newSongForm = document.getElementById("new-song-form");
 const dialogModal = document.getElementById('duplicate-song-dialog');
 const dialogReset = dialogModal.querySelector('.reset');
 const dialogContinue = dialogModal.querySelector('.continue');
-
+const formMessages = document.querySelector(".form-messages");
 
 function getUserModalRes() {
     return new Promise((resolve, reject) => {
@@ -42,6 +42,8 @@ async function addSong(e) {
             const choice = await getUserModalRes();
             if (choice === 'reset' || choice === 'close') {
                 newSongForm.reset();
+                formMessages.classList.add('hidden');
+                formMessages.innerHTML = "";
                 return;
             }
             else {
@@ -51,7 +53,9 @@ async function addSong(e) {
         }
         window.location.replace(`/home/${data.requested_song}`);
     } catch (error) {
-        alert(error);
+        formMessages.classList.remove('hidden');
+        formMessages.innerHTML = `<p>${error.message}</p>`;
+        window.scrollTo(0, 0);
     }
 }
 

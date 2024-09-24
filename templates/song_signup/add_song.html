@@ -23,6 +23,7 @@
         <h2>Choose your next song!</h2>
         <p class="form-explain">Pick literally anything in the Broadway or Disney style (seriously, try us!):</p>
         <div id="new-song-form-wrapper">
+            <div class="form-messages hidden"></div>
             <form action="" id="new-song-form" autocomplete="off">
                 {% csrf_token %}
                 <input autocomplete="false" name="hidden" type="text" style="display:none;">
@@ -47,16 +48,16 @@
                 <div class="form-control" id="submit-wrapper">
                         <input type="submit" value="To the stage!" class="btn btn-inverted">
                 </div>
-                <div class="form-explain">
-                    A partner is anyone else coming on stage: <br>Your duet partner, backup singers, etc.
-                </div>
-                <div class="form-bullets">
-                    <ul>
-                        <li>Need a partner? You can always select Alon or Shani!</li>
-                        <li>You can be someone else's partner <strong>once</strong> per evening</li>
-                    </ul>
-                </div>
             </form>
+            <div class="form-explain">
+                A partner is anyone else coming on stage: <br>Your duet partner, backup singers, etc.
+            </div>
+            <div class="form-bullets">
+                <ul>
+                    <li>Need a partner? You can always select Alon or Shani!</li>
+                    <li>You can be someone else's partner <strong>once</strong> per evening</li>
+                </ul>
+            </div>
         </div>
     </div>
 </main>

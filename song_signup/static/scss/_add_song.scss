@@ -6,6 +6,11 @@
     padding: 3% 7%;
     position: relative;
 
+    .form-messages {
+        color: #c50050;
+        padding-top: 0;
+    }
+
     #view_suggestions_link {
         font-weight: 500;
         text-decoration: underline;
@@ -31,7 +36,7 @@
         font-size: 16px;
         margin-bottom: 5%;
         margin-top: 3%;
-        font-weight: 300;
+        font-weight: 600;
     }
     .form-bullets{
         list-style-position: inside;

@@ -9,6 +9,7 @@ from django.core.management import call_command
 from django.db import transaction
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
+from django.core.exceptions import ValidationError
 from flags.state import enable_flag, disable_flag, flag_disabled, flag_enabled
 from openpyxl import load_workbook
 from rest_framework import status
@@ -141,6 +142,22 @@ def add_song_request(request):
 
         song_request = SongRequest.objects.filter(song_name=song_name, musical=musical).first()
         if not song_request or approve_duplicate:
+            for partner_id in partners:
+                try:
+                    partner = Singer.objects.get(id=partner_id)
+                    if partner.is_superuser:
+                        continue
+                    if partner.songs_as_partner.count() > 0:
+                        return JsonResponse({"error": f"A singer can be selected as partner once per night, "
+                                                      f"and {partner} already used his/her slot."},
+                                            status=400)
+                except Singer.DoesNotExist:
+                    return JsonResponse({
+                        "error": f"Partner with id {partner_id} does not exist. "
+                                 f"Show this to Alon - it seems like a bug.. :("
+                    },
+                        status=400)
+
             new_song_request = SongRequest.objects.create(song_name=song_name, musical=musical,
                                                           singer=current_user, notes=notes)
             new_song_request.partners.set(partners)
