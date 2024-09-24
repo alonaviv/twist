@@ -835,15 +835,20 @@ nav {
     transition: all 2s ease;
     opacity: 0;
     pointer-events: none; }
-  #add-song-wrapper #add-song-text {
-    font-size: 14px;
-    margin-bottom: 5%; }
+  #add-song-wrapper .form-explain {
+    font-size: 16px;
+    margin-bottom: 5%;
+    margin-top: 3%;
+    font-weight: 300; }
+  #add-song-wrapper .form-bullets {
+    list-style-position: inside; }
   #add-song-wrapper form {
     width: 100%; }
     #add-song-wrapper form #submit-wrapper {
       display: flex;
       justify-content: center;
-      align-items: center; }
+      align-items: center;
+      margin-bottom: 20px; }
     #add-song-wrapper form .form-control {
       margin-bottom: 15px;
       transition: all 2s ease; }
@@ -906,37 +911,37 @@ nav {
 ::backdrop {
   background-color: rgba(0, 0, 0, 0.5); }
 
-#add-song-wrapper {
+#suggest-group-song-wrapper {
   background: #00C575;
   color: #000;
   height: 100%;
   width: 100%;
   padding: 3% 7%;
   position: relative; }
-  #add-song-wrapper #suggest-song-header {
+  #suggest-group-song-wrapper #suggest-song-header {
     display: flex;
     justify-content: space-between;
     margin: 10px 0px 25px; }
-    #add-song-wrapper #suggest-song-header a {
+    #suggest-group-song-wrapper #suggest-song-header a {
       font-size: 14px; }
-  #add-song-wrapper #add-song-text {
+  #suggest-group-song-wrapper #add-song-text {
     font-size: 20px;
     margin-bottom: 10%; }
-  #add-song-wrapper form {
+  #suggest-group-song-wrapper form {
     width: 100%; }
-    #add-song-wrapper form #submit-wrapper {
+    #suggest-group-song-wrapper form #submit-wrapper {
       display: flex;
       justify-content: center;
       align-items: center;
       margin-top: 25px; }
-    #add-song-wrapper form .checkbox {
+    #suggest-group-song-wrapper form .checkbox {
       margin: 30px 0px; }
-      #add-song-wrapper form .checkbox input[type="checkbox"] {
+      #suggest-group-song-wrapper form .checkbox input[type="checkbox"] {
         background-color: #333; }
-    #add-song-wrapper form .form-control {
+    #suggest-group-song-wrapper form .form-control {
       margin-bottom: 15px;
       transition: all 2s ease; }
-      #add-song-wrapper form .form-control input[type="text"] {
+      #suggest-group-song-wrapper form .form-control input[type="text"] {
         width: 100%;
         padding: 4px;
         height: 40px;
@@ -946,10 +951,10 @@ nav {
         color: #fff;
         font-size: 18px;
         transition: inherit; }
-        #add-song-wrapper form .form-control input[type="text"]::placeholder {
+        #suggest-group-song-wrapper form .form-control input[type="text"]::placeholder {
           color: #aaa;
           font-size: 18px; }
-      #add-song-wrapper form .form-control select {
+      #suggest-group-song-wrapper form .form-control select {
         margin-top: 10px;
         margin-bottom: 10px;
         width: 100%;
@@ -959,7 +964,7 @@ nav {
         color: #fff;
         font-size: 14px;
         transition: inherit; }
-  #add-song-wrapper #suggest-song-bottom {
+  #suggest-group-song-wrapper #suggest-song-bottom {
     margin-top: 10%; }
 
 #explanation-text {

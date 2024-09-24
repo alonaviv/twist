@@ -21,7 +21,7 @@
             <p>Signup is<br>now closed</p>
         </div>
         <h2>Choose your next song!</h2>
-        <p id="add-song-text">Pick literally anything in the Broadway or Disney style (seriously, try us!):</p>
+        <p class="form-explain">Pick literally anything in the Broadway or Disney style (seriously, try us!):</p>
         <div id="new-song-form-wrapper">
             <form action="" id="new-song-form" autocomplete="off">
                 {% csrf_token %}
@@ -36,7 +36,8 @@
                     <input type="text" name="notes" id="notes" placeholder="Additional notes for us">
                 </div>
                 <div class="form-control">
-                    <label for="partners">Singing partners - anyone coming with you on stage? Everyone can be a partner <u>Once</u> in an evening. </br> Don't have who to sing with? You can also pick Shani and Alon 🙂</u></label>
+                    <label for="partners">Select partners:
+                        </label>
                     <select name="partners" id="partners" multiple>
                         {% for singer in other_singers %}
                         <option value="{{ singer.id }}">{{ singer }}</option>
@@ -45,6 +46,15 @@
                 </div>
                 <div class="form-control" id="submit-wrapper">
                         <input type="submit" value="To the stage!" class="btn btn-inverted">
+                </div>
+                <div class="form-explain">
+                    A partner is anyone else coming on stage: <br>Your duet partner, backup singers, etc.
+                </div>
+                <div class="form-bullets">
+                    <ul>
+                        <li>Need a partner? You can always select Alon or Shani!</li>
+                        <li>You can be someone else's partner <strong>once</strong> per evening</li>
+                    </ul>
                 </div>
             </form>
         </div>
