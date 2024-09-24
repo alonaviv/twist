@@ -5,7 +5,7 @@ def is_hebrew(s):
     return bool(re.search(r'[\u0590-\u05FF]', s))
 
 
-def format_commas(names):
+def format_commas(names: list):
     if not names:
         return ''
     if len(names) == 1:

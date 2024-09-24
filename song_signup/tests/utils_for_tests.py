@@ -84,7 +84,7 @@ def add_songs_to_singer(singer_id, songs_ids: Union[int, list], frozen_time=None
         if frozen_time:
             frozen_time.tick()
 
-        SongRequest.objects.create(song_name=f"song_{singer_id}_{song_id}", singer=singer)
+        SongRequest.objects.create(song_name=f"song_{singer_id}_{song_id}", singer=singer, musical="Wicked")
         Singer.ordering.calculate_positions()
 
 

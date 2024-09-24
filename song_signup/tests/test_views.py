@@ -1,8 +1,8 @@
 from constance.test import override_config
+from django.forms.models import model_to_dict
 from django.http import HttpResponse
 from django.test import TestCase, Client
 from django.urls import reverse
-from django.forms.models import model_to_dict
 from freezegun import freeze_time
 from mock import patch
 
@@ -24,17 +24,21 @@ from song_signup.tests.utils_for_tests import (
     add_partners,
     add_current_group_song,
     get_song,
-    get_singer
+    get_singer,
 )
 from song_signup.views import AUDIENCE_SESSION
+from twist.utils import format_commas
 
 evening_started = override_config(PASSCODE=PASSCODE, EVENT_SKU=EVENT_SKU)
+
+SINGER_FIELDS = ['id', 'first_name', 'last_name']
 
 
 def login_singer(testcase, user_id=1, num_songs=None):
     [user] = create_singers([user_id], num_songs=num_songs)
     testcase.client.force_login(user)
     return user
+
 
 def login_audience(testcase):
     session = testcase.client.session
@@ -306,11 +310,11 @@ class TestLogin(TestCase):
         self.assertTrue(new_singer.no_image_upload)
 
 
-def remove_song_keys(content, keys):
-    if isinstance(content, dict):
-        songs = content.values()
+def remove_song_keys(content, keys, extract_value=False):
+    if extract_value:
+        songs = [song for song in content.values()]
     else:
-        songs = content
+        songs = content if isinstance(content, list) else [content]
 
     for song in songs:
         if song:
@@ -321,8 +325,9 @@ def remove_song_keys(content, keys):
 
 class TestJsonRes(TestCase):
     IGNORE_SONG_KEYS = ['id', 'wait_amount']
+
     def _remove_song_keys(self, json):
-        return remove_song_keys(json, keys=self.IGNORE_SONG_KEYS)
+        return remove_song_keys(json, keys=self.IGNORE_SONG_KEYS, extract_value=True)
 
     def test_spotlight_empty(self):
         response = self.client.get(reverse('spotlight_data'))
@@ -392,14 +397,14 @@ class TestJsonRes(TestCase):
         expected_json = {'user_next_song': get_song_basic_data(3, 2)}
         self.assertDictEqual(self._remove_song_keys(res_json), self._remove_song_keys(expected_json))
 
-class TestGetCurrentSongs(TestCase):
+
+class SongRequestSerializeTestCase(TestCase):
     IGNORE_SONG_KEYS = ['request_time']
+
     def _remove_song_keys(self, json):
         return remove_song_keys(json, keys=self.IGNORE_SONG_KEYS)
 
     def _get_song_json(self, singer_id, song_id, partner_ids=None):
-        SINGER_FIELDS = ['id', 'first_name', 'last_name']
-
         song = get_song(singer_id, song_id)
         singer = get_singer(singer_id)
         song_json = model_to_dict(song)
@@ -407,14 +412,21 @@ class TestGetCurrentSongs(TestCase):
 
         if partner_ids:
             partners = []
+            partners_strs = []
             for partner_id in partner_ids:
                 partner = get_singer(partner_id)
                 partners.append(model_to_dict(partner, fields=SINGER_FIELDS))
+                partners_strs.append(f"{partner.first_name} {partner.last_name}")
 
             song_json['partners'] = partners
+            song_json['partners_str'] = format_commas(partners_strs)
+        else:
+            song_json['partners_str'] = ''
 
         return song_json
 
+
+class GetCurrentSongs(SongRequestSerializeTestCase):
     def test_no_songs(self):
         user = login_singer(self, user_id=1)
 
@@ -424,7 +436,7 @@ class TestGetCurrentSongs(TestCase):
         res_json = get_json(response)
         self.assertEqual(res_json, [])
 
-    def test_get_current_songs(self):
+    def test_current_songs(self):
         user = login_singer(self, user_id=1, num_songs=3)
 
         response = self.client.get(reverse('get_current_songs'))
@@ -450,8 +462,6 @@ class TestGetCurrentSongs(TestCase):
         self.assertEqual(response.status_code, 200)
 
         res_json = get_json(response)
-        # TODO: Strange problem - response returns 4 songs (1_2 appears twice) even though that doesn't seem to happen
-        # TODO in the model
 
         expected_json = [
             self._get_song_json(1, 1, partner_ids=[2]),
@@ -460,6 +470,156 @@ class TestGetCurrentSongs(TestCase):
         ]
 
         self.assertEqual(self._remove_song_keys(res_json), self._remove_song_keys(expected_json))
+
+
+class TestGetSong(SongRequestSerializeTestCase):
+    def test_not_found(self):
+        res = self.client.get(reverse('get_song', args=[9]))
+        self.assertEqual(res.status_code, 400)
+
+        res_json = get_json(res)
+        self.assertEqual(res_json, {'error': 'Song with ID 9 does not exist'})
+
+    def test_get_song(self):
+        user = login_singer(self, user_id=1, num_songs=1)
+
+        song_1 = get_song(1, 1)
+        res = self.client.get(reverse('get_song', args=[song_1.id]))
+        self.assertEqual(res.status_code, 200)
+
+        res_json = get_json(res)
+        expected_json = self._get_song_json(1, 1)
+
+        self.assertEqual(self._remove_song_keys([res_json]), self._remove_song_keys([expected_json]))
+
+    def test_w_partners(self):
+        user = login_singer(self, user_id=1, num_songs=1)
+        create_singers([2, 3])
+        add_partners(1, [2, 3], 1)
+
+        song_1 = get_song(1, 1)
+        response = self.client.get(reverse('get_song', args=[song_1.id]))
+        self.assertEqual(response.status_code, 200)
+
+        res_json = get_json(response)
+        expected_json = self._get_song_json(1, 1, partner_ids=[2, 3])
+
+        self.assertEqual(self._remove_song_keys(res_json), self._remove_song_keys(expected_json))
+
+
+class TestRenameSong(SongRequestSerializeTestCase):
+    IGNORE_SONG_KEYS = ['request_time', 'partners_str']
+
+    def _get_expected_song_json(self, song_name, musical, singer, id):
+        song_json = model_to_dict(SongRequest(id=id or 1,
+                                         song_name='New Song Name', musical='New Musical',
+                                         singer=singer,
+                                         priority=1, position=1))
+        song_json['singer'] =model_to_dict(singer, fields=SINGER_FIELDS)
+        return song_json
+
+    def test_not_found(self):
+        data = {
+            'song_id': 9,
+            'song_name': 'New Song Name',
+            'musical': 'New Musical'
+        }
+
+        response = self.client.put(reverse('rename_song'), data, content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+
+        res_json = get_json(response)
+        self.assertEqual(res_json, {'error': 'Song with ID 9 does not exist'})
+
+    def test_empty_name(self):
+        user = login_singer(self, user_id=1, num_songs=1)
+
+        data = {
+            'song_id': 1,
+            'song_name': '',
+            'musical': 'New Musical'
+        }
+
+        response = self.client.put(reverse('rename_song'), data, content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+
+        res_json = get_json(response)
+        self.assertEqual(res_json, {'error': 'Song name can not empty'})
+
+    def test_empty_musical(self):
+        user = login_singer(self, user_id=1, num_songs=1)
+
+        data = {
+            'song_id': 1,
+            'song_name': 'New Song Name',
+            'musical': ''
+        }
+
+        response = self.client.put(reverse('rename_song'), data, content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+
+        res_json = get_json(response)
+        self.assertEqual(res_json, {'error': 'Musical name can not empty'})
+
+    def test_rename_success(self):
+        user = login_singer(self, user_id=1, num_songs=1)
+        song = user.songs.first()
+        song.notes = "Some note someone wrote"
+        song.found_music = True
+        song.default_lyrics = True
+
+        data = {
+            'song_id': song.id,
+            'song_name': 'new Song name',
+            'musical': 'New musical'
+        }
+
+        response = self.client.put(reverse('rename_song'), data, content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+
+        res_json = get_json(response)
+        expected_json = self._get_expected_song_json(song_name='New Song Name', musical='New Musical', singer=user,
+                                                     id=song.id)
+
+        self.assertEqual(self._remove_song_keys(res_json), self._remove_song_keys(expected_json))
+
+        song.refresh_from_db()
+        self.assertIsNone(song.notes)
+        self.assertFalse(song.found_music)
+        self.assertFalse(song.default_lyrics)
+
+    def _test_rename_same(self, song_name=False, musical=False):
+        user = login_singer(self, user_id=1, num_songs=1)
+
+        song = get_song(1, 1)
+        original_notes = song.notes
+        original_found_music = song.found_music
+        original_default_lyrics = song.default_lyrics
+
+        data = {
+            'song_id': song.id,
+            'song_name': song.song_name if song_name else 'New Song',
+            'musical': song.musical if musical else 'New Musical'
+        }
+
+        response = self.client.put(reverse('rename_song'), data, content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+
+        song.refresh_from_db()  # Reload from the database
+
+        self.assertEqual(song.notes, original_notes)
+        self.assertEqual(song.found_music, original_found_music)
+        self.assertEqual(song.default_lyrics, original_default_lyrics)
+
+    def test_rename_same_name(self):
+        self._test_rename_same(song_name=True)
+
+    def test_rename_same_musical(self):
+        self._test_rename_same(musical=True)
+
+    def test_rename_same_all(self):
+        self._test_rename_same(musical=True, song_name=True)
+
 
 class TestRestApi(TestCase):
     def test_drinking_words_empty(self):
@@ -510,7 +670,7 @@ class TestRestApi(TestCase):
         self.assertJSONEqual(response.content, {
             'current_song': {
                 'position': 1, 'song_name': get_song_str(1, 1),
-                'singers': get_singer_str(1), 'musical': ''
+                'singers': get_singer_str(1), 'musical': 'Wicked'
             },
             'next_songs': []
         })
@@ -524,20 +684,20 @@ class TestRestApi(TestCase):
             self.assertJSONEqual(response.content, {
                 'current_song': {
                     'position': 1, 'song_name': get_song_str(1, 1),
-                    'singers': get_singer_str(1), 'musical': ''
+                    'singers': get_singer_str(1), 'musical': 'Wicked'
                 },
                 'next_songs': [
                     {
                         'position': 2, 'song_name': get_song_str(2, 1),
-                        'singers': get_singer_str(2), 'musical': ''
+                        'singers': get_singer_str(2), 'musical': 'Wicked'
                     },
                     {
                         'position': 3, 'song_name': get_song_str(3, 1),
-                        'singers': get_singer_str(3), 'musical': ''
+                        'singers': get_singer_str(3), 'musical': 'Wicked'
                     },
                     {
                         'position': 4, 'song_name': get_song_str(4, 1),
-                        'singers': get_singer_str(4), 'musical': ''
+                        'singers': get_singer_str(4), 'musical': 'Wicked'
                     }
                 ]
             })
@@ -548,20 +708,20 @@ class TestRestApi(TestCase):
             self.assertJSONEqual(response.content, {
                 'current_song': {
                     'position': 1, 'song_name': get_song_str(2, 1),
-                    'singers': get_singer_str(2), 'musical': ''
+                    'singers': get_singer_str(2), 'musical': 'Wicked'
                 },
                 'next_songs': [
                     {
                         'position': 2, 'song_name': get_song_str(3, 1),
-                        'singers': get_singer_str(3), 'musical': ''
+                        'singers': get_singer_str(3), 'musical': 'Wicked'
                     },
                     {
                         'position': 3, 'song_name': get_song_str(4, 1),
-                        'singers': get_singer_str(4), 'musical': ''
+                        'singers': get_singer_str(4), 'musical': 'Wicked'
                     },
                     {
                         'position': 4, 'song_name': get_song_str(1, 2),
-                        'singers': get_singer_str(1), 'musical': ''
+                        'singers': get_singer_str(1), 'musical': 'Wicked'
                     },
                 ]
             })
@@ -573,16 +733,16 @@ class TestRestApi(TestCase):
             self.assertJSONEqual(response.content, {
                 'current_song': {
                     'position': 1, 'song_name': get_song_str(2, 1),
-                    'singers': get_singer_str(2), 'musical': ''
+                    'singers': get_singer_str(2), 'musical': 'Wicked'
                 },
                 'next_songs': [
                     {
                         'position': 2, 'song_name': get_song_str(3, 1),
-                        'singers': get_singer_str(3), 'musical': ''
+                        'singers': get_singer_str(3), 'musical': 'Wicked'
                     },
                     {
                         'position': 3, 'song_name': get_song_str(4, 1),
-                        'singers': get_singer_str(4), 'musical': ''
+                        'singers': get_singer_str(4), 'musical': 'Wicked'
                     },
                 ]
             })
@@ -599,15 +759,15 @@ class TestRestApi(TestCase):
                 'next_songs': [
                     {
                         'position': 1, 'song_name': get_song_str(2, 1),
-                        'singers': get_singer_str(2), 'musical': ''
+                        'singers': get_singer_str(2), 'musical': 'Wicked'
                     },
                     {
                         'position': 2, 'song_name': get_song_str(3, 1),
-                        'singers': get_singer_str(3), 'musical': ''
+                        'singers': get_singer_str(3), 'musical': 'Wicked'
                     },
                     {
                         'position': 3, 'song_name': get_song_str(4, 1),
-                        'singers': get_singer_str(4), 'musical': ''
+                        'singers': get_singer_str(4), 'musical': 'Wicked'
                     },
                 ]
             })
@@ -619,16 +779,16 @@ class TestRestApi(TestCase):
             self.assertJSONEqual(response.content, {
                 'current_song': {
                     'position': 1, 'song_name': get_song_str(2, 1),
-                    'singers': get_singer_str(2), 'musical': ''
+                    'singers': get_singer_str(2), 'musical': 'Wicked'
                 },
                 'next_songs': [
                     {
                         'position': 2, 'song_name': get_song_str(3, 1),
-                        'singers': get_singer_str(3), 'musical': ''
+                        'singers': get_singer_str(3), 'musical': 'Wicked'
                     },
                     {
                         'position': 3, 'song_name': get_song_str(4, 1),
-                        'singers': get_singer_str(4), 'musical': ''
+                        'singers': get_singer_str(4), 'musical': 'Wicked'
                     },
                 ]
             })
@@ -640,12 +800,12 @@ class TestRestApi(TestCase):
             self.assertJSONEqual(response.content, {
                 'current_song': {
                     'position': 2, 'song_name': get_song_str(3, 1),
-                    'singers': get_singer_str(3), 'musical': ''
+                    'singers': get_singer_str(3), 'musical': 'Wicked'
                 },
                 'next_songs': [
                     {
                         'position': 3, 'song_name': get_song_str(4, 1),
-                        'singers': get_singer_str(4), 'musical': ''
+                        'singers': get_singer_str(4), 'musical': 'Wicked'
                     },
                 ]
             })
@@ -657,12 +817,12 @@ class TestRestApi(TestCase):
             self.assertJSONEqual(response.content, {
                 'current_song': {
                     'position': 2, 'song_name': get_song_str(4, 1),
-                    'singers': get_singer_str(4), 'musical': ''
+                    'singers': get_singer_str(4), 'musical': 'Wicked'
                 },
                 'next_songs': [
                     {
                         'position': 3, 'song_name': get_song_str(3, 2),
-                        'singers': get_singer_str(3), 'musical': ''
+                        'singers': get_singer_str(3), 'musical': 'Wicked'
                     },
                 ]
             })
@@ -674,16 +834,16 @@ class TestRestApi(TestCase):
             self.assertJSONEqual(response.content, {
                 'current_song': {
                     'position': 1, 'song_name': get_song_str(2, 1),
-                    'singers': get_singer_str(2), 'musical': ''
+                    'singers': get_singer_str(2), 'musical': 'Wicked'
                 },
                 'next_songs': [
                     {
                         'position': 2, 'song_name': get_song_str(4, 1),
-                        'singers': get_singer_str(4), 'musical': ''
+                        'singers': get_singer_str(4), 'musical': 'Wicked'
                     },
                     {
                         'position': 3, 'song_name': get_song_str(3, 2),
-                        'singers': get_singer_str(3), 'musical': ''
+                        'singers': get_singer_str(3), 'musical': 'Wicked'
                     },
                 ]
             })
@@ -697,12 +857,12 @@ class TestRestApi(TestCase):
             'current_song': {
                 'position': 1, 'song_name': get_song_str(1, 1),
                 'singers': f"{get_singer_str(1)} and {get_singer_str(2)}"
-                , 'musical': ''
+                , 'musical': 'Wicked'
             },
             'next_songs': [
                 {
                     'position': 2, 'song_name': get_song_str(2, 1),
-                    'singers': get_singer_str(2), 'musical': ''
+                    'singers': get_singer_str(2), 'musical': 'Wicked'
                 },
             ]
         })
@@ -716,12 +876,12 @@ class TestRestApi(TestCase):
             'current_song': {
                 'position': 1, 'song_name': get_song_str(1, 1),
                 'singers': f"{get_singer_str(1, hebrew=True)} and {get_singer_str(2, hebrew=True)}"
-                , 'musical': ''
+                , 'musical': 'Wicked'
             },
             'next_songs': [
                 {
                     'position': 2, 'song_name': get_song_str(2, 1),
-                    'singers': get_singer_str(2, hebrew=True), 'musical': ''
+                    'singers': get_singer_str(2, hebrew=True), 'musical': 'Wicked'
                 },
             ]
         })
@@ -730,42 +890,42 @@ class TestRestApi(TestCase):
 class TestDecorators(TestCase):
     def test_bwt_required_w_singer(self):
         login_singer(self, 1)
-        response = self.client.get(reverse('view_suggestions')) # @bwt_login_required('login')
+        response = self.client.get(reverse('view_suggestions'))  # @bwt_login_required('login')
         self.assertEqual(response.status_code, 200)
 
     def test_bwt_required_w_audience(self):
         login_audience(self)
-        response = self.client.get(reverse('view_suggestions')) # @bwt_login_required('login')
+        response = self.client.get(reverse('view_suggestions'))  # @bwt_login_required('login')
         self.assertEqual(response.status_code, 200)
 
     def test_bwt_required_w_none(self):
-        response = self.client.get(reverse('view_suggestions')) # @bwt_login_required('login')
+        response = self.client.get(reverse('view_suggestions'))  # @bwt_login_required('login')
         self.assertRedirects(response, reverse('login'))
 
     def test_bwt_required_singer_only_w_singer(self):
         login_singer(self, 1)
-        response = self.client.get(reverse('manage_songs')) # @bwt_login_required('login', singer_only=True)
+        response = self.client.get(reverse('manage_songs'))  # @bwt_login_required('login', singer_only=True)
         self.assertEqual(response.status_code, 200)
 
     def test_bwt_required_singer_only_w_none(self):
-        response = self.client.get(reverse('manage_songs')) # @bwt_login_required('login', singer_only=True)
+        response = self.client.get(reverse('manage_songs'))  # @bwt_login_required('login', singer_only=True)
         self.assertRedirects(response, reverse('login'))
 
     def test_bwt_required_singer_only_w_audience(self):
         login_audience(self)
-        response = self.client.get(reverse('manage_songs')) # @bwt_login_required('login', singer_only=True)
+        response = self.client.get(reverse('manage_songs'))  # @bwt_login_required('login', singer_only=True)
         self.assertEqual(response.status_code, 302)
 
     def test_superuser_required_w_superuser(self):
         user = login_singer(self)
         user.is_superuser = True
         user.save()
-        response = self.client.get(reverse('lyrics', kwargs={'song_pk': 1})) # @bwt_superuser_required('login')
-        self.assertEqual(response.status_code, 400) # No song
+        response = self.client.get(reverse('lyrics', kwargs={'song_pk': 1}))  # @bwt_superuser_required('login')
+        self.assertEqual(response.status_code, 400)  # No song
 
     def test_superuser_required_wo_superuser(self):
         user = login_singer(self)
-        response = self.client.get(reverse('lyrics', kwargs={'song_pk': 1})) # @bwt_superuser_required('login')
+        response = self.client.get(reverse('lyrics', kwargs={'song_pk': 1}))  # @bwt_superuser_required('login')
         self.assertEqual(response.status_code, 302)
 
 
@@ -773,9 +933,11 @@ class TestSuggestGroupSong(TestCase):
     @patch('song_signup.views.home', return_value=HttpResponse())
     def test_singer(self, home_mock):
         login_singer(self, user_id=1)
-        response = self.client.post(reverse('suggest_group_song'), {'song-name': ["Brotherhood of man"],
-                                                                    'musical': ['How to succeed in business without '
-                                                                               'really trying']})
+        response = self.client.post(reverse('suggest_group_song'), {
+            'song-name': ["Brotherhood of man"],
+            'musical': ['How to succeed in business without '
+                        'really trying']
+        })
         self.assertEqual(GroupSongRequest.objects.count(), 1)
         created_song = GroupSongRequest.objects.first()
         self.assertEqual(created_song.song_name, 'Brotherhood of Man')
@@ -786,25 +948,25 @@ class TestSuggestGroupSong(TestCase):
         self.assertIn('Brotherhood of Man', call_args)
         self.assertTrue(call_kwargs['is_group_song'])
 
-
     def test_audience(self):
         login_audience(self)
-        response = self.client.post(reverse('suggest_group_song'), {'song-name': ["Brotherhood of man"],
-                                                                    'musical': ['How to succeed in business without '
-                                                                               'really trying'],
-                                                                    'suggested_by': ['']
+        response = self.client.post(reverse('suggest_group_song'), {
+            'song-name': ["Brotherhood of man"],
+            'musical': ['How to succeed in business without '
+                        'really trying'],
+            'suggested_by': ['']
         })
         self.assertEqual(GroupSongRequest.objects.count(), 1)
         created_song = GroupSongRequest.objects.first()
         self.assertEqual(created_song.suggested_by, '-')
 
-
     def test_named_audience(self):
         login_audience(self)
-        response = self.client.post(reverse('suggest_group_song'), {'song-name': ["Brotherhood of man"],
-                                                                    'musical': ['How to succeed in business without '
-                                                                               'really trying'],
-                                                                    'suggested_by': ["some audience person"]
+        response = self.client.post(reverse('suggest_group_song'), {
+            'song-name': ["Brotherhood of man"],
+            'musical': ['How to succeed in business without '
+                        'really trying'],
+            'suggested_by': ["some audience person"]
         })
         self.assertEqual(GroupSongRequest.objects.count(), 1)
         created_song = GroupSongRequest.objects.first()
@@ -819,9 +981,10 @@ class TestSuggestGroupSong(TestCase):
 class TestAddSongRequest(TestCase):
     def test_only_required_fields(self):
         singer = login_singer(self, user_id=1)
-        response = self.client.post(reverse('add_song_request'), {'song-name': ["defying gravity"],
-                                                                  'musical': ['wicked'],
-                                                                  'notes': ['']
+        response = self.client.post(reverse('add_song_request'), {
+            'song-name': ["defying gravity"],
+            'musical': ['wicked'],
+            'notes': ['']
         })
         self.assertEqual(SongRequest.objects.count(), 1)
         created_song = SongRequest.objects.first()
@@ -837,10 +1000,11 @@ class TestAddSongRequest(TestCase):
     def test_all_fields(self):
         user = login_singer(self, user_id=1)
         s2, s3, s4 = create_singers([2, 3, 4])
-        response = self.client.post(reverse('add_song_request'), {'song-name': ["defying gravity"],
-                                                                  'musical': ['wicked'],
-                                                                  'notes': ["solo version"],
-                                                                  'partners': [str(s2.id), str(s3.id), str(s4.id)]
+        response = self.client.post(reverse('add_song_request'), {
+            'song-name': ["defying gravity"],
+            'musical': ['wicked'],
+            'notes': ["solo version"],
+            'partners': [str(s2.id), str(s3.id), str(s4.id)]
         })
         self.assertEqual(SongRequest.objects.count(), 1)
         created_song = SongRequest.objects.first()
@@ -857,29 +1021,32 @@ class TestAddSongRequest(TestCase):
         user = login_singer(self, user_id=1)
         singer2, singer3, singer4 = create_singers([2, 3, 4])
         existing_song = SongRequest.objects.create(song_name='Defying Gravity', musical='Wicked', singer=singer2,
-                                                    notes='Duet partner signed up first')
+                                                   notes='Duet partner signed up first')
         existing_song.partners.set([user, singer2, singer3])
 
-        response = self.client.post(reverse('add_song_request'), {'song-name': ["defying gravity"],
-                                                                  'musical': ['wicked'],
-                                                                  'notes': ["solo version"],
+        response = self.client.post(reverse('add_song_request'), {
+            'song-name': ["defying gravity"],
+            'musical': ['wicked'],
+            'notes': ["solo version"],
         })
         self.assertEqual(response.status_code, 400)
-        self.assertJSONEqual(response.content, {'error': f'Apparently, {get_singer_str(2)} already signed you up for this song'})
-
+        self.assertJSONEqual(response.content,
+                             {'error': f'Apparently, {get_singer_str(2)} already signed you up for this song'})
 
     def test_signed_up_twice(self):
         user = login_singer(self, user_id=1)
         dueter, *_ = create_singers([2, 3, 4])
-        response = self.client.post(reverse('add_song_request'), {'song-name': ["Defying Gravity"],
-                                                                  'musical': ['Wicked']
+        response = self.client.post(reverse('add_song_request'), {
+            'song-name': ["Defying Gravity"],
+            'musical': ['Wicked']
         })
 
-        response = self.client.post(reverse('add_song_request'), {'song-name': ["defying gravity"],
-                                                                  'musical': ['wicked'],
-                                                                  'notes': ["solo version"],
-                                                                  'duet-partner': ['2'],
-                                                                  'additional-singers': ['3', '4']
+        response = self.client.post(reverse('add_song_request'), {
+            'song-name': ["defying gravity"],
+            'musical': ['wicked'],
+            'notes': ["solo version"],
+            'duet-partner': ['2'],
+            'additional-singers': ['3', '4']
         })
         self.assertEqual(response.status_code, 400)
         self.assertJSONEqual(response.content, {'error': f'You already signed up with this song tonight'})
@@ -890,13 +1057,13 @@ class TestAddSongRequest(TestCase):
         SongRequest.objects.create(song_name='Defying Gravity', musical='Wicked', singer=other_singer,
                                    notes='Other singer signed up first')
 
-        response = self.client.post(reverse('add_song_request'), {'song-name': ["defying gravity"],
-                                                                  'musical': ['wicked'],
-                                                                  'notes': ["solo version"]
+        response = self.client.post(reverse('add_song_request'), {
+            'song-name': ["defying gravity"],
+            'musical': ['wicked'],
+            'notes': ["solo version"]
         })
         self.assertEqual(response.status_code, 202)
         self.assertJSONEqual(response.content, {'duplicate': True})
-
 
     def test_duplicate_song_approve(self):
         user = login_singer(self, user_id=1)
@@ -904,10 +1071,11 @@ class TestAddSongRequest(TestCase):
         SongRequest.objects.create(song_name='Defying Gravity', musical='Wicked', singer=other_singer,
                                    notes='Other singer signed up first')
 
-        response = self.client.post(reverse('add_song_request'), {'song-name': ["defying gravity"],
-                                                                  'musical': ['wicked'],
-                                                                  'notes': ["solo version"],
-                                                                  'approve-duplicate': [True]
+        response = self.client.post(reverse('add_song_request'), {
+            'song-name': ["defying gravity"],
+            'musical': ['wicked'],
+            'notes': ["solo version"],
+            'approve-duplicate': [True]
         })
         self.assertEqual(SongRequest.objects.count(), 2)
         created_song1, created_song2 = SongRequest.objects.all()

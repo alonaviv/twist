@@ -18,8 +18,12 @@ class SongSuggestionSerializer(ModelSerializer):
 
 
 class SongRequestSerializer(ModelSerializer):
-    singer = SingerSerializer()
-    partners = SingerSerializer(many=True)
+    singer = SingerSerializer(read_only=True)
+    partners = SingerSerializer(many=True, read_only=True)
+    partners_str = SerializerMethodField()
+
+    def get_partners_str(self, obj):
+        return format_commas([singer.get_full_name() for singer in obj.partners.all()])
 
     class Meta:
         model = SongRequest

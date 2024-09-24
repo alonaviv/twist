@@ -20,6 +20,7 @@ from django.db.models import (
     CharField,
     OneToOneField,
 )
+from twist.utils import format_commas
 from django.utils import timezone
 from titlecase import titlecase
 
@@ -84,7 +85,7 @@ class Singer(AbstractUser):
 
     @property
     def all_songs(self):
-        return self.songs.all() | self.songs_as_partner.all()
+        return (self.songs.all() | self.songs_as_partner.all()).distinct()
 
     @property
     def pending_songs(self):
@@ -247,6 +248,10 @@ class SongRequest(Model):
     @property
     def basic_data(self):
         return {'id': self.id, 'name': self.song_name, 'singer': str(self.singer), 'wait_amount': self.wait_amount}
+
+    @property
+    def partners_str(self):
+        return format_commas([singer.get_full_name() for singer in self.partners.all()])
 
     def save(self, *args, **kwargs):
         if not self.priority:

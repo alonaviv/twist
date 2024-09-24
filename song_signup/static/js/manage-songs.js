@@ -36,11 +36,10 @@ async function populateSongList() {
                     ${getSongHtml(song, current_user)}
                     </div>`;
         
-
-        if (song.duet_partner && song.singer.id == current_user.id) {
+        if (song.partners.length > 0 && song.singer.id == current_user.id) {
             li.innerHTML += `
                     <div class="other-singers">
-                        <p>Duet with: ${song.duet_partner.first_name} ${song.duet_partner.last_name}</p>
+                        <p>Partners: ${song.partners_str}</p>
                     </div>`;
         }
         setupListeners(li, song.id);
