@@ -66,7 +66,7 @@ class TestDisneylandOrdering(SongRequestTestCase):
         """
         with freeze_time(TEST_START_TIME, auto_tick_seconds=5) as frozen_time:
             create_singers(5, frozen_time, num_songs=3)
-            add_partners(3, 5, 1)
+            add_partners(3, [4, 5], 1)
 
             set_performed(1, 1, frozen_time)
             assert_singers_in_disney(self, [2, 3, 4, 5, 1])
@@ -266,9 +266,9 @@ class TestCalculatePositionsDisney(SongRequestTestCase):
             add_songs_to_singers(9, 3)  # Singer 10 only has a duet
 
             add_partners(6, 8, 1)
-            add_partners(4, 9, 1)
+            add_partners(4, [9, 5], 1)
             add_partners(8, 3, 1)
-            add_partners(7, 10, 1)
+            add_partners(7, [2, 10], 1)
 
             assert_song_positions(self, [
                 (5, 1),
@@ -343,7 +343,7 @@ class TestSimulatedEvenings(SongRequestTestCase):
             assert_song_positions(self, [(3, 1), (4, 1), (2, 2), (8, 1), (1, 3), (7, 1), (9, 1)])
 
             # 4 adds 7 as a duet partner. 2 adds 3 as a duet partner. No effect.
-            add_partners(4, 7, 1, frozen_time)
+            add_partners(4, [3, 7], 1, frozen_time)
             assert_song_positions(self, [(3, 1), (4, 1), (2, 2), (8, 1), (1, 3), (7,1), (9, 1)])
             add_partners(2, 3, 2, frozen_time)
             assert_song_positions(self, [(3, 1), (4, 1), (2, 2), (8, 1), (1, 3), (7,1), (9, 1)])
@@ -396,9 +396,9 @@ class TestSimulatedEvenings(SongRequestTestCase):
                                          (11, 1), (15, 1), (16, 1), (1, 3), (3, 2), (4, 2), (2, 3), (6, 2)])
 
             # 9 adds a duet with 6, 8 adds a duet with 11, 1 adds a duet with 12. Changes nothing
-            add_partners(9, 6, 1, frozen_time)
+            add_partners(9, [6, 2], 1, frozen_time)
             add_partners(8, 11, 1, frozen_time)
-            add_partners(1, 12, 3, frozen_time)
+            add_partners(1, [8, 12], 3, frozen_time)
             assert_song_positions(self, [(8, 1), (7, 1), (9, 1), (12, 1), (13, 1), (14, 1), (5, 1),
                                          (11, 1), (15, 1), (16, 1), (1, 3), (3, 2), (4, 2), (2, 3), (6, 2)])
 
