@@ -310,3 +310,38 @@ class SongLyrics(Model):
                 self.group_song_request.lyrics.update(default=False)
 
         super().save(*args, **kwargs)
+
+TRIVIA_CHOICES = ((1, 'A'), (2, 'B'), (3, 'C'), (4, 'D'))
+
+class Question(Model):
+    MAX_DISPLAY = 100
+
+    question = TextField()
+    choiceA = TextField()
+    choiceB = TextField()
+    choiceC = TextField()
+    choiceD = TextField()
+    answer = IntegerField(choices=TRIVIA_CHOICES)
+
+    def __str__(self):
+        if len(self.question) < self.MAX_DISPLAY:
+            return self.question
+
+        return self.question[:self.MAX_DISPLAY] + "..."
+
+    @property
+    def winner(self):
+        for response in self.responses.order_by('timestamp'):
+            if response.is_correct:
+                return response.user
+
+
+class TriviaResponse(Model):
+    user = ForeignKey(Singer, on_delete=CASCADE, related_name='trivia_responses')  # TODO: Need to have this include audience as well
+    question = ForeignKey(Question, on_delete=CASCADE, related_name='responses')
+    choice = IntegerField(choices=TRIVIA_CHOICES)
+    timestamp = DateTimeField(auto_now_add=True)
+
+    @property
+    def is_correct(self):
+        return self.question.answer is self.choice

@@ -4,7 +4,9 @@ from django.utils import timezone
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 
-from .models import SongLyrics, SongRequest, Singer, GroupSongRequest, TicketOrder, CurrentGroupSong
+from .models import (SongLyrics, SongRequest, Singer, GroupSongRequest, TicketOrder,
+                     CurrentGroupSong, Question, TriviaResponse
+)
 
 
 def set_solo_performed(modeladmin, request, queryset):
@@ -282,3 +284,31 @@ class CurrentGroupSongAdmin(admin.ModelAdmin):
 
     class Media:
         js = ["js/admin-reload.js"]
+
+@admin.register(Question)
+class QuestionAdmin(admin.ModelAdmin):
+    list_display = ['id', 'get_question', 'answer', 'get_winner']
+
+    def get_question(self, obj):
+        return str(obj)
+    get_question.short_description = "Question"
+
+    def get_winner(self, obj):
+        return obj.winner
+    get_winner.short_description = "Winner"
+
+@admin.register(TriviaResponse)
+class TriviaAdmin(admin.ModelAdmin):
+    list_display = ['user', 'question', 'choice', 'get_timestamp', 'is_correct']
+
+    def is_correct(self, obj):
+        return obj.is_correct
+    is_correct.short_description = "Right answer?"
+    is_correct.boolean = True
+
+    def get_timestamp(self, obj):
+        return obj.timestamp.astimezone(timezone.get_current_timezone()).strftime("%H:%M:%-S.%f")
+
+    get_timestamp.short_description = 'Timestamp'
+    get_timestamp.admin_order_field = 'timestamp'
+
