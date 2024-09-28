@@ -63,17 +63,27 @@ function populateDashboard() {
         .then((response) => response.json())
         .then((data) => {
             const userNextSong = data.user_next_song;
+            const wait_amount = userNextSong.wait_amount
+            var wait_text;
 
             if (userNextSong) {
                 dashboardElem.classList.remove("hidden");
                 noSongElem.classList.add("hidden");
 
+                if (wait_amount === null){
+                    wait_text = "(not in the lineup yet)";
+                }
+                else if (wait_amount === 0) {
+                    wait_text = "(get ready, comping up next!)";
+                }
+                else {
+                    wait_text = `(coming up in ${wait_amount} songs)`;
+                }
+
                 document.getElementById(
                     "user-next-song-title"
-                ).innerHTML = `Your next song ${userNextSong.wait_amount
-                    ? `(coming up in ${userNextSong.wait_amount} songs):`
-                    : ":"
-                }`;
+                ).innerHTML = `Your next song ${wait_text}:`
+
                 document.getElementById("user-next-song-name").innerHTML =
                     userNextSong.name;
             } else {

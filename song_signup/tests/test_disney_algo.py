@@ -6,6 +6,7 @@ from song_signup.tests.utils_for_tests import (
     SongRequestTestCase, TEST_START_TIME, create_singers, assert_singers_in_disney,
     set_performed, add_partners, add_songs_to_singers, get_singer, assert_song_positions, add_songs_to_singer,
     login, logout,
+    ExpectedDashboard, assert_dashboards
 )
 from flags.state import disable_flag
 
@@ -283,6 +284,38 @@ class TestCalculatePositionsDisney(SongRequestTestCase):
                 (1, 1)
             ])
 
+    def test_dashboard(self):
+        """
+        Ignoring duets now - doesn't affect the order.
+        """
+        create_singers(10)
+        singer_ordering = [
+            5, 6, 2, 7, 8, 9, 3, 4, 10, 1
+        ]
+
+        with patch('song_signup.managers.DisneylandOrdering.singer_disneyland_ordering',
+                   return_value=[get_singer(singer_id) for singer_id in singer_ordering]):
+            # Adding songs and setting as performed invokes the calculate_positions method
+            add_songs_to_singers(9, 3)  # Singer 10 only has a duet
+
+            add_partners(6, 8, 1)
+            add_partners(4, [9, 5], 1)
+            add_partners(8, 3, 1)
+            add_partners(7, [2, 10], 1)
+
+            assert_song_positions(self, [
+                (5, 1),
+                (6, 1),
+                (2, 1),
+                (7, 1),
+                (8, 1),
+                (9, 1),
+                (3, 1),
+                (4, 1),
+                # 10 Doesn't have a primary song, only a duet
+                (1, 1)
+            ])
+
 
 class TestSimulatedEvenings(SongRequestTestCase):
     def test_scenario1(self):
@@ -294,23 +327,49 @@ class TestSimulatedEvenings(SongRequestTestCase):
             # Singer 1 joins with 1 song #1
             create_singers([1], frozen_time, num_songs=1)
             assert_song_positions(self, [(1, 1)])
+            assert_dashboards(self, [
+                ExpectedDashboard(singer=1, next_song=1, wait_amount=0),
+            ])
+
 
             # Singer 2 joins with as singer 1 sings
             create_singers([2], frozen_time, num_songs=3)
             set_performed(1, 1, frozen_time)
             assert_song_positions(self, [(2, 1)])
+            assert_dashboards(self, [
+                ExpectedDashboard(singer=1, empty=True),
+                ExpectedDashboard(singer=2, next_song=1, wait_amount=0)
+            ])
 
             # Singer 1 adds song #2
             add_songs_to_singer(1, [2], frozen_time)
             assert_song_positions(self, [(2, 1), (1, 2)])
+            assert_dashboards(self, [
+                ExpectedDashboard(singer=2, next_song=1, wait_amount=0),
+                ExpectedDashboard(singer=1, next_song=2, wait_amount=1),
+            ])
 
             # Singers 3-5 join as 2 sings, singer 5 doesn't sign up with a song
             create_singers([3, 4, 5], frozen_time)
             add_songs_to_singers([3, 4], 3, frozen_time)
             Singer.ordering.calculate_positions()
             assert_song_positions(self, [(2, 1), (1, 2), (3, 1), (4, 1)])
+            assert_dashboards(self, [
+                ExpectedDashboard(singer=2, next_song=1, wait_amount=0),
+                ExpectedDashboard(singer=1, next_song=2, wait_amount=1),
+                ExpectedDashboard(singer=3, next_song=1, wait_amount=2),
+                ExpectedDashboard(singer=4, next_song=1, wait_amount=3),
+                ExpectedDashboard(singer=5, empty=True),
+            ])
             set_performed(2, 1, frozen_time)
             assert_song_positions(self, [(1, 2), (3, 1), (4, 1), (2, 2)])
+            assert_dashboards(self, [
+                ExpectedDashboard(singer=1, next_song=2, wait_amount=0),
+                ExpectedDashboard(singer=3, next_song=1, wait_amount=1),
+                ExpectedDashboard(singer=4, next_song=1, wait_amount=2),
+                ExpectedDashboard(singer=5, empty=True),
+                ExpectedDashboard(singer=2, next_song=2, wait_amount=3),
+            ])
 
             # Singers 6-9 join without signing up for songs yet. Singer #1 adds another song (#3)
             # Singers 6 and 8 choose a song before 1 sings, and singers 7 and 9 choose a song after he sings. Then 6 and
@@ -341,16 +400,68 @@ class TestSimulatedEvenings(SongRequestTestCase):
             # Singers 10-11 join without songs (along with 5 who doesn't have a song yet either)
             create_singers([10, 11], frozen_time)
             assert_song_positions(self, [(3, 1), (4, 1), (2, 2), (8, 1), (1, 3), (7, 1), (9, 1)])
+            assert_dashboards(self, [
+                ExpectedDashboard(singer=3, next_song=1, wait_amount=0),
+                ExpectedDashboard(singer=4, next_song=1, wait_amount=1),
+                ExpectedDashboard(singer=2, next_song=2, wait_amount=2),
+                ExpectedDashboard(singer=8, next_song=1, wait_amount=3),
+                ExpectedDashboard(singer=1, next_song=3, wait_amount=4),
+                ExpectedDashboard(singer=7, next_song=1, wait_amount=5),
+                ExpectedDashboard(singer=9, next_song=1, wait_amount=6),
+                ExpectedDashboard(singer=5, empty=True),
+                ExpectedDashboard(singer=10, empty=True),
+                ExpectedDashboard(singer=11, empty=True),
+            ])
 
-            # 4 adds 7 as a duet partner. 2 adds 3 as a duet partner. No effect.
+            # 4 adds 7 and 3 as partners.
             add_partners(4, [3, 7], 1, frozen_time)
             assert_song_positions(self, [(3, 1), (4, 1), (2, 2), (8, 1), (1, 3), (7,1), (9, 1)])
-            add_partners(2, 3, 2, frozen_time)
+            assert_dashboards(self, [
+                ExpectedDashboard(singer=3, next_song=1, wait_amount=0),
+                ExpectedDashboard(singer=4, next_song=1, wait_amount=1),
+                ExpectedDashboard(singer=2, next_song=2, wait_amount=2),
+                ExpectedDashboard(singer=8, next_song=1, wait_amount=3),
+                ExpectedDashboard(singer=1, next_song=3, wait_amount=4),
+                ExpectedDashboard(singer=7, primary_singer=4, next_song=1, wait_amount=1),
+                ExpectedDashboard(singer=9, next_song=1, wait_amount=6),
+                ExpectedDashboard(singer=5, empty=True),
+                ExpectedDashboard(singer=10, empty=True),
+                ExpectedDashboard(singer=11, empty=True),
+            ])
+
+            # 2 adds 4 as a duet partner.
+            add_partners(2, 4, 2, frozen_time)
             assert_song_positions(self, [(3, 1), (4, 1), (2, 2), (8, 1), (1, 3), (7,1), (9, 1)])
+            assert_dashboards(self, [
+                ExpectedDashboard(singer=3, next_song=1, wait_amount=0),
+                ExpectedDashboard(singer=4, next_song=1, wait_amount=1),
+                ExpectedDashboard(singer=2, next_song=2, wait_amount=2),
+                ExpectedDashboard(singer=8, next_song=1, wait_amount=3),
+                ExpectedDashboard(singer=1, next_song=3, wait_amount=4),
+                ExpectedDashboard(singer=7, primary_singer=4, next_song=1, wait_amount=1),
+                ExpectedDashboard(singer=9, next_song=1, wait_amount=6),
+                ExpectedDashboard(singer=5, empty=True),
+                ExpectedDashboard(singer=10, empty=True),
+                ExpectedDashboard(singer=11, empty=True),
+            ])
 
             # Singer 6 logs back in
             login(6)
             assert_song_positions(self, [(3, 1), (4, 1), (2, 2), (6, 1), (8, 1), (1, 3), (7,1), (9, 1)])
+            assert_dashboards(self, [
+                ExpectedDashboard(singer=3, next_song=1, wait_amount=0),
+                ExpectedDashboard(singer=4, next_song=1, wait_amount=1),
+                ExpectedDashboard(singer=2, next_song=2, wait_amount=2),
+                ExpectedDashboard(singer=6, next_song=1, wait_amount=3),
+                ExpectedDashboard(singer=8, next_song=1, wait_amount=4),
+                ExpectedDashboard(singer=1, next_song=3, wait_amount=5),
+                ExpectedDashboard(singer=7, primary_singer=4, next_song=1, wait_amount=1),
+                # 7's primary song still takes a place in the list, so the wait amount includes it
+                ExpectedDashboard(singer=9, next_song=1, wait_amount=7),
+                ExpectedDashboard(singer=5, empty=True),
+                ExpectedDashboard(singer=10, empty=True),
+                ExpectedDashboard(singer=11, empty=True),
+            ])
 
             # Singers 12-13 join while 3 is singing
             create_singers([12, 13], frozen_time, num_songs=2)
@@ -394,6 +505,23 @@ class TestSimulatedEvenings(SongRequestTestCase):
             disable_flag('CAN_SIGNUP')
             assert_song_positions(self, [(8, 1), (7, 1), (9, 1), (12, 1), (13, 1), (14, 1), (5, 1),
                                          (11, 1), (15, 1), (16, 1), (1, 3), (3, 2), (4, 2), (2, 3), (6, 2)])
+            assert_dashboards(self, [
+                ExpectedDashboard(singer=8, next_song=1, wait_amount=0),
+                ExpectedDashboard(singer=7, next_song=1, wait_amount=1),
+                ExpectedDashboard(singer=9, next_song=1, wait_amount=2),
+                ExpectedDashboard(singer=12, next_song=1, wait_amount=3),
+                ExpectedDashboard(singer=13, next_song=1, wait_amount=4),
+                ExpectedDashboard(singer=14, next_song=1, wait_amount=5),
+                ExpectedDashboard(singer=5, next_song=1, wait_amount=6),
+                ExpectedDashboard(singer=11, next_song=1, wait_amount=7),
+                ExpectedDashboard(singer=15, next_song=1, wait_amount=8),
+                ExpectedDashboard(singer=16, next_song=1, wait_amount=9),
+                ExpectedDashboard(singer=1, next_song=3, wait_amount=10),
+                ExpectedDashboard(singer=3, next_song=2, wait_amount=11),
+                ExpectedDashboard(singer=4, next_song=2, wait_amount=12),
+                ExpectedDashboard(singer=2, next_song=3, wait_amount=13),
+                ExpectedDashboard(singer=6, next_song=2, wait_amount=14),
+            ])
 
             # 9 adds a duet with 6, 8 adds a duet with 11, 1 adds a duet with 12. Changes nothing
             add_partners(9, [6, 2], 1, frozen_time)
@@ -401,6 +529,23 @@ class TestSimulatedEvenings(SongRequestTestCase):
             add_partners(1, [8, 12], 3, frozen_time)
             assert_song_positions(self, [(8, 1), (7, 1), (9, 1), (12, 1), (13, 1), (14, 1), (5, 1),
                                          (11, 1), (15, 1), (16, 1), (1, 3), (3, 2), (4, 2), (2, 3), (6, 2)])
+            assert_dashboards(self, [
+                ExpectedDashboard(singer=8, next_song=1, wait_amount=0),
+                ExpectedDashboard(singer=7, next_song=1, wait_amount=1),
+                ExpectedDashboard(singer=9, next_song=1, wait_amount=2),
+                ExpectedDashboard(singer=12, next_song=1, wait_amount=3),
+                ExpectedDashboard(singer=13, next_song=1, wait_amount=4),
+                ExpectedDashboard(singer=14, next_song=1, wait_amount=5),
+                ExpectedDashboard(singer=5, next_song=1, wait_amount=6),
+                ExpectedDashboard(singer=11, primary_singer=8, next_song=1, wait_amount=0),
+                ExpectedDashboard(singer=15, next_song=1, wait_amount=8),
+                ExpectedDashboard(singer=16, next_song=1, wait_amount=9),
+                ExpectedDashboard(singer=1, next_song=3, wait_amount=10),
+                ExpectedDashboard(singer=3, next_song=2, wait_amount=11),
+                ExpectedDashboard(singer=4, next_song=2, wait_amount=12),
+                ExpectedDashboard(singer=2, primary_singer=9, next_song=1, wait_amount=2),
+                ExpectedDashboard(singer=6, primary_singer=9, next_song=1, wait_amount=2),
+            ])
 
             # 8 Sings duet with 11.
             set_performed(8, 1, frozen_time)
@@ -492,3 +637,66 @@ class TestSimulatedEvenings(SongRequestTestCase):
             # Last singer sings
             set_performed(7, 5)
             assert_song_positions(self, [])
+
+
+class TestDashboard(SongRequestTestCase):
+    def test_partner_next_cycle(self):
+        create_singers(2)
+        add_songs_to_singers([1], 2)
+        assert_song_positions(self,
+                              [(1, 1)])
+        assert_dashboards(self, [
+            ExpectedDashboard(singer=1, next_song=1, wait_amount=0),
+            ExpectedDashboard(singer=2, empty=True),
+        ])
+
+        add_partners(1, 2, 2)
+        assert_dashboards(self, [
+            ExpectedDashboard(singer=1, next_song=1, wait_amount=0),
+            ExpectedDashboard(singer=2, primary_singer=1, next_song=2, wait_amount=None),
+        ])
+
+    def test_partner_bumped_up(self):
+        create_singers(2)
+        add_songs_to_singers([1], 2)
+        set_performed(1, 1)
+        add_songs_to_singers([2], 1)
+        assert_song_positions(self,
+                              [(1, 2), (2, 1)])
+        assert_dashboards(self, [
+            ExpectedDashboard(singer=1, next_song=2, wait_amount=0),
+            ExpectedDashboard(singer=2, next_song=1, wait_amount=1),
+        ])
+
+        add_partners(1, 2, 2)
+        assert_dashboards(self, [
+            ExpectedDashboard(singer=1, next_song=2, wait_amount=0),
+            ExpectedDashboard(singer=2, primary_singer=1, next_song=2, wait_amount=0),
+        ])
+
+    def test_bumped_up_chain(self):
+        create_singers(4)
+        add_songs_to_singers([1], 1)
+        add_songs_to_singers([2], 1)
+        add_songs_to_singers([3], 1)
+        assert_song_positions(self,
+                              [(1, 1), (2, 1), (3, 1)])
+        assert_dashboards(self, [
+            ExpectedDashboard(singer=1, next_song=1, wait_amount=0),
+            ExpectedDashboard(singer=2, next_song=1, wait_amount=1),
+            ExpectedDashboard(singer=3, next_song=1, wait_amount=2),
+        ])
+
+        add_partners(2, 3, 1)
+        assert_dashboards(self, [
+            ExpectedDashboard(singer=1, next_song=1, wait_amount=0),
+            ExpectedDashboard(singer=2, next_song=1, wait_amount=1),
+            ExpectedDashboard(singer=3, primary_singer=2, next_song=1, wait_amount=1),
+        ])
+
+        add_partners(1, 2, 1)
+        assert_dashboards(self, [
+            ExpectedDashboard(singer=1, next_song=1, wait_amount=0),
+            ExpectedDashboard(singer=2, primary_singer=1, next_song=1, wait_amount=0),
+            ExpectedDashboard(singer=3, primary_singer=2, next_song=1, wait_amount=1),
+        ])

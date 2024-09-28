@@ -89,7 +89,7 @@ class Singer(AbstractUser):
 
     @property
     def pending_songs(self):
-        return self.all_songs.filter(performance_time__isnull=True).order_by('priority')
+        return self.all_songs.filter(performance_time__isnull=True).order_by('position')
 
     @property
     def next_song(self):
@@ -242,6 +242,8 @@ class SongRequest(Model):
 
     @property
     def wait_amount(self):
+        # Returns 0 if song is the current song
+        # Returns None if the song isn't scheduled yet
         if self.position:
             return int(self.position - SongRequest.objects.current_song().position)
 

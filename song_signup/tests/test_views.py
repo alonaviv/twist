@@ -25,7 +25,8 @@ from song_signup.tests.utils_for_tests import (
     add_current_group_song,
     get_song,
     get_singer,
-    song_exists
+    song_exists, login_singer, login_audience,
+    remove_keys_list
 )
 from song_signup.views import AUDIENCE_SESSION
 from twist.utils import format_commas
@@ -33,18 +34,6 @@ from twist.utils import format_commas
 evening_started = override_config(PASSCODE=PASSCODE, EVENT_SKU=EVENT_SKU)
 
 SINGER_FIELDS = ['id', 'first_name', 'last_name']
-
-
-def login_singer(testcase, user_id=1, num_songs=None):
-    [user] = create_singers([user_id], num_songs=num_songs)
-    testcase.client.force_login(user)
-    return user
-
-
-def login_audience(testcase):
-    session = testcase.client.session
-    session[AUDIENCE_SESSION] = True
-    session.save()
 
 
 @evening_started
@@ -311,24 +300,11 @@ class TestLogin(TestCase):
         self.assertTrue(new_singer.no_image_upload)
 
 
-def remove_song_keys(content, keys, extract_value=False):
-    if extract_value:
-        songs = [song for song in content.values()]
-    else:
-        songs = content if isinstance(content, list) else [content]
-
-    for song in songs:
-        if song:
-            remove_keys(song, keys)
-
-    return content
-
-
 class TestJsonRes(TestCase):
     IGNORE_SONG_KEYS = ['id', 'wait_amount']
 
     def _remove_song_keys(self, json):
-        return remove_song_keys(json, keys=self.IGNORE_SONG_KEYS, extract_value=True)
+        return remove_keys(json, keys=self.IGNORE_SONG_KEYS)
 
     def test_spotlight_empty(self):
         response = self.client.get(reverse('spotlight_data'))
@@ -403,7 +379,10 @@ class SongRequestSerializeTestCase(TestCase):
     IGNORE_SONG_KEYS = ['request_time']
 
     def _remove_song_keys(self, json):
-        return remove_song_keys(json, keys=self.IGNORE_SONG_KEYS)
+        if isinstance(json, list):
+            return remove_keys_list(json, keys=self.IGNORE_SONG_KEYS)
+        else:
+            return remove_keys(json, keys=self.IGNORE_SONG_KEYS)
 
     def _get_song_json(self, singer_id, song_id, partner_ids=None):
         song = get_song(singer_id, song_id)
