@@ -501,6 +501,7 @@ def _login_existing_singer(first_name, last_name, no_image_upload):
         singer.is_active = True
         singer.no_image_upload = no_image_upload
         singer.save()
+        Singer.ordering.calculate_positions()
         return singer
     except Singer.DoesNotExist:
         raise TwistApiException("The name that you logged in with previously does not match your current one")
