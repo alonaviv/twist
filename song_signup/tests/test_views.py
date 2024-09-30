@@ -217,6 +217,40 @@ class TestLogin(TestCase):
         })
         self._assert_user_error(response, "The name that you logged in with previously does not match your current one")
 
+
+    def test_login_logout_login(self):
+        create_order(num_singers=1, order_id=12345)
+        self.client.post(reverse('login'), {
+            'ticket-type': ['singer'],
+            'first-name': ['Valid'],
+            'last-name': ['Singer'],
+            'passcode': [PASSCODE],
+            'order-id': ['12345']
+        })
+        response = self.client.post(reverse('add_song_request'), {
+            'song-name': ["defying gravity"],
+            'musical': ['wicked'],
+            'notes': ['']
+        })
+        singer = Singer.objects.get(first_name='Valid', last_name='Singer')
+        all_songs = SongRequest.objects.filter(position__isnull=False).order_by('position')
+        self.assertEqual([song.song_name for song in all_songs], ['Defying Gravity'])
+
+        self.client.get(reverse('logout'))
+        all_songs = SongRequest.objects.filter(position__isnull=False).order_by('position')
+        self.assertEqual([song.song_name for song in all_songs], [])
+
+        response = self.client.post(reverse('login'), {
+            'ticket-type': ['singer'],
+            'first-name': ['Valid'],
+            'last-name': ['Singer'],
+            'passcode': [PASSCODE],
+            'order-id': ['12345'],
+            'logged-in': ['on']
+        })
+        all_songs = SongRequest.objects.filter(position__isnull=False).order_by('position')
+        self.assertEqual([song.song_name for song in all_songs], ['Defying Gravity'])
+
     @override_config(FREEBIE_TICKET='54321')
     def test_freebie_singers(self):
         client1 = Client()
