@@ -5,6 +5,7 @@ from django.core.management.base import BaseCommand
 from django.conf import settings
 from song_signup.models import SongRequest, GroupSongRequest
 from pathlib import Path
+from twist.utils import format_commas
 
 class Command(BaseCommand):
     help = 'Export all performed songs to CSV'
@@ -30,11 +31,9 @@ class Command(BaseCommand):
 
             for i, song in enumerate(all_songs, start=1):
                 if isinstance(song, SongRequest):
-                    singer = song.singer.get_full_name()
-                    if song.duet_partner:
-                        dueter = song.duet_partner.get_full_name()
-                        singer += f" and {dueter}"
-                    writer.writerow([i, singer, song.song_name, song.musical])
+                    singers = format_commas([song.singer.get_full_name()] +
+                                            [singer.get_full_name() for singer in song.partners.all()])
+                    writer.writerow([i, singers, song.song_name, song.musical])
                 elif isinstance(song, GroupSongRequest):
                     writer.writerow([i, 'Group Song', song.song_name, song.musical])
 
