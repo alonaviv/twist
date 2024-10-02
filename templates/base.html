@@ -11,7 +11,9 @@
         <script src="https://kit.fontawesome.com/4078bed46b.js" crossorigin="anonymous"></script>
         <script type="text/javascript">
         var isSuperuser = {{ request.user.is_superuser|lower }};
+        var isLoggedIn = {{ request.user.is_authenticated|lower }}
         </script>
+        <script type="module" src="{% static "js/base.js" %}"></script>
 
         <link rel="stylesheet" href="{% static 'css/main.css' %}">
         <title>Broadway With a Twist</title>
@@ -20,6 +22,17 @@
 
     <body>
         {% with is_singer=request.user.is_authenticated username=request.user.username %}
+        <div id="trivia-wrapper" class="hidden">
+            <div id="question-text"></div>
+            <div id="answers-choice-wrapper">
+                <ul id="answers-choice">
+                    <li data-answer="1" id="answer1"></li>
+                    <li data-answer="2" id="answer2"></li>
+                    <li data-answer="3" id="answer3"></li>
+                    <li data-answer="4" id="answer4"></li>
+                </ul>
+            </div>
+        </div>
         {% block content %} {% endblock %}
         {% endwith %}
     </body>
