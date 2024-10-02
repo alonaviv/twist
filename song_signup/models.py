@@ -313,7 +313,7 @@ class SongLyrics(Model):
 
 TRIVIA_CHOICES = ((1, 'A'), (2, 'B'), (3, 'C'), (4, 'D'))
 
-class Question(Model):
+class TriviaQuestion(Model):
     MAX_DISPLAY = 100
 
     question = TextField()
@@ -322,6 +322,7 @@ class Question(Model):
     choiceC = TextField()
     choiceD = TextField()
     answer = IntegerField(choices=TRIVIA_CHOICES)
+    is_active = BooleanField(default=False)
 
     def __str__(self):
         if len(self.question) < self.MAX_DISPLAY:
@@ -338,7 +339,7 @@ class Question(Model):
 
 class TriviaResponse(Model):
     user = ForeignKey(Singer, on_delete=CASCADE, related_name='trivia_responses')  # TODO: Need to have this include audience as well
-    question = ForeignKey(Question, on_delete=CASCADE, related_name='responses')
+    question = ForeignKey(TriviaQuestion, on_delete=CASCADE, related_name='responses')
     choice = IntegerField(choices=TRIVIA_CHOICES)
     timestamp = DateTimeField(auto_now_add=True)
 

@@ -5,7 +5,7 @@ from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 
 from .models import (SongLyrics, SongRequest, Singer, GroupSongRequest, TicketOrder,
-                     CurrentGroupSong, Question, TriviaResponse
+                     CurrentGroupSong, TriviaQuestion, TriviaResponse
 )
 
 
@@ -57,6 +57,15 @@ def prepare_group_song(modeladmin, request, queryset):
 prepare_group_song.short_description = 'Prepare group song (Need to actually start it with button above)'
 prepare_group_song.allowed_permissions = ['change']
 
+
+def activate_question(modeladmin, request, queryset):
+    if queryset.count() == 1:
+        trivia_question = queryset.first()
+        trivia_question.is_active = True
+        trivia_question.save()
+
+activate_question.short_description = 'Activate Trivia Question'
+activate_question.allowed_permissions = ['change']
 
 class NotYetPerformedFilter(admin.SimpleListFilter):
     title = 'Songs to Display'
@@ -285,9 +294,11 @@ class CurrentGroupSongAdmin(admin.ModelAdmin):
     class Media:
         js = ["js/admin-reload.js"]
 
-@admin.register(Question)
-class QuestionAdmin(admin.ModelAdmin):
+@admin.register(TriviaQuestion)
+class TriviaQuestionAdmin(admin.ModelAdmin):
     list_display = ['id', 'get_question', 'answer', 'get_winner']
+    actions = [activate_question]
+    change_list_template = "admin/trivia_question_changelist.html"
 
     def get_question(self, obj):
         return str(obj)

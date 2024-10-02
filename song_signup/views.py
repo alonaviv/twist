@@ -9,7 +9,6 @@ from django.core.management import call_command
 from django.db import transaction
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
-from django.core.exceptions import ValidationError
 from flags.state import enable_flag, disable_flag, flag_disabled, flag_enabled
 from openpyxl import load_workbook
 from rest_framework import status
@@ -29,7 +28,8 @@ from .models import (
     SING_SKU,
     TicketsDepleted,
     AlreadyLoggedIn,
-    CurrentGroupSong
+    CurrentGroupSong,
+    TriviaQuestion
 )
 from .serializers import (
     SongSuggestionSerializer,
@@ -38,6 +38,7 @@ from .serializers import (
     SongRequestLineupSerializer,
     GroupSongRequestLineupSerializer,
     LyricsSerializer,
+    TriviaQuestionSerializer
 )
 
 logger = logging.getLogger(__name__)
@@ -429,6 +430,22 @@ def get_current_lyrics(request):
     serialized = LyricsSerializer(lyrics[0] if lyrics else None, many=False, read_only=True,
                                   context={'is_group_song': is_group_song})
     return Response(serialized.data, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+def get_active_question(request):
+    active_question = TriviaQuestion.objects.filter(is_active=True).first()
+    if active_question:
+        serialized = TriviaQuestionSerializer(active_question)
+        return Response(serialized.data, status=status.HTTP_200_OK)
+    else:
+        return Response({}, status=status.HTTP_204_NO_CONTENT)
+
+
+@superuser_required('login')
+def deactivate_trivia(request):
+    TriviaQuestion.objects.all().update(is_active=False)
+    return redirect('admin/song_signup/triviaquestion')
 
 
 @superuser_required('login')

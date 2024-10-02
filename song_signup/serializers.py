@@ -1,5 +1,5 @@
 from rest_framework.serializers import ModelSerializer, SerializerMethodField, CharField
-from song_signup.models import SongSuggestion, Singer, SongRequest, SongLyrics
+from song_signup.models import SongSuggestion, Singer, SongRequest, SongLyrics, TriviaQuestion
 from twist.utils import is_hebrew, format_commas
 
 
@@ -58,3 +58,18 @@ class LyricsSerializer(ModelSerializer):
     class Meta:
         model = SongLyrics
         fields = ['song_name', 'artist_name', 'lyrics', 'is_group_song']
+
+
+class TriviaQuestionSerializer(ModelSerializer):
+    winner_name = SerializerMethodField()
+
+    def get_winner_name(self, instance):
+        winner = instance.winner
+        if winner:
+            return winner.get_full_name()
+        else:
+            return None
+
+    class Meta:
+        model = TriviaQuestion
+        fields = ['question', 'choiceA', 'choiceB', 'choiceC', 'choiceD', 'winner_name', 'answer']
