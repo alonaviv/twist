@@ -63,10 +63,10 @@ function populateDashboard() {
         .then((response) => response.json())
         .then((data) => {
             const userNextSong = data.user_next_song;
-            const wait_amount = userNextSong.wait_amount
             var wait_text;
 
             if (userNextSong) {
+                const wait_amount = userNextSong.wait_amount
                 dashboardElem.classList.remove("hidden");
                 noSongElem.classList.add("hidden");
 
