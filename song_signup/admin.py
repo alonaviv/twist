@@ -317,8 +317,11 @@ class TriviaQuestionAdmin(admin.ModelAdmin):
 
         return super().changelist_view(request, extra_context=extra_context)
 
+    class Media:
+        js = ["js/admin-reload.js"]
+
 @admin.register(TriviaResponse)
-class TriviaAdmin(admin.ModelAdmin):
+class TriviaResponseAdmin(admin.ModelAdmin):
     list_display = ['user', 'question', 'choice', 'get_timestamp', 'is_correct']
 
     def is_correct(self, obj):

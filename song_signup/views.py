@@ -29,7 +29,8 @@ from .models import (
     TicketsDepleted,
     AlreadyLoggedIn,
     CurrentGroupSong,
-    TriviaQuestion
+    TriviaQuestion,
+    TriviaResponse
 )
 from .serializers import (
     SongSuggestionSerializer,
@@ -38,7 +39,8 @@ from .serializers import (
     SongRequestLineupSerializer,
     GroupSongRequestLineupSerializer,
     LyricsSerializer,
-    TriviaQuestionSerializer
+    TriviaQuestionSerializer,
+    TriviaResponseSerializer
 )
 
 logger = logging.getLogger(__name__)
@@ -440,6 +442,37 @@ def get_active_question(request):
         return Response(serialized.data, status=status.HTTP_200_OK)
     else:
         return Response({}, status=status.HTTP_204_NO_CONTENT)
+
+
+@api_view(["POST"])
+def choose_trivia_question(request):
+    answer_id = request.data['answer-id']
+    user = request.user
+    active_question = TriviaQuestion.objects.filter(is_active=True).first()
+
+    if active_question:
+        if not user.trivia_responses.filter(question=active_question):
+            TriviaResponse.objects.create(user=user, choice=answer_id, question=active_question)
+            return Response({}, status=status.HTTP_201_CREATED)
+        else:
+            return Response({'error': "User already selected a question"},
+                            status=status.HTTP_409_CONFLICT)
+    else:
+        return Response({'error': "No active question"},
+                        status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(["GET"])
+def get_selected_answer(request):
+    user = request.user
+    active_question = TriviaQuestion.objects.filter(is_active=True).first()
+    if active_question:
+        trivia_response = user.trivia_responses.filter(question=active_question).first()
+        if trivia_response:
+            serialized = TriviaResponseSerializer(trivia_response)
+            return Response(serialized.data, status=status.HTTP_200_OK)
+
+    return Response({'error': "User hasn't selected an answer for the active question"},
+                    status=status.HTTP_404_NOT_FOUND)
 
 
 @superuser_required('login')

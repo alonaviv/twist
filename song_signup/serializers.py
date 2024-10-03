@@ -1,5 +1,5 @@
 from rest_framework.serializers import ModelSerializer, SerializerMethodField, CharField
-from song_signup.models import SongSuggestion, Singer, SongRequest, SongLyrics, TriviaQuestion
+from song_signup.models import SongSuggestion, Singer, SongRequest, SongLyrics, TriviaQuestion, TriviaResponse
 from twist.utils import is_hebrew, format_commas
 
 
@@ -73,3 +73,9 @@ class TriviaQuestionSerializer(ModelSerializer):
     class Meta:
         model = TriviaQuestion
         fields = ['question', 'choiceA', 'choiceB', 'choiceC', 'choiceD', 'winner_name', 'answer']
+
+
+class TriviaResponseSerializer(ModelSerializer):
+    class Meta:
+        model = TriviaResponse
+        fields = ['user', 'choice']
