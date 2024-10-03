@@ -12,8 +12,8 @@
     {{ block.super }}
     <div style="display: flex">
             <div style="margin: 20px; border: 3px solid purple; width: fit-content; padding: 10px;">
-                <p style="font-size:20px; margin: 0;">Current Group song: {% if group_song %} {{ group_song }} - {% if is_active %} Running {% else %} Not Running {% endif %}
-                    {% else %} None {% endif %}</p>
+                <p style="font-size:20px; margin: 0;">Trivia Question: {% if active_question %} {{ active_question}} <br> {% if winner %} COMPLETE. THE WINNER IS: {{ winner }} {% else %} RUNNING {% endif %} {% else %} NOT ACTIVE {% endif %}
+                </p>
             </div>
     </div>
 {% endblock %}

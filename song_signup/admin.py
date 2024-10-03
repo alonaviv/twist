@@ -308,6 +308,15 @@ class TriviaQuestionAdmin(admin.ModelAdmin):
         return obj.winner
     get_winner.short_description = "Winner"
 
+    def changelist_view(self, request, extra_context=None):
+        extra_context = extra_context or {}
+        active_question = TriviaQuestion.objects.filter(is_active=True).first()
+        if active_question:
+            extra_context['active_question'] = active_question
+            extra_context['winner'] = active_question.winner
+
+        return super().changelist_view(request, extra_context=extra_context)
+
 @admin.register(TriviaResponse)
 class TriviaAdmin(admin.ModelAdmin):
     list_display = ['user', 'question', 'choice', 'get_timestamp', 'is_correct']
