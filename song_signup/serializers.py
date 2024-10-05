@@ -61,18 +61,22 @@ class LyricsSerializer(ModelSerializer):
 
 
 class TriviaQuestionSerializer(ModelSerializer):
-    winner_name = SerializerMethodField()
+    winner = SerializerMethodField()
+    answer_text = SerializerMethodField()
 
-    def get_winner_name(self, instance):
+    def get_winner(self, instance):
         winner = instance.winner
         if winner:
             return winner.get_full_name()
         else:
             return None
 
+    def get_answer_text(self, instance):
+        return instance.answer_text
+
     class Meta:
         model = TriviaQuestion
-        fields = ['question', 'choiceA', 'choiceB', 'choiceC', 'choiceD', 'winner_name', 'answer']
+        fields = ['question', 'choiceA', 'choiceB', 'choiceC', 'choiceD', 'winner', 'answer', 'answer_text']
 
 
 class TriviaResponseSerializer(ModelSerializer):

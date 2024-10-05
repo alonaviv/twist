@@ -2,10 +2,16 @@ const lyricsText = document.getElementById("lyrics-text");
 const lyricsWrapper = document.getElementById("lyrics-wrapper");
 const nav = document.querySelector("nav");
 const footer = document.querySelector("footer");
-const logo = document.querySelector(".fixed-logo");
+const logo = document.getElementById("lyrics-logo");
 const passcodeWrapper = document.getElementById("passcode-reveal-wrapper");
 const passcodeReveal = document.getElementById("passcode-reveal");
 const bohoWrapper = document.getElementById("boho-wrapper")
+const questionText = document.querySelector(".question-text.live-lyrics-trivia");
+const triviaQuestionsWrapper = document.querySelector(".trivia-questions-wrapper.live-lyrics-trivia");
+const triviaWinnerWrapper = document.querySelector(".trivia-winner-wrapper.live-lyrics-trivia");
+const triviaWrapper = document.querySelector(".trivia-wrapper.live-lyrics-trivia");
+const triviaWinnerName = document.querySelector(".trivia-winner-name.live-lyrics-trivia");
+const triviaAnswer = document.querySelector(".trivia-answer.live-lyrics-trivia");
 let currentSong = '';
 let showPasscode = false;
 
@@ -83,6 +89,32 @@ async function populateLyrics() {
     const eveningStarted = (await startedRes.json()).started;
     const bohoRes = await fetch("/boho_started");
     const boho = (await bohoRes.json()).boho;
+    const questionRes = await fetch("/get_active_question");
+
+    if (questionRes.status === 200 && isSuperuser) {
+        const question = await questionRes.json();
+        const winner = question.winner;
+
+        if (winner === null) {
+            questionText.innerHTML = `<p>${question.question}</p>`;
+            triviaQuestionsWrapper.classList.remove('hidden');
+            triviaWinnerWrapper.classList.add('hidden');
+        }
+        else {
+            triviaWinnerName.innerHTML = `<p>${winner}</p>`
+            triviaAnswer.innerHTML = `<p>${question.answer_text}</p>`
+            triviaQuestionsWrapper.classList.add('hidden');
+            triviaWinnerWrapper.classList.remove('hidden');
+        }
+        triviaWrapper.classList.remove('hidden');
+        logo.classList.remove('not-started');
+        lyricsWrapper.classList.add('hidden');
+        return;
+    }
+    else {
+        lyricsWrapper.classList.remove('hidden');
+        triviaWrapper.classList.add('hidden');
+    }
 
     if (!eveningStarted) {
         if (!lyricsWrapper.classList.contains('not-started')) {

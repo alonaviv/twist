@@ -1,4 +1,5 @@
 import datetime
+import logging
 import re
 
 from django.conf import settings
@@ -32,6 +33,8 @@ from song_signup.managers import (
 
 SING_SKU = 'SING'
 ATTN_SKU = 'ATTN'
+
+logger = logging.getLogger(__name__)
 
 
 class TicketsDepleted(Exception):
@@ -315,6 +318,7 @@ TRIVIA_CHOICES = ((1, 'A'), (2, 'B'), (3, 'C'), (4, 'D'))
 
 class TriviaQuestion(Model):
     MAX_DISPLAY = 100
+    WINNER_DISPLAY_DELAY = 5  # seconds
 
     question = TextField()
     choiceA = TextField()
@@ -333,8 +337,19 @@ class TriviaQuestion(Model):
     @property
     def winner(self):
         for response in self.responses.order_by('timestamp'):
-            if response.is_correct:
+            now = timezone.now()
+            if response.is_correct and (now - response.timestamp).seconds > self.WINNER_DISPLAY_DELAY:
                 return response.user
+
+    @property
+    def answer_text(self):
+        answer_mapping = {
+            1: self.choiceA,
+            2: self.choiceB,
+            3: self.choiceC,
+            4: self.choiceD,
+        }
+        return answer_mapping.get(self.answer, '')
 
 
 class TriviaResponse(Model):

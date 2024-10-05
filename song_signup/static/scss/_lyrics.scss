@@ -25,8 +25,9 @@
 
 .fixed-logo {
     display: none;
+    z-index: 300;
 
-    &.screen {
+    &.screen, &.side-logo{
         position: fixed;
         display: block;
         img {

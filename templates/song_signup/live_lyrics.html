@@ -8,13 +8,32 @@
     <p>Secret Word:<p>
     <p id="passcode-reveal"></p>
 </div>
-<div class="fixed-logo">
+<div id="lyrics-logo" class="fixed-logo">
     <img src="{% static 'img/logo.png' %}">
 </div>
 <div id="lyrics-wrapper">
     <div class="container">
         <div class="center">
             <div id="lyrics-text"></div>
+        </div>
+    </div>
+</div>
+
+<div class="trivia-wrapper hidden live-lyrics-trivia">
+    <div class="trivia-questions-wrapper hidden live-lyrics-trivia">
+        <h2>TRIVIA QUESTION!!</h2>
+        <div class="question-text live-lyrics-trivia">hello</div>
+    </div>
+    <div class="trivia-winner-wrapper live-lyrics-trivia">
+        <div class="trivia-winner-title live-lyrics-trivia">
+            AND THE WINNER IS...
+        </div>
+        <div class="trivia-winner-name live-lyrics-trivia">
+        </div>
+        <div class="trivia-answer-title live-lyrics-trivia">
+            THE CORRECT ANSWER WAS:
+        </div>
+        <div class="trivia-answer live-lyrics-trivia">
         </div>
     </div>
 </div>
