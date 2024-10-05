@@ -23,15 +23,30 @@
                 </div>
             </label>
         </div>
-         <div id="audience-wrapper" class="active">
+         <div id="audience-login-wrapper" class="active login-form-wrapper">
             <form action="" method="POST" id="audience-login-form" autocomplete="off">
                 {% csrf_token %}
                 <input type="hidden" name="ticket-type" value="audience">
+                <div class="form-control">
+                    <input type="text" name="first-name" id="first-name" placeholder="First Name" autocomplete="off" required>
+                </div>
+                <div class="form-control">
+                    <input type="text" name="last-name" id="last-name" placeholder="Last Name" autocomplete="off" required>
+                </div>
+                <div class="form-control">
+                    <input type="text" name="passcode" id="passcode" placeholder="Tonight's Secret Word" autocomplete="off" required>
+                </div>
+                <div class="checkboxes">
+                    <div class="checkbox">
+                        <input type="checkbox" name="logged-in" id="logged-in">
+                        <label for="logged-in">I already logged in tonight</label>
+                    </div>
+                </div>
                 <input type="submit" value="Come on in!" class="login-btn">
             </form>
         </div>
 
-        <div id="login-form-wrapper">
+        <div id="singer-login-wrapper" class="login-form-wrapper" >
             <form action="" method="POST" id="singer-login-form" autocomplete="off">
                {% csrf_token %}
                 <input autocomplete="false" name="hidden" type="text" style="display:none;">

@@ -46,12 +46,11 @@ class DisneylandOrdering(UserManager):
     list. In order to allow latecomers to be able to sing, towards the end of the evening Shani will close the signup
     and we'll move to a mode in which only those who haven't sung yet get to sing.
     """
-
     def active_singers(self):
         """
         Return all logged-in singers that have at least one song request
         """
-        return [singer for singer in self.all() if singer.is_active
+        return [singer for singer in self.filter(is_audience=False) if singer.is_active
                 and singer.songs.filter(request_time__isnull=False).exists()]
 
     def new_singers_num(self):

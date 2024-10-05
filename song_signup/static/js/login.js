@@ -1,6 +1,6 @@
 const singerLoginForm = document.getElementById("singer-login-form");
 const audienceLoginForm = document.getElementById("audience-login-form");
-const audienceWrapper = document.getElementById("audience-wrapper")
+const audienceWrapper = document.getElementById("audience-login-wrapper")
 const formMessages = document.querySelector(".form-messages");
 const toggleCheckbox = document.getElementById("ticket-type-toggle")
 const toggleSlider = document.querySelector(".toggle-slider")

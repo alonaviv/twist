@@ -243,7 +243,8 @@ class SongRequestAdmin(admin.ModelAdmin):
 
 @admin.register(Singer)
 class SingerAdmin(admin.ModelAdmin):
-    list_display = ['username', 'date_joined', 'is_active', 'no_image_upload', 'ticket_order']
+    list_display = ['username', 'date_joined', 'is_active', 'no_image_upload', 'ticket_order', 'is_audience']
+    list_filter =['is_audience']
 
 
 @admin.register(SongLyrics)

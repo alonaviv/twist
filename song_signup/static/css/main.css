@@ -427,25 +427,25 @@ nav {
       font-size: 20px;
       font-weight: 900;
       letter-spacing: 1px; }
-    #login-hero #login-wrapper #login-form-wrapper {
+    #login-hero #login-wrapper .login-form-wrapper {
       padding: 10px 40px; }
-      #login-hero #login-wrapper #login-form-wrapper #singer-login-form {
+      #login-hero #login-wrapper .login-form-wrapper #singer-login-form {
         opacity: 0;
         transform: translateY(-40px);
         visibility: hidden;
         display: none;
         transition: opacity 0.5s ease, transform 0.5s ease; }
-        #login-hero #login-wrapper #login-form-wrapper #singer-login-form.active {
+        #login-hero #login-wrapper .login-form-wrapper #singer-login-form.active {
           opacity: 1;
           visibility: visible;
           transform: translateY(0); }
-      #login-hero #login-wrapper #login-form-wrapper form {
+      #login-hero #login-wrapper .login-form-wrapper form {
         width: 100%; }
-        #login-hero #login-wrapper #login-form-wrapper form label {
+        #login-hero #login-wrapper .login-form-wrapper form label {
           font-size: 18px; }
-        #login-hero #login-wrapper #login-form-wrapper form .form-control {
+        #login-hero #login-wrapper .login-form-wrapper form .form-control {
           margin-bottom: 20px; }
-          #login-hero #login-wrapper #login-form-wrapper form .form-control input {
+          #login-hero #login-wrapper .login-form-wrapper form .form-control input {
             width: 100%;
             padding: 4px;
             height: 40px;
@@ -454,7 +454,7 @@ nav {
             background: #333;
             color: #fff;
             font-size: 18px; }
-            #login-hero #login-wrapper #login-form-wrapper form .form-control input::placeholder {
+            #login-hero #login-wrapper .login-form-wrapper form .form-control input::placeholder {
               color: #aaa;
               font-size: 18px; }
 
@@ -484,13 +484,13 @@ nav {
     outline: none;
     border-color: transparent; }
 
-#audience-wrapper {
+#audience-login-wrapper {
   padding: 10px 40px;
   opacity: 0;
   visibility: hidden;
   max-height: 0;
   transition: opacity 0.5s ease; }
-  #audience-wrapper.active {
+  #audience-login-wrapper.active {
     opacity: 1;
     visibility: visible;
     max-height: 500px; }

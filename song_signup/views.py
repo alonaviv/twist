@@ -45,9 +45,6 @@ from .serializers import (
 
 logger = logging.getLogger(__name__)
 
-AUDIENCE_SESSION = 'audience-logged-in'
-
-
 class TwistApiException(Exception):
     pass
 
@@ -56,7 +53,7 @@ def bwt_login_required(login_url, singer_only=False):
     def decorator(view_func):
         @wraps(view_func)
         def wrapper(request, *args, **kwargs):
-            if not (request.user.is_authenticated or (not singer_only and request.session.get(AUDIENCE_SESSION))):
+            if not request.user.is_authenticated or (singer_only and request.user.is_audience):
                 return redirect(login_url)
 
             return view_func(request, *args, **kwargs)
@@ -292,7 +289,7 @@ def add_song(request):
     alon = HostSinger(Singer.objects.get(username='alon_aviv'))
     shani = HostSinger(Singer.objects.get(username='shani_wahrman'))
 
-    other_singers = Singer.objects.all().exclude(pk=request.user.pk).exclude(pk=alon.id).exclude(pk=shani.id).order_by(
+    other_singers = Singer.objects.filter(is_audience=False).exclude(pk=request.user.pk).exclude(pk=alon.id).exclude(pk=shani.id).order_by(
         'first_name')
     return render(request, 'song_signup/add_song.html', {'other_singers': [shani, alon] + list(other_singers)})
 
@@ -510,11 +507,7 @@ def suggest_group_song(request):
     if request.method == 'POST':
         song_name = _sanitize_string(request.POST['song-name'], title=True)
         musical = _sanitize_string(request.POST['musical'], title=True)
-
-        if current_user.is_authenticated:
-            suggested_by = str(current_user)
-        else:
-            suggested_by = request.POST.get('suggested_by') or '-'
+        suggested_by = str(current_user)
 
         GroupSongRequest.objects.create(song_name=song_name, musical=musical, suggested_by=suggested_by)
         return home(request, song_name, is_group_song=True)
@@ -525,12 +518,10 @@ def suggest_group_song(request):
 
 def logout(request):
     user = request.user
-    if user.is_anonymous:
-        del request.session[AUDIENCE_SESSION]
-        return redirect('login')
 
     if not user.is_superuser:
         user.is_active = False
+
     user.save()
     auth_logout(request)
     Singer.ordering.calculate_positions()
@@ -543,18 +534,6 @@ def faq(request):
 
 def tip_us(request):
     return render(request, 'song_signup/tip_us.html')
-
-
-def _login_existing_singer(first_name, last_name, no_image_upload):
-    try:
-        singer = Singer.objects.get(first_name=first_name, last_name=last_name)
-        singer.is_active = True
-        singer.no_image_upload = no_image_upload
-        singer.save()
-        Singer.ordering.calculate_positions()
-        return singer
-    except Singer.DoesNotExist:
-        raise TwistApiException("The name that you logged in with previously does not match your current one")
 
 
 def _get_order(order_id):
@@ -577,6 +556,10 @@ def _get_order(order_id):
 
 
 def _login_new_singer(first_name, last_name, no_image_upload, order_id):
+    """
+    For now - only singers get a ticket order object, and so we only count the number of singer tickets within a
+    singer order (singer and audience are different ticket orders, both with the same order number)
+    """
     ticket_order = _get_order(order_id)
     try:
         singer = Singer.objects.create_user(
@@ -593,36 +576,70 @@ def _login_new_singer(first_name, last_name, no_image_upload, order_id):
     return singer
 
 
+def _login_existing_singer(first_name, last_name, no_image_upload):
+    try:
+        singer = Singer.objects.get(first_name=first_name, last_name=last_name, is_audience=False)
+        singer.is_active = True
+        singer.no_image_upload = no_image_upload
+        singer.save()
+        Singer.ordering.calculate_positions()
+        return singer
+    except Singer.DoesNotExist:
+        raise TwistApiException("The name that you logged in with previously does not match your current one")
+
+
+def _login_new_audience(first_name, last_name):
+    try:
+        singer = Singer.objects.create_user(
+            name_to_username(first_name, last_name),
+            first_name=first_name,
+            last_name=last_name,
+            is_staff=False,
+            is_audience=True
+        )
+    except AlreadyLoggedIn as e:
+        raise TwistApiException(str(e))
+    return singer
+
+
+def  _login_existing_audience(first_name, last_name):
+    try:
+        audience = Singer.objects.get(first_name=first_name, last_name=last_name, is_audience=True)
+        audience.is_active = True
+        audience.save()
+        return audience
+    except Singer.DoesNotExist:
+        raise TwistApiException("The name that you logged in with previously does not match your current one")
+
+
 def login(request):
     # This is the root endpoint. If already logged in, go straight to home.
     constants_chosen = bool(config.PASSCODE) and bool(config.EVENT_SKU)
-    if constants_chosen and (request.user.is_authenticated or request.session.get(AUDIENCE_SESSION)):
+    if constants_chosen and request.user.is_authenticated:
         return redirect('home')
 
     if request.method == 'POST':
         try:
             ticket_type = request.POST['ticket-type']
+            first_name = _sanitize_string(request.POST['first-name'])
+            last_name = _sanitize_string(request.POST['last-name'])
+            logged_in = request.POST.get('logged-in') == 'on'
+            passcode = _sanitize_string(request.POST['passcode'])
+            if passcode.lower() != config.PASSCODE.lower():
+                raise TwistApiException("Wrong passcode - Shani will reveal tonight's passcode at the event")
 
             if ticket_type == 'audience':
-                request.session[AUDIENCE_SESSION] = True
+                audience = _login_existing_audience(first_name, last_name) if logged_in else (
+                    _login_new_audience(first_name, last_name))
+                auth_login(request, audience)
                 return redirect('home')
 
             elif ticket_type == 'singer':
-                first_name = _sanitize_string(request.POST['first-name'])
-                last_name = _sanitize_string(request.POST['last-name'])
-                passcode = _sanitize_string(request.POST['passcode'])
                 order_id = request.POST['order-id']
-                logged_in = request.POST.get('logged-in') == 'on'
                 no_image_upload = request.POST.get('no-upload') == 'on'
 
-                if passcode.lower() != config.PASSCODE.lower():
-                    raise TwistApiException("Wrong passcode - Shani will reveal tonight's passcode at the event")
-
-                if logged_in:
-                    singer = _login_existing_singer(first_name, last_name, no_image_upload)
-                else:
-                    singer = _login_new_singer(first_name, last_name, no_image_upload, order_id)
-
+                singer = _login_existing_singer(first_name, last_name, no_image_upload) if logged_in else (
+                    _login_new_singer(first_name, last_name, no_image_upload, order_id))
                 auth_login(request, singer)
                 return redirect('home')
             else:

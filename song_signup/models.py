@@ -68,21 +68,28 @@ class Singer(AbstractUser):
     no_image_upload = BooleanField(default=False)
     placeholder = BooleanField(default=False)
     ticket_order = ForeignKey(TicketOrder, related_name='singers', on_delete=PROTECT, null=True)
+    is_audience = BooleanField(default=False)
+
+    @property
+    def is_singer(self):
+        return not self.is_audience
 
     def save(self, *args, **kwargs):
         # Only validate on creation:
         if not self.pk and not self.is_superuser:
-            if self.ticket_order is None:
-                raise ValueError("You must have a ticket order number in order to sign in")
-
             if Singer.objects.filter(first_name=self.first_name, last_name=self.last_name).exists():
                 raise AlreadyLoggedIn("The name that you're trying to login with already exists."
                                       "Did you already login with us tonight? If so, check the box below.")
 
-            if not self.ticket_order.is_freebie and self.ticket_order.singers.count() >= self.ticket_order.num_tickets:
-                ticket_type = 'singer' if self.ticket_order.ticket_type == SING_SKU else 'audience'
-                raise TicketsDepleted(f"Sorry, looks like all ticket holders for this order number already logged in. "
-                                      f"Are you sure your ticket is of type '{ticket_type}'?")
+            if not self.is_audience:
+                if self.ticket_order is None:
+                    raise ValueError("You must have a ticket order number in order to sign in")
+
+
+                if not self.ticket_order.is_freebie and self.ticket_order.singers.count() >= self.ticket_order.num_tickets:
+                    ticket_type = 'singer' if self.ticket_order.ticket_type == SING_SKU else 'audience'
+                    raise TicketsDepleted(f"Sorry, looks like all ticket holders for this order number already logged in. "
+                                          f"Are you sure your ticket is of type '{ticket_type}'?")
 
         super().save(*args, **kwargs)
 
@@ -353,7 +360,7 @@ class TriviaQuestion(Model):
 
 
 class TriviaResponse(Model):
-    user = ForeignKey(Singer, on_delete=CASCADE, related_name='trivia_responses')  # TODO: Need to have this include audience as well
+    user = ForeignKey(Singer, on_delete=CASCADE, related_name='trivia_responses')
     question = ForeignKey(TriviaQuestion, on_delete=CASCADE, related_name='responses')
     choice = IntegerField(choices=TRIVIA_CHOICES)
     timestamp = DateTimeField(auto_now_add=True)
