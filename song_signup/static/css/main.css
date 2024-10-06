@@ -195,6 +195,14 @@
   color: #ffff50;
   font-weight: 500;
   font-size: 20px; }
+  .form-messages:empty {
+    display: none; }
+
+.text-primary {
+  color: #00C575; }
+
+.text-secondary {
+  color: #00b3c5; }
 
 nav {
   position: relative;
@@ -364,10 +372,9 @@ nav {
     color: #fff;
     display: flex;
     flex-direction: column;
-    justify-content: space-around;
+    justify-content: start;
     width: 100%;
-    overflow-y: auto;
-    overflow-x: hidden;
+    height: 100%;
     position: relative;
     z-index: 3; }
     #login-hero #login-wrapper #login-title {
@@ -423,22 +430,30 @@ nav {
             font-size: 40px;
             margin-right: 3px; }
     #login-hero #login-wrapper h3 {
-      margin-bottom: 30px;
       font-size: 20px;
       font-weight: 900;
       letter-spacing: 1px; }
+    #login-hero #login-wrapper .form-messages {
+      padding-bottom: 0; }
     #login-hero #login-wrapper .login-form-wrapper {
-      padding: 10px 40px; }
-      #login-hero #login-wrapper .login-form-wrapper #singer-login-form {
-        opacity: 0;
-        transform: translateY(-40px);
-        visibility: hidden;
-        display: none;
+      padding: 10px 40px;
+      display: none;
+      opacity: 0;
+      transform: translateY(-40px);
+      visibility: hidden;
+      transition: opacity 0.5s ease, transform 0.5s ease;
+      margin-top: 20px; }
+      #login-hero #login-wrapper .login-form-wrapper.active {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+        max-height: 500px;
         transition: opacity 0.5s ease, transform 0.5s ease; }
-        #login-hero #login-wrapper .login-form-wrapper #singer-login-form.active {
-          opacity: 1;
-          visibility: visible;
-          transform: translateY(0); }
+      #login-hero #login-wrapper .login-form-wrapper .login-form-title {
+        margin-bottom: 30px;
+        font-family: Arial, Helvetica, sans-serif; }
+        #login-hero #login-wrapper .login-form-wrapper .login-form-title span {
+          font-size: 40px; }
       #login-hero #login-wrapper .login-form-wrapper form {
         width: 100%; }
         #login-hero #login-wrapper .login-form-wrapper form label {
@@ -484,16 +499,46 @@ nav {
     outline: none;
     border-color: transparent; }
 
-#audience-login-wrapper {
-  padding: 10px 40px;
+#ticket-selection-wrapper {
+  margin: 20px auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around;
+  width: 80vw;
+  height: 50vh;
+  font-family: Arial, Helvetica, sans-serif; }
+  #ticket-selection-wrapper .ticket-button {
+    border: none;
+    width: 70%;
+    height: 30%;
+    margin: 20px;
+    border-radius: 34px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 30px; }
+    #ticket-selection-wrapper .ticket-button[value="singer"] {
+      background-color: #00C575; }
+    #ticket-selection-wrapper .ticket-button[value="audience"] {
+      background-color: #00b3c5; }
+
+#login-back {
+  width: 40px;
+  height: 40px;
+  position: absolute;
+  left: 20px;
+  top: 20px;
+  z-index: 4;
+  display: none;
   opacity: 0;
   visibility: hidden;
-  max-height: 0;
   transition: opacity 0.5s ease; }
-  #audience-login-wrapper.active {
+  #login-back i {
+    font-size: 60px;
+    color: #ffff50; }
+  #login-back.active {
     opacity: 1;
     visibility: visible;
-    max-height: 500px; }
+    transition: opacity 0.8s ease; }
 
 #manage-songs-wrapper {
   height: 100%;

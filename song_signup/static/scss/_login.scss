@@ -22,10 +22,9 @@
         color: #fff;
         display: flex;
         flex-direction: column;
-        justify-content: space-around;
+        justify-content: start;
         width: 100%;
-        overflow-y: auto;
-        overflow-x: hidden;
+        height: 100%;
         position: relative;
         z-index: 3;
 
@@ -100,28 +99,43 @@
         }
 
         h3 {
-            margin-bottom: 30px;
             font-size: 20px;
             font-weight: 900;
             letter-spacing: 1px;
         }
 
+        .form-messages{
+            padding-bottom: 0;
+        }
+
         .login-form-wrapper {
             padding: 10px 40px;
+            display: none;
+            opacity: 0;
+            transform: translateY(-40px);
+            visibility: hidden;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            margin-top: 20px;
 
-            #singer-login-form {
-                opacity: 0;
-                transform: translateY(-40px);
-                visibility: hidden;
-                display: none;
+
+            &.active {
+                opacity: 1;
+                visibility: visible;
+                transform: translateY(0);
+                max-height: 500px;
                 transition: opacity 0.5s ease, transform 0.5s ease;
-
-                &.active {
-                    opacity: 1;
-                    visibility: visible;
-                    transform: translateY(0);
-                }
             }
+
+            .login-form-title{
+                margin-bottom: 30px;
+                font-family: Arial, Helvetica, sans-serif;
+                
+                span{
+                    font-size: 40px;
+                }
+
+            }
+
 
             form {
                 width: 100%;
@@ -187,16 +201,56 @@
     }
 }
 
-#audience-login-wrapper {
-    padding: 10px 40px;
+
+#ticket-selection-wrapper{
+    margin: 20px auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-around;
+    width: 80vw;
+    height: 50vh;
+    font-family: Arial, Helvetica, sans-serif;
+
+    .ticket-button{
+        border: none;
+        width: 70%;
+        height: 30%;
+        margin: 20px;
+        border-radius: 34px;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 30px;
+
+        &[value="singer"] {
+            background-color: $primary-color;
+        }
+        &[value="audience"] {
+            background-color: $secondary-color;
+        }
+        
+    }
+
+}
+
+#login-back {
+    width: 40px;
+    height: 40px;
+    position: absolute;
+    left: 20px;
+    top: 20px;
+    z-index: 4;
+    display: none;
     opacity: 0;
     visibility: hidden;
-    max-height: 0;
     transition: opacity 0.5s ease;
-
+    i {
+        font-size: 60px;
+        color: $third-color;
+    }
     &.active {
         opacity: 1;
         visibility: visible;
-        max-height: 500px;
+        transition: opacity 0.8s ease;
     }
+    
 }

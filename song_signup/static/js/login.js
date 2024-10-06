@@ -1,9 +1,10 @@
-const singerLoginForm = document.getElementById("singer-login-form");
-const audienceLoginForm = document.getElementById("audience-login-form");
-const audienceWrapper = document.getElementById("audience-login-wrapper")
+const singerFormWrapper = document.getElementById("singer-login-wrapper");
+const audienceFormWrapper = document.getElementById("audience-login-wrapper");
 const formMessages = document.querySelector(".form-messages");
-const toggleCheckbox = document.getElementById("ticket-type-toggle")
-const toggleSlider = document.querySelector(".toggle-slider")
+const singerButton = document.querySelector(".ticket-button[value='singer']");
+const audienceButton = document.querySelector(".ticket-button[value='audience']");
+const ticketSelectionWrapper = document.getElementById("ticket-selection-wrapper");
+const loginBack = document.getElementById("login-back")
 
 
 const formListner =  e => {
@@ -25,24 +26,45 @@ const formListner =  e => {
         });
     }
 
-singerLoginForm.addEventListener("submit", formListner)
-audienceLoginForm.addEventListener("submit", formListner)
+singerFormWrapper.addEventListener("submit", formListner)
+audienceFormWrapper.addEventListener("submit", formListner)
 
-toggleCheckbox.addEventListener("change", e => {
-    if (e.target.checked) {  // Singer
-        const sliderWidth = getComputedStyle(document.documentElement).getPropertyValue('--slider-width')
-        toggleSlider.style.left = `calc(100% - ${sliderWidth}`;
-        singerLoginForm.style.display = 'block';
-        setTimeout(() => {
-            singerLoginForm.classList.add('active');
-        }, 10);
-        audienceWrapper.classList.remove('active');
 
-    }
-    else { // Audience
-        toggleSlider.style.left = '0';
-        singerLoginForm.classList.remove('active');
-        audienceWrapper.classList.add('active');
-        setTimeout(() => singerLoginForm.style.display = 'none', 30);
-    }
-})
+singerButton.addEventListener("click", e => {
+    activateForm(singerFormWrapper, audienceFormWrapper)
+});
+
+audienceButton.addEventListener("click", e => {
+    activateForm(audienceFormWrapper, singerFormWrapper)
+});
+
+loginBack.addEventListener("click", deactivateForm);
+
+function activateForm(selectedForm, otherForm) {
+    selectedForm.style.display = 'block';
+    loginBack.style.display = 'block';
+    setTimeout(() => {
+        selectedForm.classList.add('active');
+        loginBack.classList.add('active');
+    }, 10);
+    otherForm.classList.remove('active');
+    ticketSelectionWrapper.classList.add('hidden');
+
+}
+
+function deactivateForm() {
+    setTimeout(() => {
+        loginBack.classList.remove('active');
+        singerFormWrapper.classList.remove('active');
+        audienceFormWrapper.classList.remove('active');
+    }, 10);
+    setTimeout(() => {
+        loginBack.style.display = 'none';
+        singerFormWrapper.style.display = 'none';
+        audienceFormWrapper.style.display = 'none';
+    }, 100);
+
+    setTimeout(() => {
+        ticketSelectionWrapper.classList.remove('hidden');
+    }, 300);
+}

@@ -5,25 +5,23 @@
 {% block content %}
 
 <div id="login-hero">
+    <div id="login-back">
+        <i class="fa-solid fa-circle-left"></i>
+    </div>
     <div id="login-wrapper">
         <div id="login-title">
             <a href="https://links.broadwaywithatwist.xyz/whatsapp?utm_source=login-page&utm_campaign=webapp&utm_content=login-page-whatsapp"><h1>Broadway<br>With a Twist</h1></a>
         </div>
         {% if evening_started %}
-        <div class="form-messages"></div>
         <h3>Let's get this party started!</h3>
-        <h2>What ticket do you have?</h2>
-        <div class="toggle-container">
-            <input type="checkbox" id="ticket-type-toggle" class="toggle-checkbox">
-            <label for="ticket-type-toggle" class="toggle-label">
-                <span class="toggle-slider"></span>
-                <div class="inner-toggle">
-                    <div class="toggle-text">Audience</div>
-                    <div class="toggle-text">Performer</div>
-                </div>
-            </label>
+        <div class="form-messages"></div>
+        <div id="ticket-selection-wrapper">
+            <h2>What ticket do you have?</h2>
+            <button value="singer" class="ticket-button">Singer</button>
+            <button value="audience" class="ticket-button">Audience</button>
         </div>
-         <div id="audience-login-wrapper" class="active login-form-wrapper">
+         <div id="audience-login-wrapper" class="login-form-wrapper">
+            <h2 class="login-form-title">You're logging in as <br><span class="text-secondary">AUDIENCE</span></h2>
             <form action="" method="POST" id="audience-login-form" autocomplete="off">
                 {% csrf_token %}
                 <input type="hidden" name="ticket-type" value="audience">
@@ -47,6 +45,7 @@
         </div>
 
         <div id="singer-login-wrapper" class="login-form-wrapper" >
+            <h2 class="login-form-title">You're logging in as a <br><span class="text-primary">SINGER</span></h2>
             <form action="" method="POST" id="singer-login-form" autocomplete="off">
                {% csrf_token %}
                 <input autocomplete="false" name="hidden" type="text" style="display:none;">
