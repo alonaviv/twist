@@ -325,7 +325,7 @@ class TriviaQuestion(Model):
     MAX_DISPLAY = 100
     WINNER_DISPLAY_DELAY = 5  # seconds
 
-    question = TextField(max_length=130)
+    question = TextField(max_length=72)
     image = ImageField(upload_to='trivia-questions/', blank=True, null=True)
     choiceA = TextField()
     choiceB = TextField()
