@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 
 {% load static %}
+{% load img_tags %}
 
 {% block content %}
 {% include "partials/_navbar.html" with current="live-lyrics" %}
@@ -9,7 +10,7 @@
     <p id="passcode-reveal"></p>
 </div>
 <div id="lyrics-logo" class="fixed-logo">
-    <img src="{% static 'img/logo.png' %}">
+    <img src="{% bwt_logo %}">
 </div>
 <div id="lyrics-wrapper">
     <div class="container">

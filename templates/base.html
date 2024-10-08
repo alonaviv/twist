@@ -1,4 +1,5 @@
 {% load static %}
+{% load img_tags %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -25,7 +26,7 @@
 
         <div class="trivia-wrapper hidden">
             <div id="trivia-logo" class="fixed-logo hidden side-logo">
-                <img src="{% static 'img/logo.png' %}">
+                <img src="{% bwt_logo %}">
             </div>
             <div class="trivia-questions-wrapper hidden base-lyrics-trivia">
                 <h2>TRIVIA QUESTION!!</h2>
