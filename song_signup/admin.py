@@ -297,7 +297,7 @@ class CurrentGroupSongAdmin(admin.ModelAdmin):
 
 @admin.register(TriviaQuestion)
 class TriviaQuestionAdmin(admin.ModelAdmin):
-    list_display = ['id', 'get_question', 'answer', 'get_winner']
+    list_display = ['id', 'get_question', 'answer', 'get_winner', 'image_preview']
     actions = [activate_question]
     change_list_template = "admin/trivia_question_changelist.html"
 
@@ -308,6 +308,11 @@ class TriviaQuestionAdmin(admin.ModelAdmin):
     def get_winner(self, obj):
         return obj.winner
     get_winner.short_description = "Winner"
+
+    def image_preview(self, obj):
+        if obj.image:
+            return mark_safe(f'<img src="{obj.image.url}" width="50" height="50" />')
+    image_preview.short_description = 'Image'
 
     def changelist_view(self, request, extra_context=None):
         extra_context = extra_context or {}

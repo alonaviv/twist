@@ -1,4 +1,3 @@
-import datetime
 import logging
 import re
 
@@ -7,11 +6,9 @@ from django.contrib.auth.models import AbstractUser
 from django.contrib.postgres.fields import CITextField
 from django.db.models import (
     CASCADE,
-    SET_NULL,
     PROTECT,
     BooleanField,
     DateTimeField,
-    FloatField,
     ForeignKey,
     IntegerField,
     ManyToManyField,
@@ -20,6 +17,7 @@ from django.db.models import (
     URLField,
     CharField,
     OneToOneField,
+    ImageField
 )
 from twist.utils import format_commas
 from django.utils import timezone
@@ -327,7 +325,8 @@ class TriviaQuestion(Model):
     MAX_DISPLAY = 100
     WINNER_DISPLAY_DELAY = 5  # seconds
 
-    question = TextField()
+    question = TextField(max_length=130)
+    image = ImageField(upload_to='trivia-questions/', blank=True, null=True)
     choiceA = TextField()
     choiceB = TextField()
     choiceC = TextField()

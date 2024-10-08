@@ -3,8 +3,15 @@
     width: 100vw;
     z-index: 200;
     position: fixed;
-    background-color: $secondary-color;
+    background-color: $primary-color;
     text-align: center;
+    opacity: 0;
+    transform: translateY(100vh);
+    transition: opacity 1s ease, transform 1s linear;
+    &.active{
+        opacity: 1;
+        transform: translateY(0);
+    }
 
     .trivia-questions-wrapper{
         height: inherit;
@@ -13,36 +20,76 @@
         display: flex;
         padding: 50px;
         flex-direction: column;
-        justify-content: space-around;
+        justify-content: space-between;
         align-items: center;
+        overflow: scroll;
+
+        .question-image{
+            max-height: 50%;
+            max-width: 50%;
+            object-fit: cover;
+            object-position: center center;
+            display: block;
+            overflow: hidden;
+            border-radius: 10px;
+        }
 
         &.live-lyrics-trivia{
             justify-content: start;
+            gap: 30px;
+            padding: 50px 200px 30px 200px;
 
             h2{
                 font-size: 80px;
             }
             .question-text{
-                margin-top: 30px;
-                font-size: 40px;
+                font-size: 60px;
+            }
+            .question-image{
+                padding-top: 30px;
             }
         }
 
+        &.base-lyrics-trivia{
+            gap: 5%;
+            h2{
+                font-size: 35px;
+            }
+            .question-text{
+                font-size: 25px;
+                max-height: 25%;
+            }
+
+            .question-image{
+                min-height: 20%;
+                max-width: 50%;
+            }
+        }
+
+        .answers-choice-wrapper{
+            flex-grow: 2;
+        }
+
         .answers-choice {
+            height: 100%;
             display: grid;
-            grid-template-columns: 150px 150px;
-            grid-template-rows: 150px 150px;
+            grid-template-columns: 50% 50%;
+            grid-template-rows: 50% 50%;
             list-style-type: none;
             grid-row-gap: 20px;
             grid-column-gap: 20px;
+
 
             li {
                 display: flex;
                 justify-content: center;
                 align-items: center;
-                border: solid 1px black;
                 padding: 10px;
                 text-align: center;
+                font-size: 20px;
+                font-weight: 900;
+                border-radius: 20px;
+                background-color: #66dcac;
             }
         }
     }
@@ -55,6 +102,7 @@
         justify-content: center;
         align-items: center;
         padding: 50px 50px 50px 50px;
+        background-color: $secondary-color;
 
 
         .trivia-winner-title{
@@ -68,33 +116,59 @@
             text-align: center;
             margin-bottom: 100px;
             font-weight: 900;
+            opacity: 0;
+            transform: translateY(200px);
+            transition: opacity 1s ease, transform 1s ease;
+            &.active{
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
         .trivia-answer-title{
             font-size: 30px;
             text-align: center;
+            opacity: 0;
+            transform: translateY(200px);
+            transition: opacity 1s ease, transform 1s ease;
+            &.active{
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
         .trivia-answer{
             font-size: 25px;
             text-align: center;
             padding: 20px;
             font-weight: 500;
+            opacity: 0;
+            transform: translateY(200px);
+            transition: opacity 1s ease, transform 1s ease;
+            &.active{
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         &.live-lyrics-trivia{
-            justify-content: start;
 
             .trivia-winner-title{
                 font-size: 80px;
             }
             .trivia-winner-name{
-                font-size: 60px;
+                font-size: 90px;
             }
             .trivia-answer-title{
                 font-size: 60px;
             }
             .trivia-answer{
-                font-size: 40px;
+                font-size: 80px;
             }
+        }
+        &.base-lyrics-trivia{
+            .trivia-answer{
+                font-size: 30px;
+            }
+
         }
     }
 }

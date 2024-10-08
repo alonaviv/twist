@@ -7,11 +7,13 @@ const passcodeWrapper = document.getElementById("passcode-reveal-wrapper");
 const passcodeReveal = document.getElementById("passcode-reveal");
 const bohoWrapper = document.getElementById("boho-wrapper")
 const questionText = document.querySelector(".question-text.live-lyrics-trivia");
+const questionImage = document.getElementById("question-image-lyrics");
 const triviaQuestionsWrapper = document.querySelector(".trivia-questions-wrapper.live-lyrics-trivia");
 const triviaWinnerWrapper = document.querySelector(".trivia-winner-wrapper.live-lyrics-trivia");
 const triviaWrapper = document.querySelector(".trivia-wrapper.live-lyrics-trivia");
 const triviaWinnerName = document.querySelector(".trivia-winner-name.live-lyrics-trivia");
 const triviaAnswer = document.querySelector(".trivia-answer.live-lyrics-trivia");
+const triviaAnswerTitle = document.querySelector(".trivia-answer-title.live-lyrics-trivia");
 let currentSong = '';
 let showPasscode = false;
 
@@ -94,21 +96,41 @@ async function populateLyrics() {
     if (questionRes.status === 200 && isSuperuser) {
         const question = await questionRes.json();
         const winner = question.winner;
+        const image = question.image
 
         if (winner === null) {
             questionText.innerHTML = `<p>${question.question}</p>`;
+            if (image) {
+                questionImage.src = image;
+                questionImage.classList.remove('hidden');
+            }
+            else {
+                questionImage.classList.add('hidden');
+            }
+
             triviaQuestionsWrapper.classList.remove('hidden');
             triviaWinnerWrapper.classList.add('hidden');
+
+            triviaWinnerName.classList.remove('active');
+            triviaAnswer.classList.remove('active');
+            triviaAnswerTitle.classList.remove('active');
         }
         else {
             triviaWinnerName.innerHTML = `<p>${winner}</p>`
             triviaAnswer.innerHTML = `<p>${question.answer_text}</p>`
             triviaQuestionsWrapper.classList.add('hidden');
             triviaWinnerWrapper.classList.remove('hidden');
+            setTimeout(() => {
+                triviaWinnerName.classList.add('active');
+                triviaAnswer.classList.add('active');
+                triviaAnswerTitle.classList.add('active');
+            }, 5000)
         }
         triviaWrapper.classList.remove('hidden');
         logo.classList.remove('not-started');
         lyricsWrapper.classList.add('hidden');
+        triviaWrapper.classList.remove('hidden');
+        triviaWrapper.classList.add('active');
         return;
     }
     else {
