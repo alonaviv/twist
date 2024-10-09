@@ -27,7 +27,7 @@
         .question-image{
             max-height: 50%;
             max-width: 50%;
-            object-fit: cover;
+            object-fit: contain;
             object-position: center center;
             display: block;
             overflow: hidden;
@@ -62,7 +62,7 @@
 
             .question-image{
                 min-height: 20%;
-                max-width: 50%;
+                max-width: 100%;
             }
         }
 

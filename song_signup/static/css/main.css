@@ -1342,7 +1342,7 @@ nav {
     .trivia-wrapper .trivia-questions-wrapper .question-image {
       max-height: 50%;
       max-width: 50%;
-      object-fit: cover;
+      object-fit: contain;
       object-position: center center;
       display: block;
       overflow: hidden;
@@ -1366,7 +1366,7 @@ nav {
         max-height: 25%; }
       .trivia-wrapper .trivia-questions-wrapper.base-lyrics-trivia .question-image {
         min-height: 20%;
-        max-width: 50%; }
+        max-width: 100%; }
     .trivia-wrapper .trivia-questions-wrapper .answers-choice-wrapper {
       flex-grow: 2; }
     .trivia-wrapper .trivia-questions-wrapper .answers-choice {
