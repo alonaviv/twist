@@ -1073,7 +1073,8 @@ nav {
     #passcode-reveal-wrapper.displayed #passcode-reveal {
       font-size: 65px;
       font-weight: 800;
-      letter-spacing: 3px; }
+      letter-spacing: 3px;
+      color: white; }
 
 .fixed-logo {
   display: none;
