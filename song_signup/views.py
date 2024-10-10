@@ -9,6 +9,7 @@ from django.core.management import call_command
 from django.db import transaction
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
+from django.urls import reverse
 from flags.state import enable_flag, disable_flag, flag_disabled, flag_enabled
 from openpyxl import load_workbook
 from rest_framework import status
@@ -82,9 +83,11 @@ def name_to_username(first_name, last_name):
 
 
 @bwt_login_required('login')
-def home(request, new_song=None, is_group_song=False):
+def home(request):
+    song = request.GET.get('song')
+    is_group_song = request.GET.get('is-group-song') == 'true'
     return render(request, 'song_signup/home.html', {
-        "new_song": new_song,
+        "new_song": song,
         "is_group_song": is_group_song
     })
 
@@ -510,7 +513,7 @@ def suggest_group_song(request):
         suggested_by = str(current_user)
 
         GroupSongRequest.objects.create(song_name=song_name, musical=musical, suggested_by=suggested_by)
-        return home(request, song_name, is_group_song=True)
+        return redirect(f"{reverse('home')}?song={song_name}&is-group-song=true")
 
     else:
         return render(request, 'song_signup/suggest_group_song.html')

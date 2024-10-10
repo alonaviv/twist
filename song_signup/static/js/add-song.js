@@ -51,7 +51,7 @@ async function addSong(e) {
                 data = await postSongRequest(formData);
             }
         }
-        window.location.replace(`/home/${data.requested_song}`);
+        window.location.replace(`/home?song=${data.requested_song}`);
     } catch (error) {
         formMessages.classList.remove('hidden');
         formMessages.innerHTML = `<p>${error.message}</p>`;
