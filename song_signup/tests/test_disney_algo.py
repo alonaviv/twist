@@ -5,8 +5,8 @@ from song_signup.models import Singer, SongRequest
 from song_signup.tests.utils_for_tests import (
     SongRequestTestCase, TEST_START_TIME, create_singers, assert_singers_in_disney,
     set_performed, add_partners, add_songs_to_singers, get_singer, assert_song_positions, add_songs_to_singer,
-    login, logout,
-    ExpectedDashboard, assert_dashboards
+    login, logout, create_audience,
+    ExpectedDashboard, assert_dashboards, logout_audience
 )
 from flags.state import disable_flag
 
@@ -331,6 +331,7 @@ class TestSimulatedEvenings(SongRequestTestCase):
                 ExpectedDashboard(singer=1, next_song=1, wait_amount=0),
             ])
 
+            create_audience(audience_ids=[70, 71, 72, 73])
 
             # Singer 2 joins with as singer 1 sings
             create_singers([2], frozen_time, num_songs=3)
@@ -340,6 +341,8 @@ class TestSimulatedEvenings(SongRequestTestCase):
                 ExpectedDashboard(singer=1, empty=True),
                 ExpectedDashboard(singer=2, next_song=1, wait_amount=0)
             ])
+
+            create_audience(audience_ids=[74, 75, 76, 77])
 
             # Singer 1 adds song #2
             add_songs_to_singer(1, [2], frozen_time)
@@ -371,6 +374,8 @@ class TestSimulatedEvenings(SongRequestTestCase):
                 ExpectedDashboard(singer=2, next_song=2, wait_amount=3),
             ])
 
+            create_audience(audience_ids=[78, 79, 80, 81])
+
             # Singers 6-9 join without signing up for songs yet. Singer #1 adds another song (#3)
             # Singers 6 and 8 choose a song before 1 sings, and singers 7 and 9 choose a song after he sings. Then 6 and
             # 7 choose another song.
@@ -387,6 +392,8 @@ class TestSimulatedEvenings(SongRequestTestCase):
             add_songs_to_singer(1, [3], frozen_time)
             assert_song_positions(self, [(3, 1), (4, 1), (2, 2), (6, 1), (8, 1), (1, 3), (7, 1), (9, 1)])
 
+            create_audience(audience_ids=[82, 83, 84, 85])
+
             # Add 3 more songs to singer 6, 7, 9 (8 will add only later)
             add_songs_to_singers([6, 7, 9], [2, 3, 4], frozen_time)
             # Add one more song to singer 7
@@ -396,6 +403,9 @@ class TestSimulatedEvenings(SongRequestTestCase):
             # Singer 6 logs out
             logout(6)
             assert_song_positions(self, [(3, 1), (4, 1), (2, 2), (8, 1), (1, 3), (7, 1), (9, 1)])
+
+            logout_audience(72)
+            logout_audience(83)
 
             # Singers 10-11 join without songs (along with 5 who doesn't have a song yet either)
             create_singers([10, 11], frozen_time)
@@ -412,6 +422,9 @@ class TestSimulatedEvenings(SongRequestTestCase):
                 ExpectedDashboard(singer=10, empty=True),
                 ExpectedDashboard(singer=11, empty=True),
             ])
+
+
+            logout_audience(80)
 
             # 4 adds 7 and 3 as partners.
             add_partners(4, [3, 7], 1, frozen_time)

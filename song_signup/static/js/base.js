@@ -65,7 +65,7 @@ async function getQuestion() {
                 triviaAnswer.classList.add('active');
                 triviaAnswerTitle.classList.add('active');
             }, 5000)
-        }
+       }
         triviaWrapper.classList.remove('hidden');
         setTimeout(() => {
             triviaWrapper.classList.add('active');
@@ -100,7 +100,7 @@ async function chooseAnswer(e) {
     e.preventDefault();
     const answerID = e.currentTarget.dataset.answer;
 
-    const response = await fetch("/choose_trivia_question", {
+    const response = await fetch("/select_trivia_answer", {
         method: "POST",
         headers: {
             "X-CSRFToken": csrftoken,

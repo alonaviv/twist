@@ -11,9 +11,9 @@ from flags.state import enable_flag
 
 from song_signup.models import (
     Singer, SongRequest, SongSuggestion, TicketOrder, SING_SKU, GroupSongRequest,
-    CurrentGroupSong, AlreadyLoggedIn
+    CurrentGroupSong, AlreadyLoggedIn, TriviaResponse
 )
-from song_signup.views import _sanitize_string, AUDIENCE_SESSION
+from song_signup.views import _sanitize_string
 
 PLACEHOLDER = 'PLACEHOLDER'
 TEST_START_TIME = datetime.datetime(year=2022, month=7, day=10, tzinfo=pytz.UTC)
@@ -37,6 +37,9 @@ def create_order(num_singers, order_id: int = None):
 
 def get_singer_str(singer_id: int, hebrew=False):
     return f'User_{singer_id} Last_name' if not hebrew else f'משתמש_{singer_id} שם משפחה'
+
+def get_audience_str(singer_id: int, hebrew=False):
+    return f'Audience_user_{singer_id} Last_name' if not hebrew else f'קהל_משתמש_{singer_id} שם משפחה'
 
 
 def get_song_str(singer_id: int, song_id: int):
@@ -72,9 +75,29 @@ def create_singers(singer_ids: Union[int, list], frozen_time=None, num_songs=Non
 
     return singers
 
+def create_audience(audience_ids: Union[int, list], frozen_time=None, hebrew=False):
+    if isinstance(audience_ids, int):
+        audience_ids = range(1, audience_ids + 1)
+
+    singers = []
+    for i in audience_ids:
+        singers.append(Singer.objects.create_user(
+            username=f"audience_user_{i}" if not hebrew else f"קהל_משתמש_{i}",
+            first_name=_sanitize_string(f"audience_user_{i}" if not hebrew else f"קהל_משתמש_{i}"),
+            last_name=_sanitize_string("last_name" if not hebrew else "שם משפחה"),
+            is_audience=True
+        ))
+        if frozen_time:
+            frozen_time.tick()
+
+    return singers
+
 
 def get_singer(singer_id, hebrew=False):
     return Singer.objects.get(username=f"user_{singer_id}" if not hebrew else f"משתמש_{singer_id}")
+
+def get_audience(audience_id, hebrew=False):
+    return Singer.objects.get(username=f"audience_user_{audience_id}" if not hebrew else f"קהל_משתמש_{audience_id}")
 
 
 def get_song(singer_id, song_num):
@@ -235,6 +258,11 @@ def logout(singer_id):
     singer.is_active = False
     singer.save()
 
+def logout_audience(audience_id):
+    singer = get_audience(audience_id)
+    singer.is_active = False
+    singer.save()
+
 
 def login(singer_id):
     singer = get_singer(singer_id)
@@ -287,7 +315,23 @@ def login_singer(testcase, user_id=1, num_songs=None):
     return user
 
 
-def login_audience(testcase):
-    session = testcase.client.session
-    session[AUDIENCE_SESSION] = True
-    session.save()
+def login_audience(testcase, user_id=1):
+    try:
+        [user] = create_audience([user_id])
+    except AlreadyLoggedIn:
+        user = get_audience(audience_id=user_id)
+    testcase.client.force_login(user)
+    return user
+
+def select_trivia_answer(question, choice_id, user=None, user_id=1, is_audience=False):
+    """
+    If no user is passed, creates a new user according to user_id and is_audience
+    """
+    if not user:
+        if is_audience:
+            [user] = create_singers(singer_ids=[user_id])
+        else:
+            [user] = create_audience(audience_ids=[user_id])
+
+
+    return TriviaResponse.objects.create(user=user, choice=choice_id, question=question)

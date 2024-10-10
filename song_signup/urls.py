@@ -52,7 +52,7 @@ urlpatterns = [
     path('next_singer', views.next_singer, name='next_singer'),
     path('get_active_question', views.get_active_question, name='get_active_question'),
     path('deactivate_trivia', views.deactivate_trivia, name='deactivate_trivia'),
-    path('choose_trivia_question', views.choose_trivia_question, name='choose_trivia_question'),
+    path('select_trivia_answer', views.select_trivia_answer, name='select_trivia_answer'),
     path('get_selected_answer', views.get_selected_answer, name='get_selected_answer'),
 ]
 

@@ -63,6 +63,11 @@ class TicketOrder(Model):
 
 
 class Singer(AbstractUser):
+    """
+    Used for both audience and singer users. Can't create a base class due to django limitation with AbstractUser,
+    And every other solution seemed too dangerous at this point. So leaving model as Singer, with a flag that can
+    turn it into an audience member
+    """
     no_image_upload = BooleanField(default=False)
     placeholder = BooleanField(default=False)
     ticket_order = ForeignKey(TicketOrder, related_name='singers', on_delete=PROTECT, null=True)
@@ -76,14 +81,10 @@ class Singer(AbstractUser):
         # Only validate on creation:
         if not self.pk and not self.is_superuser:
             if Singer.objects.filter(first_name=self.first_name, last_name=self.last_name).exists():
-                raise AlreadyLoggedIn("The name that you're trying to login with already exists."
+                raise AlreadyLoggedIn("The name that you're trying to login with already exists. "
                                       "Did you already login with us tonight? If so, check the box below.")
 
             if not self.is_audience:
-                if self.ticket_order is None:
-                    raise ValueError("You must have a ticket order number in order to sign in")
-
-
                 if not self.ticket_order.is_freebie and self.ticket_order.singers.count() >= self.ticket_order.num_tickets:
                     ticket_type = 'singer' if self.ticket_order.ticket_type == SING_SKU else 'audience'
                     raise TicketsDepleted(f"Sorry, looks like all ticket holders for this order number already logged in. "
@@ -323,7 +324,7 @@ TRIVIA_CHOICES = ((1, 'A'), (2, 'B'), (3, 'C'), (4, 'D'))
 
 class TriviaQuestion(Model):
     MAX_DISPLAY = 100
-    WINNER_DISPLAY_DELAY = 5  # seconds
+    WINNER_DISPLAY_DELAY = 15 # seconds
 
     question = TextField(max_length=72)
     image = ImageField(upload_to='trivia-questions/', blank=True, null=True)
@@ -344,7 +345,7 @@ class TriviaQuestion(Model):
     def winner(self):
         for response in self.responses.order_by('timestamp'):
             now = timezone.now()
-            if response.is_correct and (now - response.timestamp).seconds > self.WINNER_DISPLAY_DELAY:
+            if response.is_correct and (now - response.timestamp).seconds >= self.WINNER_DISPLAY_DELAY:
                 return response.user
 
     @property

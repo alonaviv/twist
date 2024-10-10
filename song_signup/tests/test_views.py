@@ -5,8 +5,16 @@ from django.test import TestCase, Client
 from django.urls import reverse
 from freezegun import freeze_time
 from mock import patch
+from django.core.files import File
+import glob
+import os
 
-from song_signup.models import Singer, TicketOrder, CurrentGroupSong, GroupSongRequest, SongRequest
+
+from song_signup.models import (
+    Singer, TicketOrder,
+    CurrentGroupSong, GroupSongRequest,
+    SongRequest, TriviaQuestion,
+)
 from song_signup.tests.utils_for_tests import (
     EVENT_SKU,
     PASSCODE,
@@ -26,24 +34,30 @@ from song_signup.tests.utils_for_tests import (
     get_song,
     get_singer,
     song_exists, login_singer, login_audience,
-    remove_keys_list
+    remove_keys_list,
+    get_audience_str,
+    create_audience,
+    select_trivia_answer,
+    TEST_START_TIME
 )
-from song_signup.views import AUDIENCE_SESSION
 from twist.utils import format_commas
 
 evening_started = override_config(PASSCODE=PASSCODE, EVENT_SKU=EVENT_SKU)
 
 SINGER_FIELDS = ['id', 'first_name', 'last_name']
 
-
-@evening_started
-class TestLogin(TestCase):
-    def _assert_user_error(self, response, msg=None):
+class TestViews(TestCase):
+    def _assert_user_error(self, response, msg=None, status=None):
         if not msg:
             msg = "An unexpected error occurred (you can blame Alon..) Refreshing the page might help"
-        self.assertEqual(response.status_code, 400)
+        if not status:
+            status = 400
+        self.assertEqual(response.status_code, status)
         self.assertJSONEqual(response.content, {'error': msg})
 
+
+@evening_started
+class TestLogin(TestViews):
     def test_singer_redirect(self):
         login_singer(self)
         response = self.client.get(reverse('login'))
@@ -60,10 +74,11 @@ class TestLogin(TestCase):
         self.assertTemplateUsed(response, 'song_signup/login.html')
 
     def test_invalid_ticket_type(self):
-        response = self.client.post(reverse('login'), {'ticket-type': 'unexpected_error'})
+        response = self.client.post(reverse('login'), {'ticket-type': 'unexpected_error',
+                                                       'first-name': 'John', 'last-name': 'Doe', 'passcode': 'dev'})
         self._assert_user_error(response, 'Invalid ticket type')
 
-    def test_wrong_passcode(self):
+    def test_wrong_passcode_singer(self):
         response = self.client.post(reverse('login'), {
             'ticket-type': ['singer'],
             'first-name': ['John'],
@@ -73,11 +88,14 @@ class TestLogin(TestCase):
         })
         self._assert_user_error(response, "Wrong passcode - Shani will reveal tonight's passcode at the event")
 
-    def test_audience_login(self):
-        self.assertFalse(AUDIENCE_SESSION in self.client.session)
-        response = self.client.post(reverse('login'), {'ticket-type': 'audience'})
-        self.assertRedirects(response, reverse('home'))
-        self.assertTrue(self.client.session[AUDIENCE_SESSION])
+    def test_wrong_passcode_audience(self):
+        response = self.client.post(reverse('login'), {
+            'ticket-type': ['audience'],
+            'first-name': ['John'],
+            'last-name': ['Doe'],
+            'passcode': ['wrong_passcode'],
+        })
+        self._assert_user_error(response, "Wrong passcode - Shani will reveal tonight's passcode at the event")
 
     def test_no_order_id(self):
         response = self.client.post(reverse('login'), {
@@ -129,6 +147,22 @@ class TestLogin(TestCase):
         self.assertIsNotNone(new_singer)
         self.assertTrue(new_singer.is_active)
         self.assertFalse(new_singer.no_image_upload)
+        self.assertFalse(new_singer.is_staff)
+
+    def test_audience_valid_login(self):
+        response = self.client.post(reverse('login'), {
+            'ticket-type': ['audience'],
+            'first-name': ['Valid'],
+            'last-name': ['Audience'],
+            'passcode': [PASSCODE],
+        })
+        self.assertRedirects(response, reverse('home'))
+        new_audience = Singer.objects.get(username='valid_audience')
+        self.assertIsNotNone(new_audience)
+        self.assertTrue(new_audience.is_active)
+        self.assertTrue(new_audience.is_audience)
+        self.assertIsNone(new_audience.ticket_order)
+        self.assertFalse(new_audience.is_staff)
 
     def test_hebrew_singer_valid_login(self):
         create_order(num_singers=1, order_id=12345)
@@ -188,6 +222,7 @@ class TestLogin(TestCase):
         self._assert_user_error(response, "Sorry, looks like all ticket holders for this order number already "
                                           "logged in. Are you sure your ticket is of type 'singer'?")
 
+
     def test_singer_logged_in_box(self):
         user = login_singer(self)
         user.is_active = False
@@ -206,6 +241,54 @@ class TestLogin(TestCase):
         user.refresh_from_db()
         self.assertTrue(user.is_active)
 
+    def test_singer_already_exists(self):
+        user = login_singer(self)
+        user.is_active = False
+        user.save()
+
+        response = self.client.post(reverse('login'), {
+            'ticket-type': ['singer'],
+            'first-name': [user.first_name],
+            'last-name': [user.last_name],
+            'passcode': [PASSCODE],
+            'order-id': [user.ticket_order.order_id],
+        })
+        self._assert_user_error(response,
+                "The name that you're trying to login with already exists. Did you already "
+                "login with us tonight? If so, check the box below.")
+
+    def test_audience_already_exists(self):
+        user = login_audience(self)
+        user.is_active = False
+        user.save()
+
+        response = self.client.post(reverse('login'), {
+            'ticket-type': ['audience'],
+            'first-name': [user.first_name],
+            'last-name': [user.last_name],
+            'passcode': [PASSCODE],
+        })
+        self._assert_user_error(response,
+                                "The name that you're trying to login with already exists. Did you already "
+                                "login with us tonight? If so, check the box below.")
+
+    def test_audience_logged_in_box(self):
+        user = login_audience(self)
+        user.is_active = False
+        user.save()
+
+        response = self.client.post(reverse('login'), {
+            'ticket-type': ['audience'],
+            'first-name': [user.first_name],
+            'last-name': [user.last_name],
+            'passcode': [PASSCODE],
+            'logged-in': ['on']
+        })
+        self.assertRedirects(response, reverse('home'))
+
+        user.refresh_from_db()
+        self.assertTrue(user.is_active)
+
     def test_new_singer_logged_in_box(self):
         response = self.client.post(reverse('login'), {
             'ticket-type': ['singer'],
@@ -217,6 +300,15 @@ class TestLogin(TestCase):
         })
         self._assert_user_error(response, "The name that you logged in with previously does not match your current one")
 
+    def test_new_audience_logged_in_box(self):
+        response = self.client.post(reverse('login'), {
+            'ticket-type': ['audience'],
+            'first-name': ["doesn't"],
+            'last-name': ['exist'],
+            'passcode': [PASSCODE],
+            'logged-in': ['on']
+        })
+        self._assert_user_error(response, "The name that you logged in with previously does not match your current one")
 
     def test_login_logout_login(self):
         create_order(num_singers=1, order_id=12345)
@@ -334,7 +426,7 @@ class TestLogin(TestCase):
         self.assertTrue(new_singer.no_image_upload)
 
 
-class TestJsonRes(TestCase):
+class TestJsonRes(TestViews):
     IGNORE_SONG_KEYS = ['id', 'wait_amount']
 
     def _remove_song_keys(self, json):
@@ -409,7 +501,7 @@ class TestJsonRes(TestCase):
         self.assertDictEqual(self._remove_song_keys(res_json), self._remove_song_keys(expected_json))
 
 
-class SongRequestSerializeTestCase(TestCase):
+class SongRequestSerializeTestCase(TestViews):
     IGNORE_SONG_KEYS = ['request_time']
 
     def _remove_song_keys(self, json):
@@ -635,7 +727,7 @@ class TestRenameSong(SongRequestSerializeTestCase):
         self._test_rename_same(musical=True, song_name=True)
 
 
-class TestRestApi(TestCase):
+class TestRestApi(TestViews):
     def test_drinking_words_empty(self):
         with override_config(DRINKING_WORDS=''):
             response = self.client.get(reverse('drinking_words'))
@@ -900,7 +992,6 @@ class TestRestApi(TestCase):
             ]
         })
 
-
 class TestDecorators(TestCase):
     def test_bwt_required_w_singer(self):
         login_singer(self, 1)
@@ -917,7 +1008,7 @@ class TestDecorators(TestCase):
         self.assertRedirects(response, reverse('login'))
 
     def test_bwt_required_singer_only_w_singer(self):
-        login_singer(self, 1)
+        login_singer(self)
         response = self.client.get(reverse('manage_songs'))  # @bwt_login_required('login', singer_only=True)
         self.assertEqual(response.status_code, 200)
 
@@ -928,7 +1019,7 @@ class TestDecorators(TestCase):
     def test_bwt_required_singer_only_w_audience(self):
         login_audience(self)
         response = self.client.get(reverse('manage_songs'))  # @bwt_login_required('login', singer_only=True)
-        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse('login'))
 
     def test_superuser_required_w_superuser(self):
         user = login_singer(self)
@@ -940,7 +1031,7 @@ class TestDecorators(TestCase):
     def test_superuser_required_wo_superuser(self):
         user = login_singer(self)
         response = self.client.get(reverse('lyrics', kwargs={'song_pk': 1}))  # @bwt_superuser_required('login')
-        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse('login'))
 
 
 class TestSuggestGroupSong(TestCase):
@@ -963,28 +1054,15 @@ class TestSuggestGroupSong(TestCase):
         self.assertTrue(call_kwargs['is_group_song'])
 
     def test_audience(self):
-        login_audience(self)
+        login_audience(self, user_id=1)
         response = self.client.post(reverse('suggest_group_song'), {
             'song-name': ["Brotherhood of man"],
             'musical': ['How to succeed in business without '
                         'really trying'],
-            'suggested_by': ['']
         })
         self.assertEqual(GroupSongRequest.objects.count(), 1)
         created_song = GroupSongRequest.objects.first()
-        self.assertEqual(created_song.suggested_by, '-')
-
-    def test_named_audience(self):
-        login_audience(self)
-        response = self.client.post(reverse('suggest_group_song'), {
-            'song-name': ["Brotherhood of man"],
-            'musical': ['How to succeed in business without '
-                        'really trying'],
-            'suggested_by': ["some audience person"]
-        })
-        self.assertEqual(GroupSongRequest.objects.count(), 1)
-        created_song = GroupSongRequest.objects.first()
-        self.assertEqual(created_song.suggested_by, 'some audience person')
+        self.assertEqual(created_song.suggested_by, get_audience_str(1))
 
     def test_get(self):
         login_audience(self)
@@ -1147,3 +1225,306 @@ class TestAddSongRequest(TestCase):
         self.assertEqual(created_song1.singer.id, other_singer.id)
         self.assertJSONEqual(response.content, {'requested_song': 'Defying Gravity'})
         self.assertEqual(response.status_code, 200)
+
+
+class TestAddSongView(TestViews):
+    def setUp(self):
+        self.shani = Singer.objects.create_user(username='shani_wahrman', first_name='Shani', last_name='Wahrman',
+                                                is_audience=False, is_superuser=True)
+        self.alon = Singer.objects.create_user(username='alon_aviv', first_name='Alon', last_name='Aviv', is_audience=False,
+                                          is_superuser=True)
+        self.HOST_TUPLE = (self.shani.id, 'Shani'), (self.alon.id, 'Alon')
+
+        self.user = login_singer(self, user_id=99)
+
+    def _get_other_singers(self, response):
+        return [(singer.id, str(singer)) for singer in response.context['other_singers']]
+
+    def test_add_song(self):
+        [singer] = create_singers([2], num_songs=2)
+        create_audience([3])
+
+        response = self.client.get(reverse('add_song'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'song_signup/add_song.html')
+
+        self.assertListEqual(self._get_other_singers(response), [*self.HOST_TUPLE, (singer.id, get_singer_str(2))])
+
+        [singer3, singer4, singer5] = create_singers([3, 4, 5], num_songs=2)
+        create_audience([6, 7, 8, 9, 10])
+        singer4.is_active = False
+        singer4.save()
+
+        response = self.client.get(reverse('add_song'))
+        self.assertEqual(response.status_code, 200)
+        self.assertListEqual(self._get_other_singers(response),
+                             [*self.HOST_TUPLE,
+                              (singer.id, get_singer_str(2)),
+                              (singer3.id, get_singer_str(3)),
+                              (singer5.id, get_singer_str(5)),
+                              ])
+
+class TestTrivia(TestViews):
+    def setUp(self):
+        self.question_data = dict(
+            question="When was Disney founded?",
+            choiceA="1948",
+            choiceB="1923",
+            choiceC="1918",
+            choiceD="1939",
+            answer=2,
+        )
+        self.question = TriviaQuestion.objects.create(**self.question_data)
+        self.basic_expected_question = dict(**self.question_data,
+            winner=None,
+            answer_text="1923",
+            image=None
+        )
+class TestGetActiveQuestion(TestTrivia):
+    def test_get_active_question(self):
+        self.question.is_active = True
+        self.question.save()
+
+        expected_data = self.basic_expected_question
+        response = self.client.get(reverse('get_active_question'))
+        self.assertEqual(response.status_code, 200)
+        self.assertDictEqual(response.data, expected_data)
+
+    def test_no_active_question(self):
+        response = self.client.get(reverse('get_active_question'))
+        self.assertEqual(response.status_code, 204)
+        self.assertDictEqual(response.data, {})
+
+    @patch.object(TriviaQuestion, 'WINNER_DISPLAY_DELAY', 0)
+    def test_winner(self):
+        self.question.is_active = True
+        self.question.save()
+
+        # No winners yet
+        select_trivia_answer(self.question, 1, user_id=1)
+        select_trivia_answer(self.question, 1, user_id=2, is_audience=True)
+        select_trivia_answer(self.question, 3, user_id=3, is_audience=True)
+        select_trivia_answer(self.question, 4, user_id=4)
+
+        expected_data = self.basic_expected_question
+        response = self.client.get(reverse('get_active_question'))
+        self.assertEqual(response.status_code, 200)
+        self.assertDictEqual(response.data, expected_data)
+
+        [winner] = create_singers(singer_ids=[5])
+        select_trivia_answer(self.question, 2, user=winner)
+
+        expected_data['winner'] = winner.get_full_name()
+        response = self.client.get(reverse('get_active_question'))
+        self.assertEqual(response.status_code, 200)
+        self.assertDictEqual(response.data, expected_data)
+
+    def test_question_image(self):
+        [os.remove(file) for file in glob.glob('media/trivia-questions/test_img*')]
+
+        self.question.is_active = True
+        with open('song_signup/tests/test_img.png', 'rb') as img:
+            self.question.image = File(img, name='test_img.png')
+            self.question.save()
+
+            expected_data = self.basic_expected_question
+            expected_data['image'] = "/media/trivia-questions/test_img.png"
+
+            response = self.client.get(reverse('get_active_question'))
+            self.assertEqual(response.status_code, 200)
+            self.assertDictEqual(response.data, expected_data)
+
+    def test_several_winners(self):
+        """
+        Only the first person to select the answer is the winner
+        """
+        with freeze_time(time_to_freeze=TEST_START_TIME) as frozen_time:
+            self.question.is_active = True
+            self.question.save()
+
+            winner1, winner2 = create_singers(singer_ids=[1, 2])
+            winner3 = create_audience(audience_ids=[3])
+
+            select_trivia_answer(self.question, 2, user=winner1)
+            frozen_time.tick(2)
+            select_trivia_answer(self.question, 2, user=winner1)
+            frozen_time.tick(7)
+            select_trivia_answer(self.question, 2, user=winner1)
+
+            expected_data = self.basic_expected_question  # winner=None
+            response = self.client.get(reverse('get_active_question'))
+            self.assertEqual(response.status_code, 200)
+            self.assertDictEqual(response.data, expected_data)
+
+            frozen_time.tick(6)  # 15 seconds after the first winner selected the question
+
+            expected_data['winner'] = winner1.get_full_name()
+            response = self.client.get(reverse('get_active_question'))
+            self.assertEqual(response.status_code, 200)
+            self.assertDictEqual(response.data, expected_data)
+
+
+    @patch.object(TriviaQuestion, 'WINNER_DISPLAY_DELAY', 0)
+    def test_several_questions(self):
+        singer1, singer2 = create_singers(singer_ids=[1, 2])
+        audience3, audience4, audience5 = create_audience(audience_ids=[3, 4, 5])
+
+        # First question
+        self.question.is_active = True
+        self.question.save()
+
+        select_trivia_answer(self.question, 1, user=singer1)
+        select_trivia_answer(self.question, 2, user=singer2)
+        select_trivia_answer(self.question, 3, user=audience3)
+        select_trivia_answer(self.question, 4, user=audience4)
+        select_trivia_answer(self.question, 4, user=audience5)
+
+        expected_data = self.basic_expected_question
+        expected_data['winner'] = singer2.get_full_name()
+
+        response = self.client.get(reverse('get_active_question'))
+        self.assertEqual(response.status_code, 200)
+        self.assertDictEqual(response.data, expected_data)
+
+        # Second question
+        self.question.is_active = False
+        self.question.save()
+
+        question_data2 = dict(
+            question="Who's afraid of the big bad wolf?",
+            choiceA="The pigs",
+            choiceB="The cars",
+            choiceC="The toys",
+            choiceD="The feelings",
+            answer=1,
+        )
+        question2 = TriviaQuestion.objects.create(**question_data2, is_active=True)
+        select_trivia_answer(question2, 1, user=singer1)
+        select_trivia_answer(question2, 2, user=singer2)
+        select_trivia_answer(question2, 3, user=audience3)
+        select_trivia_answer(question2, 4, user=audience4)
+        select_trivia_answer(question2, 4, user=audience5)
+
+        expected_data = dict(**question_data2,
+                             winner=singer1.get_full_name(),
+                             answer_text="The pigs",
+                             image=None
+                             )
+        response = self.client.get(reverse('get_active_question'))
+        self.assertEqual(response.status_code, 200)
+        self.assertDictEqual(response.data, expected_data)
+
+        # Third question
+        question2.is_active = False
+        question2.save()
+
+        question_data3 = dict(
+            question="Which of these characters is NOT voiced by the same actor?",
+            choiceA="Winnie the Pooh",
+            choiceB="Kaa",
+            choiceC="The Chesier Cat",
+            choiceD="The White Rabbit",
+            answer=4,
+        )
+        question3 = TriviaQuestion.objects.create(**question_data3, is_active=True)
+        select_trivia_answer(question3, 1, user=singer1)
+        select_trivia_answer(question3, 2, user=singer2)
+        select_trivia_answer(question3, 3, user=audience3)
+        select_trivia_answer(question3, 3, user=audience4)
+        select_trivia_answer(question3, 4, user=audience5)
+
+        expected_data = dict(**question_data3,
+                             winner=audience5.get_full_name(),
+                             answer_text="The White Rabbit",
+                             image=None
+                             )
+        response = self.client.get(reverse('get_active_question'))
+        self.assertEqual(response.status_code, 200)
+        self.assertDictEqual(response.data, expected_data)
+
+
+class TestSelectTriviaAnswer(TestTrivia):
+    def test_select_answer(self):
+        self.question.is_active = True
+        self.question.save()
+        user = login_singer(self)
+
+        response = self.client.post(reverse('select_trivia_answer'), data={'answer-id': 1})
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.data, {})
+        self.assertEqual(user.trivia_responses.count(), 1)
+
+        trivia_response = user.trivia_responses.first()
+        self.assertEqual(trivia_response.question, self.question)
+        self.assertEqual(trivia_response.user, user)
+        self.assertEqual(trivia_response.choice, 1)
+        self.assertFalse(trivia_response.is_correct)
+
+    def test_select_correct_answer(self):
+        self.question.is_active = True
+        self.question.save()
+        user = login_audience(self)
+
+        response = self.client.post(reverse('select_trivia_answer'), data={'answer-id': 2})
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.data, {})
+
+        trivia_response = user.trivia_responses.first()
+        self.assertTrue(trivia_response.is_correct)
+
+        response = self.client.post(reverse('select_trivia_answer'), data={'answer-id': 3})
+        self._assert_user_error(response, "User already selected a question", status=409)
+
+    def test_no_question(self):
+        user = login_singer(self)
+
+        response = self.client.post(reverse('select_trivia_answer'), data={'answer-id': 3})
+        self._assert_user_error(response, "No active question")
+
+
+class TestGetSelectedAnswer(TestTrivia):
+    def test_get_answer(self):
+        self.question.is_active = True
+        self.question.save()
+        user = login_audience(self)
+
+        select_trivia_answer(self.question, 3, user=user)
+
+        response = self.client.get(reverse('get_selected_answer'))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['choice'], 3)
+
+    def test_no_answer(self):
+        self.question.is_active = True
+        self.question.save()
+        user = login_audience(self)
+
+        response = self.client.get(reverse('get_selected_answer'))
+        self._assert_user_error(response, "User hasn't selected an answer for the active question", status=404)
+
+    def test_no_question(self):
+        self.question.is_active = True
+        self.question.save()
+        user = login_audience(self)
+
+        select_trivia_answer(self.question, 3, user=user)
+        self.question.is_active = False
+        self.question.save()
+
+        response = self.client.get(reverse('get_selected_answer'))
+        self._assert_user_error(response, "User hasn't selected an answer for the active question", status=404)
+
+
+class TestTriviaTemplates(TestTrivia):
+    def test_deactivate_trivia(self):
+        self.question.is_active = True
+        self.question.save()
+        user = login_singer(self)
+        user.is_superuser = True
+        user.save()
+
+        response = self.client.get(reverse('deactivate_trivia'))
+        self.assertRedirects(response, '/admin/song_signup/triviaquestion', target_status_code=301)
+
+        self.question.refresh_from_db()
+        self.assertFalse(self.question.is_active)

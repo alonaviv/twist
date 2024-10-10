@@ -289,7 +289,7 @@ def add_song(request):
     alon = HostSinger(Singer.objects.get(username='alon_aviv'))
     shani = HostSinger(Singer.objects.get(username='shani_wahrman'))
 
-    other_singers = Singer.objects.filter(is_audience=False).exclude(pk=request.user.pk).exclude(pk=alon.id).exclude(pk=shani.id).order_by(
+    other_singers = Singer.objects.filter(is_audience=False, is_active=True).exclude(pk=request.user.pk).exclude(pk=alon.id).exclude(pk=shani.id).order_by(
         'first_name')
     return render(request, 'song_signup/add_song.html', {'other_singers': [shani, alon] + list(other_singers)})
 
@@ -442,7 +442,7 @@ def get_active_question(request):
 
 
 @api_view(["POST"])
-def choose_trivia_question(request):
+def select_trivia_answer(request):
     answer_id = request.data['answer-id']
     user = request.user
     active_question = TriviaQuestion.objects.filter(is_active=True).first()
@@ -536,7 +536,7 @@ def tip_us(request):
     return render(request, 'song_signup/tip_us.html')
 
 
-def _get_order(order_id):
+def _get_singer_order(order_id):
     if config.FREEBIE_TICKET and order_id == config.FREEBIE_TICKET:
         return TicketOrder.objects.get_or_create(order_id=config.FREEBIE_TICKET,
                                                  event_sku=config.EVENT_SKU,
@@ -560,7 +560,7 @@ def _login_new_singer(first_name, last_name, no_image_upload, order_id):
     For now - only singers get a ticket order object, and so we only count the number of singer tickets within a
     singer order (singer and audience are different ticket orders, both with the same order number)
     """
-    ticket_order = _get_order(order_id)
+    ticket_order = _get_singer_order(order_id)
     try:
         singer = Singer.objects.create_user(
             name_to_username(first_name, last_name),
