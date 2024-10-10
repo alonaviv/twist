@@ -5,6 +5,8 @@ volumes:
     driver: local
   django_static_vol:
     driver: local
+  django_media_vol:
+    driver: local
   db:
     driver: local
 
