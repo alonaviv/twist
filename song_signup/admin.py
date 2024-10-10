@@ -295,9 +295,10 @@ class CurrentGroupSongAdmin(admin.ModelAdmin):
     class Media:
         js = ["js/admin-reload.js"]
 
+
 @admin.register(TriviaQuestion)
 class TriviaQuestionAdmin(admin.ModelAdmin):
-    list_display = ['id', 'get_question', 'answer', 'get_winner', 'image_preview']
+    list_display = ['id', 'get_question', 'image_preview', 'answer', 'notes', 'get_winner']
     actions = [activate_question]
     change_list_template = "admin/trivia_question_changelist.html"
 
@@ -326,9 +327,38 @@ class TriviaQuestionAdmin(admin.ModelAdmin):
     class Media:
         js = ["js/admin-reload.js"]
 
+from django.contrib import admin
+from .models import TriviaResponse
+
+class IsCorrectFilter(admin.SimpleListFilter):
+    title = 'Right answer?'
+    parameter_name = 'is_correct'
+
+    def lookups(self, request, model_admin):
+        return (
+            ('correct', 'Correct Answers'),
+            ('incorrect', 'Wrong Answers'),
+        )
+
+    def queryset(self, request, queryset):
+        value = self.value()
+        correct = []
+        incorrect = []
+
+        for response in queryset.all():
+            if response.is_correct:
+                correct.append(response.id)
+            else:
+                incorrect.append(response.id)
+        if value == 'correct':
+            return queryset.filter(pk__in=correct)
+        elif value == 'incorrect':
+            return queryset.filter(pk__in=incorrect)
+
 @admin.register(TriviaResponse)
 class TriviaResponseAdmin(admin.ModelAdmin):
     list_display = ['user', 'question', 'choice', 'get_timestamp', 'is_correct']
+    list_filter = ['question', IsCorrectFilter]
 
     def is_correct(self, obj):
         return obj.is_correct

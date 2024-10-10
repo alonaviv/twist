@@ -334,6 +334,7 @@ class TriviaQuestion(Model):
     choiceD = TextField()
     answer = IntegerField(choices=TRIVIA_CHOICES)
     is_active = BooleanField(default=False)
+    notes = TextField(blank=True, null=True)
 
     def __str__(self):
         if len(self.question) < self.MAX_DISPLAY:
