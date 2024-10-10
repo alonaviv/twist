@@ -6,6 +6,10 @@ broadwaywithatwist.xyz {
         root * /usr/share/caddy/django_static
         file_server
     }
+    handle_path /media/* {
+        root * /usr/share/caddy/django_media
+        file_server
+    }
     encode gzip
     reverse_proxy http://django:8000
 }
