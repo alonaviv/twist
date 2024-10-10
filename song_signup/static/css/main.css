@@ -1058,7 +1058,8 @@ nav {
           pointer-events: none; }
 
 #passcode-reveal-wrapper {
-  display: none; }
+  display: none;
+  color: white; }
   #passcode-reveal-wrapper.displayed {
     display: block;
     position: absolute;
@@ -1073,8 +1074,7 @@ nav {
     #passcode-reveal-wrapper.displayed #passcode-reveal {
       font-size: 65px;
       font-weight: 800;
-      letter-spacing: 3px;
-      color: white; }
+      letter-spacing: 3px; }
 
 .fixed-logo {
   display: none;

@@ -2,6 +2,7 @@
 
 #passcode-reveal-wrapper {
     display: none;
+    color: white;
 
     &.displayed {
         display: block;
@@ -19,7 +20,6 @@
             font-size: 65px;
             font-weight: 800;
             letter-spacing: 3px;
-            color: white;
         }
     }
 }
