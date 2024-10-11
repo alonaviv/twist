@@ -43,6 +43,15 @@
 
 {% block object-tools %}
 {{ block.super }}
+    {% if trivia_question %}
+    <div style="margin: 20px; border: 3px solid purple; width: fit-content; padding: 10px;">
+        <p style="font-size:20px; margin: 0;">TRIVIA QUESTION: </p>
+        <p style="font-size:20px; margin: 0;">Text: {{ trivia_question.question }} </p>
+        <p style="font-size:20px; margin: 0;">Answer: {{ trivia_question.answer_text }} </p>
+        <p style="font-size:20px; margin: 0;">Notes: {{ trivia_question.notes }} </p>
+        <img src="/media/{{trivia_question.image}}" style="height: 100px; width: 100px">
+    </div>
+    {% endif %}
     <div style="display: flex; flex-wrap: wrap;">
         <div style="margin: 20px; border: 3px solid purple; width: fit-content; padding: 10px;">
             <p style="font-size:20px; margin: 0;">{{ new_singers_num }} new singers</p>

@@ -176,6 +176,10 @@ class SongRequestAdmin(admin.ModelAdmin):
             extra_context['group_song'] = current_group_song.group_song.song_name
             extra_context['is_active'] = current_group_song.is_active
 
+        active_question = TriviaQuestion.objects.filter(is_active=True).first()
+        if active_question:
+            extra_context['trivia_question'] = active_question
+
         return super().changelist_view(request, extra_context=extra_context)
 
     def has_delete_permission(self, request, obj=None):
