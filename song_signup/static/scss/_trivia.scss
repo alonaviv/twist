@@ -24,14 +24,14 @@
         align-items: center;
         overflow: scroll;
 
-        .question-image{
-            max-height: 50%;
-            max-width: 50%;
-            object-fit: contain;
-            object-position: center center;
-            display: block;
-            overflow: hidden;
-            border-radius: 10px;
+        .trivia-image-wrapper{
+            .question-image{
+                object-fit: contain;
+                object-position: center center;
+                display: block;
+                overflow: hidden;
+                border-radius: 10px;
+            }
         }
 
         &.live-lyrics-trivia{
@@ -41,55 +41,63 @@
 
             h2{
                 font-size: 80px;
+                max-height: 15vh;
             }
             .question-text{
                 font-size: 60px;
+                max-height: 35vh;
             }
-            .question-image{
-                padding-top: 30px;
+            .trivia-image-wrapper{
+                height: 50vh;
+                .question-image{
+                    height: 100%;
+                }
             }
         }
 
         &.base-lyrics-trivia{
-            gap: 5%;
+            padding-left: 20px;
+            padding-right: 20px;
+            padding-bottom: 20px;
             h2{
                 font-size: 35px;
+                max-height: 10vh;
             }
             .question-text{
                 font-size: 25px;
-                max-height: 25%;
+                max-height: 20vh;
             }
 
-            .question-image{
-                min-height: 20%;
-                max-width: 100%;
+            .trivia-image-wrapper{
+                height: 20vh;
+                .question-image{
+                    height: 100%;
+                }
             }
-        }
 
-        .answers-choice-wrapper{
-            flex-grow: 2;
-        }
+            .answers-choice-wrapper{
+                height: 40vh;
 
-        .answers-choice {
-            height: 100%;
-            display: grid;
-            grid-template-columns: 50% 50%;
-            grid-template-rows: 50% 50%;
-            list-style-type: none;
-            grid-row-gap: 20px;
-            grid-column-gap: 20px;
+                .answers-choice {
+                    height: 100%;
+                    display: grid;
+                    grid-template-columns: 50% 50%;
+                    grid-template-rows: 50% 50%;
+                    list-style-type: none;
 
-
-            li {
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                padding: 10px;
-                text-align: center;
-                font-size: 20px;
-                font-weight: 900;
-                border-radius: 20px;
-                background-color: #66dcac;
+                    li {
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        padding: 10px;
+                        margin: 10px;
+                        text-align: center;
+                        font-size: 20px;
+                        font-weight: 900;
+                        border-radius: 20px;
+                        background-color: #66dcac;
+                    }
+                }
             }
         }
     }
