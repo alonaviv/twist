@@ -12,8 +12,14 @@
     {{ block.super }}
     <div style="display: flex">
             <div style="margin: 20px; border: 3px solid purple; width: fit-content; padding: 10px;">
-                <p style="font-size:20px; margin: 0;">Trivia Question: {% if active_question %} {{ active_question}} <br> {% if winner %} COMPLETE. THE WINNER IS: {{ winner }} {% else %} RUNNING {% endif %} {% else %} NOT ACTIVE {% endif %}
+                <p style="font-size:20px; margin: 0;">Trivia Question: {% if active_question %} <br>{{ active_question}} <br> {% if winner %} Status: COMPLETE. THE WINNER IS: {{ winner }} {% else %} Status: RUNNING {% endif %} {% else %} NOT ACTIVE {% endif %}
                 </p>
+
+            {% if active_question %}
+                <p style="font-size:20px; margin: 0;">Answer: {{ active_question.answer_text }} </p>
+                <p style="font-size:20px; margin: 0;">Notes: {{ active_question.notes }} </p>
+                <img src="/media/{{active_question.image}}" style="height: 100px; width: 100px">
+            {% endif %}
             </div>
     </div>
 {% endblock %}
