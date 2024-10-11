@@ -74,7 +74,7 @@ function populateDashboard() {
                     wait_text = "(not in the lineup yet)";
                 }
                 else if (wait_amount === 0) {
-                    wait_text = "(get ready, comping up next!)";
+                    wait_text = "(get ready, you're up next!)";
                 }
                 else {
                     wait_text = `(coming up in ${wait_amount} songs)`;
