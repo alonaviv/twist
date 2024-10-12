@@ -18,7 +18,9 @@ const formListner =  e => {
                 const data = await response.json();
                 throw Error(data.error);
             }
-            window.location.replace("/home");
+            setTimeout(() => {
+                window.location.replace("/home");
+            }, 300);  // Allow the session cookie to be set
         })
         .catch(error => {
             formMessages.innerHTML = `<p>${error.message}</p>`;

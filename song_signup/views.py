@@ -635,7 +635,7 @@ def login(request):
                 audience = _login_existing_audience(first_name, last_name) if logged_in else (
                     _login_new_audience(first_name, last_name))
                 auth_login(request, audience)
-                return redirect('home')
+                return JsonResponse({'success': True}, status=200)
 
             elif ticket_type == 'singer':
                 order_id = request.POST['order-id']
@@ -644,7 +644,7 @@ def login(request):
                 singer = _login_existing_singer(first_name, last_name, no_image_upload) if logged_in else (
                     _login_new_singer(first_name, last_name, no_image_upload, order_id))
                 auth_login(request, singer)
-                return redirect('home')
+                return JsonResponse({'success': True}, status=200)
             else:
                 raise TwistApiException("Invalid ticket type")
 
