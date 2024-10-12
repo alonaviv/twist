@@ -3,6 +3,7 @@ const lyricsWrapper = document.getElementById("lyrics-wrapper");
 const nav = document.querySelector("nav");
 const footer = document.querySelector("footer");
 const logo = document.getElementById("lyrics-logo");
+const logo_img = document.getElementById("logo-img");
 const passcodeWrapper = document.getElementById("passcode-reveal-wrapper");
 const passcodeReveal = document.getElementById("passcode-reveal");
 const bohoWrapper = document.getElementById("boho-wrapper")
@@ -128,6 +129,7 @@ async function populateLyrics() {
         }
         triviaWrapper.classList.remove('hidden');
         logo.classList.remove('not-started');
+        logo_img.src = logo.getAttribute('data-small-logo');
         lyricsWrapper.classList.add('hidden');
         triviaWrapper.classList.remove('hidden');
         triviaWrapper.classList.add('active');
@@ -143,6 +145,7 @@ async function populateLyrics() {
             document.body.scrollTop = document.documentElement.scrollTop = 0;
         }
         logo.classList.add('not-started');
+        logo_img.src = logo.getAttribute('data-big-logo');
         lyricsText.innerHTML = ""
 
         if (showPasscode) {
@@ -159,6 +162,7 @@ async function populateLyrics() {
     }
     else {
         logo.classList.remove('not-started');
+        logo_img.src = logo.getAttribute('data-small-logo');
         passcodeWrapper.classList.remove('displayed');
     }
 
