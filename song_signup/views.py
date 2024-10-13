@@ -621,6 +621,9 @@ def login(request):
     if constants_chosen and request.user.is_authenticated:
         return redirect('home')
 
+    error = None
+    ticket_type = None
+
     if request.method == 'POST':
         try:
             ticket_type = request.POST['ticket-type']
@@ -629,13 +632,13 @@ def login(request):
             logged_in = request.POST.get('logged-in') == 'on'
             passcode = _sanitize_string(request.POST['passcode'])
             if passcode.lower() != config.PASSCODE.lower():
-                raise TwistApiException("Wrong passcode - Shani will reveal tonight's passcode at the event")
+                error = "Wrong passcode - Shani will reveal tonight's passcode at the event"
 
-            if ticket_type == 'audience':
+            elif ticket_type == 'audience':
                 audience = _login_existing_audience(first_name, last_name) if logged_in else (
                     _login_new_audience(first_name, last_name))
                 auth_login(request, audience)
-                return JsonResponse({'success': True}, status=200)
+                return redirect('home')
 
             elif ticket_type == 'singer':
                 order_id = request.POST['order-id']
@@ -644,19 +647,26 @@ def login(request):
                 singer = _login_existing_singer(first_name, last_name, no_image_upload) if logged_in else (
                     _login_new_singer(first_name, last_name, no_image_upload, order_id))
                 auth_login(request, singer)
-                return JsonResponse({'success': True}, status=200)
+                return redirect('home')
             else:
-                raise TwistApiException("Invalid ticket type")
+                error = 'Invalid ticket type'
 
         except Exception as e:
             logger.exception("Exception: ")
             if isinstance(e, TwistApiException):
-                msg = str(e)
+                error = str(e)
             else:
-                msg = "An unexpected error occurred (you can blame Alon..) Refreshing the page might help"
-            return JsonResponse({'error': msg}, status=400)
+                error = "An unexpected error occurred (you can blame Alon..) Refreshing the page might help"
 
-    return render(request, 'song_signup/login.html', context={'evening_started': constants_chosen})
+    return render(
+        request,
+        'song_signup/login.html',
+        context={
+            'evening_started': constants_chosen,
+            'error': error,
+            'ticket_type': ticket_type,
+        },
+    )
 
 
 @bwt_login_required('login', singer_only=True)
