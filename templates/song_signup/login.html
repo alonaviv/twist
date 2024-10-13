@@ -14,13 +14,17 @@
         </div>
         {% if evening_started %}
         <h3>Let's get this party started!</h3>
-        <div class="form-messages"></div>
+        <div class="form-messages">
+            {% if error %}
+                <p>{{ error }}</p>
+            {% endif %}
+        </div>
         <div id="ticket-selection-wrapper">
             <h2>What ticket do you have?</h2>
             <button value="singer" class="ticket-button">Singer</button>
             <button value="audience" class="ticket-button">Audience</button>
         </div>
-         <div id="audience-login-wrapper" class="login-form-wrapper">
+        <div id="audience-login-wrapper" class="login-form-wrapper">
             <h2 class="login-form-title">You're logging in as <br><span class="text-secondary">AUDIENCE</span></h2>
             <form action="" method="POST" id="audience-login-form" autocomplete="off">
                 {% csrf_token %}
@@ -47,7 +51,7 @@
         <div id="singer-login-wrapper" class="login-form-wrapper" >
             <h2 class="login-form-title">You're logging in as a <br><span class="text-primary">SINGER</span></h2>
             <form action="" method="POST" id="singer-login-form" autocomplete="off">
-               {% csrf_token %}
+                {% csrf_token %}
                 <input autocomplete="false" name="hidden" type="text" style="display:none;">
 
                 <input type="hidden" name="ticket-type" value="singer">
@@ -103,4 +107,9 @@
 </div>
 
 <script src="{% static "js/login.js" %}"></script>
+{% if ticket_type %}
+    <script>
+        activateForm(document.getElementById("{{ ticket_type }}-login-wrapper"));
+    </script>
+{% endif %}
 {% endblock %}
