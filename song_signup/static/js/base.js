@@ -22,7 +22,9 @@ answers.forEach(answer => {
 
 const csrftoken = getCookie('csrftoken');
 
-setInterval(getQuestion, 500);
+if (isLoggedIn) {
+    setInterval(getQuestion, 500);
+}
 
 async function getQuestion() {
     const questionRes = await fetch("/get_active_question");
