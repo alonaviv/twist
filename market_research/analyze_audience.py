@@ -41,27 +41,29 @@ def sort_events(event_key):
 EXCLUDE_EVENTS = [
     'Broadway With a Twist', # QA night at our house
     # Currently being sold
-    # 'Broadway With a Twist - 3.11 - Babu Bar - Tel Aviv',
-    # 'Broadway With a Twist - 10.11 - Babu Bar - Tel Aviv',
-    # 'Broadway With a Twist - 24.11 - Babu Bar - Tel Aviv',
+    'Broadway With a Twist - 3.11 - Babu Bar - Tel Aviv',
+    'Broadway With a Twist - 10.11 - Babu Bar - Tel Aviv',
+    'Broadway With a Twist - 24.11 - Babu Bar - Tel Aviv',
 ]
 
 @dataclass
 class AudeinceCustomerCounter:
-    events: list = field(default_factory=list)
-    num_times_ordered: int = 0
+    events: set = field(default_factory=set)
     total_tickets: int = 0
     was_singer: bool = None
+
+    @property
+    def num_times_ordered(self):
+        """
+        Using a set to remove duplicate events. We're interested in how many different events a person ordered for
+        """
+        return len(self.events)
+
+
 
 counters = defaultdict(AudeinceCustomerCounter)
 recurring_orders = defaultdict(int)
 audience_per_event = defaultdict(int)
-
-# TODO: Something seems off
-# TODO: 1. If there are about 23 single timers in each event, what with the other audience members? Aren't enough repeat comers for that
-# TODO": 2. Some of the repeat comers show the same date twice. 2 different orders for same event? Need to account for that.
-
-EVENT = 'Broadway With a Twist - 29.9 - Friends Underground Bar - Tel Aviv'
 
 if __name__ == "__main__":
     path = sys.argv[1]
@@ -70,9 +72,8 @@ if __name__ == "__main__":
         first_name, last_name, event_name, ticket_type, total_tickets = row
         name = f"{first_name} {last_name}"
         if ticket_type == ATTN_SKU and name != "אלון אביב" and event_name not in EXCLUDE_EVENTS:
-            counters[name].num_times_ordered += 1
             counters[name].total_tickets += total_tickets
-            counters[name].events.append(event_name)
+            counters[name].events.add(event_name)
             audience_per_event[event_name] += total_tickets
 
         if ticket_type == SINGER_SKU and name in counters:
@@ -98,20 +99,19 @@ Total people that ever ordered an audience ticket: {len(counters)}
     for amount_ordered, num_people in sorted(recurring_orders.items()):
         print(f"Amount of people that ordered audience tickets for {amount_ordered} events: {num_people}")
 
-    events_with_single_comers = defaultdict(list)
-    for name, counter in counters.items():
+    events_with_single_comers = defaultdict(int)
+    for counter in counters.values():
         if counter.num_times_ordered == 1:
             [event] = counter.events
-            events_with_single_comers[event].append((name, counter))
+            events_with_single_comers[event] += 1
 
-
-    print("\nHow many single comers each event had:")
+    print("\nHow many people who ordered once (possibly for several people) each event had:")
     for event, num_single_comers in sorted(events_with_single_comers.items(), key=lambda item: sort_events(item[0]),
                                            reverse=True):
         print(f"Event {event}: {num_single_comers}")
 
 
-    print("\nThe events that repeated comers came to")
+    print("\nThe events that repeated comers came to (people who were only audience and never singers):")
     for name, counter in counters.items():
         if counter.num_times_ordered > 1:
             print(f"{name} - Ordered {counter.num_times_ordered} times: {counter.events}")
