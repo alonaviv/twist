@@ -84,11 +84,10 @@ class Singer(AbstractUser):
                 raise AlreadyLoggedIn("The name that you're trying to login with already exists. "
                                       "Did you already login with us tonight? If so, check the box below.")
 
-            if not self.is_audience:
-                if not self.ticket_order.is_freebie and self.ticket_order.singers.count() >= self.ticket_order.num_tickets:
-                    ticket_type = 'singer' if self.ticket_order.ticket_type == SING_SKU else 'audience'
-                    raise TicketsDepleted(f"Sorry, looks like all ticket holders for this order number already logged in. "
-                                          f"Are you sure your ticket is of type '{ticket_type}'?")
+            if not self.ticket_order.is_freebie and self.ticket_order.singers.count() >= self.ticket_order.num_tickets:
+                ticket_type = 'singer' if self.ticket_order.ticket_type == SING_SKU else 'audience'
+                raise TicketsDepleted(f"Sorry, looks like all ticket holders for this order number already logged in. "
+                                      f"Are you sure your ticket is of type '{ticket_type}'?")
 
         super().save(*args, **kwargs)
 

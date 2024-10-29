@@ -75,17 +75,22 @@ def create_singers(singer_ids: Union[int, list], frozen_time=None, num_songs=Non
 
     return singers
 
-def create_audience(audience_ids: Union[int, list], frozen_time=None, hebrew=False):
+def create_audience(audience_ids: Union[int, list], frozen_time=None, order=None, hebrew=False):
     if isinstance(audience_ids, int):
         audience_ids = range(1, audience_ids + 1)
 
     singers = []
+
+    if not order:
+        order = create_order(len(audience_ids))
+
     for i in audience_ids:
         singers.append(Singer.objects.create_user(
             username=f"audience_user_{i}" if not hebrew else f"קהל_משתמש_{i}",
             first_name=_sanitize_string(f"audience_user_{i}" if not hebrew else f"קהל_משתמש_{i}"),
             last_name=_sanitize_string("last_name" if not hebrew else "שם משפחה"),
-            is_audience=True
+            is_audience=True,
+            ticket_order=order
         ))
         if frozen_time:
             frozen_time.tick()
