@@ -27,6 +27,7 @@ from .models import (
     SongSuggestion,
     TicketOrder,
     SING_SKU,
+    ATTN_SKU,
     TicketsDepleted,
     AlreadyLoggedIn,
     CurrentGroupSong,
@@ -591,7 +592,7 @@ def _login_existing_singer(first_name, last_name, no_image_upload):
 
 
 def _login_new_audience(first_name, last_name, no_image_upload, order_id):
-    ticket_order = _get_order(order_id, SING_SKU)
+    ticket_order = _get_order(order_id, ATTN_SKU)
     try:
         singer = Singer.objects.create_user(
             name_to_username(first_name, last_name),

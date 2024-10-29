@@ -10,7 +10,7 @@ from django.urls import reverse
 from flags.state import enable_flag
 
 from song_signup.models import (
-    Singer, SongRequest, SongSuggestion, TicketOrder, SING_SKU, GroupSongRequest,
+    Singer, SongRequest, SongSuggestion, TicketOrder, SING_SKU, ATTN_SKU, GroupSongRequest,
     CurrentGroupSong, AlreadyLoggedIn, TriviaResponse
 )
 from song_signup.views import _sanitize_string
@@ -21,16 +21,16 @@ EVENT_SKU = "EVT123"
 PASSCODE = 'dev'
 
 
-def create_order(num_singers, order_id: int = None):
+def create_order(num_tickets, ticket_type, order_id: int = None):
     if not order_id:
         order_id = random.randint(111111, 999999)
     return TicketOrder.objects.create(
         order_id=order_id,
         event_sku=EVENT_SKU,
         event_name="Test Event",
-        num_tickets=num_singers,
+        num_tickets=num_tickets,
         customer_name="Test Customer",
-        ticket_type=SING_SKU,
+        ticket_type=ticket_type,
         is_freebie=False
     )
 
@@ -58,7 +58,7 @@ def create_singers(singer_ids: Union[int, list], frozen_time=None, num_songs=Non
         singer_ids = range(1, singer_ids + 1)
 
     if not order:
-        order = create_order(len(singer_ids))
+        order = create_order(len(singer_ids), SING_SKU)
 
     singers = []
     for i in singer_ids:
@@ -82,7 +82,7 @@ def create_audience(audience_ids: Union[int, list], frozen_time=None, order=None
     singers = []
 
     if not order:
-        order = create_order(len(audience_ids))
+        order = create_order(len(audience_ids), ATTN_SKU)
 
     for i in audience_ids:
         singers.append(Singer.objects.create_user(

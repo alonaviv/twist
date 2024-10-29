@@ -13,7 +13,7 @@ import os
 from song_signup.models import (
     Singer, TicketOrder,
     CurrentGroupSong, GroupSongRequest,
-    SongRequest, TriviaQuestion,
+    SongRequest, TriviaQuestion, SING_SKU, ATTN_SKU
 )
 from song_signup.tests.utils_for_tests import (
     EVENT_SKU,
@@ -75,7 +75,9 @@ class TestLogin(TestViews):
 
     def test_invalid_ticket_type(self):
         response = self.client.post(reverse('login'), {'ticket-type': 'unexpected_error',
-                                                       'first-name': 'John', 'last-name': 'Doe', 'passcode': 'dev'})
+                                                       'first-name': 'John', 'last-name': 'Doe', 'passcode': 'dev',
+                                                       'order-id': '123456'
+                                                        })
         self._assert_user_error(response, 'Invalid ticket type')
 
     def test_wrong_passcode_singer(self):
@@ -94,6 +96,7 @@ class TestLogin(TestViews):
             'first-name': ['John'],
             'last-name': ['Doe'],
             'passcode': ['wrong_passcode'],
+            'order-id': '12345'
         })
         self._assert_user_error(response, "Wrong passcode - Shani will reveal tonight's passcode at the event")
 
@@ -134,7 +137,7 @@ class TestLogin(TestViews):
                                           "It should be in the title of the tickets email")
 
     def test_singer_valid_login(self):
-        create_order(num_singers=1, order_id=12345)
+        order = create_order(num_tickets=1,ticket_type=SING_SKU, order_id=12345)
         response = self.client.post(reverse('login'), {
             'ticket-type': ['singer'],
             'first-name': ['Valid'],
@@ -142,30 +145,33 @@ class TestLogin(TestViews):
             'passcode': [PASSCODE],
             'order-id': ['12345']
         })
-        self.assertRedirects(response, reverse('home'))
+        self.assertEqual(response.status_code, 200)
         new_singer = Singer.objects.get(username='valid_singer')
         self.assertIsNotNone(new_singer)
         self.assertTrue(new_singer.is_active)
         self.assertFalse(new_singer.no_image_upload)
         self.assertFalse(new_singer.is_staff)
+        self.assertEqual(new_singer.ticket_order, order)
 
     def test_audience_valid_login(self):
+        order = create_order(num_tickets=1, ticket_type=ATTN_SKU, order_id=12345)
         response = self.client.post(reverse('login'), {
             'ticket-type': ['audience'],
             'first-name': ['Valid'],
             'last-name': ['Audience'],
             'passcode': [PASSCODE],
+            'order-id': ['12345']
         })
-        self.assertRedirects(response, reverse('home'))
+        self.assertEqual(response.status_code, 200)
         new_audience = Singer.objects.get(username='valid_audience')
         self.assertIsNotNone(new_audience)
         self.assertTrue(new_audience.is_active)
         self.assertTrue(new_audience.is_audience)
-        self.assertIsNone(new_audience.ticket_order)
+        self.assertEqual(new_audience.ticket_order, order)
         self.assertFalse(new_audience.is_staff)
 
     def test_hebrew_singer_valid_login(self):
-        create_order(num_singers=1, order_id=12345)
+        create_order(num_tickets=1, ticket_type=SING_SKU, order_id=12345)
         response = self.client.post(reverse('login'), {
             'ticket-type': ['singer'],
             'first-name': ['זמר'],
@@ -174,14 +180,14 @@ class TestLogin(TestViews):
             'order-id': ['12345'],
             'no-upload': ['on']
         })
-        self.assertRedirects(response, reverse('home'))
+        self.assertEqual(response.status_code, 200)
         new_singer = Singer.objects.get(username='זמר_בעברית')
         self.assertIsNotNone(new_singer)
         self.assertTrue(new_singer.is_active)
         self.assertTrue(new_singer.no_image_upload)
 
     def test_lowcase_singer_valid_login(self):
-        create_order(num_singers=1, order_id=12345)
+        create_order(num_tickets=1, ticket_type=SING_SKU, order_id=12345)
         response = self.client.post(reverse('login'), {
             'ticket-type': ['singer'],
             'first-name': ['lowcase'],
@@ -189,14 +195,14 @@ class TestLogin(TestViews):
             'passcode': [PASSCODE],
             'order-id': ['12345']
         })
-        self.assertRedirects(response, reverse('home'))
+        self.assertEqual(response.status_code, 200)
         new_singer = Singer.objects.get(username='lowcase_person')
         self.assertIsNotNone(new_singer)
         self.assertTrue(new_singer.is_active)
         self.assertEqual((new_singer.first_name, new_singer.last_name), ('Lowcase', 'Person'))
 
     def test_additional_singer_valid_login(self):
-        order = create_order(num_singers=2, order_id=12345)
+        order = create_order(num_tickets=2, ticket_type=SING_SKU, order_id=12345)
         create_singers(1, order=order)
 
         response = self.client.post(reverse('login'), {
@@ -206,10 +212,10 @@ class TestLogin(TestViews):
             'passcode': [PASSCODE],
             'order-id': ['12345']
         })
-        self.assertRedirects(response, reverse('home'))
+        self.assertEqual(response.status_code, 200)
 
     def test_additional_singer_depleted_ticket(self):
-        order = create_order(num_singers=2, order_id=12345)
+        order = create_order(num_tickets=2, ticket_type=SING_SKU, order_id=12345)
         create_singers(2, order=order)
 
         response = self.client.post(reverse('login'), {
@@ -236,7 +242,7 @@ class TestLogin(TestViews):
             'order-id': [user.ticket_order.order_id],
             'logged-in': ['on']
         })
-        self.assertRedirects(response, reverse('home'))
+        self.assertEqual(response.status_code, 200)
 
         user.refresh_from_db()
         self.assertTrue(user.is_active)
@@ -267,6 +273,7 @@ class TestLogin(TestViews):
             'first-name': [user.first_name],
             'last-name': [user.last_name],
             'passcode': [PASSCODE],
+            'order-id': [user.ticket_order.order_id],
         })
         self._assert_user_error(response,
                                 "The name that you're trying to login with already exists. Did you already "
@@ -282,9 +289,10 @@ class TestLogin(TestViews):
             'first-name': [user.first_name],
             'last-name': [user.last_name],
             'passcode': [PASSCODE],
-            'logged-in': ['on']
+            'logged-in': ['on'],
+            'order-id': [user.ticket_order.order_id],
         })
-        self.assertRedirects(response, reverse('home'))
+        self.assertEqual(response.status_code, 200)
 
         user.refresh_from_db()
         self.assertTrue(user.is_active)
@@ -306,12 +314,13 @@ class TestLogin(TestViews):
             'first-name': ["doesn't"],
             'last-name': ['exist'],
             'passcode': [PASSCODE],
-            'logged-in': ['on']
+            'logged-in': ['on'],
+            'order-id': '12345'
         })
         self._assert_user_error(response, "The name that you logged in with previously does not match your current one")
 
     def test_login_logout_login(self):
-        create_order(num_singers=1, order_id=12345)
+        create_order(num_tickets=1, ticket_type=SING_SKU, order_id=12345)
         self.client.post(reverse('login'), {
             'ticket-type': ['singer'],
             'first-name': ['Valid'],
@@ -356,7 +365,7 @@ class TestLogin(TestViews):
             'order-id': '54321'
         })
 
-        self.assertRedirects(response, reverse('home'))
+        self.assertEqual(response.status_code, 200)
         new_singer = Singer.objects.get(username='freebie_singer')
         self.assertIsNotNone(new_singer)
         self.assertTrue(new_singer.is_active)
@@ -368,7 +377,7 @@ class TestLogin(TestViews):
             'passcode': PASSCODE,
             'order-id': '54321'
         })
-        self.assertRedirects(response, reverse('home'))
+        self.assertEqual(response.status_code, 200)
         another_new_singer = Singer.objects.get(username='another freebie_singer')
         self.assertIsNotNone(new_singer)
         self.assertTrue(another_new_singer.is_active)
@@ -378,7 +387,7 @@ class TestLogin(TestViews):
         self.assertTrue(freebie_query.first().is_freebie)
 
     def test_singer_change_video(self):
-        create_order(num_singers=1, order_id=12345)
+        create_order(num_tickets=1, ticket_type=SING_SKU, order_id=12345)
         response = self.client.post(reverse('login'), {
             'ticket-type': ['singer'],
             'first-name': ['Valid'],
@@ -386,7 +395,7 @@ class TestLogin(TestViews):
             'passcode': [PASSCODE],
             'order-id': ['12345']
         })
-        self.assertRedirects(response, reverse('home'))
+        self.assertEqual(response.status_code, 200)
         new_singer = Singer.objects.get(username='valid_singer')
         self.assertIsNotNone(new_singer)
         self.assertTrue(new_singer.is_active)
@@ -402,7 +411,7 @@ class TestLogin(TestViews):
             'order-id': ['12345'],
             'logged-in': ['on']
         })
-        self.assertRedirects(response, reverse('home'))
+        self.assertEqual(response.status_code, 200)
         new_singer = Singer.objects.get(username='valid_singer')
         self.assertIsNotNone(new_singer)
         self.assertTrue(new_singer.is_active)
@@ -419,7 +428,7 @@ class TestLogin(TestViews):
             'no-upload': ['on'],
             'logged-in': ['on']
         })
-        self.assertRedirects(response, reverse('home'))
+        self.assertEqual(response.status_code, 200)
         new_singer = Singer.objects.get(username='valid_singer')
         self.assertIsNotNone(new_singer)
         self.assertTrue(new_singer.is_active)
