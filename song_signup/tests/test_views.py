@@ -1,3 +1,4 @@
+from urllib.parse import urlparse, parse_qs
 from constance.test import override_config
 from django.forms.models import model_to_dict
 from django.http import HttpResponse
@@ -1058,9 +1059,11 @@ class TestSuggestGroupSong(TestCase):
         self.assertEqual(created_song.musical, 'How to Succeed in Business Without Really Trying')
         self.assertEqual(created_song.suggested_by, get_singer_str(1))
 
-        call_args, call_kwargs = home_mock.call_args
-        self.assertIn('Brotherhood of Man', call_args)
-        self.assertTrue(call_kwargs['is_group_song'])
+        parsed_url = urlparse(response.url)
+        query_params = parse_qs(parsed_url.query)
+
+        self.assertEqual(query_params['song'][0], 'Brotherhood of Man')
+        self.assertEqual(query_params['is-group-song'][0], 'true')
 
     def test_audience(self):
         login_audience(self, user_id=1)
