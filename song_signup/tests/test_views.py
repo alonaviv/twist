@@ -110,8 +110,8 @@ class TestLogin(TestViews):
             'order-id': ['']
         })
         self.assertEqual(response.status_code, 400)
-        self._assert_user_error(response, "Your order number is incorrect. "
-                                          "It should be in the title of the tickets email")
+        self._assert_user_error(response, "We can't find a singer ticket with that order number. "
+                                          "Maybe you have a typo? The number appears in the title of the tickets email")
 
     def test_wrong_order_id(self):
         response = self.client.post(reverse('login'), {
@@ -122,8 +122,20 @@ class TestLogin(TestViews):
             'order-id': ['4312']
         })
         self.assertEqual(response.status_code, 400)
-        self._assert_user_error(response, "Your order number is incorrect. "
-                                          "It should be in the title of the tickets email")
+        self._assert_user_error(response, "We can't find a singer ticket with that order number. "
+                                          "Maybe you have a typo? The number appears in the title of the tickets email")
+
+    def test_wrong_order_id_audience(self):
+        response = self.client.post(reverse('login'), {
+            'ticket-type': ['audience'],
+            'first-name': ['Jane'],
+            'last-name': ['Doe'],
+            'passcode': [PASSCODE],
+            'order-id': ['4312']
+        })
+        self.assertEqual(response.status_code, 400)
+        self._assert_user_error(response, "We can't find an audience ticket with that order number. "
+                                          "Maybe you have a typo? The number appears in the title of the tickets email")
 
     def test_bad_order_id(self):
         response = self.client.post(reverse('login'), {
@@ -134,8 +146,8 @@ class TestLogin(TestViews):
             'order-id': ['4312awlekj']
         })
         self.assertEqual(response.status_code, 400)
-        self._assert_user_error(response, "Your order number is incorrect. "
-                                          "It should be in the title of the tickets email")
+        self._assert_user_error(response, "We can't find a singer ticket with that order number. "
+                                          "Maybe you have a typo? The number appears in the title of the tickets email")
 
     def test_singer_valid_login(self):
         order = create_order(num_tickets=1,ticket_type=SING_SKU, order_id=12345)
@@ -170,6 +182,81 @@ class TestLogin(TestViews):
         self.assertTrue(new_audience.is_audience)
         self.assertEqual(new_audience.ticket_order, order)
         self.assertFalse(new_audience.is_staff)
+
+    def test_party_login(self):
+        order = create_order(num_tickets=2, ticket_type=ATTN_SKU, order_id=12345)
+        order = create_order(num_tickets=2, ticket_type=SING_SKU, order_id=12345)
+        # First audience
+        response = self.client.post(reverse('login'), {
+            'ticket-type': ['audience'],
+            'first-name': ['Valid'],
+            'last-name': ['Audience1'],
+            'passcode': [PASSCODE],
+            'order-id': ['12345']
+        })
+        self.assertEqual(response.status_code, 200)
+        new_audience = Singer.objects.get(username='valid_audience1')
+        self.client.logout()
+
+        # First singer
+        response = self.client.post(reverse('login'), {
+            'ticket-type': ['singer'],
+            'first-name': ['Valid'],
+            'last-name': ['Singer1'],
+            'passcode': [PASSCODE],
+            'order-id': ['12345']
+        })
+        self.assertEqual(response.status_code, 200)
+        new_audience = Singer.objects.get(username='valid_singer1')
+        self.client.logout()
+
+        # Second audience
+        response = self.client.post(reverse('login'), {
+            'ticket-type': ['audience'],
+            'first-name': ['Valid'],
+            'last-name': ['Audience2'],
+            'passcode': [PASSCODE],
+            'order-id': ['12345']
+        })
+        self.assertEqual(response.status_code, 200)
+        new_audience = Singer.objects.get(username='valid_audience2')
+        self.client.logout()
+
+        # Second singer
+        response = self.client.post(reverse('login'), {
+            'ticket-type': ['singer'],
+            'first-name': ['Valid'],
+            'last-name': ['Singer2'],
+            'passcode': [PASSCODE],
+            'order-id': ['12345']
+        })
+        self.assertEqual(response.status_code, 200)
+        new_audience = Singer.objects.get(username='valid_singer2')
+        self.client.logout()
+
+        # Singer depleted
+        response = self.client.post(reverse('login'), {
+            'ticket-type': ['singer'],
+            'first-name': ['Jane'],
+            'last-name': ['Doe'],
+            'passcode': [PASSCODE],
+            'order-id': ['12345']
+        })
+        self.assertEqual(response.status_code, 400)
+        self._assert_user_error(response, "Sorry, looks like all ticket holders for this order number already "
+                                          "logged in. Are you sure your ticket is of type 'singer'?")
+
+        # Audience depleted
+        response = self.client.post(reverse('login'), {
+            'ticket-type': ['audience'],
+            'first-name': ['Jane'],
+            'last-name': ['Doe'],
+            'passcode': [PASSCODE],
+            'order-id': ['12345']
+        })
+        self.assertEqual(response.status_code, 400)
+        self._assert_user_error(response, "Sorry, looks like all ticket holders for this order number already "
+                                          "logged in. Are you sure your ticket is of type 'audience'?")
 
     def test_hebrew_singer_valid_login(self):
         create_order(num_tickets=1, ticket_type=SING_SKU, order_id=12345)
@@ -215,7 +302,34 @@ class TestLogin(TestViews):
         })
         self.assertEqual(response.status_code, 200)
 
-    def test_additional_singer_depleted_ticket(self):
+    def test_additional_audience_valid_login(self):
+        order = create_order(num_tickets=2, ticket_type=ATTN_SKU, order_id=4321)
+        create_singers(1, order=order)
+
+        response = self.client.post(reverse('login'), {
+            'ticket-type': ['audience'],
+            'first-name': ['Second'],
+            'last-name': ['Audience'],
+            'passcode': [PASSCODE],
+            'order-id': ['4321']
+        })
+        self.assertEqual(response.status_code, 200)
+
+    def test_additional_wrong_ticket_type(self):
+        order = create_order(num_tickets=2, ticket_type=ATTN_SKU, order_id=4321)
+        create_singers(1, order=order)
+
+        response = self.client.post(reverse('login'), {
+            'ticket-type': ['singer'],
+            'first-name': ['Second'],
+            'last-name': ['Audience'],
+            'passcode': [PASSCODE],
+            'order-id': ['4321']
+        })
+        self._assert_user_error(response, "We can't find a singer ticket with that order number. "
+                                          "Maybe you have a typo? The number appears in the title of the tickets email")
+
+    def test_singer_depleted_ticket(self):
         order = create_order(num_tickets=2, ticket_type=SING_SKU, order_id=12345)
         create_singers(2, order=order)
 
@@ -228,6 +342,20 @@ class TestLogin(TestViews):
         })
         self._assert_user_error(response, "Sorry, looks like all ticket holders for this order number already "
                                           "logged in. Are you sure your ticket is of type 'singer'?")
+
+    def test_audience_depleted_ticket(self):
+        order = create_order(num_tickets=2, ticket_type=ATTN_SKU, order_id=12345)
+        create_singers(2, order=order)
+
+        response = self.client.post(reverse('login'), {
+            'ticket-type': ['audience'],
+            'first-name': ['Additional'],
+            'last-name': ['Audience'],
+            'passcode': [PASSCODE],
+            'order-id': ['12345']
+        })
+        self._assert_user_error(response, "Sorry, looks like all ticket holders for this order number already "
+                                          "logged in. Are you sure your ticket is of type 'audience'?")
 
 
     def test_singer_logged_in_box(self):
@@ -434,6 +562,38 @@ class TestLogin(TestViews):
         self.assertIsNotNone(new_singer)
         self.assertTrue(new_singer.is_active)
         self.assertTrue(new_singer.no_image_upload)
+
+    def test_audience_change_video(self):
+        create_order(num_tickets=1, ticket_type=ATTN_SKU, order_id=4321)
+        response = self.client.post(reverse('login'), {
+            'ticket-type': ['audience'],
+            'first-name': ['Valid'],
+            'last-name': ['Audience'],
+            'passcode': [PASSCODE],
+            'order-id': ['4321']
+        })
+        self.assertEqual(response.status_code, 200)
+        new_audience = Singer.objects.get(username='valid_audience')
+        self.assertIsNotNone(new_audience)
+        self.assertTrue(new_audience.is_active)
+        self.assertFalse(new_audience.no_image_upload)
+
+        # Login again and add video checkbox
+        self.client.get(reverse('logout'))
+        response = self.client.post(reverse('login'), {
+            'ticket-type': ['audience'],
+            'first-name': ['Valid'],
+            'last-name': ['Audience'],
+            'passcode': [PASSCODE],
+            'order-id': ['4321'],
+            'no-upload': ['on'],
+            'logged-in': ['on']
+        })
+        self.assertEqual(response.status_code, 200)
+        new_audience = Singer.objects.get(username='valid_audience')
+        self.assertIsNotNone(new_audience)
+        self.assertTrue(new_audience.is_active)
+        self.assertTrue(new_audience.no_image_upload)
 
 
 class TestJsonRes(TestViews):

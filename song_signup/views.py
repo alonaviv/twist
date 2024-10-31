@@ -555,8 +555,9 @@ def _get_order(order_id, ticket_type):
                                        event_sku=config.EVENT_SKU,
                                        ticket_type=ticket_type)
     except (TicketOrder.DoesNotExist, ValueError):
-        raise TwistApiException("Your order number is incorrect. "
-                                "It should be in the title of the tickets email")
+        ticket_str = 'a singer' if ticket_type == SING_SKU else 'an audience'
+        raise TwistApiException(f"We can't find {ticket_str} ticket with that order number. Maybe you have a typo? "
+                                "The number appears in the title of the tickets email")
 
 
 def _login_new_singer(first_name, last_name, no_image_upload, order_id):
@@ -603,7 +604,7 @@ def _login_new_audience(first_name, last_name, no_image_upload, order_id):
             ticket_order=ticket_order,
             no_image_upload=no_image_upload
         )
-    except AlreadyLoggedIn as e:
+    except (TicketsDepleted, AlreadyLoggedIn) as e:
         raise TwistApiException(str(e))
     return singer
 

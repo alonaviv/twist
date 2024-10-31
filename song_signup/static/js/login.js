@@ -59,6 +59,7 @@ function deactivateForm() {
         loginBack.classList.remove('active');
         singerFormWrapper.classList.remove('active');
         audienceFormWrapper.classList.remove('active');
+        formMessages.innerHTML = "";
     }, 10);
     setTimeout(() => {
         loginBack.style.display = 'none';
