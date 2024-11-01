@@ -6,11 +6,10 @@
         <div id="overlay"></div>
         <div id="menu">
             <div id="menu-content">
-                {% if is_singer %}
                 <h2>Hi {{ user.first_name }}!</h2>
+                {% if is_singer %}
                 <h3>Ready to Sing?</h3>
                 {% else%}
-                <h2>Hey There!</h2>
                 <h3>Let's hear some showtunes!</h3>
                 {% endif %}
                 <ul>
