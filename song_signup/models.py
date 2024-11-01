@@ -18,7 +18,7 @@ from django.db.models import (
     CharField,
     OneToOneField,
     ImageField,
-    JSONField
+    JSONField,
 )
 from twist.utils import format_commas
 from django.utils import timezone
@@ -55,7 +55,7 @@ class TicketOrder(Model):
     ticket_type = CharField(max_length=20, choices=[(SING_SKU, 'Singer'), (ATTN_SKU, 'Audience')])
     customer_name = CharField(max_length=100)
     is_freebie = BooleanField(default=False)  # Ticket group for giving singer access to those without singer tickets
-    logged_in_customers = JSONField(default=list)
+    logged_in_customers = JSONField(default=list, blank=True)
 
     class Meta:
         unique_together = ('order_id', 'event_sku', 'ticket_type')
@@ -92,8 +92,10 @@ class Singer(AbstractUser):
                                       f"Are you sure your ticket is of type '{ticket_type}'?")
 
         super().save(*args, **kwargs)
-        self.ticket_order.logged_in_customers.append(str(self))
-        self.ticket_order.save()
+
+        if not self.is_superuser and str(self) not in self.ticket_order.logged_in_customers:
+            self.ticket_order.logged_in_customers.append(str(self))
+            self.ticket_order.save()
 
     @property
     def all_songs(self):

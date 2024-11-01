@@ -265,16 +265,9 @@ class LyricsAdmin(admin.ModelAdmin):
 
 @admin.register(TicketOrder)
 class OrdersAdmin(admin.ModelAdmin):
-    list_display = ['order_id', 'event_name', 'event_sku', 'num_tickets', 'ticket_type', 'customer_name', 'get_singers']
+    list_display = ['order_id', 'event_name', 'event_sku', 'num_tickets', 'ticket_type', 'customer_name',
+                    'logged_in_customers']
     list_filter = ['event_sku']
-
-    def get_singers(self, obj):
-        singers = obj.singers.all()
-        return format_html("<br>".join(
-            [f"""<a href="{reverse('admin:song_signup_singer_change', args=[singer.pk])}">{singer}</a>""" for singer in
-             singers]))
-
-    get_singers.short_description = 'singers'
 
 
 @admin.register(CurrentGroupSong)
