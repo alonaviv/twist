@@ -93,7 +93,7 @@ class Singer(AbstractUser):
 
         super().save(*args, **kwargs)
 
-        if not self.is_superuser and str(self) not in self.ticket_order.logged_in_customers:
+        if self.ticket_order and str(self) not in self.ticket_order.logged_in_customers:
             self.ticket_order.logged_in_customers.append(str(self))
             self.ticket_order.save()
 
