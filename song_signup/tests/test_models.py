@@ -1,9 +1,10 @@
 import datetime
 from freezegun import freeze_time
-
+from django.test import TestCase
 from song_signup.tests.utils_for_tests import (
     SongRequestTestCase, create_singers, add_songs_to_singer, set_performed,
-    get_song, add_songs_to_singers, add_partners, TEST_START_TIME
+    get_song, add_songs_to_singers, add_partners, TEST_START_TIME, create_order, SING_SKU, ATTN_SKU,
+    get_singer_str, create_audience, get_audience_str
 )
 
 
@@ -78,6 +79,19 @@ class TestSingerModel(SongRequestTestCase):
             self.assertEqual(singer.first_request_time, TEST_START_TIME + datetime.timedelta(seconds=1))
 
 
+class TestTicketOrderModel(TestCase):
+    def test_save_customers(self):
+        singer_order = create_order(3, SING_SKU, order_id=4321)
+        audience_order = create_order(2, ATTN_SKU, order_id=4321)
+        create_singers([1, 2, 3], order=singer_order)
+        create_audience([4, 5], order=audience_order)
+
+        singer_order.save_customers()
+        self.assertSetEqual(set(singer_order.logged_in_customers), {get_singer_str(1), get_singer_str(2),
+                                                                    get_singer_str(3)})
+
+        audience_order.save_customers()
+        self.assertSetEqual(set(audience_order.logged_in_customers), {get_audience_str(4), get_audience_str(5)})
 
 
 
