@@ -63,11 +63,6 @@ class TicketOrder(Model):
     def __str__(self):
         return f"SKU: {self.event_sku}; Order #{self.order_id}; Type {'FREEBIE' if self.is_freebie else self.ticket_type}"
 
-    def save_customers(self):
-        for customer in self.singers.all():
-            self.logged_in_customers.append(str(customer))
-        self.save()
-
 
 class Singer(AbstractUser):
     """
@@ -97,6 +92,8 @@ class Singer(AbstractUser):
                                       f"Are you sure your ticket is of type '{ticket_type}'?")
 
         super().save(*args, **kwargs)
+        self.ticket_order.logged_in_customers.append(str(self))
+        self.ticket_order.save()
 
     @property
     def all_songs(self):

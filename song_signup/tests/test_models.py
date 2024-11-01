@@ -6,6 +6,8 @@ from song_signup.tests.utils_for_tests import (
     get_song, add_songs_to_singers, add_partners, TEST_START_TIME, create_order, SING_SKU, ATTN_SKU,
     get_singer_str, create_audience, get_audience_str
 )
+from song_signup.models import TicketsDepleted, Singer
+from django.core.management import call_command
 
 
 class TestSingerModel(SongRequestTestCase):
@@ -83,14 +85,24 @@ class TestTicketOrderModel(TestCase):
     def test_save_customers(self):
         singer_order = create_order(3, SING_SKU, order_id=4321)
         audience_order = create_order(2, ATTN_SKU, order_id=4321)
-        create_singers([1, 2, 3], order=singer_order)
-        create_audience([4, 5], order=audience_order)
+        singers = create_singers([1, 2, 3], order=singer_order)
+        audience = create_audience([4, 5], order=audience_order)
 
-        singer_order.save_customers()
+        with self.assertRaises(TicketsDepleted):
+            create_singers(([6]), order=singer_order)
+
+        with self.assertRaises(TicketsDepleted):
+            create_audience(([6]), order=audience_order)
+
+        # Logout all customers
+        for customer in Singer.objects.all():
+            customer.is_active = False
+            customer.save()
+
+        call_command('reset_db')
+
         self.assertSetEqual(set(singer_order.logged_in_customers), {get_singer_str(1), get_singer_str(2),
                                                                     get_singer_str(3)})
-
-        audience_order.save_customers()
         self.assertSetEqual(set(audience_order.logged_in_customers), {get_audience_str(4), get_audience_str(5)})
 
 
