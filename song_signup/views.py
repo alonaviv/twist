@@ -280,22 +280,24 @@ def view_suggestions(request):
     return render(request, 'song_signup/view_suggestions.html')
 
 
+# TODO: Changed that it gets superusers as Singer objects. Verify this function is well tested with superusers, and manual test it well too
 @bwt_login_required('login', singer_only=True)
 def add_song(request):
-    class HostSinger:
-        def __init__(self, user_obj):
-            self.name = user_obj.first_name
-            self.id = user_obj.id
+    return render(request, 'song_signup/add_song.html', {'other_singers': _get_possible_partners(request)})
 
-        def __str__(self):
-            return self.name
-
-    alon = HostSinger(Singer.objects.get(username='alon_aviv'))
-    shani = HostSinger(Singer.objects.get(username='shani_wahrman'))
-
-    other_singers = Singer.objects.filter(is_audience=False, is_active=True).exclude(pk=request.user.pk).exclude(pk=alon.id).exclude(pk=shani.id).order_by(
+# TODO - Test funciton
+def _get_possible_partners(request):
+    alon = Singer.objects.get(username='alon_aviv')
+    shani = Singer.objects.get(username='shani_wahrman')
+    partner_options = Singer.objects.filter(is_audience=False, is_active=True).exclude(pk=request.user.pk).exclude(pk=alon.id).exclude(pk=shani.id).order_by(
         'first_name')
-    return render(request, 'song_signup/add_song.html', {'other_singers': [shani, alon] + list(other_singers)})
+    return [alon, shani] + list(partner_options)
+
+@api_view(["GET"])
+def get_possible_partners(request):
+    partners = _get_possible_partners(request)
+    serialized = SingerSerializer(partners, many=True)
+    return Response(serialized.data, status=status.HTTP_200_OK)
 
 
 def _sort_lyrics(song: SongRequest | GroupSongRequest):

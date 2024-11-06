@@ -35,13 +35,6 @@ async function populateSongList() {
                     <div class="song-wrapper" id=song-${song.id}>
                     ${getSongHtml(song, current_user)}
                     </div>`;
-        
-        if (song.partners.length > 0 && song.singer.id == current_user.id) {
-            li.innerHTML += `
-                    <div class="other-singers">
-                        <p>Partners: ${song.partners_str}</p>
-                    </div>`;
-        }
         setupListeners(li, song.id);
         return li;
     });
@@ -65,6 +58,10 @@ function getSongHtml(song, current_user) {
             <div class="song-details">
                 <p class="song-name">${song.song_name}${song.singer.id != current_user.id ? ` (Added by ${song.singer.first_name} ${song.singer.last_name})` : ""}</p>
                 <p class="song-musical">${song.musical}</p>
+        
+        ${(song.partners.length > 0 && song.singer.id == current_user.id) ? `<div class="other-singers">
+                    <p>Partners:<br> ${song.partners_str}</p>
+                </div>`: ""}
             </div>
             ${song.singer.id === current_user.id ? `<i class="fa-solid fa-pen rename-song" data-song-id=${song.id} id="rename-${song.id}"></i>
             <i class="fa-solid fa-trash-can delete-song" data-song-id=${song.id} id="delete-${song.id}"></i>` : ""}`;
@@ -111,19 +108,32 @@ async function displayRenameForm(e) {
     const songPK = e.currentTarget.dataset.songId;
     const songWrapper = e.currentTarget.parentElement;
     let song;
+    let possible_partners
 
     try {
-        const response = await fetch(`/get_song/${songPK}`);
+        let response = await fetch(`/get_song/${songPK}`);
         song = await response.json();
+
+        response = await fetch('/get_possible_partners')
+        possible_partners = await response.json()
+
     } catch (err) {
         alert(`Error: ${err}`);
     }
+    let optionsHtml = possible_partners.map(partner => {
+        const isSelected = song.partners.some(songPartner => songPartner.id === partner.id);
+        return `<option value="${partner.id}" ${isSelected ? 'selected' : ''}>${partner.is_superuser ? `--- ${partner.first_name} ---` : `${partner.first_name} ${partner.last_name}`}</option>`
+    }).join('\n');
 
     songWrapper.innerHTML = `
             <form action="" class="edit-song-form" autocomplete="off" id="rename-form-${songPK}" data-song-id=${songPK}>
                 <div class="song-details">
                     <textarea name="edit-song-name-${songPK}" class="edit-song edit-song-name" required>${song.song_name}</textarea>
                     <textarea name="edit-song-musical-${songPK}" class="edit-song edit-song-musical song-musical" required>${song.musical}</textarea>
+                    <label for="partners">Partners:</label>
+                    <select name="partners" id="edit-partners" multiple>
+                        ${optionsHtml}
+                    </select>
                 </div>
                 <button type="submit" class="approve-rename-btn">
                     <i class="fa-solid fa-check"></i>
@@ -131,12 +141,12 @@ async function displayRenameForm(e) {
             </form>
         `;
 
-    // Set testarea height to match the content height
+    // Set textarea height to match the content height
     const editSong = songWrapper.querySelector('.edit-song-name');
     editSong.style.height = "1px";
     editSong.style.height = editSong.scrollHeight + "px";
 
-    // Set testarea height to match the content height
+    // Set textarea height to match the content height
     const editMusical = songWrapper.querySelector('.edit-song-musical');
     editMusical.style.height = "1px";
     editMusical.style.height = editMusical.scrollHeight + "px";

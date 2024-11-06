@@ -41,7 +41,13 @@
                         </label>
                     <select name="partners" id="partners" multiple>
                         {% for singer in other_singers %}
-                        <option value="{{ singer.id }}">{{ singer }}</option>
+                        <option value="{{ singer.id }}">
+                            {% if singer.is_superuser %} 
+                            --- {{ singer.first_name }} --- 
+                            {% else %}
+                            {{ singer }}
+                            {% endif %}
+                        </option>
                         {% endfor %}
                     </select>
                 </div>

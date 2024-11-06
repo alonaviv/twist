@@ -6,7 +6,7 @@ from twist.utils import is_hebrew, format_commas
 class SingerSerializer(ModelSerializer):
     class Meta:
         model = Singer
-        fields = ['id', 'first_name', 'last_name']
+        fields = ['id', 'first_name', 'last_name', 'is_superuser']
 
 
 class SongSuggestionSerializer(ModelSerializer):
