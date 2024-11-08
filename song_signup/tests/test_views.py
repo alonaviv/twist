@@ -2,7 +2,7 @@ from urllib.parse import urlparse, parse_qs
 from constance.test import override_config
 from django.forms.models import model_to_dict
 from django.http import HttpResponse
-from django.test import TestCase, Client
+from django.test import TestCase, Client, TransactionTestCase
 from django.urls import reverse
 from freezegun import freeze_time
 from mock import patch
@@ -45,7 +45,7 @@ from twist.utils import format_commas
 
 evening_started = override_config(PASSCODE=PASSCODE, EVENT_SKU=EVENT_SKU)
 
-SINGER_FIELDS = ['id', 'first_name', 'last_name']
+SINGER_FIELDS = ['id', 'first_name', 'last_name', 'is_superuser']
 
 class TestViews(TestCase):
     def _assert_user_error(self, response, msg=None, status=None):
@@ -783,7 +783,7 @@ class TestGetSong(SongRequestSerializeTestCase):
         self.assertEqual(self._remove_song_keys(res_json), self._remove_song_keys(expected_json))
 
 
-class TestRenameSong(SongRequestSerializeTestCase):
+class TestUpdateSong(SongRequestSerializeTestCase):
     IGNORE_SONG_KEYS = ['request_time', 'partners_str']
 
     def _get_expected_song_json(self, song_name, musical, singer, id):
@@ -801,7 +801,7 @@ class TestRenameSong(SongRequestSerializeTestCase):
             'musical': 'New Musical'
         }
 
-        response = self.client.put(reverse('rename_song'), data, content_type='application/json')
+        response = self.client.put(reverse('update_song'), data, content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
         res_json = get_json(response)
@@ -816,7 +816,7 @@ class TestRenameSong(SongRequestSerializeTestCase):
             'musical': 'New Musical'
         }
 
-        response = self.client.put(reverse('rename_song'), data, content_type='application/json')
+        response = self.client.put(reverse('update_song'), data, content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
         res_json = get_json(response)
@@ -831,26 +831,30 @@ class TestRenameSong(SongRequestSerializeTestCase):
             'musical': ''
         }
 
-        response = self.client.put(reverse('rename_song'), data, content_type='application/json')
+        response = self.client.put(reverse('update_song'), data, content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
         res_json = get_json(response)
         self.assertEqual(res_json, {'error': 'Musical name can not empty'})
 
-    def test_rename_success(self):
+    def test_update_success(self):
         user = login_singer(self, user_id=1, num_songs=1)
         song = user.songs.first()
         song.notes = "Some note someone wrote"
         song.found_music = True
         song.default_lyrics = True
 
+        create_singers([2, 3])
+
         data = {
             'song_id': song.id,
             'song_name': 'new Song name',
-            'musical': 'New musical'
+            'musical': 'New musical',
+            'partners': ['2', '3']
+
         }
 
-        response = self.client.put(reverse('rename_song'), data, content_type='application/json')
+        response = self.client.put(reverse('update_song'), data, content_type='application/json')
         self.assertEqual(response.status_code, 200)
 
         res_json = get_json(response)
@@ -864,7 +868,7 @@ class TestRenameSong(SongRequestSerializeTestCase):
         self.assertFalse(song.found_music)
         self.assertFalse(song.default_lyrics)
 
-    def _test_rename_same(self, song_name=False, musical=False):
+    def _test_update_same(self, song_name=False, musical=False):
         user = login_singer(self, user_id=1, num_songs=1)
 
         song = get_song(1, 1)
@@ -878,7 +882,7 @@ class TestRenameSong(SongRequestSerializeTestCase):
             'musical': song.musical if musical else 'New Musical'
         }
 
-        response = self.client.put(reverse('rename_song'), data, content_type='application/json')
+        response = self.client.put(reverse('update_song'), data, content_type='application/json')
         self.assertEqual(response.status_code, 200)
 
         song.refresh_from_db()  # Reload from the database
@@ -887,14 +891,14 @@ class TestRenameSong(SongRequestSerializeTestCase):
         self.assertEqual(song.found_music, original_found_music)
         self.assertEqual(song.default_lyrics, original_default_lyrics)
 
-    def test_rename_same_name(self):
-        self._test_rename_same(song_name=True)
+    def test_update_same_name(self):
+        self._test_update_same(song_name=True)
 
-    def test_rename_same_musical(self):
-        self._test_rename_same(musical=True)
+    def test_update_same_musical(self):
+        self._test_update_same(musical=True)
 
-    def test_rename_same_all(self):
-        self._test_rename_same(musical=True, song_name=True)
+    def test_update_same_all(self):
+        self._test_update_same(musical=True, song_name=True)
 
 
 class TestRestApi(TestViews):
@@ -1189,7 +1193,7 @@ class TestDecorators(TestCase):
     def test_bwt_required_singer_only_w_audience(self):
         login_audience(self)
         response = self.client.get(reverse('manage_songs'))  # @bwt_login_required('login', singer_only=True)
-        self.assertRedirects(response, reverse('login'))
+        self.assertRedirects(response, reverse('login'), fetch_redirect_response=False)
 
     def test_superuser_required_w_superuser(self):
         user = login_singer(self)
@@ -1201,7 +1205,7 @@ class TestDecorators(TestCase):
     def test_superuser_required_wo_superuser(self):
         user = login_singer(self)
         response = self.client.get(reverse('lyrics', kwargs={'song_pk': 1}))  # @bwt_superuser_required('login')
-        self.assertRedirects(response, reverse('login'))
+        self.assertRedirects(response, reverse('login'), fetch_redirect_response=False)
 
 
 class TestSuggestGroupSong(TestCase):
@@ -1242,7 +1246,7 @@ class TestSuggestGroupSong(TestCase):
         self.assertTemplateUsed(response, 'song_signup/suggest_group_song.html')
 
 
-class TestAddSongRequest(TestCase):
+class TestAddSongRequest(TransactionTestCase):
     def test_only_required_fields(self):
         singer = login_singer(self, user_id=1)
         response = self.client.post(reverse('add_song_request'), {
@@ -1290,7 +1294,7 @@ class TestAddSongRequest(TestCase):
             'musical': ['wicked'],
             'partners': [str(s2.id), str(s3.id), str(s4.id)]
         })
-        self.assertFalse(song_exists('defying gravity'))
+        self.assertFalse(song_exists('Defying Gravity'))
         self.assertEqual(response.status_code, 400)
         self.assertJSONEqual(response.content,
                              {'error': f"A singer can be selected as partner once per night, "
@@ -1405,22 +1409,17 @@ class TestAddSongView(TestViews):
                                                 is_audience=False, is_superuser=True)
         self.alon = Singer.objects.create_user(username='alon_aviv', first_name='Alon', last_name='Aviv', is_audience=False,
                                           is_superuser=True)
-        self.HOST_TUPLE = (self.shani.id, 'Shani'), (self.alon.id, 'Alon')
-
         self.user = login_singer(self, user_id=99)
 
-    def _get_other_singers(self, response):
-        return [(singer.id, str(singer)) for singer in response.context['other_singers']]
-
     def test_add_song(self):
-        [singer] = create_singers([2], num_songs=2)
+        [singer2] = create_singers([2], num_songs=2)
         create_audience([3])
 
         response = self.client.get(reverse('add_song'))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'song_signup/add_song.html')
 
-        self.assertListEqual(self._get_other_singers(response), [*self.HOST_TUPLE, (singer.id, get_singer_str(2))])
+        self.assertListEqual(response.context['other_singers'], [self.shani, self.alon, singer2])
 
         [singer3, singer4, singer5] = create_singers([3, 4, 5], num_songs=2)
         create_audience([6, 7, 8, 9, 10])
@@ -1429,11 +1428,12 @@ class TestAddSongView(TestViews):
 
         response = self.client.get(reverse('add_song'))
         self.assertEqual(response.status_code, 200)
-        self.assertListEqual(self._get_other_singers(response),
-                             [*self.HOST_TUPLE,
-                              (singer.id, get_singer_str(2)),
-                              (singer3.id, get_singer_str(3)),
-                              (singer5.id, get_singer_str(5)),
+        self.assertListEqual(response.context['other_singers'],
+                             [self.shani,
+                              self.alon,
+                              singer2,
+                              singer3,
+                              singer5
                               ])
 
 class TestTrivia(TestViews):

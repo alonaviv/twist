@@ -17,7 +17,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 from titlecase import titlecase
-
+from django.core.exceptions import ValidationError
 from .forms import FileUploadForm
 from .models import (
     GroupSongRequest,
@@ -32,7 +32,7 @@ from .models import (
     AlreadyLoggedIn,
     CurrentGroupSong,
     TriviaQuestion,
-    TriviaResponse
+    TriviaResponse,
 )
 from .serializers import (
     SongSuggestionSerializer,
@@ -145,26 +145,14 @@ def add_song_request(request):
         approve_duplicate = request.POST.get('approve-duplicate')
 
         song_request = SongRequest.objects.filter(song_name=song_name, musical=musical).first()
+        # TODO: My problem here is that I want to do the validation before the object is created.
         if not song_request or approve_duplicate:
-            for partner_id in partners:
-                try:
-                    partner = Singer.objects.get(id=partner_id)
-                    if partner.is_superuser:
-                        continue
-                    if partner.songs_as_partner.count() > 0:
-                        return JsonResponse({"error": f"A singer can be selected as partner once per night, "
-                                                      f"and {partner} already used his/her slot."},
-                                            status=400)
-                except Singer.DoesNotExist:
-                    return JsonResponse({
-                        "error": f"Partner with id {partner_id} does not exist. "
-                                 f"Show this to Alon - it seems like a bug.. :("
-                    },
-                        status=400)
-
             new_song_request = SongRequest.objects.create(song_name=song_name, musical=musical,
                                                           singer=current_user, notes=notes)
-            new_song_request.partners.set(partners)
+            try:
+                new_song_request.partners.set(partners)
+            except ValidationError as e:
+                return JsonResponse({"error": str(e)}, status=400)
 
             Singer.ordering.calculate_positions()
             return JsonResponse({
@@ -244,27 +232,31 @@ def get_lineup(request):
 
 
 @api_view(["PUT"])
-def rename_song(request):
+def update_song(request):
     song_id = request.data['song_id']
-    new_name = _sanitize_string(request.data['song_name'], title=True)
-    new_musical = _sanitize_string(request.data['musical'], title=True)
+    song_name = _sanitize_string(request.data['song_name'], title=True)
+    musical = _sanitize_string(request.data['musical'], title=True)
+    partner_ids = request.data['partners']
+    partners = list(Singer.objects.filter(id__in=partner_ids))
 
-    if not new_name:
+    if not song_name:
         return Response({'error': f"Song name can not empty"}, status=status.HTTP_400_BAD_REQUEST)
 
-    if not new_musical:
+    if not musical:
         return Response({'error': f"Musical name can not empty"}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
         song_request = SongRequest.objects.get(pk=song_id)
-        serialized = SongRequestSerializer(song_request, read_only=True)
-        if song_request.song_name != new_name:
+        if song_request.song_name != song_name:
             song_request.notes = None
             song_request.found_music = False
             song_request.default_lyrics = False
-        song_request.song_name = new_name
-        song_request.musical = new_musical
+        song_request.song_name = song_name
+        song_request.musical = musical
+        song_request.partners.set(partners)
         song_request.save()
+
+        serialized = SongRequestSerializer(song_request, read_only=True)
         return Response(serialized.data, status=status.HTTP_200_OK)
     except SongRequest.DoesNotExist:
         return Response({'error': f"Song with ID {song_id} does not exist"}, status=status.HTTP_400_BAD_REQUEST)
@@ -280,18 +272,15 @@ def view_suggestions(request):
     return render(request, 'song_signup/view_suggestions.html')
 
 
-# TODO: Changed that it gets superusers as Singer objects. Verify this function is well tested with superusers, and manual test it well too
 @bwt_login_required('login', singer_only=True)
 def add_song(request):
     return render(request, 'song_signup/add_song.html', {'other_singers': _get_possible_partners(request)})
 
-# TODO - Test funciton
 def _get_possible_partners(request):
-    alon = Singer.objects.get(username='alon_aviv')
-    shani = Singer.objects.get(username='shani_wahrman')
-    partner_options = Singer.objects.filter(is_audience=False, is_active=True).exclude(pk=request.user.pk).exclude(pk=alon.id).exclude(pk=shani.id).order_by(
+    superusers = Singer.objects.filter(is_superuser=True).all()
+    partner_options = Singer.objects.filter(is_audience=False, is_active=True).exclude(pk=request.user.pk).exclude(is_superuser=True).order_by(
         'first_name')
-    return [alon, shani] + list(partner_options)
+    return list(superusers) + list(partner_options)
 
 @api_view(["GET"])
 def get_possible_partners(request):

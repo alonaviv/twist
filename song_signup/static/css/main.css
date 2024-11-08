@@ -616,7 +616,7 @@ nav {
               border-radius: 5px;
               margin-bottom: 10px;
               padding: 3px; }
-            #song-list-wrapper .container ol li .song-wrapper .edit-song-form #edit-partners {
+            #song-list-wrapper .container ol li .song-wrapper .edit-song-form .edit-partners {
               background: #00a1b1; }
           #song-list-wrapper .container ol li .song-wrapper .song-details {
             display: flex;

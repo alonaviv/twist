@@ -1,9 +1,10 @@
 import logging
 import re
-
+from django.dispatch import receiver
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.contrib.postgres.fields import CITextField
+from django.core.exceptions import ValidationError
 from django.db.models import (
     CASCADE,
     PROTECT,
@@ -20,6 +21,7 @@ from django.db.models import (
     ImageField,
     JSONField,
 )
+from django.db.models.signals import m2m_changed
 from twist.utils import format_commas
 from django.utils import timezone
 from titlecase import titlecase
@@ -42,7 +44,6 @@ class TicketsDepleted(Exception):
 
 class AlreadyLoggedIn(Exception):
     pass
-
 
 class TicketOrder(Model):
     """
@@ -211,7 +212,6 @@ class SongSuggestion(Model):
 
     objects = SongSuggestionManager()
 
-
 class SongRequest(Model):
     song_name = CITextField(max_length=50)
     musical = CITextField(max_length=50)
@@ -298,6 +298,23 @@ class SongRequest(Model):
         ordering = ('position',)
 
     objects = SongRequestManager()
+
+
+@receiver(m2m_changed, sender=SongRequest.partners.through)
+def validate_partners_changed(sender, instance, action, **kwargs):
+    if action == 'pre_add':
+        for partner_id in kwargs['pk_set']:
+            try:
+                partner = Singer.objects.get(id=partner_id)
+                if partner.is_superuser:
+                    continue
+                if partner.songs_as_partner.count() > 0:
+                    raise ValidationError(f"A singer can be selected as partner once per night, "
+                                         f"and {partner} already used his/her slot.")
+
+            except Singer.DoesNotExist:
+                raise ValidationError(f"Partner with id {partner_id} does not exist. "
+                             f"Show this to Alon - it seems like a bug.. :(")
 
 
 class SongLyrics(Model):

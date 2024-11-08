@@ -131,7 +131,7 @@ async function displayRenameForm(e) {
                     <textarea name="edit-song-name-${songPK}" class="edit-song edit-song-name" required>${song.song_name}</textarea>
                     <textarea name="edit-song-musical-${songPK}" class="edit-song edit-song-musical song-musical" required>${song.musical}</textarea>
                     <label for="partners">Partners:</label>
-                    <select name="partners" id="edit-partners" multiple>
+                    <select name="partners" class="edit-partners" multiple>
                         ${optionsHtml}
                     </select>
                 </div>
@@ -161,11 +161,12 @@ async function sendRename(e) {
     const songPK = e.currentTarget.dataset.songId;
     const songNameInput = e.currentTarget.querySelector('.edit-song-name');
     const songMusicalInput = e.currentTarget.querySelector('.edit-song-musical');
+    const partnersInput = e.currentTarget.querySelector('.edit-partners');
     const songWrapper = e.currentTarget.parentElement;
 
     const current_user = await get_current_user();
     
-    await fetch(`/rename_song`, {
+    await fetch(`/update_song`, {
       method: "PUT",
       headers: {
         "X-CSRFToken": csrftoken,
@@ -174,7 +175,8 @@ async function sendRename(e) {
       body: JSON.stringify({
         song_id: songPK,
           song_name: songNameInput.value,
-          musical: songMusicalInput.value
+          musical: songMusicalInput.value,
+          partners: Array.from(partnersInput.selectedOptions).map(option => option.value)
       }),
     })
         .then(async response => {
