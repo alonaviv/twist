@@ -133,6 +133,7 @@ async function displayRenameForm(e) {
     songWrapper.innerHTML = `
             <form action="" class="edit-song-form" autocomplete="off" id="rename-form-${songPK}" data-song-id=${songPK}>
                 <div class="song-details">
+                    <div class="form-messages"></div>
                     <textarea name="edit-song-name-${songPK}" class="edit-song edit-song-name" required>${song.song_name}</textarea>
                     <textarea name="edit-song-musical-${songPK}" class="edit-song edit-song-musical song-musical" required>${song.musical}</textarea>
                     <textarea name="edit-notes-${songPK}" class="edit-song edit-notes" placeholder="Additional requests?">${song.notes}</textarea>
@@ -140,7 +141,6 @@ async function displayRenameForm(e) {
                     <select name="partners" class="edit-partners" multiple>
                         ${optionsHtml}
                     </select>
-                    <div class="form-messages"></div>
                 </div>
                 <button type="submit" class="approve-rename-btn">
                     <i class="fa-solid fa-check"></i>
