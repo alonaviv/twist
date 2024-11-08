@@ -730,9 +730,9 @@ class GetCurrentSongs(SongRequestSerializeTestCase):
 
     def test_songs_w_partners(self):
         user = login_singer(self, user_id=1, num_songs=3)
-        create_singers([2, 3])
+        create_singers([2, 3, 4])
         add_partners(1, [2], 1)
-        add_partners(1, [2, 3], 2)
+        add_partners(1, [3, 4], 2)
 
         response = self.client.get(reverse('get_current_songs'))
         self.assertEqual(response.status_code, 200)
@@ -741,7 +741,7 @@ class GetCurrentSongs(SongRequestSerializeTestCase):
 
         expected_json = [
             self._get_song_json(1, 1, partner_ids=[2]),
-            self._get_song_json(1, 2, partner_ids=[2, 3]),
+            self._get_song_json(1, 2, partner_ids=[3, 4]),
             self._get_song_json(1, 3)
         ]
 
@@ -1303,12 +1303,14 @@ class TestAddSongRequest(TransactionTestCase):
     def test_superuser_partner(self):
         user = login_singer(self, user_id=1)
         s2, s3, s4 = create_singers([2, 3, 4], num_songs=3)
+
+        s4.is_superuser = True
+        s4.save()
+
         add_partners(3, ['4'], 1)
         add_partners(3, ['4'], 2)
         add_partners(2, ['4'], 1)
 
-        s4.is_superuser = True
-        s4.save()
 
         add_partners(3, ['4'], 1)
         response = self.client.post(reverse('add_song_request'), {

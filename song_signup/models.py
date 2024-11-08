@@ -308,7 +308,8 @@ def validate_partners_changed(sender, instance, action, **kwargs):
                 partner = Singer.objects.get(id=partner_id)
                 if partner.is_superuser:
                     continue
-                if partner.songs_as_partner.count() > 0:
+
+                if partner.songs_as_partner.exclude(id=instance.id).count() > 0:
                     raise ValidationError(f"A singer can be selected as partner once per night, "
                                          f"and {partner} already used his/her slot.")
 

@@ -3,10 +3,12 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
+from django.core.exceptions import ValidationError
 
 from .models import (SongLyrics, SongRequest, Singer, GroupSongRequest, TicketOrder,
                      CurrentGroupSong, TriviaQuestion, TriviaResponse
 )
+from .forms import SongRequestForm
 
 
 def set_solo_performed(modeladmin, request, queryset):
@@ -161,6 +163,7 @@ class SongRequestAdmin(admin.ModelAdmin):
     ordering = ['position']
     change_list_template = "admin/song_request_changelist.html"
     list_per_page = 500
+    form = SongRequestForm
 
     def get_skipped(self, obj):
         if obj.skipped:

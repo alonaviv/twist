@@ -145,14 +145,14 @@ def add_song_request(request):
         approve_duplicate = request.POST.get('approve-duplicate')
 
         song_request = SongRequest.objects.filter(song_name=song_name, musical=musical).first()
-        # TODO: My problem here is that I want to do the validation before the object is created.
         if not song_request or approve_duplicate:
-            new_song_request = SongRequest.objects.create(song_name=song_name, musical=musical,
-                                                          singer=current_user, notes=notes)
-            try:
-                new_song_request.partners.set(partners)
-            except ValidationError as e:
-                return JsonResponse({"error": str(e)}, status=400)
+            with transaction.atomic(): # Abort object creation if validation fails
+                new_song_request = SongRequest.objects.create(song_name=song_name, musical=musical,
+                                                              singer=current_user, notes=notes)
+                try:
+                    new_song_request.partners.set(partners) # Runs validation function using signal
+                except ValidationError as e:
+                    return JsonResponse({"error": e.message}, status=400)
 
             Singer.ordering.calculate_positions()
             return JsonResponse({
