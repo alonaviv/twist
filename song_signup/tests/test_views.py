@@ -788,7 +788,7 @@ class TestUpdateSong(SongRequestSerializeTestCase):
 
     def _get_expected_song_json(self, song_name, musical, singer, id, partners, note):
         song_json = model_to_dict(SongRequest(id=id or 1,
-                                         song_name='New Song Name', musical='New Musical',
+                                         song_name=song_name, musical=musical,
                                          singer=singer,
                                          priority=1,
                                          position=1,
@@ -847,7 +847,6 @@ class TestUpdateSong(SongRequestSerializeTestCase):
     def test_update_success(self):
         user = login_singer(self, user_id=1, num_songs=1)
         song = user.songs.first()
-        song.notes = "Some note someone wrote"
         song.found_music = True
         song.default_lyrics = True
         song.save()
@@ -858,7 +857,8 @@ class TestUpdateSong(SongRequestSerializeTestCase):
             'song_id': song.id,
             'song_name': 'new Song name',
             'musical': 'New musical',
-            'partners': [str(singer2.id), str(singer3.id)]
+            'partners': [str(singer2.id), str(singer3.id)],
+            'notes': "Adding notes"
         }
 
         response = self.client.put(reverse('update_song'), data, content_type='application/json')
@@ -867,12 +867,12 @@ class TestUpdateSong(SongRequestSerializeTestCase):
         res_json = get_json(response)
         expected_json = self._get_expected_song_json(song_name='New Song Name', musical='New Musical', singer=user,
                                                      id=song.id, partners=[singer2, singer3],
-                                                     note="Some note someone wrote")
+                                                     note="Adding notes")
 
         self.assertDictEqual(self._remove_song_keys(res_json), self._remove_song_keys(expected_json))
 
         song.refresh_from_db()
-        self.assertEqual(song.notes, "Some note someone wrote")
+        self.assertEqual(song.notes, "Adding notes")
         self.assertFalse(song.found_music)
         self.assertFalse(song.default_lyrics)
         self.assertEqual(song.song_name, 'New Song Name')
@@ -971,6 +971,56 @@ class TestUpdateSong(SongRequestSerializeTestCase):
         song2.refresh_from_db()
         self.assertListEqual(list(song2.partners.all()), [singer2, singer3])
 
+    def test_empty_note(self):
+        user = login_singer(self, user_id=1, num_songs=1)
+        song = user.songs.first()
+
+        data = {
+            'song_id': song.id,
+            'song_name': song.song_name,
+            'musical': song.musical,
+            'partners': []
+        }
+
+        response = self.client.put(reverse('update_song'), data, content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+
+        res_json = get_json(response)
+        expected_json = self._get_expected_song_json(song_name=song.song_name, musical=song.musical, singer=user,
+                                                     id=song.id, partners=[],
+                                                     note=None)
+
+        self.assertDictEqual(self._remove_song_keys(res_json), self._remove_song_keys(expected_json))
+
+        song.refresh_from_db()
+        self.assertIsNone(song.notes)
+
+    def test_replace_note(self):
+        user = login_singer(self, user_id=1, num_songs=1)
+        song = user.songs.first()
+        song.notes = "Old note"
+        song.save()
+
+        data = {
+            'song_id': song.id,
+            'song_name': song.song_name,
+            'musical': song.musical,
+            'partners': [],
+            'notes': "New note"
+        }
+
+        response = self.client.put(reverse('update_song'), data, content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+
+        res_json = get_json(response)
+        expected_json = self._get_expected_song_json(song_name=song.song_name, musical=song.musical, singer=user,
+                                                     id=song.id, partners=[],
+                                                     note="New note")
+
+        self.assertDictEqual(self._remove_song_keys(res_json), self._remove_song_keys(expected_json))
+
+        song.refresh_from_db()
+        self.assertEqual(song.notes, "New note")
 
     def test_update_same_song(self):
         self._update_same_song()

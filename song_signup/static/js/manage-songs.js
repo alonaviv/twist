@@ -58,10 +58,15 @@ function getSongHtml(song, current_user) {
             <div class="song-details">
                 <p class="song-name">${song.song_name}${song.singer.id != current_user.id ? ` (As ${song.singer.first_name} ${song.singer.last_name}'s partner)` : ""}</p>
                 <p class="song-musical">${song.musical}</p>
+
+        ${song.notes ? `<div class="notes">
+                    <p><span class="title">Additional requests:</span><br> ${song.notes}</p>
+                </div>`: ""}
         
         ${(song.partners.length > 0 && song.singer.id == current_user.id) ? `<div class="other-singers">
-                    <p>Partners:<br> ${song.partners_str}</p>
+                    <p><span class="title">Partners:</span><br> ${song.partners_str}</p>
                 </div>`: ""}
+
             </div>
             ${song.singer.id === current_user.id ? `<i class="fa-solid fa-pen rename-song" data-song-id=${song.id} id="rename-${song.id}"></i>
             <i class="fa-solid fa-trash-can delete-song" data-song-id=${song.id} id="delete-${song.id}"></i>` : ""}`;
@@ -130,6 +135,7 @@ async function displayRenameForm(e) {
                 <div class="song-details">
                     <textarea name="edit-song-name-${songPK}" class="edit-song edit-song-name" required>${song.song_name}</textarea>
                     <textarea name="edit-song-musical-${songPK}" class="edit-song edit-song-musical song-musical" required>${song.musical}</textarea>
+                    <textarea name="edit-notes-${songPK}" class="edit-song edit-notes" placeholder="Additional requests?">${song.notes}</textarea>
                     <label for="partners">Partners:</label>
                     <select name="partners" class="edit-partners" multiple>
                         ${optionsHtml}
@@ -170,6 +176,7 @@ async function sendRename(e) {
     const songPK = e.currentTarget.dataset.songId;
     const songNameInput = e.currentTarget.querySelector('.edit-song-name');
     const songMusicalInput = e.currentTarget.querySelector('.edit-song-musical');
+    const songNotesInput = e.currentTarget.querySelector('.edit-notes');
     const partnersInput = e.currentTarget.querySelector('.edit-partners');
     const formMessages = e.currentTarget.querySelector('.form-messages')
     const songWrapper = e.currentTarget.parentElement;
@@ -186,7 +193,8 @@ async function sendRename(e) {
         song_id: songPK,
           song_name: songNameInput.value,
           musical: songMusicalInput.value,
-          partners: Array.from(partnersInput.selectedOptions).map(option => option.value)
+          partners: Array.from(partnersInput.selectedOptions).map(option => option.value),
+          notes: songNotesInput.value
       }),
     })
         .then(async response => {

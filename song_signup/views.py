@@ -236,7 +236,8 @@ def update_song(request):
     song_id = request.data['song_id']
     song_name = _sanitize_string(request.data['song_name'], title=True)
     musical = _sanitize_string(request.data['musical'], title=True)
-    partner_ids = request.data['partners']
+    notes = request.data.get('notes')
+    partner_ids = request.data.get('partners', [])
     partners = list(Singer.objects.filter(id__in=partner_ids))
 
     if not song_name:
@@ -252,6 +253,7 @@ def update_song(request):
             song_request.default_lyrics = False
         song_request.song_name = song_name
         song_request.musical = musical
+        song_request.notes = notes
         song_request.partners.set(partners)
         song_request.save()
 

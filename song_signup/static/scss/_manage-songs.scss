@@ -99,6 +99,11 @@
                 background: #00a1b1;
             }
 
+            .edit-notes::placeholder{
+                color: #666;
+                opacity: 0.7;
+            }
+
 
 
           }
@@ -110,12 +115,20 @@
             .song-name{ 
                 font-weight: 500;
             }
+            .title{
+                font-weight: 400;
+            }
             .song-musical {
                 font-style: italic;
-                font-size: 15px;
+                font-size: 17px;
             }
             .other-singers {
-                margin-top: 5px;
+                margin-top: 10px;
+                font-size: 15px;
+                font-weight: 200;
+            }
+            .notes {
+                margin-top: 10px;
                 font-size: 15px;
                 font-weight: 200;
             }

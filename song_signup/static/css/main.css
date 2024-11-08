@@ -621,17 +621,26 @@ nav {
               padding: 3px; }
             #song-list-wrapper .container ol li .song-wrapper .edit-song-form .edit-partners {
               background: #00a1b1; }
+            #song-list-wrapper .container ol li .song-wrapper .edit-song-form .edit-notes::placeholder {
+              color: #666;
+              opacity: 0.7; }
           #song-list-wrapper .container ol li .song-wrapper .song-details {
             display: flex;
             flex-direction: column;
             width: 100%; }
             #song-list-wrapper .container ol li .song-wrapper .song-details .song-name {
               font-weight: 500; }
+            #song-list-wrapper .container ol li .song-wrapper .song-details .title {
+              font-weight: 400; }
             #song-list-wrapper .container ol li .song-wrapper .song-details .song-musical {
               font-style: italic;
-              font-size: 15px; }
+              font-size: 17px; }
             #song-list-wrapper .container ol li .song-wrapper .song-details .other-singers {
-              margin-top: 5px;
+              margin-top: 10px;
+              font-size: 15px;
+              font-weight: 200; }
+            #song-list-wrapper .container ol li .song-wrapper .song-details .notes {
+              margin-top: 10px;
               font-size: 15px;
               font-weight: 200; }
             #song-list-wrapper .container ol li .song-wrapper .song-details label {
