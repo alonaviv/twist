@@ -51,12 +51,6 @@
             padding-top: 4px;
             color: #0051c5;
           }
-          .fa-check {
-            font-size: 25px;
-            margin-left: 5%;
-            padding-top: 4px;
-            color: green;
-          }
           .fa-star {
             margin-right: 3%;
             padding-top: 6px;
@@ -69,11 +63,21 @@
             width: 100%;
 
             .approve-rename-btn {
-                background: none;
-                height: fit-content;
-                width: fit-content;
-                border: none;
-                margin-right: 30px;
+                    background: none;
+                    border: none;
+                    margin-left: 5%;
+                    padding-top: 4px;
+                    align-self: flex-start;
+                .fa-check{
+                    font-size: 25px;
+                    color: green;
+                }
+            }
+            .cancel-rename-btn {
+                font-size: 25px;
+                margin-left: 5%;
+                padding-top: 4px;
+                color: $complimentery-secondary;
                 align-self: flex-start;
             }
 
@@ -118,6 +122,11 @@
             label {
                 font-size: 15px;
                 font-weight: 200;
+            }
+            
+            .form-messages {
+                color: $complimentery-secondary;
+                font-size: 15px;
             }
           }
         }

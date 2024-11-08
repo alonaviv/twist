@@ -47,7 +47,7 @@ evening_started = override_config(PASSCODE=PASSCODE, EVENT_SKU=EVENT_SKU)
 
 SINGER_FIELDS = ['id', 'first_name', 'last_name', 'is_superuser']
 
-class TestViews(TestCase):
+class TestViews(TransactionTestCase):
     def _assert_user_error(self, response, msg=None, status=None):
         if not msg:
             msg = "An unexpected error occurred (you can blame Alon..) Refreshing the page might help"
@@ -780,25 +780,29 @@ class TestGetSong(SongRequestSerializeTestCase):
         res_json = get_json(response)
         expected_json = self._get_song_json(1, 1, partner_ids=[2, 3])
 
-        self.assertEqual(self._remove_song_keys(res_json), self._remove_song_keys(expected_json))
+        self.assertDictEqual(self._remove_song_keys(res_json), self._remove_song_keys(expected_json))
 
 
 class TestUpdateSong(SongRequestSerializeTestCase):
     IGNORE_SONG_KEYS = ['request_time', 'partners_str']
 
-    def _get_expected_song_json(self, song_name, musical, singer, id):
+    def _get_expected_song_json(self, song_name, musical, singer, id, partners, note):
         song_json = model_to_dict(SongRequest(id=id or 1,
                                          song_name='New Song Name', musical='New Musical',
                                          singer=singer,
-                                         priority=1, position=1))
-        song_json['singer'] =model_to_dict(singer, fields=SINGER_FIELDS)
+                                         priority=1,
+                                         position=1,
+                                         notes=note))
+        song_json['singer'] = model_to_dict(singer, fields=SINGER_FIELDS)
+        song_json['partners'] = [model_to_dict(partner, fields=SINGER_FIELDS) for partner in partners]
         return song_json
 
     def test_not_found(self):
         data = {
             'song_id': 9,
             'song_name': 'New Song Name',
-            'musical': 'New Musical'
+            'musical': 'New Musical',
+            'partners': ['4']
         }
 
         response = self.client.put(reverse('update_song'), data, content_type='application/json')
@@ -809,11 +813,13 @@ class TestUpdateSong(SongRequestSerializeTestCase):
 
     def test_empty_name(self):
         user = login_singer(self, user_id=1, num_songs=1)
+        create_singers([2, 3])
 
         data = {
             'song_id': 1,
             'song_name': '',
-            'musical': 'New Musical'
+            'musical': 'New Musical',
+            'partners': ['2', '3']
         }
 
         response = self.client.put(reverse('update_song'), data, content_type='application/json')
@@ -828,7 +834,8 @@ class TestUpdateSong(SongRequestSerializeTestCase):
         data = {
             'song_id': 1,
             'song_name': 'New Song Name',
-            'musical': ''
+            'musical': '',
+            'partners': ''
         }
 
         response = self.client.put(reverse('update_song'), data, content_type='application/json')
@@ -843,15 +850,15 @@ class TestUpdateSong(SongRequestSerializeTestCase):
         song.notes = "Some note someone wrote"
         song.found_music = True
         song.default_lyrics = True
+        song.save()
 
-        create_singers([2, 3])
+        singer2, singer3 = create_singers([2, 3])
 
         data = {
             'song_id': song.id,
             'song_name': 'new Song name',
             'musical': 'New musical',
-            'partners': ['2', '3']
-
+            'partners': [str(singer2.id), str(singer3.id)]
         }
 
         response = self.client.put(reverse('update_song'), data, content_type='application/json')
@@ -859,27 +866,140 @@ class TestUpdateSong(SongRequestSerializeTestCase):
 
         res_json = get_json(response)
         expected_json = self._get_expected_song_json(song_name='New Song Name', musical='New Musical', singer=user,
-                                                     id=song.id)
+                                                     id=song.id, partners=[singer2, singer3],
+                                                     note="Some note someone wrote")
 
-        self.assertEqual(self._remove_song_keys(res_json), self._remove_song_keys(expected_json))
+        self.assertDictEqual(self._remove_song_keys(res_json), self._remove_song_keys(expected_json))
 
         song.refresh_from_db()
-        self.assertIsNone(song.notes)
+        self.assertEqual(song.notes, "Some note someone wrote")
         self.assertFalse(song.found_music)
         self.assertFalse(song.default_lyrics)
+        self.assertEqual(song.song_name, 'New Song Name')
+        self.assertEqual(song.musical, 'New Musical')
+        self.assertListEqual(list(song.partners.all()), [singer2, singer3])
 
-    def _test_update_same(self, song_name=False, musical=False):
+    def test_append_partner(self):
         user = login_singer(self, user_id=1, num_songs=1)
+        singer2, singer3, singer4 = create_singers([2, 3, 4])
 
-        song = get_song(1, 1)
-        original_notes = song.notes
-        original_found_music = song.found_music
-        original_default_lyrics = song.default_lyrics
+        song = user.songs.first()
+        song.partners.set([singer2, singer3])
+        self.assertListEqual(list(song.partners.all()), [singer2, singer3])
 
         data = {
             'song_id': song.id,
-            'song_name': song.song_name if song_name else 'New Song',
-            'musical': song.musical if musical else 'New Musical'
+            'song_name': song.song_name,
+            'musical': song.musical,
+            'partners': [str(singer2.id), str(singer3.id), str(singer4.id)]
+        }
+
+        response = self.client.put(reverse('update_song'), data, content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+
+        song.refresh_from_db()
+        self.assertListEqual(list(song.partners.all()), [singer2, singer3, singer4])
+
+    def test_replace_partners(self):
+        user = login_singer(self, user_id=1, num_songs=1)
+        singer2, singer3, singer4, singer5 = create_singers([2, 3, 4, 5])
+
+        song = user.songs.first()
+        song.partners.set([singer2, singer3])
+        self.assertListEqual(list(song.partners.all()), [singer2, singer3])
+
+        data = {
+            'song_id': song.id,
+            'song_name': song.song_name,
+            'musical': "New Musical",
+            'partners': [str(singer4.id), str(singer5.id)]
+        }
+
+        response = self.client.put(reverse('update_song'), data, content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+
+        song.refresh_from_db()
+        self.assertEqual(song.musical, "New Musical")
+        self.assertListEqual(list(song.partners.all()), [singer4, singer5])
+
+    def test_duplicate_partner(self):
+        user = login_singer(self, user_id=1, num_songs=2)
+        singer2, singer3  = create_singers([2, 3])
+
+        song1 = get_song(1, 1)
+        song2 = get_song(1, 2)
+
+        song1.partners.set([singer2])
+
+        # Try to add singer2 to as a partner to another song
+        data = {
+            'song_id': song2.id,
+            'song_name': song2.song_name,
+            'musical': song2.musical,
+            'partners': [str(singer2.id), str(singer3.id)]
+        }
+
+        response = self.client.put(reverse('update_song'), data, content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+        self.assertJSONEqual(response.content,
+                             {'error': f"A singer can be selected as partner once per night, "
+                                       f"and {singer2} already used his/her slot."})
+
+        song2.refresh_from_db()
+        self.assertListEqual(list(song2.partners.all()), [])
+
+        # Remove singer2 from the first song and try again
+        data = {
+            'song_id': song1.id,
+            'song_name': song1.song_name,
+            'musical': song1.musical,
+            'partners': []
+        }
+        response = self.client.put(reverse('update_song'), data, content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        song1.refresh_from_db()
+        self.assertListEqual(list(song1.partners.all()), [])
+
+        data = {
+            'song_id': song2.id,
+            'song_name': song2.song_name,
+            'musical': song2.musical,
+            'partners': [str(singer2.id), str(singer3.id)]
+        }
+        response = self.client.put(reverse('update_song'), data, content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        song2.refresh_from_db()
+        self.assertListEqual(list(song2.partners.all()), [singer2, singer3])
+
+
+    def test_update_same_song(self):
+        self._update_same_song()
+
+    def test_update_same_song_and_musical(self):
+        self._update_same_song(same_musical=True)
+
+    def _update_same_song(self, same_musical=False):
+        """
+        Verify that found music and default lyrics don't change when the song is the same.
+        """
+        user = login_singer(self, user_id=1, num_songs=1)
+        singer2, singer3 = create_singers([2, 3])
+        song = get_song(1, 1)
+        song.found_music = True
+        song.default_lyrics = True
+        song.partners.set([singer2, singer3])
+        song.save()
+
+        original_id = song.id
+        original_song_name = song.song_name
+        original_musical = song.musical
+        original_partners = list(song.partners.all())
+
+        data = {
+            'song_id': song.id,
+            'song_name': song.song_name,
+            'musical': song.musical if same_musical else 'New Musical',
+            'partners': [str(singer2.id), str(singer3.id)]
         }
 
         response = self.client.put(reverse('update_song'), data, content_type='application/json')
@@ -887,18 +1007,12 @@ class TestUpdateSong(SongRequestSerializeTestCase):
 
         song.refresh_from_db()  # Reload from the database
 
-        self.assertEqual(song.notes, original_notes)
-        self.assertEqual(song.found_music, original_found_music)
-        self.assertEqual(song.default_lyrics, original_default_lyrics)
-
-    def test_update_same_name(self):
-        self._test_update_same(song_name=True)
-
-    def test_update_same_musical(self):
-        self._test_update_same(musical=True)
-
-    def test_update_same_all(self):
-        self._test_update_same(musical=True, song_name=True)
+        self.assertTrue(song.found_music)
+        self.assertTrue(song.default_lyrics)
+        self.assertEqual(song.id, original_id)
+        self.assertEqual(song.song_name, original_song_name)
+        self.assertEqual(song.musical, original_musical if same_musical else "New Musical")
+        self.assertListEqual(list(song.partners.all()), original_partners)
 
 
 class TestRestApi(TestViews):

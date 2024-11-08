@@ -583,11 +583,6 @@ nav {
             margin-left: 5%;
             padding-top: 4px;
             color: #0051c5; }
-          #song-list-wrapper .container ol li .song-wrapper .fa-check {
-            font-size: 25px;
-            margin-left: 5%;
-            padding-top: 4px;
-            color: green; }
           #song-list-wrapper .container ol li .song-wrapper .fa-star {
             margin-right: 3%;
             padding-top: 6px; }
@@ -599,10 +594,18 @@ nav {
             width: 100%; }
             #song-list-wrapper .container ol li .song-wrapper .edit-song-form .approve-rename-btn {
               background: none;
-              height: fit-content;
-              width: fit-content;
               border: none;
-              margin-right: 30px;
+              margin-left: 5%;
+              padding-top: 4px;
+              align-self: flex-start; }
+              #song-list-wrapper .container ol li .song-wrapper .edit-song-form .approve-rename-btn .fa-check {
+                font-size: 25px;
+                color: green; }
+            #song-list-wrapper .container ol li .song-wrapper .edit-song-form .cancel-rename-btn {
+              font-size: 25px;
+              margin-left: 5%;
+              padding-top: 4px;
+              color: #c51200;
               align-self: flex-start; }
             #song-list-wrapper .container ol li .song-wrapper .edit-song-form .edit-song {
               font-size: 20px;
@@ -634,6 +637,9 @@ nav {
             #song-list-wrapper .container ol li .song-wrapper .song-details label {
               font-size: 15px;
               font-weight: 200; }
+            #song-list-wrapper .container ol li .song-wrapper .song-details .form-messages {
+              color: #c51200;
+              font-size: 15px; }
     #song-list-wrapper .container #new-song-btn {
       margin: 15px 0px 30px;
       width: 200px; }

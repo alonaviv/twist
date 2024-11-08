@@ -56,7 +56,7 @@ function setupListeners(parentElement, songId) {
 function getSongHtml(song, current_user) {
     const res = `
             <div class="song-details">
-                <p class="song-name">${song.song_name}${song.singer.id != current_user.id ? ` (Added by ${song.singer.first_name} ${song.singer.last_name})` : ""}</p>
+                <p class="song-name">${song.song_name}${song.singer.id != current_user.id ? ` (As ${song.singer.first_name} ${song.singer.last_name}'s partner)` : ""}</p>
                 <p class="song-musical">${song.musical}</p>
         
         ${(song.partners.length > 0 && song.singer.id == current_user.id) ? `<div class="other-singers">
@@ -134,10 +134,12 @@ async function displayRenameForm(e) {
                     <select name="partners" class="edit-partners" multiple>
                         ${optionsHtml}
                     </select>
+                    <div class="form-messages"></div>
                 </div>
                 <button type="submit" class="approve-rename-btn">
                     <i class="fa-solid fa-check"></i>
                 </button>                 
+                <i class="fa-solid fa-x cancel-rename-btn"></i>
             </form>
         `;
 
@@ -152,8 +154,15 @@ async function displayRenameForm(e) {
     editMusical.style.height = editMusical.scrollHeight + "px";
 
     songWrapper.querySelector(`#rename-form-${songPK}`).addEventListener("submit", sendRename);
+    songWrapper.querySelector(`.cancel-rename-btn`).addEventListener("click", async () => {
+        let current_user = await get_current_user();
+        songWrapper.innerHTML = getSongHtml(song, current_user);
+        setupListeners(songWrapper, song.id);
+        toggleNewSongBtn();
+    });
     toggleNewSongBtn();
 }
+
   
 async function sendRename(e) {
     e.preventDefault();
@@ -162,6 +171,7 @@ async function sendRename(e) {
     const songNameInput = e.currentTarget.querySelector('.edit-song-name');
     const songMusicalInput = e.currentTarget.querySelector('.edit-song-musical');
     const partnersInput = e.currentTarget.querySelector('.edit-partners');
+    const formMessages = e.currentTarget.querySelector('.form-messages')
     const songWrapper = e.currentTarget.parentElement;
 
     const current_user = await get_current_user();
@@ -190,7 +200,9 @@ async function sendRename(e) {
             setupListeners(songWrapper, song.id);
             toggleNewSongBtn();
         })
-        .catch((error) => { alert(`Error: ${error}`) });
+        .catch((error) => {
+            formMessages.innerHTML = `<p>${error}<p>`
+        });
     
 }
 

@@ -248,7 +248,6 @@ def update_song(request):
     try:
         song_request = SongRequest.objects.get(pk=song_id)
         if song_request.song_name != song_name:
-            song_request.notes = None
             song_request.found_music = False
             song_request.default_lyrics = False
         song_request.song_name = song_name
@@ -258,6 +257,10 @@ def update_song(request):
 
         serialized = SongRequestSerializer(song_request, read_only=True)
         return Response(serialized.data, status=status.HTTP_200_OK)
+
+    except ValidationError as e:
+        return JsonResponse({"error": e.message}, status=status.HTTP_400_BAD_REQUEST)
+
     except SongRequest.DoesNotExist:
         return Response({'error': f"Song with ID {song_id} does not exist"}, status=status.HTTP_400_BAD_REQUEST)
 
