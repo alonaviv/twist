@@ -45,12 +45,12 @@
                         </label>
                     <select name="partners" id="partners" multiple
                      {% if can_signup %} {% else %} class="signups-disabled" disabled {% endif %}>
-                        {% for singer in other_singers %}
-                        <option value="{{ singer.id }}">
-                            {% if singer.is_superuser %} 
-                            --- {{ singer.first_name }} --- 
+                        {% for partner in possible_partners %}
+                        <option value="{{ partner.id }}">
+                            {% if partner.is_superuser %} 
+                            --- {{ partner.first_name }} --- 
                             {% else %}
-                            {{ singer }}
+                            {{ partner }}
                             {% endif %}
                         </option>
                         {% endfor %}
@@ -65,8 +65,8 @@
             </div>
             <div class="form-bullets">
                 <ul>
-                    <li>Need a partner? You can always select Alon or Shani!</li>
-                    <li>You can be someone else's partner <strong>once</strong> per evening</li>
+                    <li>Both singers and audience can be someone else's partner <strong>once</strong> per evening</li>
+                    <li>Missing a partner? You can always select Alon or Shani!</li>
                 </ul>
             </div>
         </div>

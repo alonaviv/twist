@@ -311,7 +311,7 @@ def validate_partners_changed(sender, instance, action, **kwargs):
                     continue
 
                 if partner.songs_as_partner.exclude(id=instance.id).count() > 0:
-                    raise ValidationError(f"A singer can be selected as partner once per night, "
+                    raise ValidationError(f"A person can be selected as partner once per night, "
                                          f"and {partner} already used his/her slot.")
 
             except Singer.DoesNotExist:

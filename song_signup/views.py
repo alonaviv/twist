@@ -279,11 +279,11 @@ def view_suggestions(request):
 
 @bwt_login_required('login', singer_only=True)
 def add_song(request):
-    return render(request, 'song_signup/add_song.html', {'other_singers': _get_possible_partners(request)})
+    return render(request, 'song_signup/add_song.html', {'possible_partners': _get_possible_partners(request)})
 
 def _get_possible_partners(request):
     superusers = Singer.objects.filter(is_superuser=True).all()
-    partner_options = Singer.objects.filter(is_audience=False, is_active=True).exclude(pk=request.user.pk).exclude(is_superuser=True).order_by(
+    partner_options = Singer.objects.filter(is_active=True).exclude(pk=request.user.pk).exclude(is_superuser=True).order_by(
         'first_name')
     return list(superusers) + list(partner_options)
 
