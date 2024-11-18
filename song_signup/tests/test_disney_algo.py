@@ -331,7 +331,7 @@ class TestSimulatedEvenings(SongRequestTestCase):
                 ExpectedDashboard(singer=1, next_song=1, wait_amount=0),
             ])
 
-            create_audience(audience_ids=[70, 71, 72, 73])
+            audience70, audience71, *_ = create_audience(audience_ids=[70, 71, 72, 73])
 
             # Singer 2 joins with as singer 1 sings
             create_singers([2], frozen_time, num_songs=3)
@@ -342,7 +342,7 @@ class TestSimulatedEvenings(SongRequestTestCase):
                 ExpectedDashboard(singer=2, next_song=1, wait_amount=0)
             ])
 
-            create_audience(audience_ids=[74, 75, 76, 77])
+            audience74, audience75, *_ = create_audience(audience_ids=[74, 75, 76, 77])
 
             # Singer 1 adds song #2
             add_songs_to_singer(1, [2], frozen_time)
@@ -374,7 +374,7 @@ class TestSimulatedEvenings(SongRequestTestCase):
                 ExpectedDashboard(singer=2, next_song=2, wait_amount=3),
             ])
 
-            create_audience(audience_ids=[78, 79, 80, 81])
+            audience78, *_ = create_audience(audience_ids=[78, 79, 80, 81])
 
             # Singers 6-9 join without signing up for songs yet. Singer #1 adds another song (#3)
             # Singers 6 and 8 choose a song before 1 sings, and singers 7 and 9 choose a song after he sings. Then 6 and
@@ -392,7 +392,7 @@ class TestSimulatedEvenings(SongRequestTestCase):
             add_songs_to_singer(1, [3], frozen_time)
             assert_song_positions(self, [(3, 1), (4, 1), (2, 2), (6, 1), (8, 1), (1, 3), (7, 1), (9, 1)])
 
-            create_audience(audience_ids=[82, 83, 84, 85])
+            audience82, audience83, *_ = create_audience(audience_ids=[82, 83, 84, 85])
 
             # Add 3 more songs to singer 6, 7, 9 (8 will add only later)
             add_songs_to_singers([6, 7, 9], [2, 3, 4], frozen_time)
@@ -426,8 +426,8 @@ class TestSimulatedEvenings(SongRequestTestCase):
 
             logout_audience(80)
 
-            # 4 adds 7 and 3 as partners.
-            add_partners(4, [3, 7], 1, frozen_time)
+            # 4 adds 7 and 3 (singers) and 70 (audience) as partners.
+            add_partners(4, [3, 7], 1, frozen_time, audience_partner_ids=[70])
             assert_song_positions(self, [(3, 1), (4, 1), (2, 2), (8, 1), (1, 3), (7,1), (9, 1)])
             assert_dashboards(self, [
                 ExpectedDashboard(singer=3, next_song=1, wait_amount=0),
@@ -443,7 +443,7 @@ class TestSimulatedEvenings(SongRequestTestCase):
             ])
 
             # 2 adds 4 as a duet partner.
-            add_partners(2, 4, 2, frozen_time)
+            add_partners(2, 4, 2, frozen_time, audience_partner_ids=[78, 79])
             assert_song_positions(self, [(3, 1), (4, 1), (2, 2), (8, 1), (1, 3), (7,1), (9, 1)])
             assert_dashboards(self, [
                 ExpectedDashboard(singer=3, next_song=1, wait_amount=0),
@@ -538,8 +538,8 @@ class TestSimulatedEvenings(SongRequestTestCase):
 
             # 9 adds a duet with 6, 8 adds a duet with 11, 1 adds a duet with 12. Changes nothing
             add_partners(9, [6, 2], 1, frozen_time)
-            add_partners(8, 11, 1, frozen_time)
-            add_partners(1, [8, 12], 3, frozen_time)
+            add_partners(8, 11, 1, frozen_time, audience_partner_ids=[83])
+            add_partners(1, [8, 12], 3, frozen_time, audience_partner_ids=[84])
             assert_song_positions(self, [(8, 1), (7, 1), (9, 1), (12, 1), (13, 1), (14, 1), (5, 1),
                                          (11, 1), (15, 1), (16, 1), (1, 3), (3, 2), (4, 2), (2, 3), (6, 2)])
             assert_dashboards(self, [

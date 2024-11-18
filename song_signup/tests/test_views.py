@@ -34,6 +34,7 @@ from song_signup.tests.utils_for_tests import (
     add_current_group_song,
     get_song,
     get_singer,
+    get_audience,
     song_exists, login_singer, login_audience,
     remove_keys_list,
     get_audience_str,
@@ -680,17 +681,25 @@ class SongRequestSerializeTestCase(TestViews):
         else:
             return remove_keys(json, keys=self.IGNORE_SONG_KEYS)
 
-    def _get_song_json(self, singer_id, song_id, partner_ids=None):
+    def _get_song_json(self, singer_id, song_id, partner_ids=None, audience_partner_ids=None):
         song = get_song(singer_id, song_id)
         singer = get_singer(singer_id)
         song_json = model_to_dict(song)
         song_json['singer'] = model_to_dict(singer, fields=SINGER_FIELDS)
 
-        if partner_ids:
+        if partner_ids or audience_partner_ids:
+            partner_ids = partner_ids or []
+            audience_partner_ids = audience_partner_ids or []
             partners = []
             partners_strs = []
+
             for partner_id in partner_ids:
                 partner = get_singer(partner_id)
+                partners.append(model_to_dict(partner, fields=SINGER_FIELDS))
+                partners_strs.append(f"{partner.first_name} {partner.last_name}")
+
+            for partner_id in audience_partner_ids:
+                partner = get_audience(partner_id)
                 partners.append(model_to_dict(partner, fields=SINGER_FIELDS))
                 partners_strs.append(f"{partner.first_name} {partner.last_name}")
 
@@ -731,8 +740,9 @@ class GetCurrentSongs(SongRequestSerializeTestCase):
     def test_songs_w_partners(self):
         user = login_singer(self, user_id=1, num_songs=3)
         create_singers([2, 3, 4])
-        add_partners(1, [2], 1)
-        add_partners(1, [3, 4], 2)
+        create_audience([5, 6])
+        add_partners(1, [2], 1, audience_partner_ids=[5])
+        add_partners(1, [3, 4], 2, audience_partner_ids=[6])
 
         response = self.client.get(reverse('get_current_songs'))
         self.assertEqual(response.status_code, 200)
@@ -740,8 +750,8 @@ class GetCurrentSongs(SongRequestSerializeTestCase):
         res_json = get_json(response)
 
         expected_json = [
-            self._get_song_json(1, 1, partner_ids=[2]),
-            self._get_song_json(1, 2, partner_ids=[3, 4]),
+            self._get_song_json(1, 1, partner_ids=[2], audience_partner_ids=[5]),
+            self._get_song_json(1, 2, partner_ids=[3, 4], audience_partner_ids=[6]),
             self._get_song_json(1, 3)
         ]
 
@@ -771,14 +781,15 @@ class TestGetSong(SongRequestSerializeTestCase):
     def test_w_partners(self):
         user = login_singer(self, user_id=1, num_songs=1)
         create_singers([2, 3])
-        add_partners(1, [2, 3], 1)
+        create_audience([4, 5])
+        add_partners(1, [2, 3], 1, audience_partner_ids=[4, 5])
 
         song_1 = get_song(1, 1)
         response = self.client.get(reverse('get_song', args=[song_1.id]))
         self.assertEqual(response.status_code, 200)
 
         res_json = get_json(response)
-        expected_json = self._get_song_json(1, 1, partner_ids=[2, 3])
+        expected_json = self._get_song_json(1, 1, partner_ids=[2, 3], audience_partner_ids=[4, 5])
 
         self.assertDictEqual(self._remove_song_keys(res_json), self._remove_song_keys(expected_json))
 
@@ -852,12 +863,13 @@ class TestUpdateSong(SongRequestSerializeTestCase):
         song.save()
 
         singer2, singer3 = create_singers([2, 3])
+        [audience4] = create_audience([4])
 
         data = {
             'song_id': song.id,
             'song_name': 'new Song name',
             'musical': 'New musical',
-            'partners': [str(singer2.id), str(singer3.id)],
+            'partners': [str(singer2.id), str(singer3.id), str(audience4.id)],
             'notes': "Adding notes"
         }
 
@@ -866,7 +878,7 @@ class TestUpdateSong(SongRequestSerializeTestCase):
 
         res_json = get_json(response)
         expected_json = self._get_expected_song_json(song_name='New Song Name', musical='New Musical', singer=user,
-                                                     id=song.id, partners=[singer2, singer3],
+                                                     id=song.id, partners=[singer2, singer3, audience4],
                                                      note="Adding notes")
 
         self.assertDictEqual(self._remove_song_keys(res_json), self._remove_song_keys(expected_json))
@@ -877,42 +889,44 @@ class TestUpdateSong(SongRequestSerializeTestCase):
         self.assertFalse(song.default_lyrics)
         self.assertEqual(song.song_name, 'New Song Name')
         self.assertEqual(song.musical, 'New Musical')
-        self.assertListEqual(list(song.partners.all()), [singer2, singer3])
+        self.assertListEqual(list(song.partners.all()), [singer2, singer3, audience4])
 
     def test_append_partner(self):
         user = login_singer(self, user_id=1, num_songs=1)
         singer2, singer3, singer4 = create_singers([2, 3, 4])
+        audience5, audience6 = create_audience([5, 6])
 
         song = user.songs.first()
-        song.partners.set([singer2, singer3])
-        self.assertListEqual(list(song.partners.all()), [singer2, singer3])
+        song.partners.set([singer2, singer3, audience5, audience6])
+        self.assertListEqual(list(song.partners.all()), [singer2, singer3, audience5, audience6])
 
         data = {
             'song_id': song.id,
             'song_name': song.song_name,
             'musical': song.musical,
-            'partners': [str(singer2.id), str(singer3.id), str(singer4.id)]
+            'partners': [str(singer2.id), str(singer3.id), str(singer4.id), str(audience5.id), str(audience6.id)]
         }
 
         response = self.client.put(reverse('update_song'), data, content_type='application/json')
         self.assertEqual(response.status_code, 200)
 
         song.refresh_from_db()
-        self.assertListEqual(list(song.partners.all()), [singer2, singer3, singer4])
+        self.assertListEqual(list(song.partners.all()), [singer2, singer3, singer4, audience5, audience6])
 
     def test_replace_partners(self):
         user = login_singer(self, user_id=1, num_songs=1)
         singer2, singer3, singer4, singer5 = create_singers([2, 3, 4, 5])
+        audience6, audience7 = create_audience([6, 7])
 
         song = user.songs.first()
-        song.partners.set([singer2, singer3])
-        self.assertListEqual(list(song.partners.all()), [singer2, singer3])
+        song.partners.set([singer2, singer3, audience6, audience7])
+        self.assertListEqual(list(song.partners.all()), [singer2, singer3, audience6, audience7])
 
         data = {
             'song_id': song.id,
             'song_name': song.song_name,
             'musical': "New Musical",
-            'partners': [str(singer4.id), str(singer5.id)]
+            'partners': [str(singer4.id), str(singer5.id), str(audience6.id), str(audience7.id)]
         }
 
         response = self.client.put(reverse('update_song'), data, content_type='application/json')
@@ -920,16 +934,17 @@ class TestUpdateSong(SongRequestSerializeTestCase):
 
         song.refresh_from_db()
         self.assertEqual(song.musical, "New Musical")
-        self.assertListEqual(list(song.partners.all()), [singer4, singer5])
+        self.assertListEqual(list(song.partners.all()), [singer4, singer5, audience6, audience7])
 
     def test_duplicate_partner(self):
         user = login_singer(self, user_id=1, num_songs=2)
         singer2, singer3  = create_singers([2, 3])
+        [audience4] = create_audience([4])
 
         song1 = get_song(1, 1)
         song2 = get_song(1, 2)
 
-        song1.partners.set([singer2])
+        song1.partners.set([singer2, audience4])
 
         # Try to add singer2 to as a partner to another song
         data = {
@@ -942,8 +957,25 @@ class TestUpdateSong(SongRequestSerializeTestCase):
         response = self.client.put(reverse('update_song'), data, content_type='application/json')
         self.assertEqual(response.status_code, 400)
         self.assertJSONEqual(response.content,
-                             {'error': f"A singer can be selected as partner once per night, "
+                             {'error': f"A person can be selected as partner once per night, "
                                        f"and {singer2} already used his/her slot."})
+
+        song2.refresh_from_db()
+        self.assertListEqual(list(song2.partners.all()), [])
+
+        # Try to add audience4 to as a partner to another song
+        data = {
+            'song_id': song2.id,
+            'song_name': song2.song_name,
+            'musical': song2.musical,
+            'partners': [str(audience4.id)]
+        }
+
+        response = self.client.put(reverse('update_song'), data, content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+        self.assertJSONEqual(response.content,
+                             {'error': f"A person can be selected as partner once per night, "
+                                       f"and {audience4} already used his/her slot."})
 
         song2.refresh_from_db()
         self.assertListEqual(list(song2.partners.all()), [])
@@ -1461,8 +1493,24 @@ class TestAddSongRequest(TransactionTestCase):
         self.assertFalse(song_exists('Defying Gravity'))
         self.assertEqual(response.status_code, 400)
         self.assertJSONEqual(response.content,
-                             {'error': f"A singer can be selected as partner once per night, "
+                             {'error': f"A person can be selected as partner once per night, "
                                                       f"and {s4} already used his/her slot."})
+
+    def test_existing_partner_audience(self):
+        user = login_singer(self, user_id=1)
+        s2, s3, s4 = create_singers([2, 3, 4], num_songs=1)
+        [a5] = create_audience([5])
+        add_partners(3, [], 1, audience_partner_ids=['5'])
+        response = self.client.post(reverse('add_song_request'), {
+            'song-name': ["defying gravity"],
+            'musical': ['wicked'],
+            'partners': [str(s2.id), str(s3.id), str(s4.id), str(a5.id)]
+        })
+        self.assertFalse(song_exists('Defying Gravity'))
+        self.assertEqual(response.status_code, 400)
+        self.assertJSONEqual(response.content,
+                             {'error': f"A person can be selected as partner once per night, "
+                                       f"and {a5} already used his/her slot."})
 
     def test_superuser_partner(self):
         user = login_singer(self, user_id=1)
@@ -1579,27 +1627,35 @@ class TestAddSongView(TestViews):
 
     def test_add_song(self):
         [singer2] = create_singers([2], num_songs=2)
-        create_audience([3])
+        audience3, audience4 = create_audience([3, 4])
 
         response = self.client.get(reverse('add_song'))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'song_signup/add_song.html')
 
-        self.assertListEqual(response.context['other_singers'], [self.shani, self.alon, singer2])
+        self.assertListEqual(response.context['possible_partners'],
+                             [self.shani, self.alon, audience3, audience4, singer2])
 
-        [singer3, singer4, singer5] = create_singers([3, 4, 5], num_songs=2)
-        create_audience([6, 7, 8, 9, 10])
-        singer4.is_active = False
-        singer4.save()
+        [singer5, singer6, singer7] = create_singers([5, 6, 7], num_songs=2)
+        audience8, audience9 = create_audience([8, 9])
+        singer6.is_active = False
+        singer6.save()
+
+        audience9.is_active = False
+        audience9.save()
+
 
         response = self.client.get(reverse('add_song'))
         self.assertEqual(response.status_code, 200)
-        self.assertListEqual(response.context['other_singers'],
+        self.assertListEqual(response.context['possible_partners'],
                              [self.shani,
                               self.alon,
+                              audience3,
+                              audience4,
+                              audience8,
                               singer2,
-                              singer3,
-                              singer5
+                              singer5,
+                              singer7
                               ])
 
 class TestTrivia(TestViews):
