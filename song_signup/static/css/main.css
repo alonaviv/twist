@@ -357,7 +357,8 @@ nav {
   height: 100%;
   width: 100%;
   position: relative;
-  z-index: 1; }
+  z-index: 1;
+  overflow-x: hidden; }
   #login-hero::before {
     content: "";
     background: #000;
