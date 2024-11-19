@@ -1158,8 +1158,8 @@ nav {
     .fixed-logo.not-started.screen {
       display: block; }
       .fixed-logo.not-started.screen img {
-        height: 100%;
-        width: 100%; }
+        height: 60%;
+        width: 60%; }
 
 .drink-highlight {
   color: white;
