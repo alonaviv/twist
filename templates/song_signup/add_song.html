@@ -6,6 +6,7 @@
 {% block content %}
 
 {% include "partials/_navbar.html" with current="manage-songs" %}
+
 <main>
     <dialog id="duplicate-song-dialog">
         <form method="dialog">
@@ -17,8 +18,8 @@
         </form>
     </dialog>
     <div id="add-song-wrapper">
-        <div id="singups-disabled">
-            <p>Signup is<br>now closed</p>
+        <div id="signups-disabled-text" {% if can_signup %} {% else %} class="signups-disabled" {% endif %}>
+            <p>SIGNUP IS<br>CLOSED</p>
         </div>
         <h2>Choose your next song!</h2>
         <p class="form-explain">Pick literally anything in the Broadway or Disney style (seriously, try us!):</p>
@@ -28,18 +29,22 @@
                 {% csrf_token %}
                 <input autocomplete="false" name="hidden" type="text" style="display:none;">
                 <div class="form-control">
-                    <input type="text" name="song-name" id="song-name" placeholder="Song name" required>
+                    <input type="text" name="song-name" id="song-name" placeholder="Song name" required
+                     {% if can_signup %} {% else %} class="signups-disabled" disabled {% endif %}>
                 </div>
                 <div class="form-control">
-                    <input type="text" name="musical" id="musical" placeholder="Where's it from?" required>
+                    <input type="text" name="musical" id="musical" placeholder="Where's it from?" required
+                     {% if can_signup %} {% else %} class="signups-disabled" disabled {% endif %}>
                 </div>
                 <div class="form-control">
-                    <input type="text" name="notes" id="notes" placeholder="Additional requests?">
+                    <input type="text" name="notes" id="notes" placeholder="Additional requests?"
+                     {% if can_signup %} {% else %} class="signups-disabled" disabled {% endif %}>
                 </div>
                 <div class="form-control">
                     <label for="partners">Select partners:
                         </label>
-                    <select name="partners" id="partners" multiple>
+                    <select name="partners" id="partners" multiple
+                     {% if can_signup %} {% else %} class="signups-disabled" disabled {% endif %}>
                         {% for singer in other_singers %}
                         <option value="{{ singer.id }}">
                             {% if singer.is_superuser %} 
@@ -52,7 +57,7 @@
                     </select>
                 </div>
                 <div class="form-control" id="submit-wrapper">
-                        <input type="submit" value="To the stage!" class="btn btn-inverted">
+                        <input type="submit" value="To the stage!" {% if can_signup %} class="btn btn-inverted" {% else %} class=" btn btn-inverted signups-disabled" disabled {% endif %}>
                 </div>
             </form>
             <div class="form-explain">

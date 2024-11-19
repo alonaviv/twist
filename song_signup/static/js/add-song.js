@@ -63,7 +63,7 @@ newSongForm.addEventListener('submit', addSong);
 
 
 // Disable signup if server says so
-const signupsDisabledBanner = document.getElementById("singups-disabled");
+const signupsDisabledBanner = document.getElementById("signups-disabled-text");
 
 const formFields = newSongForm.querySelectorAll("input, select");
 function checkDisableSignup() {
@@ -71,20 +71,19 @@ function checkDisableSignup() {
         .then((response) => response.json())
         .then((data) => {
             if (data.result) {
-                signupsDisabledBanner.style.opacity = "1";
+                signupsDisabledBanner.classList.add("signups-disabled")
                 formFields.forEach((field) => {
                     field.disabled = true;
-                    field.style.background = "#666";
+                    field.classList.add("signups-disabled")
                 });
             } else {
-                signupsDisabledBanner.style.opacity = "0";
+                signupsDisabledBanner.classList.remove("signups-disabled")
                 formFields.forEach((field) => {
                     field.disabled = false;
-                    field.style.background = "#333";
+                    field.classList.remove("signups-disabled")
                 });
             }
         });
 }
 
-setInterval(checkDisableSignup, 10000);
-window.addEventListener("DOMContentLoaded", checkDisableSignup);
+setInterval(checkDisableSignup, 500);

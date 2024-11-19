@@ -671,7 +671,7 @@ def delete_song(request, song_pk):
 def reset_database(request):
     call_command('dbbackup')
     call_command('reset_db')
-    enable_flag('CAN_SIGNUP')
+    disable_flag('CAN_SIGNUP')
     disable_flag('STARTED')
     config.PASSCODE = ''
     config.DRINKING_WORDS = ''

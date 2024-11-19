@@ -5,7 +5,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "twist.settings")
 django.setup()
 
 from django.contrib.auth import get_user_model
-from flags.state import enable_flag
+from flags.state import disable_flag
 
 from song_signup.views import name_to_username
 from django.core.management import call_command
@@ -35,5 +35,5 @@ if __name__ == '__main__':
     create_superuser(*ALON_USER)
     create_superuser(*SHANI_USER)
 
-    enable_flag('CAN_SIGNUP')
+    disable_flag('CAN_SIGNUP')
     call_command('collectstatic', '--noinput')

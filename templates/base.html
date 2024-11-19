@@ -1,5 +1,8 @@
 {% load static %}
 {% load img_tags %}
+{% load feature_flags %}
+{% flag_enabled 'CAN_SIGNUP' as can_signup %}
+        
 
 <!DOCTYPE html>
 <html lang="en">
@@ -56,7 +59,9 @@
                 </div>
             </div>
         </div>
-        {% block content %} {% endblock %}
+        {% block content %} 
+        
+        {% endblock %}
         {% endwith %}
     </body>
 

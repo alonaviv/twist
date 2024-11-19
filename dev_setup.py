@@ -7,7 +7,7 @@ django.setup()
 import constance
 from django.core.management import call_command
 from django.contrib.auth import get_user_model
-from flags.state import enable_flag
+from flags.state import disable_flag
 
 from song_signup.views import name_to_username
 from song_signup.models import TicketOrder
@@ -36,7 +36,7 @@ if __name__ == '__main__':
 
     constance.config.PASSCODE = 'dev'
     constance.config.EVENT_SKU = 'EVENTSKU1234'
-    enable_flag('CAN_SIGNUP')
+    disable_flag('CAN_SIGNUP')
     TicketOrder.objects.get_or_create(order_id=123456, event_sku='EVENTSKU1234', event_name='dev event',
                                num_tickets=1000, ticket_type='SING', customer_name="Alon Aviv")
 

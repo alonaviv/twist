@@ -18,18 +18,25 @@
         color: #c51200;
     }
 
-    #singups-disabled {
+    #signups-disabled-text {
         color: $third-color;
         transform: rotate(-15deg);
         position: absolute;
-        right: 12%;
-        top: 12%;
+        right: 19%;
+        top: 19%;
         font-weight: 500;
-        font-size: 50px;
-        text-decoration: underline;
+        font-size: 40px;
         transition: all 2s ease;
         opacity: 0;
         pointer-events: none;
+        text-align: center;
+        background: #333333CC;
+        border-radius: 30px;
+        padding: 20px;
+
+        &.signups-disabled{
+            opacity: 1;
+        }
     }
 
     .form-explain {
@@ -70,7 +77,16 @@
                     font-size: 18px;
                 }
                 transition: inherit;
+
             }
+
+            input {
+                &.signups-disabled{
+                    background: #666;
+                    transition: inherit;
+                }
+            }
+
 
             select {
                 margin-top: 10px;
@@ -82,6 +98,10 @@
                 color: #fff;
                 font-size: 14px;
                 transition: inherit;
+
+                .signups-disabled{
+                    background: #666;
+                }
             }
         }
     }
