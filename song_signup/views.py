@@ -556,7 +556,7 @@ def _get_order(order_id, ticket_type):
                                 "The number appears in the title of the tickets email")
 
 
-def _login_new_singer(first_name, last_name, no_image_upload, order_id):
+def _login_new_singer(first_name, last_name, no_image_upload, order_id, uploaded_image):
     """
     Singer and audience are different ticket orders entries, both with the same order number
     """
@@ -568,7 +568,8 @@ def _login_new_singer(first_name, last_name, no_image_upload, order_id):
             last_name=last_name,
             is_staff=False,
             no_image_upload=no_image_upload,
-            ticket_order=ticket_order
+            ticket_order=ticket_order,
+            selfie=uploaded_image
         )
 
     except (TicketsDepleted, AlreadyLoggedIn) as e:
@@ -576,9 +577,9 @@ def _login_new_singer(first_name, last_name, no_image_upload, order_id):
     return singer
 
 
-def _login_existing_singer(first_name, last_name, no_image_upload):
+def _login_existing_singer(first_name, last_name, no_image_upload, uploaded_image):
     try:
-        singer = Singer.objects.get(first_name=first_name, last_name=last_name, is_audience=False)
+        singer = Singer.objects.get(first_name=first_name, last_name=last_name, is_audience=False, selfie=uploaded_image)
         singer.is_active = True
         singer.no_image_upload = no_image_upload
         singer.save()
@@ -588,7 +589,7 @@ def _login_existing_singer(first_name, last_name, no_image_upload):
         raise TwistApiException("The name that you logged in with previously does not match your current one")
 
 
-def _login_new_audience(first_name, last_name, no_image_upload, order_id):
+def _login_new_audience(first_name, last_name, no_image_upload, order_id, uploaded_image):
     ticket_order = _get_order(order_id, ATTN_SKU)
     try:
         singer = Singer.objects.create_user(
@@ -598,16 +599,17 @@ def _login_new_audience(first_name, last_name, no_image_upload, order_id):
             is_staff=False,
             is_audience=True,
             ticket_order=ticket_order,
-            no_image_upload=no_image_upload
+            no_image_upload=no_image_upload,
+            selfie=uploaded_image
         )
     except (TicketsDepleted, AlreadyLoggedIn) as e:
         raise TwistApiException(str(e))
     return singer
 
 
-def  _login_existing_audience(first_name, last_name, no_image_upload):
+def  _login_existing_audience(first_name, last_name, no_image_upload, uploaded_image):
     try:
-        audience = Singer.objects.get(first_name=first_name, last_name=last_name, is_audience=True)
+        audience = Singer.objects.get(first_name=first_name, last_name=last_name, is_audience=True, selfie=uploaded_image)
         audience.is_active = True
         audience.no_image_upload = no_image_upload
         audience.save()
@@ -631,19 +633,23 @@ def login(request):
             passcode = _sanitize_string(request.POST['passcode'])
             order_id = request.POST['order-id']
             no_image_upload = request.POST.get('no-upload') == 'on'
+            photo = request.FILES.get('upload-image')
+            selfie = request.FILES.get('upload-selfie')
+
+            uploaded_image = photo or selfie
 
             if passcode.lower() != config.PASSCODE.lower():
                 raise TwistApiException("Wrong passcode - Shani will reveal tonight's passcode at the event")
 
             if ticket_type == 'audience':
-                audience = _login_existing_audience(first_name, last_name, no_image_upload) if logged_in else (
-                    _login_new_audience(first_name, last_name, no_image_upload, order_id))
+                audience = _login_existing_audience(first_name, last_name, no_image_upload, uploaded_image) if logged_in else (
+                    _login_new_audience(first_name, last_name, no_image_upload, order_id, uploaded_image))
                 auth_login(request, audience)
                 return JsonResponse({'success': True}, status=200)
 
             elif ticket_type == 'singer':
-                singer = _login_existing_singer(first_name, last_name, no_image_upload) if logged_in else (
-                    _login_new_singer(first_name, last_name, no_image_upload, order_id))
+                singer = _login_existing_singer(first_name, last_name, no_image_upload, uploaded_image) if logged_in else (
+                    _login_new_singer(first_name, last_name, no_image_upload, order_id, uploaded_image))
                 auth_login(request, singer)
                 return JsonResponse({'success': True}, status=200)
             else:

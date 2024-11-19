@@ -22,7 +22,7 @@
         </div>
          <div id="audience-login-wrapper" class="login-form-wrapper">
             <h2 class="login-form-title">You're logging in as <br><span class="text-secondary">AUDIENCE</span></h2>
-            <form action="" method="POST" id="audience-login-form" autocomplete="off">
+            <form action="" method="POST" id="audience-login-form" autocomplete="off" enctype="multipart/form-data">
                 {% csrf_token %}
                 <input type="hidden" name="ticket-type" value="audience">
                 <div class="form-control">
@@ -39,12 +39,25 @@
                 </div>
                 <div class="checkboxes">
                     <div class="checkbox">
-                        <input type="checkbox" name="logged-in" id="logged-in">
-                        <label for="logged-in">I already logged in tonight</label>
+                        <input type="checkbox" name="logged-in" id="logged-in-audience">
+                        <label for="logged-in-audience">I already logged in tonight</label>
                     </div>
                     <div class="checkbox">
-                        <input type="checkbox" name="no-upload" id="no-upload">
-                        <label for="no-upload">Please don't use images of me</label>
+                        <input type="checkbox" name="no-upload" id="no-upload-audience">
+                        <label for="no-upload-audience">Please don't use images of me</label>
+                    </div>
+                </div>
+                <div class="form-control image-upload hidden" id="audience-image-upload-wrapper">
+                    <p class="upload-title">Please upload a photo so we can recognize and avoid your image:<p>
+                    <div class="upload-buttons">
+                        <div class="upload-button">
+                            <label for="audience-upload-image">Upload photo</label>
+                            <input type="file" class="upload-image-button" id="audience-upload-image" name="upload-image" accept="image/*">
+                        </div>
+                        <div class="upload-button">
+                            <label for="audience-upload-selfie">Take a selfie</label>
+                            <input type="file" class="upload-image-button" id="audience-upload-selfie" name="upload-selfie" accept="image/*" capture="user">
+                        </div>
                     </div>
                 </div>
                 <input type="submit" value="Come on in!" class="login-btn">
@@ -73,14 +86,28 @@
                 </div>
                 <div class="checkboxes">
                     <div class="checkbox">
-                        <input type="checkbox" name="logged-in" id="logged-in">
-                        <label for="logged-in">I already logged in tonight</label>
+                        <input type="checkbox" name="logged-in" id="logged-in-singer">
+                        <label for="logged-in-singer">I already logged in tonight</label>
                     </div>
                     <div class="checkbox">
-                        <input type="checkbox" name="no-upload" id="no-upload">
-                        <label for="no-upload">Please don't use images of me</label>
+                        <input type="checkbox" name="no-upload" id="no-upload-singer">
+                        <label for="no-upload-singer">Please don't use images of me</label>
                     </div>
                 </div>
+                <div class="form-control image-upload hidden" id="singer-image-upload-wrapper">
+                    <p class="upload-title">Please upload a photo so we can recognize and avoid your image:<p>
+                    <div class="upload-buttons">
+                        <div class="upload-button">
+                            <label for="singer-upload-image">Upload photo</label>
+                            <input type="file" class="upload-image-button" id="singer-upload-image" name="upload-image" accept="image/*">
+                        </div>
+                        <div class="upload-button">
+                            <label for="singer-upload-selfie">Take a selfie</label>
+                            <input type="file" class="upload-image-button" id="singer-upload-selfie" name="upload-selfie" accept="image/*" capture="user">
+                        </div>
+                    </div>
+                </div>
+
                 <input type="submit" value="Come on in!" class="login-btn">
             </form>
         </div>

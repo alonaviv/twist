@@ -30,6 +30,31 @@
         position: relative;
         z-index: 3;
 
+        .image-upload {
+            .upload-buttons{
+                display: flex;
+                flex-direction: row;
+                justify-content: space-around;
+                .upload-button{
+                    background: #333;
+                    border-radius: 10px;
+                    padding: 10px;
+                }
+            }
+            .upload-title{
+                margin-bottom: 15px;
+                font-size: 20px;
+            }
+            label{
+                display: block;
+                width: 100%;
+                text-align: center;
+            }
+            .upload-image-button{
+                display: none;
+            }
+        }
+
         #login-title {
             font-family: "Oleo Script Swash Caps", cursive;
             font-size: 25px;

@@ -75,6 +75,7 @@ class Singer(AbstractUser):
     placeholder = BooleanField(default=False)
     ticket_order = ForeignKey(TicketOrder, related_name='singers', on_delete=PROTECT, null=True)
     is_audience = BooleanField(default=False)
+    selfie = ImageField(upload_to='selfies/', blank=True, null=True)
 
     @property
     def is_singer(self):

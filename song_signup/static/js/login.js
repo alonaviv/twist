@@ -4,8 +4,19 @@ const formMessages = document.querySelector(".form-messages");
 const singerButton = document.querySelector(".ticket-button[value='singer']");
 const audienceButton = document.querySelector(".ticket-button[value='audience']");
 const ticketSelectionWrapper = document.getElementById("ticket-selection-wrapper");
-const loginBack = document.getElementById("login-back")
+const loginBack = document.getElementById("login-back");
+const audienceImagesCheckbox = document.getElementById("no-upload-audience");
+const singerImagesCheckbox = document.getElementById("no-upload-singer");
+const audienceUploadImageWrapper = document.getElementById("audience-image-upload-wrapper");
+const singerUploadImageWrapper = document.getElementById("singer-image-upload-wrapper");
 
+if ('scrollRestoration' in history) {
+    history.scrollRestoration = 'manual'; // Disable browser's automatic scroll restoration
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    window.scrollTo(0, 0);
+});
 
 const formListner =  e => {
     e.preventDefault();
@@ -31,12 +42,30 @@ const formListner =  e => {
 singerFormWrapper.addEventListener("submit", formListner)
 audienceFormWrapper.addEventListener("submit", formListner)
 
+audienceImagesCheckbox.parentNode.addEventListener("click", (e) => {
+    if (e.target.checked) {
+        audienceUploadImageWrapper.classList.remove("hidden");
+    } else {
+        audienceUploadImageWrapper.classList.add("hidden");
+    }
+})
+
+singerImagesCheckbox.parentNode.addEventListener("click", (e) => {
+    if (e.target.checked) {
+        singerUploadImageWrapper.classList.remove("hidden");
+    } else {
+        singerUploadImageWrapper.classList.add("hidden");
+    }
+})
+
 
 singerButton.addEventListener("click", e => {
+    window.scrollTo(0, 0);
     activateForm(singerFormWrapper, audienceFormWrapper)
 });
 
 audienceButton.addEventListener("click", e => {
+    window.scrollTo(0, 0);
     activateForm(audienceFormWrapper, singerFormWrapper)
 });
 
@@ -55,6 +84,7 @@ function activateForm(selectedForm, otherForm) {
 }
 
 function deactivateForm() {
+    window.scrollTo(0, 0);
     setTimeout(() => {
         loginBack.classList.remove('active');
         singerFormWrapper.classList.remove('active');

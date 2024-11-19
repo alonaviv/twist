@@ -379,6 +379,23 @@ nav {
     height: 100%;
     position: relative;
     z-index: 3; }
+    #login-hero #login-wrapper .image-upload .upload-buttons {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-around; }
+      #login-hero #login-wrapper .image-upload .upload-buttons .upload-button {
+        background: #333;
+        border-radius: 10px;
+        padding: 10px; }
+    #login-hero #login-wrapper .image-upload .upload-title {
+      margin-bottom: 15px;
+      font-size: 20px; }
+    #login-hero #login-wrapper .image-upload label {
+      display: block;
+      width: 100%;
+      text-align: center; }
+    #login-hero #login-wrapper .image-upload .upload-image-button {
+      display: none; }
     #login-hero #login-wrapper #login-title {
       font-family: "Oleo Script Swash Caps", cursive;
       font-size: 25px;
