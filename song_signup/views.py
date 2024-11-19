@@ -776,7 +776,7 @@ def _process_orders(spreadsheet_file):
 
     worksheet = load_workbook(spreadsheet_file).active
     for row in worksheet.iter_rows(min_row=2, values_only=2):
-        order_id, event_sku, event_name, num_tickets, ticket_type, first_name, last_name = row
+        order_id, event_sku, event_name, num_tickets, ticket_type, first_name, last_name, phone_number = row
         orders.add(order_id)
         num_ticket_orders += 1
 
@@ -786,7 +786,8 @@ def _process_orders(spreadsheet_file):
             ticket_type=ticket_type,
             event_name=event_name,
             num_tickets=num_tickets,
-            customer_name=' '.join([first_name, last_name])
+            customer_name=' '.join([first_name, last_name]),
+            phone_number=phone_number
         )
         if created:
             num_new_ticket_orders += 1
