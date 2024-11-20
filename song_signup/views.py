@@ -579,9 +579,11 @@ def _login_new_singer(first_name, last_name, no_image_upload, order_id, uploaded
 
 def _login_existing_singer(first_name, last_name, no_image_upload, uploaded_image):
     try:
-        singer = Singer.objects.get(first_name=first_name, last_name=last_name, is_audience=False, selfie=uploaded_image)
+        singer = Singer.objects.get(first_name=first_name, last_name=last_name, is_audience=False)
         singer.is_active = True
         singer.no_image_upload = no_image_upload
+        if uploaded_image:
+            singer.selfie = uploaded_image
         singer.save()
         Singer.ordering.calculate_positions()
         return singer
@@ -609,9 +611,11 @@ def _login_new_audience(first_name, last_name, no_image_upload, order_id, upload
 
 def  _login_existing_audience(first_name, last_name, no_image_upload, uploaded_image):
     try:
-        audience = Singer.objects.get(first_name=first_name, last_name=last_name, is_audience=True, selfie=uploaded_image)
+        audience = Singer.objects.get(first_name=first_name, last_name=last_name, is_audience=True)
         audience.is_active = True
         audience.no_image_upload = no_image_upload
+        if uploaded_image:
+            audience.selfie = uploaded_image
         audience.save()
         return audience
     except Singer.DoesNotExist:

@@ -4,11 +4,13 @@ from django.forms.models import model_to_dict
 from django.http import HttpResponse
 from django.test import TestCase, Client, TransactionTestCase
 from django.urls import reverse
+from django.core.files.storage import default_storage
 from freezegun import freeze_time
 from mock import patch
 from django.core.files import File
 import glob
 import os
+import filecmp
 
 
 from song_signup.models import (
@@ -184,6 +186,126 @@ class TestLogin(TestViews):
         self.assertEqual(new_audience.ticket_order, order)
         self.assertFalse(new_audience.is_staff)
 
+    def test_singer_upload_image(self):
+        test_img_path = 'song_signup/tests/test_img.png'
+        order = create_order(num_tickets=1, ticket_type=SING_SKU, order_id=12345)
+        with open(test_img_path, 'rb') as image:
+            response = self.client.post(reverse('login'), {
+                'ticket-type': ['singer'],
+                'first-name': ['Valid'],
+                'last-name': ['Singer'],
+                'passcode': [PASSCODE],
+                'order-id': ['12345'],
+                'upload-image': image
+            })
+
+        self.assertEqual(response.status_code, 200)
+        singer = Singer.objects.get(username='valid_singer')
+        self.assertTrue(filecmp.cmp(test_img_path, singer.selfie.path))
+
+    def test_singer_upload_selfie(self):
+        test_img_path = 'song_signup/tests/test_img.png'
+        order = create_order(num_tickets=1, ticket_type=SING_SKU, order_id=12345)
+        with open(test_img_path, 'rb') as image:
+            response = self.client.post(reverse('login'), {
+                'ticket-type': ['singer'],
+                'first-name': ['Valid'],
+                'last-name': ['Singer'],
+                'passcode': [PASSCODE],
+                'order-id': ['12345'],
+                'upload-selfie': image
+            })
+
+        self.assertEqual(response.status_code, 200)
+        singer = Singer.objects.get(username='valid_singer')
+        self.assertTrue(filecmp.cmp(test_img_path, singer.selfie.path))
+
+    def test_existing_singer_upload_selfie(self):
+        order = create_order(num_tickets=1, ticket_type=SING_SKU, order_id=12345)
+        Singer.objects.create_user(
+            username="valid_singer",
+            first_name="Valid",
+            last_name="Singer",
+            is_staff=False,
+            is_audience=False,
+            ticket_order=order,
+        )
+        test_img_path = 'song_signup/tests/test_img.png'
+        with open(test_img_path, 'rb') as image:
+            response = self.client.post(reverse('login'), {
+                'ticket-type': ['singer'],
+                'first-name': ['Valid'],
+                'last-name': ['Singer'],
+                'passcode': [PASSCODE],
+                'order-id': ['12345'],
+                'logged-in': ['on'],
+                'upload-selfie': image
+            })
+
+        self.assertEqual(response.status_code, 200)
+        singer = Singer.objects.get(username='valid_singer')
+        self.assertTrue(filecmp.cmp(test_img_path, singer.selfie.path))
+
+    def test_existing_audience_upload_selfie(self):
+        order = create_order(num_tickets=1, ticket_type=ATTN_SKU, order_id=12345)
+        Singer.objects.create_user(
+            username="valid_audience",
+            first_name="Valid",
+            last_name="Audience",
+            is_staff=False,
+            is_audience=True,
+            ticket_order=order,
+        )
+        test_img_path = 'song_signup/tests/test_img.png'
+        with open(test_img_path, 'rb') as image:
+            response = self.client.post(reverse('login'), {
+                'ticket-type': ['audience'],
+                'first-name': ['Valid'],
+                'last-name': ['Audience'],
+                'passcode': [PASSCODE],
+                'order-id': ['12345'],
+                'logged-in': ['on'],
+                'upload-selfie': image
+            })
+
+        self.assertEqual(response.status_code, 200)
+        singer = Singer.objects.get(username='valid_audience')
+        self.assertTrue(filecmp.cmp(test_img_path, singer.selfie.path))
+
+    def test_audience_upload_image(self):
+        test_img_path = 'song_signup/tests/test_img.png'
+        order = create_order(num_tickets=1, ticket_type=ATTN_SKU, order_id=12345)
+        with open(test_img_path, 'rb') as image:
+            response = self.client.post(reverse('login'), {
+                'ticket-type': ['audience'],
+                'first-name': ['Valid'],
+                'last-name': ['Audience'],
+                'passcode': [PASSCODE],
+                'order-id': ['12345'],
+                'upload-image': image
+            })
+
+        self.assertEqual(response.status_code, 200)
+        audience = Singer.objects.get(username='valid_audience')
+        self.assertTrue(filecmp.cmp(test_img_path, audience.selfie.path))
+
+    def test_audience_upload_selfie(self):
+        test_img_path = 'song_signup/tests/test_img.png'
+        order = create_order(num_tickets=1, ticket_type=ATTN_SKU, order_id=12345)
+        with open(test_img_path, 'rb') as image:
+            response = self.client.post(reverse('login'), {
+                'ticket-type': ['audience'],
+                'first-name': ['Valid'],
+                'last-name': ['Audience'],
+                'passcode': [PASSCODE],
+                'order-id': ['12345'],
+                'upload-selfie': image
+            })
+
+        self.assertEqual(response.status_code, 200)
+        audience = Singer.objects.get(username='valid_audience')
+        self.assertTrue(filecmp.cmp(test_img_path, audience.selfie.path))
+
     def test_party_login(self):
         order = create_order(num_tickets=2, ticket_type=ATTN_SKU, order_id=12345)
         order = create_order(num_tickets=2, ticket_type=SING_SKU, order_id=12345)
@@ -357,7 +479,6 @@ class TestLogin(TestViews):
         })
         self._assert_user_error(response, "Sorry, looks like all ticket holders for this order number already "
                                           "logged in. Are you sure your ticket is of type 'audience'?")
-
 
     def test_singer_logged_in_box(self):
         user = login_singer(self)
