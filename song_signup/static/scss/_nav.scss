@@ -80,6 +80,7 @@ nav {
             flex-direction: column;
             justify-content: space-between;
             align-items: center;
+            gap: 10px;
 
             #navbar-social {
                 width: 100%;
@@ -92,12 +93,21 @@ nav {
                 justify-content: space-around;
                 align-items: center;
 
-                #navbar-instagram {
+                #facebook-nav{
+                    padding-bottom: 3px;
+                }
+
+                #navbar-handle {
                     display: flex;
                     align-items: center;
+                    gap: 10px;
                     p {
-                        margin-left: 5px;
                         font-size: 30px;
+                        padding-bottom: 5px;
+                    }
+                    #tiktok-nav{
+                        font-size: 35px;
+                        padding-bottom: 4px;
                     }
                 }
             }

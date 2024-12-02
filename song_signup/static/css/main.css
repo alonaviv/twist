@@ -269,7 +269,8 @@ nav {
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      align-items: center; }
+      align-items: center;
+      gap: 10px; }
       #menu-wrapper #menu #navbar-icons #navbar-social {
         width: 100%;
         text-align: center;
@@ -279,12 +280,18 @@ nav {
         flex-direction: row-reverse;
         justify-content: space-around;
         align-items: center; }
-        #menu-wrapper #menu #navbar-icons #navbar-social #navbar-instagram {
+        #menu-wrapper #menu #navbar-icons #navbar-social #facebook-nav {
+          padding-bottom: 3px; }
+        #menu-wrapper #menu #navbar-icons #navbar-social #navbar-handle {
           display: flex;
-          align-items: center; }
-          #menu-wrapper #menu #navbar-icons #navbar-social #navbar-instagram p {
-            margin-left: 5px;
-            font-size: 30px; }
+          align-items: center;
+          gap: 10px; }
+          #menu-wrapper #menu #navbar-icons #navbar-social #navbar-handle p {
+            font-size: 30px;
+            padding-bottom: 5px; }
+          #menu-wrapper #menu #navbar-icons #navbar-social #navbar-handle #tiktok-nav {
+            font-size: 35px;
+            padding-bottom: 4px; }
       #menu-wrapper #menu #navbar-icons #navbar-whatsapp {
         text-align: center;
         font-size: 30px;
@@ -1608,7 +1615,8 @@ footer {
       display: flex;
       flex-direction: row;
       justify-content: space-between;
-      align-items: center; }
+      align-items: center;
+      gap: 10px; }
       footer .container #footer-links i {
         height: 100%;
         width: auto; }
