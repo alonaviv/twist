@@ -1152,49 +1152,49 @@ nav {
     align-items: center;
     height: 100vh;
     width: 100vw; }
-    .fixed-logo.not-started #logo-img {
-      height: 80%;
-      width: 80%;
-      padding: 0;
-      object-fit: contain; }
-    .fixed-logo.not-started #social-qrs {
-      display: flex;
-      flex-direction: column;
-      color: white;
-      width: auto;
-      background-color: #333;
-      letter-spacing: 3px;
-      margin-top: 45px;
-      padding-top: 10px;
-      padding-bottom: 10px; }
-      .fixed-logo.not-started #social-qrs #tag-us-title {
-        text-align: center;
-        font-size: 60px;
-        font-weight: 600;
-        font-style: italic; }
-      .fixed-logo.not-started #social-qrs #tag-us-handle-wrapper {
-        display: flex;
-        width: 40%;
-        margin: auto;
-        align-items: center;
-        justify-content: center;
-        gap: 10px; }
-        .fixed-logo.not-started #social-qrs #tag-us-handle-wrapper .tag-us-icon {
-          object-fit: contain;
-          height: 80px;
-          width: 80px;
-          padding: 0;
-          display: block; }
-        .fixed-logo.not-started #social-qrs #tag-us-handle-wrapper .tag-handle {
-          font-size: 80px;
-          font-weight: 800;
-          margin-left: 20px; }
     .fixed-logo.not-started.screen {
       display: block; }
       .fixed-logo.not-started.screen #logo-img {
         height: 65%;
         width: 100%;
         margin-top: 40px; }
+      .fixed-logo.not-started.screen #social-qrs {
+        display: flex;
+        flex-direction: column;
+        color: white;
+        width: auto;
+        background-color: #333;
+        letter-spacing: 3px;
+        margin-top: 45px;
+        padding-top: 10px;
+        padding-bottom: 10px; }
+        .fixed-logo.not-started.screen #social-qrs #tag-us-title {
+          text-align: center;
+          font-size: 60px;
+          font-weight: 600;
+          font-style: italic; }
+        .fixed-logo.not-started.screen #social-qrs #tag-us-handle-wrapper {
+          display: flex;
+          width: 40%;
+          margin: auto;
+          align-items: center;
+          justify-content: center;
+          gap: 10px; }
+          .fixed-logo.not-started.screen #social-qrs #tag-us-handle-wrapper .tag-us-icon {
+            object-fit: contain;
+            height: 80px;
+            width: 80px;
+            padding: 0;
+            display: block; }
+          .fixed-logo.not-started.screen #social-qrs #tag-us-handle-wrapper .tag-handle {
+            font-size: 80px;
+            font-weight: 800;
+            margin-left: 20px; }
+    .fixed-logo.not-started #logo-img {
+      height: 80%;
+      width: 80%;
+      padding: 0;
+      object-fit: contain; }
 
 .drink-highlight {
   color: white;
