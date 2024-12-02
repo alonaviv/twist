@@ -66,15 +66,18 @@
                 width: auto;
                 background-color: #333;
                 letter-spacing: 3px;
-                margin-top: 45px;
-                padding-top: 10px;
-                padding-bottom: 10px;
+                margin-top: 20px;
+                padding-top: 5px;
+                padding-bottom: 5px;
 
                 #tag-us-title{
                     text-align: center;
                     font-size: 60px;
                     font-weight: 600;
                     font-style: italic;
+                    line-height: 60px;
+                    margin-bottom: 15px;
+                    margin-top: 10px;
                 }
 
                 #tag-us-handle-wrapper{
@@ -86,15 +89,15 @@
                     gap: 10px;
                     .tag-us-icon{
                         object-fit: contain;
-                        height: 80px;
-                        width: 80px;
+                        height: 70px;
+                        width: 70px;
                         padding: 0;
                         display: block;
                     }
                     .tag-handle{
-                        font-size: 80px;
+                        font-size: 70px;
                         font-weight: 800;
-                        margin-left: 20px;
+                        margin-left: 10px;
                     }
                 }
             }
