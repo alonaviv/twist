@@ -63,18 +63,34 @@
             </div>
         {% endif %}
         <!-- Toggle Button -->
-        <button id="toggleBgBtn" type="button" style="margin: 20px; padding: 10px; font-size: 20px; cursor: pointer;">
+        <button id="toggleTranspose" type="button" style="margin: 20px; padding: 10px; font-size: 20px; cursor: pointer;">
             Start Transposition
+        </button>
+        <button id="toggleShaniPing" type="button" style="margin: 20px; padding: 10px; font-size: 20px; cursor: pointer;">
+            Ping Shani
         </button>
     </div>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            var initialColor = localStorage.getItem('bgColor') || '';
-            var initialText = localStorage.getItem('btnText') || 'Start Transposition';
-            document.body.style.backgroundColor = initialColor;
-            document.getElementById('toggleBgBtn').textContent = initialText;
+        var initialColor = localStorage.getItem('bgColor') || '';
+        var initialText = localStorage.getItem('btnText') || 'Start Transposition';
 
-            document.getElementById('toggleBgBtn').addEventListener('click', function() {
+        async function readShaniPing(){
+            res = await fetch("/shani_pinged");
+            shani_pinged = await res.json()
+            const storedColor = localStorage.getItem('bgColor');
+            if (storedColor){
+                document.body.style.backgroundColor = storedColor;
+            } else if (shani_pinged.shani_ping){
+                document.body.style.backgroundColor = '#b19cd9';
+            } else {
+                document.body.style.backgroundColor = initialColor;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.body.style.backgroundColor = initialColor;
+            document.getElementById('toggleTranspose').textContent = initialText;
+            document.getElementById('toggleTranspose').addEventListener('click', function() {
                 var currentColor = document.body.style.backgroundColor;
                 var newColor = currentColor === 'red' ? '' : 'red';
                 document.body.style.backgroundColor = newColor;
@@ -84,6 +100,12 @@
                 this.textContent = newText;
                 localStorage.setItem('btnText', newText);
             });
+            document.getElementById('toggleShaniPing').addEventListener('click', function() {
+                if (!localStorage.getItem('bgColor')){
+                    fetch("/toggle_shani_ping", { method: "PUT", credentials: "omit"});
+                }
+            });
+            setInterval(readShaniPing, 100);
         });
     </script>
 {% endblock %}

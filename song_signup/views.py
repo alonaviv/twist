@@ -10,6 +10,7 @@ from django.db import transaction
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse
+from django.views.decorators.csrf import csrf_exempt
 from flags.state import enable_flag, disable_flag, flag_disabled, flag_enabled
 from openpyxl import load_workbook
 from rest_framework import status
@@ -738,6 +739,22 @@ def evening_started(request):
 
 def boho_started(request):
     return JsonResponse({"boho": flag_enabled('BOHO')})
+
+
+@api_view(["PUT"])
+@csrf_exempt
+def toggle_shani_ping(request):
+    if flag_disabled('SHANI_PING'):
+        enable_flag('SHANI_PING')
+    else:
+        disable_flag('SHANI_PING')
+    return JsonResponse({"shani_ping": flag_enabled('SHANI_PING')})
+
+
+@api_view(["GET"])
+@csrf_exempt
+def shani_pinged(request):
+    return JsonResponse({"shani_ping": flag_enabled('SHANI_PING')})
 
 
 def recalculate_priorities(request):
