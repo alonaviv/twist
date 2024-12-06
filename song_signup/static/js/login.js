@@ -42,21 +42,21 @@ const formListner =  e => {
 singerFormWrapper.addEventListener("submit", formListner)
 audienceFormWrapper.addEventListener("submit", formListner)
 
-// audienceImagesCheckbox.parentNode.addEventListener("click", (e) => {
-//     if (e.target.checked) {
-//         audienceUploadImageWrapper.classList.remove("hidden");
-//     } else {
-//         audienceUploadImageWrapper.classList.add("hidden");
-//     }
-// })
+audienceImagesCheckbox.parentNode.addEventListener("click", (e) => {
+    if (e.target.checked) {
+        audienceUploadImageWrapper.classList.remove("hidden");
+    } else {
+        audienceUploadImageWrapper.classList.add("hidden");
+    }
+})
 
-// singerImagesCheckbox.parentNode.addEventListener("click", (e) => {
-//     if (e.target.checked) {
-//         singerUploadImageWrapper.classList.remove("hidden");
-//     } else {
-//         singerUploadImageWrapper.classList.add("hidden");
-//     }
-// })
+singerImagesCheckbox.parentNode.addEventListener("click", (e) => {
+    if (e.target.checked) {
+        singerUploadImageWrapper.classList.remove("hidden");
+    } else {
+        singerUploadImageWrapper.classList.add("hidden");
+    }
+})
 
 
 singerButton.addEventListener("click", e => {
