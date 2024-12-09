@@ -93,9 +93,9 @@ async function populateLyrics() {
     const bohoRes = await fetch("/boho_started");
     const boho = (await bohoRes.json()).boho;
     const questionRes = await fetch("/get_active_question");
+    const question = await questionRes.json();
 
-    if (questionRes.status === 200 && isSuperuser) {
-        const question = await questionRes.json();
+    if (questionRes.status === 200 && Object.keys(question).length > 0 && isSuperuser) {
         const winner = question.winner;
         const image = question.image
 

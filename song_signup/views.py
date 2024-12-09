@@ -440,7 +440,7 @@ def get_active_question(request):
         serialized = TriviaQuestionSerializer(active_question)
         return Response(serialized.data, status=status.HTTP_200_OK)
     else:
-        return Response({}, status=status.HTTP_204_NO_CONTENT)
+        return Response({}, status=status.HTTP_200_OK)
 
 
 @api_view(["POST"])

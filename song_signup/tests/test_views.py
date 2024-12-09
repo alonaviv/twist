@@ -1807,7 +1807,7 @@ class TestGetActiveQuestion(TestTrivia):
 
     def test_no_active_question(self):
         response = self.client.get(reverse('get_active_question'))
-        self.assertEqual(response.status_code, 204)
+        self.assertEqual(response.status_code, 200)
         self.assertDictEqual(response.data, {})
 
     @patch.object(TriviaQuestion, 'WINNER_DISPLAY_DELAY', 0)
