@@ -256,13 +256,17 @@ class SongRequestAdmin(admin.ModelAdmin):
 @admin.register(Singer)
 class SingerAdmin(admin.ModelAdmin):
     list_display = ['username', 'date_joined', 'is_active', 'no_image_upload', 'ticket_order',
-                    'is_audience', 'selfie_preview']
+                    'is_audience', 'selfie_preview', 'get_songs']
     list_filter =['is_audience']
 
     def selfie_preview(self, obj):
         if obj.selfie:
             return mark_safe(f'<img src="{obj.selfie.url}" width="100" height="100" />')
     selfie_preview.short_description = 'Selfie'
+
+    def get_songs(self, obj):
+        return [str(song.song_name) for song in obj.all_songs]
+    get_songs.short_description = 'Songs'
 
 
 @admin.register(SongLyrics)
