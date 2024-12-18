@@ -71,8 +71,6 @@
         </button>
     </div>
     <script>
-        var initialColor = localStorage.getItem('bgColor') || '';
-        var initialText = localStorage.getItem('btnText') || 'Start Transposition';
 
         async function readShaniPing(){
             res = await fetch("/shani_pinged");
@@ -83,16 +81,16 @@
             } else if (shani_pinged.shani_ping){
                 document.body.style.backgroundColor = '#b19cd9';
             } else {
-                document.body.style.backgroundColor = initialColor;
+                document.body.style.backgroundColor = "#fff"
             }
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            document.body.style.backgroundColor = initialColor;
-            document.getElementById('toggleTranspose').textContent = initialText;
+            var storedText = localStorage.getItem('btnText') || 'Start Transposition';
+            document.getElementById('toggleTranspose').textContent = storedText;
             document.getElementById('toggleTranspose').addEventListener('click', function() {
-                var currentColor = document.body.style.backgroundColor;
-                var newColor = currentColor === 'red' ? '' : 'red';
+                var InitialStoredColor = localStorage.getItem('bgColor') || '';
+                var newColor = InitialStoredColor === 'red' ? '' : 'red';
                 document.body.style.backgroundColor = newColor;
                 localStorage.setItem('bgColor', newColor);
 
