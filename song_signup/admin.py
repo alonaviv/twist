@@ -154,7 +154,7 @@ class GroupSongRequestAdmin(admin.ModelAdmin):
 @admin.register(SongRequest)
 class SongRequestAdmin(admin.ModelAdmin):
     list_display = (
-        'display_position', 'get_skipped', 'lyrics', 'singer', 'song_name', 'musical', 'get_partners', 'get_notes', 'get_to_alon',
+        'display_position', 'get_skipped', 'lyrics', 'get_singer', 'get_song', 'get_musical', 'get_partners', 'get_notes', 'get_to_alon',
         'default_lyrics', 'found_music', 'allows_filming', 'get_performance_time', 'get_request_time', 'get_initial_signup',
     )
     list_filter = (NotYetPerformedFilter,)
@@ -168,7 +168,7 @@ class SongRequestAdmin(admin.ModelAdmin):
     def get_skipped(self, obj):
         if obj.skipped:
             return mark_safe('<img src="/static/img/admin/forward.png" style="height: 16px;" />')
-    get_skipped.short_description = 'Skipped'
+    get_skipped.short_description = 'S'
 
     def changelist_view(self, request, extra_context=None):
         extra_context = extra_context or {}
@@ -194,20 +194,50 @@ class SongRequestAdmin(admin.ModelAdmin):
     get_request_time.short_description = 'Request Time'
     get_request_time.admin_order_field = 'request_time'
 
-    def get_notes(self, obj):
-        return obj.notes
+    def get_singer(self, obj):
+        return format_html(
+            '<div style="width: 100px; white-space: normal; word-wrap: break-word;">{}</div>',
+            obj.singer
+        )
+    get_singer.short_description = 'Singer'
 
-    get_notes.short_description = 'Notes..................................'
+    def get_song(self, obj):
+        return format_html(
+            '<div style="width: 100px; white-space: normal; word-wrap: break-word;">{}</div>',
+            obj.song_name
+        )
+    get_song.short_description = 'Song'
+
+    def get_musical(self, obj):
+        return format_html(
+            '<div style="width: 70px; white-space: normal; word-wrap: break-word;">{}</div>',
+            obj.musical
+        )
+    get_musical.short_description = 'Musical'
+
+    def get_notes(self, obj):
+        return format_html(
+            '<div style="width: 120px; white-space: normal; word-wrap: break-word;">{}</div>',
+            obj.notes or ''
+        )
+    get_notes.short_description = 'Notes'
 
     def get_to_alon(self, obj):
-        return obj.to_alon
+        return format_html(
+            '<div style="width: 120px; white-space: normal; word-wrap: break-word;">{}</div>',
+            obj.to_alon or ''
+        )
 
-    get_to_alon.short_description = 'Communication to Alon............'
+    get_to_alon.short_description = 'To Alon'
 
     def get_partners(self, obj):
-        return ", ".join([f"{singer.first_name} {singer.last_name}" for singer in obj.partners.all()])
+        partners = ", ".join([f"{singer.first_name} {singer.last_name}" for singer in obj.partners.all()])
+        return format_html(
+            '<div style="width: 100px; white-space: normal; word-wrap: break-word;">{}</div>',
+            partners or ''
+        )
 
-    get_partners.short_description = 'Partners.............'
+    get_partners.short_description = 'Partners'
 
     def get_initial_signup(self, obj):
         if not obj.singer.is_superuser:
