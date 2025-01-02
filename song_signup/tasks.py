@@ -193,8 +193,15 @@ class AllMusicalsParser(LyricsWebsiteParser):
         for element in soup.find_all(attrs={"class": "visible-print"}):
             element.replace_with("")
 
+        lyrics_container = soup.find("div", {"id": "page"})
+        if lyrics_container is None:
+            lyrics_container = soup.find("div", {"class": "main-text"})
+
+        if lyrics_container is None:
+            raise Exception(f"No lyrics container found for {page_title}")
+
         return LyricsResult(
-            lyrics=soup.find("div", {"id": "page"}).text.strip(),
+            lyrics=lyrics_container.text.strip(),
             artist=artist,
             title=title,
             url=None,
