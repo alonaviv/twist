@@ -34,7 +34,9 @@ class LyricsResult:
     artist: str
     url: str | None
 
-
+#############################################################################
+### MAKE SURE TO ADD NEW WORKER TO start-celery.sh WHEN ADDING NEW PARSER ###
+###########################################################################
 class LyricsWebsiteParser:
     URL_FORMAT = re.compile("")
     SITE = ""
