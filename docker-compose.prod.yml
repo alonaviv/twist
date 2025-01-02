@@ -39,7 +39,7 @@ services:
     build:
       context: .
       dockerfile: docker/prod/Dockerfile.celery
-    command: celery -A twist worker -l INFO
+    command: ./start-celery.sh
     env_file: .env
     depends_on:
       redis:
