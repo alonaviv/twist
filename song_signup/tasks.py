@@ -52,6 +52,9 @@ class LyricsWebsiteParser:
     def parse_lyrics(self, soup: bs4.BeautifulSoup) -> Optional[LyricsResult]:
         return None
 
+    def get_url(self, url: str) -> requests.Response:
+        return requests.get(url, headers={"User-Agent": USER_AGENT})
+
     def get_lyrics(self, song_name: str, author: str) -> Iterable[LyricsResult]:
         lock = sherlock.Lock(self.SITE)
         seen_urls = set()
@@ -77,7 +80,7 @@ class LyricsWebsiteParser:
             logger.info(f"Performing query on {url}")
 
             try:
-                r = requests.get(url, headers={"User-Agent": USER_AGENT})
+                r = self.get_url(url)
             except Exception:
                 logger.exception(f"Received exception when requesting URL {url}")
                 continue
@@ -165,9 +168,19 @@ class AllMusicalsParser(LyricsWebsiteParser):
     URL_FORMAT = re.compile("allmusicals\.com\/lyrics\/.*\.htm$")
     SITE = "allmusicals.com"
 
+    def get_url(self, url: str) -> requests.Response:
+        # AllMusicals is using a cert that is not always trusted
+        return requests.get(url, headers={"User-Agent": USER_AGENT}, verify=False)
+
     def parse_lyrics(self, soup: bs4.BeautifulSoup) -> LyricsResult:
         page_title = soup.find("title").text
-        title, artist = page_title.split("-")[:2]
+        if "-" in page_title:
+            title, artist = page_title.split("-")[:2]
+        elif "—" in page_title:
+            # This is a different dash character
+            title, artist = page_title.split("—")[:2]
+        else:
+            raise Exception(f"Unknown page title format: {page_title}")
 
         if "Lyrics" in title:
             title = title[: title.index("Lyrics")]
@@ -181,7 +194,7 @@ class AllMusicalsParser(LyricsWebsiteParser):
             element.replace_with("")
 
         return LyricsResult(
-            lyrics=soup.find("div", {"class": "main-text"}).text.strip(),
+            lyrics=soup.find("div", {"id": "page"}).text.strip(),
             artist=artist,
             title=title,
             url=None,
