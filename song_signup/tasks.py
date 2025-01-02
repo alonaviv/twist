@@ -108,7 +108,7 @@ class LyricsWebsiteParser:
                 logger.exception(f"Exception in parser for url {search_result['url']}")
 
 
-class GenuisParser(LyricsWebsiteParser):
+class GeniusParser(LyricsWebsiteParser):
     SITE = "genius.com"
     # Paying through rapidapi: https://rapidapi.com/Glavier/api/genius-song-lyrics1
 
@@ -339,7 +339,7 @@ def get_lyrics(song_id: int | None = None, group_song_id: int | None = None):
         SongLyrics.objects.filter(group_song_request=song).delete()
 
     for parser_name in PARSERS:
-        get_lyrics_for_provider.delay(parser_name, song_id, group_song_id)
+        get_lyrics_for_provider.apply_async(args=(parser_name, song_id, group_song_id), queue=f'parser_{parser_name}_queue')
 
 
 @shared_task(rate_limit="0.5/s")
