@@ -120,16 +120,22 @@ db_backups/16-4-24-friends.psql
 4. Use restored DB on local system. Remember that your admin pass is now the production one.
 
 ## Stress testing production
-1. Run JMeter and open the JMX file in twist/jmeter
+1. For editing the test: Run JMeter (`jmeter` from terminal) and open the JMX file in twist/jmeter
 2. Reset production DB and set passcode to `dev`
 3. Play on JMeter, and 100 threads (40 singers and 60 audience) will run. Singers use different names for each and 
 sign up with 2 different songs each (all data taken from CSV files in the twist/jmeter dir).
-4. I have an AWS instance for this - `bwt-stress`. Has jmeter installed. TURN OFF INSTANCE WHEN DONE.
+4. I have an AWS instance for this - `bwt-stress` (in N. Virginia). May need to change the IP in the hosts file when 
+   after you turn it on. Has jmeter installed. TURN OFF INSTANCE WHEN 
+   DONE.
 5. If you made changes, scp the file `twist/jmeter.stress-test.jmx` to the instance's home path (user ubuntu). 
 6. Run the test from the instance like this: `jmeter -n -t stress-test.jmx  -l result.jtl -j jmeter.log`
 7. View failures in `jmeter.log`
 8. TURN OFF INSTANCE!!
 9. Restart app when done - otherwise celery will keep working hard
+
+Note: The audience part of the test is depricated since audiences log in. For now I disabled it
+and doubled the number of singers instead (I'm just testing lyrics stress). In the future you'll probably want to 
+re-record and create the audience test again. 
 
 
 
