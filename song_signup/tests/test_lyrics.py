@@ -1,5 +1,5 @@
 from django.test import TestCase
-from song_signup.tasks import GenuisParser, AllMusicalsParser
+from song_signup.tasks import GeniusParser, AllMusicalsParser
 
 SONG_NAME = "Hello"
 MUSICAL = "Book of Mormon"
@@ -14,6 +14,6 @@ class TestParsers(TestCase):
 
     def no_test_get_lyrics_genius(self):
         # Uses dedicated API
-        parser = GenuisParser()
+        parser = GeniusParser()
 
         lyrics = list(parser.get_lyrics(SONG_NAME, MUSICAL))
