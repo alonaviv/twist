@@ -35,7 +35,7 @@ services:
     build:
       context: .
       dockerfile: docker/dev/Dockerfile.celery
-    command: celery -A twist worker -l INFO
+    command: ./start-celery.sh
     volumes:
       - .:/twist
     env_file: .env

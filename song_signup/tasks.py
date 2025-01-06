@@ -34,7 +34,9 @@ class LyricsResult:
     artist: str
     url: str | None
 
-
+#############################################################################
+### MAKE SURE TO ADD NEW WORKER TO start-celery.sh WHEN ADDING NEW PARSER ###
+###########################################################################
 class LyricsWebsiteParser:
     URL_FORMAT = re.compile("")
     SITE = ""
@@ -51,6 +53,9 @@ class LyricsWebsiteParser:
 
     def parse_lyrics(self, soup: bs4.BeautifulSoup) -> Optional[LyricsResult]:
         return None
+
+    def get_url(self, url: str) -> requests.Response:
+        return requests.get(url, headers={"User-Agent": USER_AGENT})
 
     def get_lyrics(self, song_name: str, author: str) -> Iterable[LyricsResult]:
         lock = sherlock.Lock(self.SITE)
@@ -77,7 +82,7 @@ class LyricsWebsiteParser:
             logger.info(f"Performing query on {url}")
 
             try:
-                r = requests.get(url, headers={"User-Agent": USER_AGENT})
+                r = self.get_url(url)
             except Exception:
                 logger.exception(f"Received exception when requesting URL {url}")
                 continue
@@ -105,7 +110,7 @@ class LyricsWebsiteParser:
                 logger.exception(f"Exception in parser for url {search_result['url']}")
 
 
-class GenuisParser(LyricsWebsiteParser):
+class GeniusParser(LyricsWebsiteParser):
     SITE = "genius.com"
     # Paying through rapidapi: https://rapidapi.com/Glavier/api/genius-song-lyrics1
 
@@ -165,9 +170,19 @@ class AllMusicalsParser(LyricsWebsiteParser):
     URL_FORMAT = re.compile("allmusicals\.com\/lyrics\/.*\.htm$")
     SITE = "allmusicals.com"
 
+    def get_url(self, url: str) -> requests.Response:
+        # AllMusicals is using a cert that is not always trusted
+        return requests.get(url, headers={"User-Agent": USER_AGENT}, verify=False)
+
     def parse_lyrics(self, soup: bs4.BeautifulSoup) -> LyricsResult:
         page_title = soup.find("title").text
-        title, artist = page_title.split("-")[:2]
+        if "-" in page_title:
+            title, artist = page_title.split("-")[:2]
+        elif "—" in page_title:
+            # This is a different dash character
+            title, artist = page_title.split("—")[:2]
+        else:
+            raise Exception(f"Unknown page title format: {page_title}")
 
         if "Lyrics" in title:
             title = title[: title.index("Lyrics")]
@@ -180,8 +195,15 @@ class AllMusicalsParser(LyricsWebsiteParser):
         for element in soup.find_all(attrs={"class": "visible-print"}):
             element.replace_with("")
 
+        lyrics_container = soup.find("div", {"id": "page"})
+        if lyrics_container is None:
+            lyrics_container = soup.find("div", {"class": "main-text"})
+
+        if lyrics_container is None:
+            raise Exception(f"No lyrics container found for {page_title}")
+
         return LyricsResult(
-            lyrics=soup.find("div", {"class": "main-text"}).text.strip(),
+            lyrics=lyrics_container.text.strip(),
             artist=artist,
             title=title,
             url=None,
@@ -326,7 +348,7 @@ def get_lyrics(song_id: int | None = None, group_song_id: int | None = None):
         SongLyrics.objects.filter(group_song_request=song).delete()
 
     for parser_name in PARSERS:
-        get_lyrics_for_provider.delay(parser_name, song_id, group_song_id)
+        get_lyrics_for_provider.apply_async(args=(parser_name, song_id, group_song_id), queue=f'parser_{parser_name}_queue')
 
 
 @shared_task(rate_limit="0.5/s")
