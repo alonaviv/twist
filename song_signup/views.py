@@ -252,6 +252,7 @@ def update_song(request):
         if song_request.song_name != song_name:
             song_request.found_music = False
             song_request.default_lyrics = False
+            song_request.to_alon = None
         song_request.song_name = song_name
         song_request.musical = musical
         song_request.notes = notes
