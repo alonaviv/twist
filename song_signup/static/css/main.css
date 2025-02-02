@@ -1552,6 +1552,11 @@ nav {
     .trivia-wrapper .trivia-winner-wrapper.base-lyrics-trivia .trivia-answer {
       font-size: 30px; }
 
+#footer-wrapper {
+  justify-content: space-around;
+  display: flex;
+  z-index: 1000; }
+
 * {
   box-sizing: border-box;
   padding: 0;
