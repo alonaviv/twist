@@ -20,12 +20,13 @@
 
     #signups-disabled-text {
         color: $third-color;
-        transform: rotate(-15deg);
+        transform: rotate(-15deg) translateX(-50%);
         position: absolute;
-        right: 19%;
-        top: 19%;
+        width: 70%;
+        left: 50%;
+        top: 10%;
         font-weight: 500;
-        font-size: 40px;
+        font-size: 30px;
         transition: all 2s ease;
         opacity: 0;
         pointer-events: none;
@@ -33,6 +34,7 @@
         background: #333333CC;
         border-radius: 30px;
         padding: 20px;
+        z-index: 10;
 
         &.signups-disabled{
             opacity: 1;
