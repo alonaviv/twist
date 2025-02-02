@@ -72,12 +72,14 @@
 
             #not-started-message {
                 margin-top: 70px;
+                margin-right: 10px;
+                margin-left: 10px;
                 color: $third-color;
             }
 
             #login-icons {
                 width: 100%;
-                margin-top: 80px;
+                margin-top: 40px;
                 align-self: flex-end;
                 display: flex;
                 flex-direction: column;
@@ -87,36 +89,47 @@
                 #login-social {
                     width: 100%;
                     text-align: center;
-                    font-size: 40px;
-                    margin: 0px 8%;
+                    font-size: 35px;
+                    margin-left: 100px;
 
                     display: flex;
-                    flex-direction: row-reverse;
-                    justify-content: space-around;
+                    flex-direction: row;
+                    justify-content: start;
                     align-items: center;
-
-                    #login-facebook {
-                        color: #4267b2;
-                    }
+                    gap: 15px;
 
                     #login-instagram {
                         color: #e1306c;
-                        display: flex;
-                        align-items: center;
-                        p {
-                            margin-left: 5px;
-                            font-size: 30px;
-                        }
                     }
+                    #login-tiktok {
+                        color: #25F4EE;
+                    }
+                    #login-handle-text{
+                        margin-left: 5px;
+                        color: $login;
+                    }
+
+
                 }
                 #login-whatsapp {
                     color: #25d366;
-                    text-align: center;
+                    text-align: left;
                     font-size: 30px;
-                    margin: 0px 8% 20px;
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
+                    width: 100%;
+                    margin-left: 100px;
+                    margin-bottom: 20px;
+                    i {
+                        font-size: 40px;
+                        margin-right: 3px;
+                    }
+                }
+                #login-facebook {
+                    color: #17A9FD;
+                    text-align: left;
+                    font-size: 30px;
+                    width: 100%;
+                    margin-left: 100px;
+                    margin-bottom: 25px;
                     i {
                         font-size: 40px;
                         margin-right: 3px;

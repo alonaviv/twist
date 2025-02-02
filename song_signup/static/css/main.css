@@ -418,10 +418,12 @@ nav {
       justify-content: space-around; }
       #login-hero #login-wrapper #not-started-wrapper #not-started-message {
         margin-top: 70px;
+        margin-right: 10px;
+        margin-left: 10px;
         color: #ffff50; }
       #login-hero #login-wrapper #not-started-wrapper #login-icons {
         width: 100%;
-        margin-top: 80px;
+        margin-top: 40px;
         align-self: flex-end;
         display: flex;
         flex-direction: column;
@@ -430,30 +432,38 @@ nav {
         #login-hero #login-wrapper #not-started-wrapper #login-icons #login-social {
           width: 100%;
           text-align: center;
-          font-size: 40px;
-          margin: 0px 8%;
+          font-size: 35px;
+          margin-left: 100px;
           display: flex;
-          flex-direction: row-reverse;
-          justify-content: space-around;
-          align-items: center; }
-          #login-hero #login-wrapper #not-started-wrapper #login-icons #login-social #login-facebook {
-            color: #4267b2; }
+          flex-direction: row;
+          justify-content: start;
+          align-items: center;
+          gap: 15px; }
           #login-hero #login-wrapper #not-started-wrapper #login-icons #login-social #login-instagram {
-            color: #e1306c;
-            display: flex;
-            align-items: center; }
-            #login-hero #login-wrapper #not-started-wrapper #login-icons #login-social #login-instagram p {
-              margin-left: 5px;
-              font-size: 30px; }
+            color: #e1306c; }
+          #login-hero #login-wrapper #not-started-wrapper #login-icons #login-social #login-tiktok {
+            color: #25F4EE; }
+          #login-hero #login-wrapper #not-started-wrapper #login-icons #login-social #login-handle-text {
+            margin-left: 5px;
+            color: #ffff3d; }
         #login-hero #login-wrapper #not-started-wrapper #login-icons #login-whatsapp {
           color: #25d366;
-          text-align: center;
+          text-align: left;
           font-size: 30px;
-          margin: 0px 8% 20px;
-          display: flex;
-          justify-content: center;
-          align-items: center; }
+          width: 100%;
+          margin-left: 100px;
+          margin-bottom: 20px; }
           #login-hero #login-wrapper #not-started-wrapper #login-icons #login-whatsapp i {
+            font-size: 40px;
+            margin-right: 3px; }
+        #login-hero #login-wrapper #not-started-wrapper #login-icons #login-facebook {
+          color: #17A9FD;
+          text-align: left;
+          font-size: 30px;
+          width: 100%;
+          margin-left: 100px;
+          margin-bottom: 25px; }
+          #login-hero #login-wrapper #not-started-wrapper #login-icons #login-facebook i {
             font-size: 40px;
             margin-right: 3px; }
     #login-hero #login-wrapper h3 {
