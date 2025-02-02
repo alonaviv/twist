@@ -63,24 +63,23 @@ nav {
             }
             h3 {
                 font-size: 25px;
-                margin-bottom: 35px;
+                margin-bottom: 5px;
             }
 
             li {
-                margin: 20px 0;
+                margin-top: 15px;
                 font-size: 30px;
                 font-weight: 900;
             }
         }
         #navbar-icons {
+            margin-top: 20px;
             width: 100%;
-            margin-top: 30px;
             align-self: flex-end;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             align-items: center;
-            gap: 10px;
 
             #navbar-social {
                 width: 100%;
@@ -100,6 +99,7 @@ nav {
                 #navbar-handle {
                     display: flex;
                     align-items: center;
+                    font-weight: 800;
                     gap: 10px;
                     p {
                         font-size: 30px;
@@ -112,12 +112,13 @@ nav {
                 }
             }
             #navbar-whatsapp {
-                text-align: center;
+                text-align: left;
                 font-size: 30px;
-                margin: 0px 8% 10px;
-                display: flex;
-                justify-content: center;
-                align-items: center;
+                margin-top: 3px;
+                width: 100%;
+                height: 100%;
+                padding-left: 25px;
+                font-weight: 800;
             }
         }
     }
