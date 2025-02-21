@@ -63,12 +63,15 @@ prepare_group_song.allowed_permissions = ['change']
 def schedule_group_song(modeladmin, request, queryset):
     for group_song in queryset.all():
         ScheduledGroupSong.objects.get_or_create(group_song=group_song)
+        ScheduledGroupSong.objects.update_next_song()
 
 schedule_group_song.allowed_permissions = ['change']
 
 def unschedule_group_song(modeladmin, request, queryset):
     for group_song in queryset.all():
         ScheduledGroupSong.objects.filter(group_song=group_song).delete()
+        group_song.performance_time = None
+        group_song.save()
 
 unschedule_group_song.allowed_permissions = ['change']
 
@@ -94,6 +97,21 @@ class NotYetPerformedFilter(admin.SimpleListFilter):
     def queryset(self, request, queryset):
         if not self.value() == 'not_scheduled':
             return queryset.filter(performance_time=None, position__isnull=False)
+        else:
+            return queryset.all()
+
+class GroupNotYetPerformedFilter(admin.SimpleListFilter):
+    title = 'Songs to Display'
+    parameter_name = 'already_performed'
+
+    def lookups(self, request, model_admin):
+        return (
+            ('already_performed', 'Include Already Performed'),
+        )
+
+    def queryset(self, request, queryset):
+        if not self.value() == 'already_performed':
+            return queryset.filter(group_song__performance_time=None)
         else:
             return queryset.all()
 
@@ -189,12 +207,29 @@ class GroupSongRequestAdmin(admin.ModelAdmin):
         js = ["js/admin-reload.js"]
 
 
+def delete_scheduled_group_song(modeladmin, request, queryset):
+    for obj in queryset:
+        obj.group_song.performance_time = None
+        obj.group_song.save()
+        obj.delete()
+delete_scheduled_group_song.short_description = 'Remove selected songs from list'
+delete_scheduled_group_song.allowed_permissions = ['change', 'delete']
+
 @admin.register(ScheduledGroupSong)
 class ScheduledGroupSongAdmin(SortableAdminMixin, admin.ModelAdmin):
     list_display = (
-        'song_pos', 'get_position', 'get_song_name', 'get_musical', 'get_suggested_by'
+        'song_pos', 'get_position', 'get_song_name', 'get_musical', 'get_suggested_by', 'get_performance_time'
     )
     list_per_page = 500
+    change_list_template = "admin/scheduled_group_song_changelist.html"
+    list_filter = (GroupNotYetPerformedFilter,)
+    actions = [delete_scheduled_group_song]
+
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+        if 'delete_selected' in actions:
+            del actions['delete_selected']  # Remove the original delete action
+        return actions
 
     def get_position(self, obj):
         return obj.song_pos
@@ -211,6 +246,11 @@ class ScheduledGroupSongAdmin(SortableAdminMixin, admin.ModelAdmin):
     def get_suggested_by(self, obj):
         return obj.group_song.suggested_by
     get_suggested_by.short_description = 'Suggested By'
+
+    def get_performance_time(self, obj):
+        if obj.group_song.performance_time:
+            return obj.group_song.performance_time.astimezone(timezone.get_current_timezone()).strftime("%H:%M %p")
+    get_performance_time.short_description = 'Performance Time'
 
 
 @admin.register(SongRequest)

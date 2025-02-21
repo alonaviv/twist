@@ -31,6 +31,7 @@ from song_signup.managers import (
     DisneylandOrdering,
     SongRequestManager,
     SongSuggestionManager,
+    ScheduledGroupSongManager,
 )
 
 SING_SKU = 'SING'
@@ -211,6 +212,11 @@ class ScheduledGroupSong(Model):
     def get_next_position(cls):
         max_position = cls.objects.aggregate(Max('song_pos'))['song_pos__max']
         return (max_position or 0) + 1
+
+    def __str__(self):
+        return f"Scheduled group song: {self.group_song.song_name} from {self.group_song.musical}"
+
+    objects = ScheduledGroupSongManager()
 
     class Meta:
         ordering = ['song_pos']

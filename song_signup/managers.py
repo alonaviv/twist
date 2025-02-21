@@ -36,6 +36,24 @@ class SongRequestManager(Manager):
         except IndexError:
             return None
 
+class ScheduledGroupSongManager(Manager):
+    """
+    Since it's possible to slip and move a song to the top of the list by accident, thus interrupting a song in the
+    middle, the current song is static, and is only moved along when explicitely using the function  - which will only
+    be triggered by pressing the "NEXT SONG" button in the admin page.
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._current_song = None
+
+    def current_song(self):
+        if not self._current_song:
+            self._current_song = self.all().order_by('song_pos').first()
+        return self._current_song
+
+    def update_next_song(self):
+        self._current_song = self.all().order_by('song_pos').first()
+
 class ThreeCycleOrdering(UserManager):
     # Deprecated
     pass

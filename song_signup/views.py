@@ -2,6 +2,7 @@ import logging
 import traceback
 from functools import wraps
 from enum import Enum
+from django.utils import timezone
 
 import constance
 from constance import config
@@ -35,6 +36,7 @@ from .models import (
     CurrentGroupSong,
     TriviaQuestion,
     TriviaResponse,
+    ScheduledGroupSong
 )
 from .serializers import (
     SongSuggestionSerializer,
@@ -419,11 +421,16 @@ def _get_current_song():
     """
     Return current_song, is_group_song
     """
-    curr_group_song = CurrentGroupSong.objects.all().first()
-    if curr_group_song and curr_group_song.is_active:
-        return curr_group_song.group_song, True
+    if constance.config.IS_SINGALONG:
+        curr_group_song = ScheduledGroupSong.objects.current_song().group_song
+        return curr_group_song, True
+
     else:
-        return SongRequest.objects.current_song(), False
+        curr_group_song = CurrentGroupSong.objects.all().first()
+        if curr_group_song and curr_group_song.is_active:
+            return curr_group_song.group_song, True
+        else:
+            return SongRequest.objects.current_song(), False
 
 
 @api_view(["GET"])
@@ -502,6 +509,22 @@ def live_lyrics(request):
 @bwt_login_required('login')
 def lineup(request):
     return render(request, 'song_signup/lineup.html')
+
+
+@superuser_required('login')
+def next_group_song(request):
+    """
+    In the scheduled group song lineup (for the singalong event) - move to the next song in line
+    """
+    # Can't use the manager here, since a bug arises if the returned "current song" is the next one in line since
+    # we reordered on the admin page.
+    current_song = ScheduledGroupSong.objects.all().order_by('song_pos').first()
+    current_song.group_song.performance_time = timezone.now()
+    current_song.song_pos = -1
+    current_song.group_song.save()
+    current_song.save()
+    ScheduledGroupSong.objects.update_next_song()
+    return redirect('admin/song_signup/scheduledgroupsong')
 
 
 @bwt_login_required('login')
