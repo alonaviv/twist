@@ -1,12 +1,15 @@
+import constance
 from django.contrib import admin
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from django.core.exceptions import ValidationError
+from adminsortable2.admin import SortableAdminMixin
+
 
 from .models import (SongLyrics, SongRequest, Singer, GroupSongRequest, TicketOrder,
-                     CurrentGroupSong, TriviaQuestion, TriviaResponse
+                     CurrentGroupSong, TriviaQuestion, TriviaResponse, ScheduledGroupSong
 )
 from .forms import SongRequestForm
 
@@ -55,9 +58,19 @@ def prepare_group_song(modeladmin, request, queryset):
         CurrentGroupSong.objects.all().delete()
         CurrentGroupSong.objects.create(group_song=group_song)
 
-
-prepare_group_song.short_description = 'Prepare group song (Need to actually start it with button above)'
 prepare_group_song.allowed_permissions = ['change']
+
+def schedule_group_song(modeladmin, request, queryset):
+    for group_song in queryset.all():
+        ScheduledGroupSong.objects.get_or_create(group_song=group_song)
+
+schedule_group_song.allowed_permissions = ['change']
+
+def unschedule_group_song(modeladmin, request, queryset):
+    for group_song in queryset.all():
+        ScheduledGroupSong.objects.filter(group_song=group_song).delete()
+
+unschedule_group_song.allowed_permissions = ['change']
 
 
 def activate_question(modeladmin, request, queryset):
@@ -93,8 +106,44 @@ class GroupSongRequestAdmin(admin.ModelAdmin):
     )
     list_filter = ('type',)
     list_editable = ('default_lyrics', 'found_music')
-    actions = [prepare_group_song]
     change_list_template = "admin/group_song_request_changelist.html"
+    ordering = ['request_time']
+
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+
+        actions.pop('prepare_group_song', None)  # Prepares a single song for open mic events
+        actions.pop('schedule_group_song', None) # Schedules a song in the list for sing-along events
+
+        if constance.config.IS_SINGALONG:
+            actions['schedule_group_song'] = (
+                schedule_group_song,
+                'schedule_group_song',
+                'Schedule song for sing-along'
+            )
+            actions['unschedule_group_song'] = (
+                unschedule_group_song,
+                'unschedule_group_song',
+                'Unschedule song for sing-along'
+            )
+        else:
+            actions['prepare_group_song'] = (
+                prepare_group_song,
+                'prepare_group_song',
+                'Prepare open-mic group song (Need to actually start it with button above)'
+            )
+        return actions
+
+    def get_list_display(self, request):
+        list_display = list(super().get_list_display(request))
+        if constance.config.IS_SINGALONG:
+            if 'is_scheduled' not in list_display:
+                found_music_index = list_display.index('found_music')
+                list_display.insert(found_music_index + 1, 'is_scheduled')
+        else:
+            if 'is_scheduled' in list_display:
+                list_display.remove('is_scheduled')
+        return list_display
 
     def display_id(self, obj):
         return obj.id
@@ -130,25 +179,38 @@ class GroupSongRequestAdmin(admin.ModelAdmin):
 
     lyrics.short_description = "Lyrics"
 
-    ordering = ['request_time']
+    def is_scheduled(self, obj):
+        return ScheduledGroupSong.objects.filter(group_song=obj).exists()
+
+    is_scheduled.boolean = True
+    is_scheduled.short_description = 'Scheduled'
 
     class Media:
         js = ["js/admin-reload.js"]
 
 
-# @admin.register(SongSuggestion)
-# class SongSuggestionAdmin(admin.ModelAdmin):
-#     list_display = (
-#         'song_name', 'musical', 'suggested_by', 'get_request_time', 'is_used',
-#     )
-#
-#     def get_request_time(self, obj):
-#         return obj.request_time.astimezone(timezone.get_current_timezone()).strftime("%H:%M %p")
-#
-#     get_request_time.short_description = 'Request Time'
-#     get_request_time.admin_order_field = 'request_time'
-#
-#     ordering = ['request_time']
+@admin.register(ScheduledGroupSong)
+class ScheduledGroupSongAdmin(SortableAdminMixin, admin.ModelAdmin):
+    list_display = (
+        'song_pos', 'get_position', 'get_song_name', 'get_musical', 'get_suggested_by'
+    )
+    list_per_page = 500
+
+    def get_position(self, obj):
+        return obj.song_pos
+    get_position.short_description = 'position'
+
+    def get_song_name(self, obj):
+        return obj.group_song.song_name
+    get_song_name.short_description = 'Song Name'
+
+    def get_musical(self, obj):
+        return obj.group_song.musical
+    get_musical.short_description = 'Musical'
+
+    def get_suggested_by(self, obj):
+        return obj.group_song.suggested_by
+    get_suggested_by.short_description = 'Suggested By'
 
 
 @admin.register(SongRequest)
@@ -322,29 +384,6 @@ class OrdersAdmin(admin.ModelAdmin):
     get_logged_in.short_description = "Logged In"
 
 
-@admin.register(CurrentGroupSong)
-class CurrentGroupSongAdmin(admin.ModelAdmin):
-    list_display = ['get_song_name', 'get_musical', 'get_suggested_by', 'is_active']
-
-    def get_song_name(self, obj):
-        return obj.group_song.song_name
-
-    get_song_name.short_description = "Song Name"
-
-    def get_musical(self, obj):
-        return obj.group_song.musical
-
-    get_musical.short_description = "Musical"
-
-    def get_suggested_by(self, obj):
-        return obj.group_song.suggested_by
-
-    get_suggested_by.short_description = "Suggested By"
-
-    class Media:
-        js = ["js/admin-reload.js"]
-
-
 @admin.register(TriviaQuestion)
 class TriviaQuestionAdmin(admin.ModelAdmin):
     list_display = ['id', 'get_question', 'image_preview', 'get_answer_text', 'get_answer', 'notes', 'get_winner']
@@ -427,4 +466,3 @@ class TriviaResponseAdmin(admin.ModelAdmin):
 
     get_timestamp.short_description = 'Timestamp'
     get_timestamp.admin_order_field = 'timestamp'
-

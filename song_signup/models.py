@@ -3,7 +3,6 @@ import re
 from django.dispatch import receiver
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
-from django.contrib.postgres.fields import CITextField
 from django.core.exceptions import ValidationError
 from django.db.models import (
     CASCADE,
@@ -20,6 +19,8 @@ from django.db.models import (
     OneToOneField,
     ImageField,
     JSONField,
+    PositiveIntegerField,
+    Max
 )
 from django.db.models.signals import m2m_changed
 from twist.utils import format_commas
@@ -140,12 +141,12 @@ class Singer(AbstractUser):
 
 
 class GroupSongRequest(Model):
-    song_name = CITextField(max_length=50, null=False, blank=False)
-    musical = CITextField(max_length=50, null=False, blank=False)
-    suggested_by = CITextField(max_length=50, null=True, default='-')
+    song_name = TextField(max_length=50, null=False, blank=False)
+    musical = TextField(max_length=50, null=False, blank=False, db_collation='case_insensitive')
+    suggested_by = TextField(max_length=50, null=True, default='-', db_collation='case_insensitive')
     request_time = DateTimeField(auto_now_add=True)
     performance_time = DateTimeField(default=None, null=True, blank=True)
-    type = CITextField(max_length=20, choices=[('USER', 'USER'), ('REGULAR', 'REGULAR'),
+    type = TextField(max_length=20, db_collation='case_insensitive', choices=[('USER', 'USER'), ('REGULAR', 'REGULAR'),
                                                ('DRINKING-SONG', 'DRINKING-SONG'),
                                                ('OPENING', 'OPENING'), ('CLOSING', 'CLOSING')],
                        default='USER')
@@ -195,9 +196,29 @@ class CurrentGroupSong(Model):
             instance.delete()
 
 
+class ScheduledGroupSong(Model):
+    """
+    Scheduled group song in the sing-along BWT event
+    """
+    group_song = OneToOneField(GroupSongRequest, on_delete=CASCADE)
+    song_pos = PositiveIntegerField(blank=False, null=False, default=0)
+
+    def save(self, *args, **kwargs):
+        self.song_pos = self.get_next_position()
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def get_next_position(cls):
+        max_position = cls.objects.aggregate(Max('song_pos'))['song_pos__max']
+        return (max_position or 0) + 1
+
+    class Meta:
+        ordering = ['song_pos']
+
+
 class SongSuggestion(Model):
-    song_name = CITextField(max_length=50)
-    musical = CITextField(max_length=50)
+    song_name = TextField(max_length=50, db_collation='case_insensitive')
+    musical = TextField(max_length=50, db_collation='case_insensitive')
     suggested_by = ForeignKey(settings.AUTH_USER_MODEL, on_delete=CASCADE, related_name='songs_suggested')
     request_time = DateTimeField(auto_now_add=True)
     is_used = BooleanField(default=False)
@@ -215,10 +236,10 @@ class SongSuggestion(Model):
     objects = SongSuggestionManager()
 
 class SongRequest(Model):
-    song_name = CITextField(max_length=50)
-    musical = CITextField(max_length=50)
-    notes = CITextField(max_length=1000, null=True, blank=True)
-    to_alon = CITextField(max_length=1000, null=True, blank=True)
+    song_name = TextField(max_length=50, db_collation='case_insensitive')
+    musical = TextField(max_length=50, db_collation='case_insensitive')
+    notes = TextField(max_length=1000, null=True, blank=True, db_collation='case_insensitive')
+    to_alon = TextField(max_length=1000, null=True, blank=True, db_collation='case_insensitive')
     request_time = DateTimeField(auto_now_add=True)
     performance_time = DateTimeField(default=None, null=True, blank=True)
     singer = ForeignKey(settings.AUTH_USER_MODEL, on_delete=CASCADE, related_name='songs', null=True)

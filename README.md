@@ -137,6 +137,10 @@ Note: The audience part of the test is depricated since audiences log in. For no
 and doubled the number of singers instead (I'm just testing lyrics stress). In the future you'll probably want to 
 re-record and create the audience test again. 
 
+## Issues with Django ordering (django-admin-sortable2)
+Run this in the docker container:
+`./manage.py reorder song_signup.ScheduledGroupSong`
+
 
 
 
