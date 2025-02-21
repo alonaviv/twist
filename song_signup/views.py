@@ -1,6 +1,7 @@
 import logging
 import traceback
 from functools import wraps
+from enum import Enum
 
 import constance
 from constance import config
@@ -19,7 +20,7 @@ from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 from titlecase import titlecase
 from django.core.exceptions import ValidationError
-from .forms import FileUploadForm
+from .forms import FileUploadForm, TickchakUploadForm
 from .models import (
     GroupSongRequest,
     SongLyrics,
@@ -788,6 +789,35 @@ def upload_lineapp_orders(request):
     return render(request, 'song_signup/upload_lineapp_orders.html', {'form': FileUploadForm()})
 
 
+@superuser_required('login')
+def upload_tickchak_orders(request):
+    if request.method == 'POST' and 'file' in request.FILES:
+        try:
+            processing_data = _process_tickchak_orders(request.FILES['file'],
+                                                       request.POST['event_sku'],
+                                                       request.POST['event_name']
+                                                       )
+        except Exception as e:
+            return render(request, 'song_signup/upload_tickchak_orders.html',
+                          {'form': TickchakUploadForm(), 'error_message': traceback.format_exc()})
+
+        return HttpResponse(f"""
+<h3>{processing_data['num_orders']} Orders Processed Successfully</h3>
+<ul>
+<li> EVENT SKU: {processing_data['event_sku']}</li>
+<li>Num orders: {processing_data['num_orders']}</li>
+<li> Num ticket orders (lines in spreadsheet): {processing_data['num_ticket_orders']}</li>
+<br>
+<li> Num ticket orders that already existed in DB: {processing_data['num_existing_ticket_orders']}</li>
+<li> Num new ticket orders added to DB: {processing_data['num_new_ticket_orders']}</li>
+<br>
+<li> Num singing tickets in spreadsheet: {processing_data['num_singing_tickets']}</li>
+<li> Num audience tickets in spreadsheet: {processing_data['num_audience_tickets']}</li>
+""")
+
+    return render(request, 'song_signup/upload_tickchak_orders.html', {'form': TickchakUploadForm()})
+
+
 @transaction.atomic
 def _process_orders(spreadsheet_file):
     orders = set()  # Order made by a single person
@@ -830,4 +860,82 @@ def _process_orders(spreadsheet_file):
                 num_existing_ticket_orders=num_existing_ticket_orders,
                 num_singing_tickets=num_singing_tickets,
                 num_audience_tickets=num_audience_tickets
+                )
+
+@transaction.atomic
+def _process_tickchak_orders(spreadsheet_file, event_sku, event_name):
+    SHEET_NAME = 'כרטיסים'
+    ORDER_ID = 'מספר הזמנה'
+    FIRST_NAME = 'שם פרטי'
+    LAST_NAME = 'שם משפחה'
+    PHONE_NUMBER = 'טלפון'
+    NUM_TICKETS = 'כמות'
+    TICKET_DESC = 'כותרת'
+
+    sheet_fields = (
+       ORDER_ID,
+       FIRST_NAME,
+       LAST_NAME,
+       PHONE_NUMBER,
+       NUM_TICKETS,
+       TICKET_DESC,
+    )
+
+    orders = set()  # Order made by a single person
+    num_ticket_orders = 0  # Groups of ticket types within the orders
+    num_existing_ticket_orders = 0
+    num_new_ticket_orders = 0
+    num_singing_tickets = 0
+    num_audience_tickets = 0
+
+    worksheet = load_workbook(spreadsheet_file).get_sheet_by_name(SHEET_NAME)
+    column_names = [cell.value for cell in next(worksheet.iter_rows(min_row=1, max_row=1))]
+
+    missing_columns = [field for field in sheet_fields if field not in column_names]
+    if missing_columns:
+        raise ValueError(f"The following columns are missing from the spreadsheet: {missing_columns}")
+
+    column_index_map = {name: idx for idx, name in enumerate(column_names)}
+
+    for row in worksheet.iter_rows(min_row=2, values_only=2):
+        order_id = row[column_index_map[ORDER_ID]]
+        num_tickets = row[column_index_map[NUM_TICKETS]]
+        ticket_desc = row[column_index_map[TICKET_DESC]]
+        first_name = row[column_index_map[FIRST_NAME]]
+        last_name = row[column_index_map[LAST_NAME]]
+        phone_number = row[column_index_map[PHONE_NUMBER]]
+
+        orders.add(order_id)
+        num_ticket_orders += 1
+
+        ticket_type = SING_SKU if 'זמר' in ticket_desc else ATTN_SKU
+
+        ticket_order, created = TicketOrder.objects.get_or_create(
+            order_id=order_id,
+            event_sku=event_sku,
+            ticket_type=ticket_type,
+            event_name=event_name,
+            num_tickets=num_tickets,
+            customer_name=' '.join([first_name, last_name]),
+            phone_number=phone_number
+        )
+        if created:
+            num_new_ticket_orders += 1
+        else:
+            num_existing_ticket_orders += 1
+
+        if ticket_type == SING_SKU:
+            num_singing_tickets += num_tickets
+        else:
+            num_audience_tickets += num_tickets
+
+        ticket_order.save()
+
+    return dict(num_orders=len(orders),
+                num_ticket_orders=num_ticket_orders,
+                num_new_ticket_orders=num_new_ticket_orders,
+                num_existing_ticket_orders=num_existing_ticket_orders,
+                num_singing_tickets=num_singing_tickets,
+                num_audience_tickets=num_audience_tickets,
+                event_sku=event_sku
                 )

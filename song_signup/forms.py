@@ -5,6 +5,10 @@ from django.core.exceptions import ValidationError
 class FileUploadForm(forms.Form):
     file = forms.FileField()
 
+class TickchakUploadForm(forms.Form):
+    file = forms.FileField()
+    event_name = forms.CharField()
+    event_sku = forms.CharField()
 
 class SongRequestForm(forms.ModelForm):
     class Meta:
