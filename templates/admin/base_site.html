@@ -1,0 +1,43 @@
+{% extends "admin/base.html" %}
+
+{{ block.super }}
+
+{% block extrastyle %}
+<style>
+    .event-type-banner {
+        background-color: #7b4bbb; /* Nice purple */
+        padding: 8px 16px; /* Horizontal padding for space around text */
+        text-align: center;
+        color: #fff; /* White text for contrast */
+        margin: 10px auto; /* Centers the box horizontally */
+        font-size: 20px;
+        display: inline-block; /* Shrinks width to fit content */
+        border-radius: 8px; /* Rounded corners for aesthetics */
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2); /* Soft shadow for depth */
+    }
+
+    /* Wrapper ensures proper alignment and centering */
+    .event-type-banner-wrapper {
+        text-align: center;
+        width: 100%;
+        margin-top: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block branding %}
+<h1 id="site-name"><a href="{% url 'admin:index' %}">Shani's BWT Admin Area</a></h1>
+{% endblock %}
+
+{% block messages %}
+{{ block.super }}
+<div class="event-type-banner-wrapper">
+    <div class="event-type-banner">
+        {% if config.IS_SINGALONG %}
+        🎤🥁 Event type: <strong>SINGALONG</strong>
+        {% else %}
+        🎤🎹 Event type: <strong>OPEN MIC</strong>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
