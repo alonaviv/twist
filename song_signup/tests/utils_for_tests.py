@@ -10,7 +10,7 @@ from django.urls import reverse
 from flags.state import enable_flag
 
 from song_signup.models import (
-    Singer, SongRequest, SongSuggestion, TicketOrder, SING_SKU, ATTN_SKU, GroupSongRequest,
+    Singer, SongRequest, TicketOrder, SING_SKU, ATTN_SKU, GroupSongRequest,
     CurrentGroupSong, AlreadyLoggedIn, TriviaResponse
 )
 from song_signup.views import _sanitize_string
@@ -249,12 +249,6 @@ def assert_dashboards(testcase, expected_dashboards: List[ExpectedDashboard]):
                                 f"{data['user_next_song']} and doesn't match {dashboard}")
 
 
-def add_song_suggestions():
-    [suggester] = create_singers([-5])  # ID that won't conflict with others
-    SongSuggestion.objects.create(song_name='suggested_song_1', musical='a musical', suggested_by=suggester)
-    SongSuggestion.objects.create(song_name='suggested_song_2', musical='a musical', suggested_by=suggester)
-
-
 def add_current_group_song(song_name, musical):
     [suggester] = create_singers([-50])  # ID that won't conflict with others
     group_song = GroupSongRequest.objects.create(song_name=song_name, musical=musical,
@@ -283,14 +277,6 @@ def login(singer_id):
 class SongRequestTestCase(TestCase):
     def setUp(self):
         enable_flag('CAN_SIGNUP')
-        add_song_suggestions()
-
-    def tearDown(self):
-        suggestions = SongSuggestion.objects.all().order_by('request_time')
-        self.assertEqual(suggestions.count(), 2)
-        self.assertEqual(suggestions[0].song_name, 'suggested_song_1')
-        self.assertEqual(suggestions[1].song_name, 'suggested_song_2')
-
 
 def remove_keys(mydict, keys: list):
     if isinstance(mydict, bytes):

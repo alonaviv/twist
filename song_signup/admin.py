@@ -4,12 +4,11 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
-from django.core.exceptions import ValidationError
 from adminsortable2.admin import SortableAdminMixin
 
 
 from .models import (SongLyrics, SongRequest, Singer, GroupSongRequest, TicketOrder,
-                     CurrentGroupSong, TriviaQuestion, TriviaResponse, ScheduledGroupSong
+                     CurrentGroupSong, TriviaQuestion, TriviaResponse, ScheduledGroupSong,
 )
 from .forms import SongRequestForm
 
@@ -158,9 +157,11 @@ class GroupSongRequestAdmin(admin.ModelAdmin):
             if 'is_scheduled' not in list_display:
                 found_music_index = list_display.index('found_music')
                 list_display.insert(found_music_index + 1, 'is_scheduled')
+                list_display.insert(found_music_index + 2, 'get_num_votes')
         else:
             if 'is_scheduled' in list_display:
                 list_display.remove('is_scheduled')
+                list_display.remove('get_num_votes')
         return list_display
 
     def display_id(self, obj):
@@ -203,6 +204,10 @@ class GroupSongRequestAdmin(admin.ModelAdmin):
     is_scheduled.boolean = True
     is_scheduled.short_description = 'Scheduled'
 
+    def get_num_votes(self, obj):
+        return obj.voters.count()
+    get_num_votes.short_description = 'Votes'
+
     class Media:
         js = ["js/admin-reload.js"]
 
@@ -218,7 +223,8 @@ delete_scheduled_group_song.allowed_permissions = ['change', 'delete']
 @admin.register(ScheduledGroupSong)
 class ScheduledGroupSongAdmin(SortableAdminMixin, admin.ModelAdmin):
     list_display = (
-        'song_pos', 'get_position', 'get_song_name', 'get_musical', 'get_suggested_by', 'get_performance_time'
+        'song_pos', 'get_position', 'get_song_name', 'get_musical', 'get_num_votes',
+        'get_suggested_by', 'get_performance_time'
     )
     list_per_page = 500
     change_list_template = "admin/scheduled_group_song_changelist.html"
@@ -251,6 +257,10 @@ class ScheduledGroupSongAdmin(SortableAdminMixin, admin.ModelAdmin):
         if obj.group_song.performance_time:
             return obj.group_song.performance_time.astimezone(timezone.get_current_timezone()).strftime("%H:%M %p")
     get_performance_time.short_description = 'Performance Time'
+
+    def get_num_votes(self, obj):
+        return obj.group_song.voters.count()
+    get_num_votes.short_description = 'Votes'
 
 
 @admin.register(SongRequest)

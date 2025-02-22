@@ -9,6 +9,7 @@ from constance import config
 from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.core.management import call_command
 from django.db import transaction
+from django.db.models import Prefetch
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse
@@ -27,7 +28,6 @@ from .models import (
     SongLyrics,
     SongRequest,
     Singer,
-    SongSuggestion,
     TicketOrder,
     SING_SKU,
     ATTN_SKU,
@@ -39,14 +39,14 @@ from .models import (
     ScheduledGroupSong
 )
 from .serializers import (
-    SongSuggestionSerializer,
     SongRequestSerializer,
     SingerSerializer,
     SongRequestLineupSerializer,
     GroupSongRequestLineupSerializer,
     LyricsSerializer,
     TriviaQuestionSerializer,
-    TriviaResponseSerializer
+    TriviaResponseSerializer,
+    GroupSongRequestSerializer
 )
 
 logger = logging.getLogger(__name__)
@@ -181,10 +181,14 @@ def get_current_songs(request):
 
 
 @api_view(["GET"])
-def get_suggested_songs(request):
-    serialized = SongSuggestionSerializer(SongSuggestion.objects.all().order_by('is_used', '-request_time'),
-                                          many=True, read_only=True)
-    return Response(serialized.data, status=status.HTTP_200_OK)
+def get_suggested_group_songs(request):
+    singer = request.user
+
+    group_songs = GroupSongRequest.objects.prefetch_related(
+        Prefetch('voters', queryset=Singer.objects.filter(id=singer.id), to_attr='singer_votes')
+    )
+    serializer = GroupSongRequestSerializer(group_songs, many=True, read_only=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 @api_view(["GET"])

@@ -30,7 +30,6 @@ from titlecase import titlecase
 from song_signup.managers import (
     DisneylandOrdering,
     SongRequestManager,
-    SongSuggestionManager,
     ScheduledGroupSongManager,
 )
 
@@ -153,6 +152,7 @@ class GroupSongRequest(Model):
                        default='USER')
     default_lyrics = BooleanField(default=False)
     found_music = BooleanField(default=False)
+    voters = ManyToManyField(Singer, related_name='voted_songs', blank=True)
 
     def save(self, get_lyrics=True, *args, **kwargs):
         self.song_name = titlecase(self.song_name)
@@ -166,6 +166,12 @@ class GroupSongRequest(Model):
     @property
     def basic_data(self):
         return {'id': self.id, 'name': self.song_name, 'singer': "GROUP SONG", 'wait_amount': None}
+
+    def get_num_votes(self):
+        return self.votes.count()
+
+    def __str__(self):
+        return f"Group song: {self.song_name} from {self.musical}"
 
 
 class CurrentGroupSong(Model):
@@ -221,25 +227,6 @@ class ScheduledGroupSong(Model):
     class Meta:
         ordering = ['song_pos']
 
-
-class SongSuggestion(Model):
-    song_name = TextField(max_length=50, db_collation='case_insensitive')
-    musical = TextField(max_length=50, db_collation='case_insensitive')
-    suggested_by = ForeignKey(settings.AUTH_USER_MODEL, on_delete=CASCADE, related_name='songs_suggested')
-    request_time = DateTimeField(auto_now_add=True)
-    is_used = BooleanField(default=False)
-
-    def check_if_used(self):
-        try:
-            SongRequest.objects.get(song_name=self.song_name, musical=self.musical)
-            self.is_used = True
-
-        except SongRequest.DoesNotExist:
-            self.is_used = False
-
-        self.save()
-
-    objects = SongSuggestionManager()
 
 class SongRequest(Model):
     song_name = TextField(max_length=50, db_collation='case_insensitive')

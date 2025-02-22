@@ -7,15 +7,6 @@ from django.utils import timezone
 from flags.state import flag_enabled
 
 
-class SongSuggestionManager(Manager):
-    def check_used_suggestions(self):
-        """
-        Go over the song suggestions, and mark which suggestions have been claimed by a singer
-        """
-        for suggestion in self.all():
-            suggestion.check_if_used()
-
-
 class SongRequestManager(Manager):
     def reset_positions(self):
         self.all().update(position=None)

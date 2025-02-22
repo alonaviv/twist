@@ -1,5 +1,5 @@
-from rest_framework.serializers import ModelSerializer, SerializerMethodField, CharField
-from song_signup.models import SongSuggestion, Singer, SongRequest, SongLyrics, TriviaQuestion, TriviaResponse
+from rest_framework.serializers import ModelSerializer, SerializerMethodField, CharField, BooleanField
+from song_signup.models import Singer, SongRequest, SongLyrics, TriviaQuestion, TriviaResponse, GroupSongRequest
 from twist.utils import is_hebrew, format_commas
 
 
@@ -7,14 +7,6 @@ class SingerSerializer(ModelSerializer):
     class Meta:
         model = Singer
         fields = ['id', 'first_name', 'last_name', 'is_superuser']
-
-
-class SongSuggestionSerializer(ModelSerializer):
-    suggested_by = SingerSerializer(read_only=True)
-
-    class Meta:
-        model = SongSuggestion
-        fields = "__all__"
 
 
 class SongRequestSerializer(ModelSerializer):
@@ -48,6 +40,19 @@ class GroupSongRequestLineupSerializer(ModelSerializer):
         model = SongRequest
         fields = ['singers', 'song_name', 'musical']
 
+
+class GroupSongRequestSerializer(ModelSerializer):
+    """"
+    Used to return the list of suggested group songs, and whether the given user ("singer") voted for each one or not
+    """
+    voted = SerializerMethodField()
+
+    class Meta:
+        model = GroupSongRequest
+        fields = ['id', 'song_name', 'musical', 'voted']
+
+    def get_voted(self, obj):
+        return bool(obj.singer_votes)
 
 class LyricsSerializer(ModelSerializer):
     is_group_song = SerializerMethodField()
