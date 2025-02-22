@@ -1,8 +1,17 @@
 {% extends 'adminsortable2/change_list.html' %}
 
 {% block object-tools-items %}
+    {% load feature_flags %}
     <li>
         <a href="{% url 'next_group_song' %}">NEXT SONG</a>
+    </li>
+    <li>
+        {% flag_enabled 'STARTED' as started %}
+            {% if started %}
+                <a href="{% url 'end_evening' %}">End Evening</a>
+            {% else %}
+                <a href="{% url 'start_evening' %}">Start Evening</a>
+            {% endif %}
     </li>
 {{ block.super }}
 {% endblock %}

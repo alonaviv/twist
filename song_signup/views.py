@@ -737,13 +737,13 @@ def signup_disabled(request):
 @superuser_required('login')
 def start_evening(request):
     enable_flag('STARTED')
-    return redirect('admin/song_signup/songrequest')
+    return redirect(request.META.get('HTTP_REFERER', 'admin/song_signup/songrequest'))
 
 
 @superuser_required('login')
 def end_evening(request):
     disable_flag('STARTED')
-    return redirect('admin/song_signup/songrequest')
+    return redirect(request.META.get('HTTP_REFERER', 'admin/song_signup/songrequest'))
 
 
 @superuser_required('login')
