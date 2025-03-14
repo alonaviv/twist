@@ -7,8 +7,9 @@ class FileUploadForm(forms.Form):
 
 class TickchakUploadForm(forms.Form):
     file = forms.FileField()
-    event_name = forms.CharField()
-    event_sku = forms.CharField()
+    event_sku = forms.CharField(label="Event SKU")
+    event_date = forms.CharField(label="Event date (e.g 15.3.25)")
+    generate_cheat_code = forms.BooleanField(required=False)
 
 class SongRequestForm(forms.ModelForm):
     class Meta:

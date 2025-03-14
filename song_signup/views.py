@@ -1,6 +1,7 @@
 import logging
 import traceback
 from functools import wraps
+import random
 from enum import Enum
 
 import constance
@@ -8,6 +9,7 @@ from constance import config
 from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.core.management import call_command
 from django.db import transaction
+from django.db.utils import IntegrityError
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse
@@ -545,6 +547,7 @@ def _get_order(order_id, ticket_type):
         return TicketOrder.objects.get_or_create(order_id=config.FREEBIE_TICKET,
                                                  event_sku=config.EVENT_SKU,
                                                  event_name='FREEBIE-ORDER',
+
                                                  num_tickets=-1,
                                                  customer_name='FREEBIE_ORDER',
                                                  ticket_type=SING_SKU,
@@ -793,26 +796,32 @@ def upload_lineapp_orders(request):
 def upload_tickchak_orders(request):
     if request.method == 'POST' and 'file' in request.FILES:
         try:
+            generate_cheat_code = request.POST.get("generate_cheat_code") == "on"
             processing_data = _process_tickchak_orders(request.FILES['file'],
                                                        request.POST['event_sku'],
-                                                       request.POST['event_name']
+                                                       request.POST['event_date'],
+                                                       generate_cheat_code
                                                        )
         except Exception as e:
             return render(request, 'song_signup/upload_tickchak_orders.html',
                           {'form': TickchakUploadForm(), 'error_message': traceback.format_exc()})
 
         return HttpResponse(f"""
-<h3>{processing_data['num_orders']} Orders Processed Successfully</h3>
+<h3>{processing_data['num_orders']} Orders Processed Successfully for event {processing_data['event_name']}</h3>
 <ul>
 <li> EVENT SKU: {processing_data['event_sku']}</li>
-<li>Num orders: {processing_data['num_orders']}</li>
-<li> Num ticket orders (lines in spreadsheet): {processing_data['num_ticket_orders']}</li>
+{f"<li> NEW CHEAT CODE: {processing_data['cheat_code']}</li>" if processing_data['cheat_code'] else ""}
 <br>
-<li> Num ticket orders that already existed in DB: {processing_data['num_existing_ticket_orders']}</li>
-<li> Num new ticket orders added to DB: {processing_data['num_new_ticket_orders']}</li>
+<li> Total tickets: {processing_data['total_tickets']}</li>
+<li> Num singing tickets: {processing_data['num_singing_tickets']}</li>
+<li> Num audience tickets: {processing_data['num_audience_tickets']}</li>
 <br>
-<li> Num singing tickets in spreadsheet: {processing_data['num_singing_tickets']}</li>
-<li> Num audience tickets in spreadsheet: {processing_data['num_audience_tickets']}</li>
+<li>Num orders (each person counted once): {processing_data['num_orders']}</li>
+<li> Num orders (lines in spreadsheet): {processing_data['num_ticket_orders']}</li>
+<br>
+<li> Num orders that already existed in DB: {processing_data['num_existing_ticket_orders']}</li>
+<li> Num new orders added to DB: {processing_data['num_new_ticket_orders']}</li>
+<br>
 """)
 
     return render(request, 'song_signup/upload_tickchak_orders.html', {'form': TickchakUploadForm()})
@@ -863,7 +872,7 @@ def _process_orders(spreadsheet_file):
                 )
 
 @transaction.atomic
-def _process_tickchak_orders(spreadsheet_file, event_sku, event_name):
+def _process_tickchak_orders(spreadsheet_file, event_sku, event_date, generate_cheat_code=False):
     SHEET_NAME = 'כרטיסים'
     ORDER_ID = 'מספר הזמנה'
     FIRST_NAME = 'שם פרטי'
@@ -871,6 +880,8 @@ def _process_tickchak_orders(spreadsheet_file, event_sku, event_name):
     PHONE_NUMBER = 'טלפון'
     NUM_TICKETS = 'כמות'
     TICKET_DESC = 'כותרת'
+
+    event_name = f"Open Mic - Babu Bar - {event_date}"
 
     sheet_fields = (
        ORDER_ID,
@@ -910,15 +921,22 @@ def _process_tickchak_orders(spreadsheet_file, event_sku, event_name):
 
         ticket_type = SING_SKU if 'זמר' in ticket_desc else ATTN_SKU
 
-        ticket_order, created = TicketOrder.objects.get_or_create(
-            order_id=order_id,
-            event_sku=event_sku,
-            ticket_type=ticket_type,
-            event_name=event_name,
-            num_tickets=num_tickets,
-            customer_name=' '.join([first_name, last_name]),
-            phone_number=phone_number
-        )
+        try:
+            ticket_order, created = TicketOrder.objects.get_or_create(
+                order_id=order_id,
+                event_sku=event_sku,
+                ticket_type=ticket_type,
+                event_name=event_name,
+                num_tickets=num_tickets,
+                customer_name=' '.join([first_name, last_name]),
+                phone_number=phone_number
+            )
+        except IntegrityError:
+            raise ValueError(
+                f"A ticket order with order_id={order_id}, event_sku={event_sku}, and ticket_type={ticket_type}"
+                f" already exists, but it looks like you're trying to insert an order that has these fields, but other fields "
+                f"that are different. Is the event date formatting off? Or did you change some data in the spreadsheet?"
+            )
         if created:
             num_new_ticket_orders += 1
         else:
@@ -931,11 +949,22 @@ def _process_tickchak_orders(spreadsheet_file, event_sku, event_name):
 
         ticket_order.save()
 
+    config.EVENT_SKU = event_sku
+
+    if generate_cheat_code:
+        cheat_code = str(random.randint(100000, 999999))
+        config.FREEBIE_TICKET = cheat_code
+    else:
+        cheat_code = None
+
     return dict(num_orders=len(orders),
                 num_ticket_orders=num_ticket_orders,
                 num_new_ticket_orders=num_new_ticket_orders,
                 num_existing_ticket_orders=num_existing_ticket_orders,
                 num_singing_tickets=num_singing_tickets,
                 num_audience_tickets=num_audience_tickets,
-                event_sku=event_sku
+                total_tickets=num_audience_tickets+num_singing_tickets,
+                event_sku=event_sku,
+                event_name=event_name,
+                cheat_code=cheat_code
                 )
