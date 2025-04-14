@@ -1754,10 +1754,8 @@ class TestAddSongView(TestViews):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'song_signup/add_song.html')
 
-        # self.assertListEqual(response.context['possible_partners'],
-        #                      [self.shani, self.alon, audience3, audience4, singer2])
         self.assertListEqual(response.context['possible_partners'],
-                             [self.shani, self.alon, singer2])
+                             [self.shani, self.alon, audience3, audience4, singer2])
 
         [singer5, singer6, singer7] = create_singers([5, 6, 7], num_songs=2)
         audience8, audience9 = create_audience([8, 9])
@@ -1773,9 +1771,9 @@ class TestAddSongView(TestViews):
         self.assertListEqual(response.context['possible_partners'],
                              [self.shani,
                               self.alon,
-                              # audience3,
-                              # audience4,
-                              # audience8,
+                              audience3,
+                              audience4,
+                              audience8,
                               singer2,
                               singer5,
                               singer7

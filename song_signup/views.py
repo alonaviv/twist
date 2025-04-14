@@ -288,8 +288,7 @@ def add_song(request):
 
 def _get_possible_partners(request):
     superusers = Singer.objects.filter(is_superuser=True).all()
-    # TODO Remove is_audience=False
-    partner_options = Singer.objects.filter(is_audience=False, is_active=True).exclude(pk=request.user.pk).exclude(is_superuser=True).order_by(
+    partner_options = Singer.objects.filter(is_active=True).exclude(pk=request.user.pk).exclude(is_superuser=True).order_by(
         'first_name')
     return list(superusers) + list(partner_options)
 
