@@ -1,8 +1,10 @@
 from django.urls import path
+from django.views.generic import TemplateView
 from . import views
 
 urlpatterns = [
     path('', views.login, name='login'),
+    path('robots.txt', TemplateView.as_view(template_name="robots.txt", content_type='text/plain')),
     path('login', views.login, name='login'),
     path('home', views.home, name='home'),
     path('home/<str:new_song>', views.home, name='home'),
