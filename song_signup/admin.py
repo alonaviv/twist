@@ -4,6 +4,7 @@ from django.utils import timezone
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from django.core.exceptions import ValidationError
+from constance import config
 
 from .models import (SongLyrics, SongRequest, Singer, GroupSongRequest, TicketOrder,
                      CurrentGroupSong, TriviaQuestion, TriviaResponse
@@ -173,6 +174,15 @@ class SongRequestAdmin(admin.ModelAdmin):
     def changelist_view(self, request, extra_context=None):
         extra_context = extra_context or {}
         extra_context['new_singers_num'] = Singer.ordering.new_singers_num()
+        extra_context['singers_num'] = len(Singer.ordering.active_singers())
+        extra_context['group_songs_performed'] = GroupSongRequest.objects.num_performed()
+        extra_context['group_songs_quota'] = config.EXPECTED_NUM_SONGS - len(
+            Singer.ordering.active_singers()) - config.TARGET_REPEAT_SINGERS
+        extra_context['solo_songs_quota'] = extra_context['singers_num'] + config.TARGET_REPEAT_SINGERS
+        extra_context['solo_songs_performed'] = SongRequest.objects.num_performed()
+        extra_context['total_songs_performed'] = extra_context['group_songs_performed'] + extra_context['solo_songs_performed']
+        extra_context['total_songs_quota'] = config.EXPECTED_NUM_SONGS
+
 
         current_group_song = CurrentGroupSong.objects.first()
         if current_group_song:

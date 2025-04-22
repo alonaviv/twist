@@ -36,6 +36,14 @@ class SongRequestManager(Manager):
         except IndexError:
             return None
 
+    def num_performed(self):
+        return self.filter(performance_time__isnull=False).count()
+
+
+class GroupSongRequestManager(Manager):
+    def num_performed(self):
+        return int(self.filter(performance_time__isnull=False).count())
+
 class ThreeCycleOrdering(UserManager):
     # Deprecated
     pass

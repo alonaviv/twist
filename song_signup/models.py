@@ -30,6 +30,7 @@ from song_signup.managers import (
     DisneylandOrdering,
     SongRequestManager,
     SongSuggestionManager,
+    GroupSongRequestManager,
 )
 
 SING_SKU = 'SING'
@@ -164,6 +165,8 @@ class GroupSongRequest(Model):
     @property
     def basic_data(self):
         return {'id': self.id, 'name': self.song_name, 'singer': "GROUP SONG", 'wait_amount': None}
+
+    objects = GroupSongRequestManager()
 
 
 class CurrentGroupSong(Model):
