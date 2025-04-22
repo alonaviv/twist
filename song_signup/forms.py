@@ -9,7 +9,10 @@ class TickchakUploadForm(forms.Form):
     file = forms.FileField()
     event_sku = forms.CharField(label="Event SKU")
     event_date = forms.CharField(label="Event date (e.g 15.3.25)")
-    generate_cheat_code = forms.BooleanField(required=False)
+    generate_cheat_code = forms.BooleanField(required=False, initial=True,
+                                             help_text="Can leave checked while uploading duplicates - it won't regenerate")
+    duplicates_upload = forms.BooleanField(required=False,
+                                           help_text="If re-uploading a sheet with changes. No config will change.")
 
 class SongRequestForm(forms.ModelForm):
     class Meta:

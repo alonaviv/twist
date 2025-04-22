@@ -767,49 +767,27 @@ def recalculate_priorities(request):
 
 
 @superuser_required('login')
-def upload_lineapp_orders(request):
-    if request.method == 'POST' and 'file' in request.FILES:
-        try:
-            processing_data = _process_orders(request.FILES['file'])
-        except Exception as e:
-            return render(request, 'song_signup/upload_lineapp_orders.html',
-                          {'form': FileUploadForm(), 'error_message': traceback.format_exc()})
-
-        return HttpResponse(f"""
-<h3>{processing_data['num_orders']} Orders Processed Successfully</h3>
-<ul>
-<li>Num orders: {processing_data['num_orders']}</li>
-<li> Num ticket orders (lines in spreadsheet): {processing_data['num_ticket_orders']}</li>
-<br>
-<li> Num ticket orders that already existed in DB: {processing_data['num_existing_ticket_orders']}</li>
-<li> Num new ticket orders added to DB: {processing_data['num_new_ticket_orders']}</li>
-<br>
-<li> Num singing tickets in spreadsheet: {processing_data['num_singing_tickets']}</li>
-<li> Num audience tickets in spreadsheet: {processing_data['num_audience_tickets']}</li>
-""")
-
-    return render(request, 'song_signup/upload_lineapp_orders.html', {'form': FileUploadForm()})
-
-
-@superuser_required('login')
 def upload_tickchak_orders(request):
     if request.method == 'POST' and 'file' in request.FILES:
         try:
             generate_cheat_code = request.POST.get("generate_cheat_code") == "on"
+            duplicates_upload = request.POST.get("duplicates_upload") == "on"
             processing_data = _process_tickchak_orders(request.FILES['file'],
                                                        request.POST['event_sku'],
                                                        request.POST['event_date'],
-                                                       generate_cheat_code
+                                                       generate_cheat_code,
+                                                       duplicates_upload
                                                        )
         except Exception as e:
             return render(request, 'song_signup/upload_tickchak_orders.html',
                           {'form': TickchakUploadForm(), 'error_message': traceback.format_exc()})
 
         return HttpResponse(f"""
+{"<h3>ONLY CHANGED NEW ENTRIES. DIDN'T CHANGE CONFIGS</h3>" if duplicates_upload else ''}
 <h3>{processing_data['num_orders']} Orders Processed Successfully for event {processing_data['event_name']}</h3>
 <ul>
 <li> EVENT SKU: {processing_data['event_sku']}</li>
-{f"<li> NEW CHEAT CODE: {processing_data['cheat_code']}</li>" if processing_data['cheat_code'] else ""}
+{f"<li> CHEAT CODE: {processing_data['cheat_code']}</li>" if processing_data['cheat_code'] else ""}
 <br>
 <li> Total tickets: {processing_data['total_tickets']}</li>
 <li> Num singing tickets: {processing_data['num_singing_tickets']}</li>
@@ -871,7 +849,8 @@ def _process_orders(spreadsheet_file):
                 )
 
 @transaction.atomic
-def _process_tickchak_orders(spreadsheet_file, event_sku, event_date, generate_cheat_code=False):
+def _process_tickchak_orders(spreadsheet_file, event_sku, event_date, generate_cheat_code=False,
+                             duplicates_upload=False):
     SHEET_NAME = 'כרטיסים'
     ORDER_ID = 'מספר הזמנה'
     FIRST_NAME = 'שם פרטי'
@@ -897,6 +876,14 @@ def _process_tickchak_orders(spreadsheet_file, event_sku, event_date, generate_c
     num_new_ticket_orders = 0
     num_singing_tickets = 0
     num_audience_tickets = 0
+
+    if duplicates_upload:
+        sample_order = TicketOrder.objects.filter(event_sku=event_sku).first()
+        if not sample_order:
+            raise ValueError(f"SKU {event_sku} doesn't exist")
+        if sample_order.event_name != event_name:
+                raise ValueError(f"Entered date {event_date}, but existing objects of SKU {event_sku} "
+                                 f"have {sample_order.event_name}")
 
     worksheet = load_workbook(spreadsheet_file).get_sheet_by_name(SHEET_NAME)
     column_names = [cell.value for cell in next(worksheet.iter_rows(min_row=1, max_row=1))]
@@ -948,13 +935,16 @@ def _process_tickchak_orders(spreadsheet_file, event_sku, event_date, generate_c
 
         ticket_order.save()
 
-    config.EVENT_SKU = event_sku
+    if not duplicates_upload:
+        config.EVENT_SKU = event_sku
 
-    if generate_cheat_code:
-        cheat_code = str(random.randint(100000, 999999))
-        config.FREEBIE_TICKET = cheat_code
+        if generate_cheat_code:
+            cheat_code = str(random.randint(100000, 999999))
+            config.FREEBIE_TICKET = cheat_code
+        else:
+            cheat_code = None
     else:
-        cheat_code = None
+        cheat_code = config.FREEBIE_TICKET
 
     return dict(num_orders=len(orders),
                 num_ticket_orders=num_ticket_orders,

@@ -93,12 +93,6 @@ and choose a different SSH port number (not 22).
 4. In container, run `coverage run --source='.' manage.py test song_signup && coverage html --omit=song_signup/tests/interactive_test_real_dbs.py,song_signup/management/*,dev_setup.py,prod_setup.py,twist/asgi.py,twist/wsgi.py,song_signup/tests/*,manage.py,twist/celery.py`
 5. Exit container and run `open ./htmlcov/index.html` locally
 
-## Uploading Lineapp orders
-1. Go to Lineapp website: צפיה בהכל or הזמנות -> ניהול הזמנות
-2. Filter according to the relevant event, the correct dates (default is only 2 weeks back!) and שולם + מומש
-3. Download excel with ייצוא מותאם אישית using the BWT template
-4. Login as admin and go to `/upload_lineapp_orders`
-5. Upload excel. The ticket orders are persistant through DB resets.
 
 ## Adding group songs from csv
 1. We saved our group songs list on a Google Drive spreadsheet in `Broadway With a Twist/Good Group Songs` 

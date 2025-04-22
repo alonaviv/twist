@@ -101,7 +101,7 @@ class TickchakOrdersTest(TestCase):
         with open(os.path.join(BASE_DIR, "tickchak-orders-extended.xlsx"), "rb") as f:
             spreadsheet_file = SimpleUploadedFile("test2.xlsx", f.read())
 
-        result = _process_tickchak_orders(spreadsheet_file, EVENT_SKU, EVENT_DATE, False)
+        result = _process_tickchak_orders(spreadsheet_file, EVENT_SKU, EVENT_DATE, True, True)
 
         self.assertEqual(TicketOrder.objects.count(), 21)
         self._assert_expected_orders(expected_orders)
@@ -120,7 +120,7 @@ class TickchakOrdersTest(TestCase):
         self.assertEqual(config.FREEBIE_TICKET, generated_cheat_code)
 
         # Test loading the exact same spreadsheet again - verify no changes
-        result = _process_tickchak_orders(spreadsheet_file, EVENT_SKU, EVENT_DATE, False)
+        result = _process_tickchak_orders(spreadsheet_file, EVENT_SKU, EVENT_DATE, True, True)
 
         self.assertEqual(TicketOrder.objects.count(), 21)
         self._assert_expected_orders(expected_orders)
@@ -138,6 +138,20 @@ class TickchakOrdersTest(TestCase):
         self.assertEqual(config.EVENT_SKU, EVENT_SKU)
         self.assertEqual(config.FREEBIE_TICKET, generated_cheat_code)
 
-        # Test loading the spreadsheet with a different name
+        # Test loading the spreadsheet with a different name as an initial upload
+        with self.assertRaises(ValueError) as e:
+            result = _process_tickchak_orders(spreadsheet_file, EVENT_SKU, EVENT_DATE+'1', True, False)
+        self.assertEqual(config.EVENT_SKU, EVENT_SKU)
+        self.assertEqual(config.FREEBIE_TICKET, generated_cheat_code)
+
+        # Test re-uploading with incorrect SKU
         with self.assertRaises(ValueError):
-            result = _process_tickchak_orders(spreadsheet_file, EVENT_SKU, EVENT_DATE+'1', False)
+            result = _process_tickchak_orders(spreadsheet_file, EVENT_SKU+1, EVENT_DATE, True, True)
+        self.assertEqual(config.EVENT_SKU, EVENT_SKU)
+        self.assertEqual(config.FREEBIE_TICKET, generated_cheat_code)
+
+        # Test re-uploading with incorrect date
+        with self.assertRaises(ValueError):
+            result = _process_tickchak_orders(spreadsheet_file, EVENT_SKU, EVENT_DATE+'1', True, True)
+        self.assertEqual(config.EVENT_SKU, EVENT_SKU)
+        self.assertEqual(config.FREEBIE_TICKET, generated_cheat_code)

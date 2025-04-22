@@ -48,7 +48,6 @@ urlpatterns = [
     path('boho_started', views.boho_started, name='boho_started'),
     path('signup_disabled', views.signup_disabled, name='signup_disabled'),
     path('recalculate_priorities', views.recalculate_priorities, name='recalculate_priorities'),
-    path('upload_lineapp_orders', views.upload_lineapp_orders, name='upload_lineapp_orders'),
     path('upload_tickchak_orders', views.upload_tickchak_orders, name='upload_tickchak_orders'),
     path('lineup', views.lineup, name='lineup'),
     path('get_lineup', views.get_lineup, name='get_lineup'),
