@@ -67,6 +67,18 @@ class TicketOrder(Model):
         return f"SKU: {self.event_sku}; Order #{self.order_id}; Type {'FREEBIE' if self.is_freebie else self.ticket_type}"
 
 
+class Celebration(Model):
+    """
+    Represents a request to mention a celebration, from the ticket site
+    """
+    order_id = IntegerField()
+    event_date = CharField(max_length=100, null=True)
+    event_sku = CharField(max_length=20)
+    customer_name = CharField(max_length=100)
+    phone_number = CharField(max_length=15, null=True, blank=True)
+    celebrating = TextField()
+
+
 class Singer(AbstractUser):
     """
     Used for both audience and singer users. Can't create a base class due to django limitation with AbstractUser,

@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from song_signup.models import SongRequest, Singer, CurrentGroupSong, GroupSongRequest
+from song_signup.models import SongRequest, Singer, CurrentGroupSong, GroupSongRequest, Celebration
 
 
 class Command(BaseCommand):
@@ -13,3 +13,4 @@ class Command(BaseCommand):
         CurrentGroupSong.objects.all().delete()
         GroupSongRequest.objects.filter(type='USER').delete()
         GroupSongRequest.objects.update(suggested_by='-', performance_time=None)
+        Celebration.objects.all().delete()

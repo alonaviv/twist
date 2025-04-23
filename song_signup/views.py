@@ -2,7 +2,6 @@ import logging
 import traceback
 from functools import wraps
 import random
-from enum import Enum
 
 import constance
 from constance import config
@@ -22,7 +21,7 @@ from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 from titlecase import titlecase
 from django.core.exceptions import ValidationError
-from .forms import FileUploadForm, TickchakUploadForm
+from .forms import TickchakUploadForm
 from .models import (
     GroupSongRequest,
     SongLyrics,
@@ -37,6 +36,7 @@ from .models import (
     CurrentGroupSong,
     TriviaQuestion,
     TriviaResponse,
+    Celebration
 )
 from .serializers import (
     SongSuggestionSerializer,
@@ -770,11 +770,17 @@ def recalculate_priorities(request):
 def upload_tickchak_orders(request):
     if request.method == 'POST' and 'file' in request.FILES:
         try:
+            spreadsheet = request.FILES['file']
+            event_sku = request.POST['event_sku']
+            event_date = request.POST['event_date']
+
+            _process_celebrations(spreadsheet, event_date, event_sku)
+
             generate_cheat_code = request.POST.get("generate_cheat_code") == "on"
             duplicates_upload = request.POST.get("duplicates_upload") == "on"
-            processing_data = _process_tickchak_orders(request.FILES['file'],
-                                                       request.POST['event_sku'],
-                                                       request.POST['event_date'],
+            processing_data = _process_tickchak_orders(spreadsheet,
+                                                       event_sku,
+                                                       event_date,
                                                        generate_cheat_code,
                                                        duplicates_upload
                                                        )
@@ -848,17 +854,20 @@ def _process_orders(spreadsheet_file):
                 num_audience_tickets=num_audience_tickets
                 )
 
+
+ORDER_ID = 'מספר הזמנה'
+FIRST_NAME = 'שם פרטי'
+LAST_NAME = 'שם משפחה'
+PHONE_NUMBER = 'טלפון'
+NUM_TICKETS = 'כמות'
+TICKET_DESC = 'כותרת'
+CELEBRATING = 'חוגגים'
+
+
 @transaction.atomic
 def _process_tickchak_orders(spreadsheet_file, event_sku, event_date, generate_cheat_code=False,
                              duplicates_upload=False):
     SHEET_NAME = 'כרטיסים'
-    ORDER_ID = 'מספר הזמנה'
-    FIRST_NAME = 'שם פרטי'
-    LAST_NAME = 'שם משפחה'
-    PHONE_NUMBER = 'טלפון'
-    NUM_TICKETS = 'כמות'
-    TICKET_DESC = 'כותרת'
-
     event_name = f"Open Mic - Babu Bar - {event_date}"
 
     sheet_fields = (
@@ -957,3 +966,43 @@ def _process_tickchak_orders(spreadsheet_file, event_sku, event_date, generate_c
                 event_name=event_name,
                 cheat_code=cheat_code
                 )
+
+
+
+
+def _process_celebrations(spreadsheet_file, event_date, event_sku):
+    SHEET_NAME = 'עסקאות'
+
+    sheet_fields = (
+        ORDER_ID,
+        FIRST_NAME,
+        LAST_NAME,
+        PHONE_NUMBER,
+        CELEBRATING
+    )
+
+    worksheet = load_workbook(spreadsheet_file).get_sheet_by_name(SHEET_NAME)
+    column_names = [cell.value for cell in next(worksheet.iter_rows(min_row=1, max_row=1))]
+
+    column_index_map = {}
+    for partial_name in sheet_fields:
+        for idx, name in enumerate(column_names):
+            if partial_name in name:
+                column_index_map[partial_name] = idx
+
+    for row in worksheet.iter_rows(min_row=2, values_only=2):
+        order_id = row[column_index_map[ORDER_ID]]
+        first_name = row[column_index_map[FIRST_NAME]]
+        last_name = row[column_index_map[LAST_NAME]]
+        phone_number = row[column_index_map[PHONE_NUMBER]]
+        celebrating = row[column_index_map[CELEBRATING]]
+
+        if celebrating:
+            Celebration.objects.get_or_create(
+                order_id=order_id,
+                event_date=event_date,
+                event_sku=event_sku,
+                customer_name=' '.join([first_name, last_name]),
+                phone_number=phone_number,
+                celebrating=celebrating
+            )

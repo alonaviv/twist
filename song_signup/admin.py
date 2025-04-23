@@ -7,7 +7,7 @@ from django.core.exceptions import ValidationError
 from constance import config
 
 from .models import (SongLyrics, SongRequest, Singer, GroupSongRequest, TicketOrder,
-                     CurrentGroupSong, TriviaQuestion, TriviaResponse
+                     CurrentGroupSong, TriviaQuestion, TriviaResponse, Celebration
 )
 from .forms import SongRequestForm
 
@@ -438,3 +438,18 @@ class TriviaResponseAdmin(admin.ModelAdmin):
     get_timestamp.short_description = 'Timestamp'
     get_timestamp.admin_order_field = 'timestamp'
 
+
+@admin.register(Celebration)
+class CelebrationAdmin(admin.ModelAdmin):
+    list_display = ['order_id', 'event_date', 'customer_name', 'phone_number', 'celebrating', 'get_logged_in_customers']
+
+    def get_logged_in_customers(self, obj):
+        try:
+            ticket = TicketOrder.objects.get(order_id=obj.order_id, event_sku=obj.event_sku)
+            if ticket.logged_in_customers:
+                return ', '.join(ticket.logged_in_customers)
+            return "-"
+        except TicketOrder.DoesNotExist:
+            return "-"
+
+    get_logged_in_customers.short_description = "Logged In"
