@@ -886,13 +886,16 @@ def _process_tickchak_orders(spreadsheet_file, event_sku, event_date, generate_c
     num_singing_tickets = 0
     num_audience_tickets = 0
 
+    sample_order = TicketOrder.objects.filter(event_sku=event_sku).first()
+
     if duplicates_upload:
-        sample_order = TicketOrder.objects.filter(event_sku=event_sku).first()
         if not sample_order:
             raise ValueError(f"SKU {event_sku} doesn't exist")
         if sample_order.event_name != event_name:
                 raise ValueError(f"Entered date {event_date}, but existing objects of SKU {event_sku} "
                                  f"have {sample_order.event_name}")
+    elif sample_order:
+        raise ValueError(f"SKU already exists, but you didn't mark duplicate upload")
 
     worksheet = load_workbook(spreadsheet_file).get_sheet_by_name(SHEET_NAME)
     column_names = [cell.value for cell in next(worksheet.iter_rows(min_row=1, max_row=1))]

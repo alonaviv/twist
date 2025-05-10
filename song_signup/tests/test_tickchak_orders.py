@@ -155,3 +155,9 @@ class TickchakOrdersTest(TestCase):
             result = _process_tickchak_orders(spreadsheet_file, EVENT_SKU, EVENT_DATE+'1', True, True)
         self.assertEqual(config.EVENT_SKU, EVENT_SKU)
         self.assertEqual(config.FREEBIE_TICKET, generated_cheat_code)
+
+        # Test re-uploading with same SKU, without marking duplicate
+        with self.assertRaises(ValueError):
+            result = _process_tickchak_orders(spreadsheet_file, EVENT_SKU, EVENT_DATE, True, False)
+        self.assertEqual(config.EVENT_SKU, EVENT_SKU)
+        self.assertEqual(config.FREEBIE_TICKET, generated_cheat_code)
