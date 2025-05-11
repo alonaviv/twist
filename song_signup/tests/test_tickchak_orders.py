@@ -22,40 +22,41 @@ class TickchakOrdersTest(TestCase):
                     event_name=EVENT_NAME,
                     num_tickets=expected["num_tickets"],
                     customer_name=expected["customer_name"],
-                    phone_number=expected["phone_number"]
-                ).exists()
+                    phone_number=expected["phone_number"],
+                    lead = expected["lead"]
+            ).exists()
             )
 
     def test_process_tickchak_orders(self):
         expected_orders = [
             dict(order_id=10869770, num_tickets=2, ticket_type=SING_SKU, customer_name="Jonathan Griffin",
-                 is_freebie=False, logged_in_customers=[], phone_number="059-9486359"),
+                 is_freebie=False, logged_in_customers=[], phone_number="059-9486359", lead='whatsapp-go-time'),
             dict(order_id=10869772, num_tickets=2, ticket_type=SING_SKU, customer_name="בת שבע דיין", is_freebie=False,
-                 logged_in_customers=[], phone_number="056-7069207"),
+                 logged_in_customers=[], phone_number="056-7069207", lead='whatsapp-go-time'),
             dict(order_id=10869772, num_tickets=1, ticket_type=ATTN_SKU, customer_name="בת שבע דיין", is_freebie=False,
-                 logged_in_customers=[], phone_number="056-7069207"),
+                 logged_in_customers=[], phone_number="056-7069207", lead='whatsapp-go-time'),
             dict(order_id=10869778, num_tickets=2, ticket_type=SING_SKU, customer_name="דוד מזרחי", is_freebie=False,
-                 logged_in_customers=[], phone_number="053-9509035"),
+                 logged_in_customers=[], phone_number="053-9509035", lead='whatsapp-go-time'),
             dict(order_id=10869779, num_tickets=2, ticket_type=SING_SKU, customer_name="שי-לי שרון", is_freebie=False,
-                 logged_in_customers=[], phone_number="055-6315800"),
+                 logged_in_customers=[], phone_number="055-6315800", lead='whatsapp-go-time'),
             dict(order_id=10869781, num_tickets=1, ticket_type=SING_SKU, customer_name="Victoria Austin",
-                 is_freebie=False, logged_in_customers=[], phone_number="054-5856614"),
+                 is_freebie=False, logged_in_customers=[], phone_number="054-5856614", lead='whatsapp-go-time'),
             dict(order_id=10869788, num_tickets=1, ticket_type=SING_SKU, customer_name="חיה מזרחי", is_freebie=False,
-                 logged_in_customers=[], phone_number="055-6553223"),
+                 logged_in_customers=[], phone_number="055-6553223", lead='whatsapp-go-time'),
             dict(order_id=10869788, num_tickets=2, ticket_type=ATTN_SKU, customer_name="חיה מזרחי", is_freebie=False,
-                 logged_in_customers=[], phone_number="055-6553223"),
+                 logged_in_customers=[], phone_number="055-6553223", lead='whatsapp-go-time'),
             dict(order_id=10869792, num_tickets=1, ticket_type=SING_SKU, customer_name="אלה אטיאס", is_freebie=False,
-                 logged_in_customers=[], phone_number="055-6286566"),
+                 logged_in_customers=[], phone_number="055-6286566", lead='whatsapp-go-time'),
             dict(order_id=10869792, num_tickets=1, ticket_type=ATTN_SKU, customer_name="אלה אטיאס", is_freebie=False,
-                 logged_in_customers=[], phone_number="055-6286566"),
+                 logged_in_customers=[], phone_number="055-6286566", lead='whatsapp-go-time'),
             dict(order_id=10921071, num_tickets=3, ticket_type=SING_SKU, customer_name="איילה מחאמיד", is_freebie=False,
-                 logged_in_customers=[], phone_number="058-3381903"),
+                 logged_in_customers=[], phone_number="058-3381903", lead=None),
             dict(order_id=11017601, num_tickets=1, ticket_type=SING_SKU, customer_name="ישי מטר", is_freebie=False,
-                 logged_in_customers=[], phone_number="057-2955854"),
+                 logged_in_customers=[], phone_number="057-2955854", lead=None),
             dict(order_id=11017601, num_tickets=1, ticket_type=ATTN_SKU, customer_name="ישי מטר", is_freebie=False,
-                 logged_in_customers=[], phone_number="057-2955854"),
+                 logged_in_customers=[], phone_number="057-2955854", lead=None),
             dict(order_id=11017747, num_tickets=1, ticket_type=SING_SKU, customer_name="נטע גבאי", is_freebie=False,
-                 logged_in_customers=[], phone_number="051-6606754"),
+                 logged_in_customers=[], phone_number="051-6606754", lead=None),
         ]
 
         with open(os.path.join(BASE_DIR, "tickchak-orders.xlsx"), "rb") as f:
@@ -81,22 +82,24 @@ class TickchakOrdersTest(TestCase):
         self.assertEqual(config.FREEBIE_TICKET, generated_cheat_code)
 
         # Test with a spreadsheet that has a few more orders - see that I handle duplicates correctly
+        # Also changes lead from None to "added-lead" for איילה מחאמיד
         expected_orders.extend([
             dict(order_id=11024153, num_tickets=3, ticket_type=SING_SKU, customer_name="Jacqueline Gutierrez",
-                 is_freebie=False, logged_in_customers=[], phone_number="058-7764017"),
+                 is_freebie=False, logged_in_customers=[], phone_number="058-7764017", lead='whatsapp-go-time'),
             dict(order_id=11029561, num_tickets=1, ticket_type=SING_SKU, customer_name="Angela Fischer",
-                 is_freebie=False, logged_in_customers=[], phone_number="050-9210003"),
+                 is_freebie=False, logged_in_customers=[], phone_number="050-9210003", lead='whatsapp-go-time'),
             dict(order_id=11029376, num_tickets=2, ticket_type=ATTN_SKU, customer_name="מיכל מנחם", is_freebie=False,
-                 logged_in_customers=[], phone_number="055-1615239"),
+                 logged_in_customers=[], phone_number="055-1615239", lead=None),
             dict(order_id=11029866, num_tickets=2, ticket_type=SING_SKU, customer_name="Brooke Hicks", is_freebie=False,
-                 logged_in_customers=[], phone_number="057-6138697"),
+                 logged_in_customers=[], phone_number="057-6138697", lead=None),
             dict(order_id=11029866, num_tickets=2, ticket_type=ATTN_SKU, customer_name="Brooke Hicks", is_freebie=False,
-                 logged_in_customers=[], phone_number="057-6138697"),
+                 logged_in_customers=[], phone_number="057-6138697", lead=None),
             dict(order_id=11038489, num_tickets=4, ticket_type=SING_SKU, customer_name="דוד מזרחי",
-                 is_freebie=False, logged_in_customers=[], phone_number="053-9509035"),
+                 is_freebie=False, logged_in_customers=[], phone_number="053-9509035", lead=None),
             dict(order_id=11032259, num_tickets=1, ticket_type=ATTN_SKU, customer_name="אלה אטיאס",
-                 is_freebie=False, logged_in_customers=[], phone_number="055-6286566"),
+                 is_freebie=False, logged_in_customers=[], phone_number="055-6286566", lead=None),
         ])
+        expected_orders[10]['lead'] = "added-lead"
 
         with open(os.path.join(BASE_DIR, "tickchak-orders-extended.xlsx"), "rb") as f:
             spreadsheet_file = SimpleUploadedFile("test2.xlsx", f.read())

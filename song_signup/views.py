@@ -804,6 +804,7 @@ def upload_tickchak_orders(request):
 <br>
 <li> Num orders that already existed in DB: {processing_data['num_existing_ticket_orders']}</li>
 <li> Num new orders added to DB: {processing_data['num_new_ticket_orders']}</li>
+<li> Num lead entried updated: {processing_data['num_leads_updated']}</li>
 <br>
 """)
 
@@ -862,6 +863,7 @@ PHONE_NUMBER = 'טלפון'
 NUM_TICKETS = 'כמות'
 TICKET_DESC = 'כותרת'
 CELEBRATING = 'חוגגים'
+LEAD = 'ליד'
 
 
 @transaction.atomic
@@ -875,6 +877,7 @@ def _process_tickchak_orders(spreadsheet_file, event_sku, event_date, generate_c
        FIRST_NAME,
        LAST_NAME,
        PHONE_NUMBER,
+       LEAD,
        NUM_TICKETS,
        TICKET_DESC,
     )
@@ -885,6 +888,7 @@ def _process_tickchak_orders(spreadsheet_file, event_sku, event_date, generate_c
     num_new_ticket_orders = 0
     num_singing_tickets = 0
     num_audience_tickets = 0
+    num_leads_updated = 0
 
     sample_order = TicketOrder.objects.filter(event_sku=event_sku).first()
 
@@ -913,6 +917,7 @@ def _process_tickchak_orders(spreadsheet_file, event_sku, event_date, generate_c
         first_name = row[column_index_map[FIRST_NAME]]
         last_name = row[column_index_map[LAST_NAME]]
         phone_number = row[column_index_map[PHONE_NUMBER]]
+        lead = row[column_index_map[LEAD]]
 
         orders.add(order_id)
         num_ticket_orders += 1
@@ -927,7 +932,7 @@ def _process_tickchak_orders(spreadsheet_file, event_sku, event_date, generate_c
                 event_name=event_name,
                 num_tickets=num_tickets,
                 customer_name=' '.join([first_name, last_name]),
-                phone_number=phone_number
+                phone_number=phone_number,
             )
         except IntegrityError:
             raise ValueError(
@@ -944,6 +949,11 @@ def _process_tickchak_orders(spreadsheet_file, event_sku, event_date, generate_c
             num_singing_tickets += num_tickets
         else:
             num_audience_tickets += num_tickets
+
+        # Since I added lead tracking later, adding/updating it separatly.
+        ticket_order.lead = lead
+        if lead and not created:
+            num_leads_updated += 1
 
         ticket_order.save()
 
@@ -964,6 +974,7 @@ def _process_tickchak_orders(spreadsheet_file, event_sku, event_date, generate_c
                 num_existing_ticket_orders=num_existing_ticket_orders,
                 num_singing_tickets=num_singing_tickets,
                 num_audience_tickets=num_audience_tickets,
+                num_leads_updated=num_leads_updated,
                 total_tickets=num_audience_tickets+num_singing_tickets,
                 event_sku=event_sku,
                 event_name=event_name,

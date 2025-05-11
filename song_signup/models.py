@@ -59,6 +59,7 @@ class TicketOrder(Model):
     is_freebie = BooleanField(default=False)  # Ticket group for giving singer access to those without singer tickets
     logged_in_customers = JSONField(default=list, blank=True)
     phone_number = CharField(max_length=15, null=True)
+    lead = TextField(null=True) # From tickchak lead link names
 
     class Meta:
         unique_together = ('order_id', 'event_sku', 'ticket_type')

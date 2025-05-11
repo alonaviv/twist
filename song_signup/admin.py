@@ -324,7 +324,7 @@ class LyricsAdmin(admin.ModelAdmin):
 @admin.register(TicketOrder)
 class OrdersAdmin(admin.ModelAdmin):
     list_display = ['order_id', 'event_name', 'event_sku', 'num_tickets', 'ticket_type', 'customer_name',
-                    'get_logged_in', 'phone_number']
+                    'get_logged_in', 'phone_number', 'lead']
     list_filter = ['event_sku']
 
     def get_logged_in(self, obj):
