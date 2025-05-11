@@ -95,7 +95,10 @@ INSTALLED_APPS = [
     'dbbackup',
     'flags',
     'rest_framework',
+    'phonenumber_field',
 ]
+
+PHONENUMBER_DEFAULT_REGION='IL'
 
 CONSTANCE_CONFIG = {
     'PASSCODE': ('', "Tonight's Secret Word - REQUIRED TO OPEN APP"),

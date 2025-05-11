@@ -21,6 +21,7 @@ from django.db.models import (
     ImageField,
     JSONField,
 )
+from phonenumber_field.modelfields import PhoneNumberField
 from django.db.models.signals import m2m_changed
 from twist.utils import format_commas
 from django.utils import timezone
@@ -46,6 +47,15 @@ class TicketsDepleted(Exception):
 class AlreadyLoggedIn(Exception):
     pass
 
+class Customer(Model):
+    """
+    Represents a customer that orders tickets, over multiple events.
+    To use in market research and analytics
+    """
+    full_name = CharField(max_length=100)
+    phone_number = PhoneNumberField(null=True)
+    in_wa_group = BooleanField(default=False)
+
 class TicketOrder(Model):
     """
     Represents the group of tickets of the same type within a Lineapp order
@@ -55,7 +65,8 @@ class TicketOrder(Model):
     event_name = CharField(max_length=100, null=True)
     num_tickets = IntegerField()
     ticket_type = CharField(max_length=20, choices=[(SING_SKU, 'Singer'), (ATTN_SKU, 'Audience')])
-    customer_name = CharField(max_length=100)
+    customer_name = CharField(max_length=100) # Comes direcly from tickchak order
+    customer = ForeignKey(Customer, related_name='ticket_orders', on_delete=PROTECT, null=True) # Popluated on db reset
     is_freebie = BooleanField(default=False)  # Ticket group for giving singer access to those without singer tickets
     logged_in_customers = JSONField(default=list, blank=True)
     phone_number = CharField(max_length=15, null=True)
