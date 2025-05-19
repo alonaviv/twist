@@ -441,15 +441,4 @@ class TriviaResponseAdmin(admin.ModelAdmin):
 
 @admin.register(Celebration)
 class CelebrationAdmin(admin.ModelAdmin):
-    list_display = ['order_id', 'event_date', 'customer_name', 'phone_number', 'celebrating', 'get_logged_in_customers']
-
-    def get_logged_in_customers(self, obj):
-        try:
-            ticket = TicketOrder.objects.get(order_id=obj.order_id, event_sku=obj.event_sku)
-            if ticket.logged_in_customers:
-                return ', '.join(ticket.logged_in_customers)
-            return "-"
-        except TicketOrder.DoesNotExist:
-            return "-"
-
-    get_logged_in_customers.short_description = "Logged In"
+    list_display = ['order_id', 'event_date', 'customer_name', 'phone_number', 'celebrating']
