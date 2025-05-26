@@ -124,13 +124,15 @@ def add_songs_to_singer(singer_id, songs_ids: Union[int, list], frozen_time=None
     if isinstance(songs_ids, int):
         songs_ids = range(1, songs_ids + 1)
 
+    songs = []
     for song_id in songs_ids:
         if frozen_time:
             frozen_time.tick()
 
-        SongRequest.objects.create(song_name=f"song_{singer_id}_{song_id}", singer=singer, musical="Wicked")
+        songs.append(SongRequest.objects.create(song_name=f"song_{singer_id}_{song_id}", singer=singer, musical="Wicked"))
         Singer.ordering.calculate_positions()
 
+    return songs
 
 def set_performed(singer_id, song_id, frozen_time=None):
     if frozen_time:
@@ -161,8 +163,11 @@ def add_songs_to_singers(singers: Union[list, int], num_songs, frozen_time=None)
     if isinstance(singers, int):
         singers = range(1, singers + 1)
 
+    songs = []
     for singer_id in singers:
-        add_songs_to_singer(singer_id, num_songs, frozen_time=frozen_time)
+        songs.extend(add_songs_to_singer(singer_id, num_songs, frozen_time=frozen_time))
+
+    return songs
 
 
 def add_partners(primary_singer_id, singer_partners_ids, song_num,
@@ -223,7 +228,7 @@ class ExpectedDashboard:
     empty: bool = False
 
     def __post_init__(self):
-        if not self.empty and (self.next_song is None or self.wait_amount is -1):
+        if not self.empty and (self.next_song is None or self.wait_amount == -1):
             raise ValueError("A not empty dashboard has to include all data (next song and wait amount")
 
 
@@ -259,8 +264,9 @@ def add_current_group_song(song_name, musical):
     [suggester] = create_singers([-50])  # ID that won't conflict with others
     group_song = GroupSongRequest.objects.create(song_name=song_name, musical=musical,
                                                  suggested_by=suggester)
-    group_song = CurrentGroupSong.objects.create(group_song=group_song)
-    group_song.start_song()
+    current_group_song = CurrentGroupSong.objects.create(group_song=group_song)
+    current_group_song.start_song()
+    return current_group_song
 
 
 def logout(singer_id):

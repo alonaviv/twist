@@ -11,6 +11,7 @@ from django.core.files import File
 import glob
 import os
 import filecmp
+from song_signup.views import _get_current_song
 
 
 from song_signup.models import (
@@ -27,6 +28,7 @@ from song_signup.tests.utils_for_tests import (
     remove_keys,
     get_json,
     add_songs_to_singer,
+    add_songs_to_singers,
     set_performed,
     get_song_str,
     get_singer_str,
@@ -1736,6 +1738,44 @@ class TestAddSongRequest(TransactionTestCase):
         self.assertEqual(created_song1.singer.id, other_singer.id)
         self.assertJSONEqual(response.content, {'requested_song': 'Defying Gravity'})
         self.assertEqual(response.status_code, 200)
+
+class TestHelpers(TestCase):
+    def test_get_current_song(self):
+        # Regular setlist order
+        create_singers(3)
+        song1, song2, song3 = add_songs_to_singers(3, 1)
+        curr, is_group_song = _get_current_song()
+        self.assertEqual(curr, song1)
+        self.assertFalse(is_group_song)
+
+        set_performed(1, 1)
+        curr, is_group_song = _get_current_song()
+        self.assertEqual(curr, song2)
+        self.assertFalse(is_group_song)
+
+        # Spotlight song #3
+        SongRequest.objects.set_spotlight(song3)
+        curr, is_group_song = _get_current_song()
+        self.assertEqual(curr, song3)
+        self.assertFalse(is_group_song)
+
+        # Start a group songs (gets precedence)
+        current_group_song = add_current_group_song("group", "song")
+        curr, is_group_song = _get_current_song()
+        self.assertEqual(curr, current_group_song.group_song)
+        self.assertTrue(is_group_song)
+
+        # Stop group song - go back to spotlit song
+        current_group_song.end_song()
+        curr, is_group_song = _get_current_song()
+        self.assertEqual(curr, song3)
+        self.assertFalse(is_group_song)
+
+        # Stop spotlight - go back to regular order
+        SongRequest.objects.remove_spotlight()
+        curr, is_group_song = _get_current_song()
+        self.assertEqual(curr, song2)
+        self.assertFalse(is_group_song)
 
 
 class TestAddSongView(TestViews):

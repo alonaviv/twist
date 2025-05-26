@@ -39,6 +39,19 @@ class SongRequestManager(Manager):
     def num_performed(self):
         return self.filter(performance_time__isnull=False).count()
 
+    def remove_spotlight(self):
+        for song in self.all():
+            song.spotlight = False
+            song.save()
+
+    def set_spotlight(self, song_request):
+        self.remove_spotlight()
+        song_request.spotlight = True
+        song_request.save()
+
+    def get_spotlight(self):
+        return self.filter(spotlight=True).first()
+
 
 class GroupSongRequestManager(Manager):
     def num_performed(self):

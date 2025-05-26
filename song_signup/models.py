@@ -244,6 +244,7 @@ class SongRequest(Model):
     skipped = BooleanField(default=False)
     default_lyrics = BooleanField(default=False)
     found_music = BooleanField(default=False)
+    spotlight = BooleanField(default=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

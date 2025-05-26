@@ -1,4 +1,4 @@
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import format_html
@@ -49,6 +49,15 @@ set_solo_skipped.allowed_permissions = ['change']
 set_solo_unskipped.short_description = 'Mark song as unskipped'
 set_solo_unskipped.allowed_permissions = ['change']
 
+def spotlight(modeladmin, request, queryset):
+    if queryset.count() != 1:
+        messages.error(request, "You can only spotlight a single song")
+
+    song = queryset.first()
+    SongRequest.objects.set_spotlight(song)
+
+spotlight.short_description = "Spotlight this song"
+spotlight.allowed_permissions = ['change']
 
 def prepare_group_song(modeladmin, request, queryset):
     if queryset.count() == 1:
@@ -160,7 +169,7 @@ class SongRequestAdmin(admin.ModelAdmin):
     )
     list_filter = (NotYetPerformedFilter,)
     list_editable = ('default_lyrics', 'found_music')
-    actions = [set_solo_performed, set_solo_not_performed, set_solo_skipped, set_solo_unskipped]
+    actions = [set_solo_performed, set_solo_not_performed, set_solo_skipped, set_solo_unskipped, spotlight]
     ordering = ['position']
     change_list_template = "admin/song_request_changelist.html"
     list_per_page = 500

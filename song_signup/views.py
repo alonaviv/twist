@@ -424,7 +424,7 @@ def _get_current_song():
     if curr_group_song and curr_group_song.is_active:
         return curr_group_song.group_song, True
     else:
-        return SongRequest.objects.current_song(), False
+        return SongRequest.objects.get_spotlight() or SongRequest.objects.current_song(), False
 
 
 @api_view(["GET"])
