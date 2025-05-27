@@ -202,6 +202,10 @@ class SongRequestAdmin(admin.ModelAdmin):
         if active_question:
             extra_context['trivia_question'] = active_question
 
+        spotlight_song = SongRequest.objects.get_spotlight()
+        if spotlight_song:
+            extra_context['spotlight'] = spotlight_song
+
         return super().changelist_view(request, extra_context=extra_context)
 
     def has_delete_permission(self, request, obj=None):

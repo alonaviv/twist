@@ -53,7 +53,7 @@
     </div>
     {% endif %}
     <div style="display: flex; flex-direction: column; gap: 0px;">
-        <!-- Row 1: Group Song Box -->
+        <!-- Row 1: Group Song Box/Spotlight -->
         {% if group_song %}
         <div style="display: flex; flex-wrap: wrap;">
             <div style="margin: 10px; border: 3px solid orangered; width: fit-content; padding: 10px;">
@@ -68,6 +68,19 @@
                 </p>
             </div>
         </div>
+        {% endif %}
+        {% if spotlight %}
+            <div style="display: flex; flex-wrap: wrap;">
+                <div style="margin: 10px; border: 3px solid orangered; width: fit-content; padding: 10px;">
+                    <p style="font-size:20px; margin: 0;">
+                        Spotlight running: {{ spotlight.song_name }} - {{ spotlight.singer }}
+                    </p>
+                </div>
+                <button id="endSpotlight" type="button" style="margin: 10px; padding: 10px; font-size: 20px; cursor:
+                pointer;">
+                    End Song
+                </button>
+            </div>
         {% endif %}
 
         <!-- Row 2: Countdown boxes -->
@@ -131,6 +144,9 @@
                 if (!localStorage.getItem('bgColor')){
                     fetch("/toggle_shani_ping", { method: "PUT", credentials: "omit"});
                 }
+            });
+            document.getElementById('endSpotlight').addEventListener('click', function() {
+                   window.location.href = "/end_spotlight";
             });
             setInterval(readShaniPing, 100);
         });

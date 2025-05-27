@@ -495,6 +495,12 @@ def end_group_song(request):
     return redirect('admin/song_signup/groupsongrequest')
 
 
+@superuser_required('login')
+def end_spotlight(request):
+    SongRequest.objects.remove_spotlight()
+    return redirect('admin/song_signup/songrequest')
+
+
 @bwt_login_required('login')
 def live_lyrics(request):
     return render(request, 'song_signup/live_lyrics.html')

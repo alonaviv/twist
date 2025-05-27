@@ -53,6 +53,7 @@ urlpatterns = [
     path('get_lineup', views.get_lineup, name='get_lineup'),
     path('end_group_song', views.end_group_song, name='end_group_song'),
     path('start_group_song', views.start_group_song, name='start_group_song'),
+    path('end_spotlight', views.end_spotlight, name='end_spotlight'),
     path('next_singer', views.next_singer, name='next_singer'),
     path('get_active_question', views.get_active_question, name='get_active_question'),
     path('deactivate_trivia', views.deactivate_trivia, name='deactivate_trivia'),

@@ -41,6 +41,11 @@ class SongRequestManager(Manager):
 
     def remove_spotlight(self):
         for song in self.all():
+            if song.spotlight:
+                song.performance_time = timezone.now() # If a song was in spotlight, set performance time to when ended
+                from song_signup.models import Singer
+                Singer.ordering.calculate_positions()
+
             song.spotlight = False
             song.save()
 
