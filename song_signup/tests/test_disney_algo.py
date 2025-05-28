@@ -5,7 +5,7 @@ from song_signup.models import Singer, SongRequest
 from song_signup.tests.utils_for_tests import (
     SongRequestTestCase, TEST_START_TIME, create_singers, assert_singers_in_disney,
     set_performed, add_partners, add_songs_to_singers, get_singer, assert_song_positions, add_songs_to_singer,
-    login, logout, create_audience,
+    login, logout, create_audience, get_song,
     ExpectedDashboard, assert_dashboards, logout_audience
 )
 from flags.state import disable_flag
@@ -365,6 +365,44 @@ class TestSimulatedEvenings(SongRequestTestCase):
                 ExpectedDashboard(singer=5, empty=True),
             ])
             set_performed(2, 1, frozen_time)
+            assert_song_positions(self, [(1, 2), (3, 1), (4, 1), (2, 2)])
+            assert_dashboards(self, [
+                ExpectedDashboard(singer=1, next_song=2, wait_amount=0),
+                ExpectedDashboard(singer=3, next_song=1, wait_amount=1),
+                ExpectedDashboard(singer=4, next_song=1, wait_amount=2),
+                ExpectedDashboard(singer=5, empty=True),
+                ExpectedDashboard(singer=2, next_song=2, wait_amount=3),
+            ])
+
+            # Create singer with a song that will get a spotlight later
+            create_singers([222], frozen_time)
+            add_songs_to_singers([222], 1, frozen_time)
+            Singer.ordering.calculate_positions()
+            assert_song_positions(self, [(1, 2), (3, 1), (4, 1), (2, 2), (222, 1)])
+            assert_dashboards(self, [
+                ExpectedDashboard(singer=1, next_song=2, wait_amount=0),
+                ExpectedDashboard(singer=3, next_song=1, wait_amount=1),
+                ExpectedDashboard(singer=4, next_song=1, wait_amount=2),
+                ExpectedDashboard(singer=5, empty=True),
+                ExpectedDashboard(singer=2, next_song=2, wait_amount=3),
+                ExpectedDashboard(singer=222, next_song=1, wait_amount=4),
+            ])
+
+            # Spotlight singer 222 - order doesn't change yet, lyrics are just displayed over the first singer
+            SongRequest.objects.set_spotlight(get_song(222, 1))
+            Singer.ordering.calculate_positions()
+            assert_song_positions(self, [(1, 2), (3, 1), (4, 1), (2, 2), (222, 1)])
+            assert_dashboards(self, [
+                ExpectedDashboard(singer=1, next_song=2, wait_amount=0),
+                ExpectedDashboard(singer=3, next_song=1, wait_amount=1),
+                ExpectedDashboard(singer=4, next_song=1, wait_amount=2),
+                ExpectedDashboard(singer=5, empty=True),
+                ExpectedDashboard(singer=2, next_song=2, wait_amount=3),
+                ExpectedDashboard(singer=222, next_song=1, wait_amount=4),
+            ])
+
+            # End spotlight - singer 222 disapears from list (since he already sang)
+            SongRequest.objects.remove_spotlight()
             assert_song_positions(self, [(1, 2), (3, 1), (4, 1), (2, 2)])
             assert_dashboards(self, [
                 ExpectedDashboard(singer=1, next_song=2, wait_amount=0),
