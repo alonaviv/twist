@@ -52,12 +52,30 @@ set_solo_unskipped.allowed_permissions = ['change']
 def spotlight(modeladmin, request, queryset):
     if queryset.count() != 1:
         messages.error(request, "You can only spotlight a single song")
+        return
 
     song = queryset.first()
     SongRequest.objects.set_spotlight(song)
 
 spotlight.short_description = "Spotlight this song"
 spotlight.allowed_permissions = ['change']
+
+def set_standby(modeladmin, request, queryset):
+    for song in queryset:
+        song.standby = True
+        song.save()
+
+set_standby.short_description = "Move to standby"
+set_standby.allowed_permissions = ['change']
+
+def unset_standby(modeladmin, request, queryset):
+    for song in queryset:
+        song.standby = False
+        song.save()
+
+unset_standby.short_description = "Undo standby"
+unset_standby.allowed_permissions = ['change']
+
 
 def prepare_group_song(modeladmin, request, queryset):
     if queryset.count() == 1:
@@ -85,14 +103,17 @@ class NotYetPerformedFilter(admin.SimpleListFilter):
 
     def lookups(self, request, model_admin):
         return (
-            ('not_scheduled', 'Include Not Scheduled'),
+            ('standby', 'Standby'),
+            ('not_scheduled', 'All Songs'),
         )
 
     def queryset(self, request, queryset):
-        if not self.value() == 'not_scheduled':
-            return queryset.filter(performance_time=None, position__isnull=False)
-        else:
+        if self.value() == 'standby':
+            return queryset.filter(performance_time=None, standby=True)
+        elif self.value() == 'not_scheduled':
             return queryset.all()
+        else: # "All" selected, but we use it as the regular setlist
+            return queryset.filter(performance_time=None, position__isnull=False)
 
 
 @admin.register(GroupSongRequest)
@@ -169,7 +190,8 @@ class SongRequestAdmin(admin.ModelAdmin):
     )
     list_filter = (NotYetPerformedFilter,)
     list_editable = ('default_lyrics', 'found_music')
-    actions = [set_solo_performed, set_solo_not_performed, set_solo_skipped, set_solo_unskipped, spotlight]
+    actions = [set_solo_performed, set_solo_not_performed, set_solo_skipped, set_solo_unskipped,
+               spotlight, set_standby, unset_standby]
     ordering = ['position']
     change_list_template = "admin/song_request_changelist.html"
     list_per_page = 500

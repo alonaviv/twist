@@ -245,6 +245,7 @@ class SongRequest(Model):
     default_lyrics = BooleanField(default=False)
     found_music = BooleanField(default=False)
     spotlight = BooleanField(default=False)
+    standby = BooleanField(default=False) # If song is out of the regular ordering, waiting to be spotlighted
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
