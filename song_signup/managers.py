@@ -43,6 +43,7 @@ class SongRequestManager(Manager):
         for song in self.all():
             if song.spotlight:
                 song.performance_time = timezone.now() # If a song was in spotlight, set performance time to when ended
+                song.standby = False
 
             song.spotlight = False
             song.save()

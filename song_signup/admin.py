@@ -109,7 +109,7 @@ class NotYetPerformedFilter(admin.SimpleListFilter):
 
     def queryset(self, request, queryset):
         if self.value() == 'standby':
-            return queryset.filter(performance_time=None, standby=True)
+            return queryset.filter(standby=True)
         elif self.value() == 'not_scheduled':
             return queryset.all()
         else: # "All" selected, but we use it as the regular setlist
