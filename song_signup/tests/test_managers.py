@@ -9,7 +9,7 @@ class TestSongRequestManager(SongRequestTestCase):
         with freeze_time(time_to_freeze=TEST_START_TIME) as frozen_time:
             create_singers(3)
             song1, song2, song3 = add_songs_to_singers(3, 1)
-            song3.standby = True
+            song3.standby = True # Will make position be None
             song3.save()
 
             Singer.ordering.calculate_positions()
@@ -19,21 +19,32 @@ class TestSongRequestManager(SongRequestTestCase):
 
             SongRequest.objects.set_spotlight(song1)
             self.assertEqual(SongRequest.objects.get_spotlight(), song1)
+            self.assertEqual(song1.position, 1)
+            self.assertEqual(song2.position, 2)
+            self.assertIsNone(song3.position)
 
             SongRequest.objects.set_spotlight(song2)
             self.assertEqual(SongRequest.objects.get_spotlight(), song2)
+            self.assertEqual(song1.position, 1)
+            self.assertEqual(song2.position, 2)
+            self.assertIsNone(song3.position)
+
 
             SongRequest.objects.set_spotlight(song3)
             self.assertEqual(SongRequest.objects.get_spotlight(), song3)
 
             song3.refresh_from_db()
-            self.assertEqual(song3.position, 3)
+            self.assertEqual(song1.position, 1)
+            self.assertEqual(song2.position, 2)
+            self.assertIsNone(song3.position)
             self.assertTrue(song3.standby)
 
             SongRequest.objects.remove_spotlight()
             self.assertIsNone(SongRequest.objects.get_spotlight())
             song3.refresh_from_db()
 
+            self.assertEqual(song1.position, 1)
+            self.assertEqual(song2.position, 2)
             self.assertIsNone(song3.position)
             self.assertEqual(song3.performance_time, TEST_START_TIME)
             self.assertFalse(song3.standby)

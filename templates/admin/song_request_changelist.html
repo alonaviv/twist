@@ -145,9 +145,12 @@
                     fetch("/toggle_shani_ping", { method: "PUT", credentials: "omit"});
                 }
             });
-            document.getElementById('endSpotlight').addEventListener('click', function() {
-                   window.location.href = "/end_spotlight";
-            });
+            const endSpotlightButton = document.getElementById('endSpotlight');
+            if (endSpotlightButton) {
+                endSpotlightButton.addEventListener('click', function () {
+                    window.location.href = "/end_spotlight";
+                });
+            }
             setInterval(readShaniPing, 100);
         });
     </script>

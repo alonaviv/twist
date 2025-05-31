@@ -13,7 +13,7 @@ from song_signup.models import (
     Singer, SongRequest, SongSuggestion, TicketOrder, SING_SKU, ATTN_SKU, GroupSongRequest,
     CurrentGroupSong, AlreadyLoggedIn, TriviaResponse
 )
-from song_signup.views import _sanitize_string
+from song_signup.views import _sanitize_string, _get_current_song
 
 PLACEHOLDER = 'PLACEHOLDER'
 TEST_START_TIME = datetime.datetime(year=2022, month=7, day=10, tzinfo=pytz.UTC)
@@ -156,6 +156,18 @@ def set_unskipped(singer_id, song_id):
     song.save()
 
 
+def set_standby(singer_id, song_id):
+    song = get_song(singer_id, song_id)
+    song.standby = True
+    song.save()
+
+
+def unset_standby(singer_id, song_id):
+    song = get_song(singer_id, song_id)
+    song.standby = False
+    song.save()
+
+
 def add_songs_to_singers(singers: Union[list, int], num_songs, frozen_time=None):
     """
     Can either pass a list of ints, or the num of singers to be generated
@@ -217,6 +229,13 @@ def assert_song_positions(testcase, expected_songs):
     # Assert that positions are sequential
     positions = [song.position for song in all_songs]
     testcase.assertEqual(positions, list(range(1, len(expected_songs) + 1)))
+
+
+def assert_current_song(testcase, singer_id, song_id):
+    expected_song = get_song(singer_id, song_id)
+    current_song, _ = _get_current_song()
+    testcase.assertEqual(expected_song, current_song,
+                         f"Expected current song {expected_song}. Got {current_song}")
 
 
 @dataclass

@@ -64,6 +64,7 @@ def set_standby(modeladmin, request, queryset):
     for song in queryset:
         song.standby = True
         song.save()
+    Singer.ordering.calculate_positions()
 
 set_standby.short_description = "Move to standby"
 set_standby.allowed_permissions = ['change']
@@ -72,6 +73,7 @@ def unset_standby(modeladmin, request, queryset):
     for song in queryset:
         song.standby = False
         song.save()
+    Singer.ordering.calculate_positions()
 
 unset_standby.short_description = "Undo standby"
 unset_standby.allowed_permissions = ['change']

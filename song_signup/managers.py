@@ -94,7 +94,7 @@ class DisneylandOrdering(UserManager):
         position = 1
         scheduled_songs = []
         for singer in self.singer_disneyland_ordering():
-            song_to_schedule = singer.songs.filter(performance_time__isnull=True,
+            song_to_schedule = singer.songs.filter(performance_time__isnull=True, standby=False,
                                                    request_time__lte=timezone.now()).order_by('priority').first()
             if song_to_schedule:
                 song_to_schedule.position = position
