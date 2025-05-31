@@ -114,8 +114,24 @@ class NotYetPerformedFilter(admin.SimpleListFilter):
             return queryset.filter(standby=True)
         elif self.value() == 'not_scheduled':
             return queryset.all()
-        else: # "All" selected, but we use it as the regular setlist
+        else: # "Setlist"
             return queryset.filter(performance_time=None, position__isnull=False)
+
+    def choices(self, changelist):
+        """
+        Change the default filter to be called "setlist"
+        """
+        yield {
+            'selected': self.value() is None,
+            'query_string': changelist.get_query_string(remove=[self.parameter_name]),
+            'display': 'Setlist',
+        }
+        for lookup, title in self.lookup_choices:
+            yield {
+                'selected': self.value() == lookup,
+                'query_string': changelist.get_query_string({self.parameter_name: lookup}),
+                'display': title,
+            }
 
 
 @admin.register(GroupSongRequest)
