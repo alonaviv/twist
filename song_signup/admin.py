@@ -349,7 +349,7 @@ class SongRequestAdmin(admin.ModelAdmin):
 @admin.register(Singer)
 class SingerAdmin(admin.ModelAdmin):
     list_display = ['username', 'date_joined', 'is_active', 'no_image_upload', 'ticket_order',
-                    'is_audience', 'selfie_preview', 'get_songs']
+                    'is_audience', 'selfie_preview', 'get_songs', 'raffle_winner']
     list_filter =['is_audience']
 
     def selfie_preview(self, obj):

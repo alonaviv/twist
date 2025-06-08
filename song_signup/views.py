@@ -59,7 +59,8 @@ def bwt_login_required(login_url, singer_only=False):
     def decorator(view_func):
         @wraps(view_func)
         def wrapper(request, *args, **kwargs):
-            if not request.user.is_authenticated or (singer_only and request.user.is_audience):
+            if not request.user.is_authenticated or (singer_only and request.user.is_audience
+                                                     and not request.user.raffle_winner):
                 return redirect(login_url)
 
             return view_func(request, *args, **kwargs)
@@ -151,8 +152,10 @@ def add_song_request(request):
         song_request = SongRequest.objects.filter(song_name=song_name, musical=musical).first()
         if not song_request or approve_duplicate:
             with transaction.atomic(): # Abort object creation if validation fails
+                # Raffle winner add their songs as standby - to be spotlit when Shani decides.
                 new_song_request = SongRequest.objects.create(song_name=song_name, musical=musical,
-                                                              singer=current_user, notes=notes)
+                                                              singer=current_user, notes=notes,
+                                                              standby=current_user.raffle_winner)
                 try:
                     new_song_request.partners.set(partners) # Runs validation function using signal
                 except ValidationError as e:

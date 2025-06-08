@@ -90,6 +90,7 @@ class Singer(AbstractUser):
     ticket_order = ForeignKey(TicketOrder, related_name='singers', on_delete=PROTECT, null=True)
     is_audience = BooleanField(default=False)
     selfie = ImageField(upload_to='selfies/', blank=True, null=True)
+    raffle_winner = BooleanField(default=False)
 
     @property
     def is_singer(self):
