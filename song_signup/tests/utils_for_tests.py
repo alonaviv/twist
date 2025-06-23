@@ -287,6 +287,9 @@ def add_current_group_song(song_name, musical):
     current_group_song.start_song()
     return current_group_song
 
+def end_group_song():
+    CurrentGroupSong.end_song()
+
 
 def logout(singer_id):
     singer = get_singer(singer_id)

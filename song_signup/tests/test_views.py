@@ -44,7 +44,8 @@ from song_signup.tests.utils_for_tests import (
     get_audience_str,
     create_audience,
     select_trivia_answer,
-    TEST_START_TIME
+    TEST_START_TIME,
+    end_group_song
 )
 from twist.utils import format_commas
 
@@ -756,6 +757,51 @@ class TestJsonRes(TestViews):
 
         self.assertDictEqual(self._remove_song_keys(res_json), self._remove_song_keys(expected_json))
 
+    def test_spotlight_song_skipped(self):
+        create_singers(singer_ids=[1, 2, 3], num_songs=1)
+        user = login_singer(self, user_id=3)
+
+        set_skipped(1, 1)
+
+        response = self.client.get(reverse('spotlight_data'))
+        self.assertEqual(response.status_code, 200)
+
+        res_json = get_json(response)
+        expected_json = {
+            "current_song": get_song_basic_data(2, 1),
+            "next_song": get_song_basic_data(3, 1)
+        }
+
+        self.assertDictEqual(self._remove_song_keys(res_json), self._remove_song_keys(expected_json))
+
+    def test_spotlight_group_song(self):
+        create_singers(2, num_songs=1)
+        user = login_singer(self, user_id=1)
+
+        add_current_group_song('Hello', "Book of Mormon")
+
+        response = self.client.get(reverse('spotlight_data'))
+        self.assertEqual(response.status_code, 200)
+
+        res_json = get_json(response)
+        expected_json = {
+            "current_song": {'name': 'Hello', 'singer': 'GROUP SONG'},
+            "next_song": get_song_basic_data(1, 1)
+        }
+        self.assertDictEqual(self._remove_song_keys(res_json), self._remove_song_keys(expected_json))
+
+        end_group_song()
+
+        response = self.client.get(reverse('spotlight_data'))
+        self.assertEqual(response.status_code, 200)
+
+        res_json = get_json(response)
+        expected_json = {
+            "current_song": get_song_basic_data(1, 1),
+            "next_song": get_song_basic_data(2, 1)
+        }
+        self.assertDictEqual(self._remove_song_keys(res_json), self._remove_song_keys(expected_json))
+
     def test_dashboard_empty(self):
         login_singer(self)
         response = self.client.get(reverse('dashboard_data'))
@@ -793,6 +839,7 @@ class TestJsonRes(TestViews):
         res_json = get_json(response)
         expected_json = {'user_next_song': get_song_basic_data(3, 2)}
         self.assertDictEqual(self._remove_song_keys(res_json), self._remove_song_keys(expected_json))
+
 
 
 class SongRequestSerializeTestCase(TestViews):

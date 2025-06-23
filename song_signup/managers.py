@@ -32,7 +32,7 @@ class SongRequestManager(Manager):
     def next_song(self):
         try:
             return self.filter(performance_time__isnull=True, position__isnull=False,
-                               placeholder=False, request_time__lte=timezone.now())[1]
+                               placeholder=False, request_time__lte=timezone.now(), skipped=False)[1]
         except IndexError:
             return None
 
