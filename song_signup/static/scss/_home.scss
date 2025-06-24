@@ -136,6 +136,46 @@
             margin-top: 10px;
             margin-bottom: 10px;
         }
+
+    }
+
+    &.raffle-winner {
+        #no-song {
+            background-image: url("../img/main/golden-ticket.jpeg");
+            background-position: center center;
+            background-size: cover;
+            background-repeat: no-repeat;
+
+            height: 100%;
+            padding: 0px;
+
+            #manage-songs-btn-wrapper {
+                height: 100%;
+                width: 100%;
+                justify-content: flex-start;
+                align-items: flex-end;
+                margin: 0px;
+                padding: 0px;
+
+            }
+            #manage-songs-btn {
+                margin-right: 15%;
+                margin-bottom: 5%;
+                max-width: 35%;
+                max-height: 23%;
+                background-color: $dark-bg;
+                color: white;
+            }
+        }
+
+        #user-next-song-title {
+            font-size: 0;
+        }
+        #user-next-song-title:after {
+            content: "Stay tuned! We'll call you up at some point with:";
+            font-size: 1rem;
+        }
+
     }
 
     #home-tips {

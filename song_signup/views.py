@@ -125,7 +125,6 @@ def next_singer(request):
     })
 
 
-
 def dashboard_data(request):
     singer = request.user
     user_next_song = singer.next_song

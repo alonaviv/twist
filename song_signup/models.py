@@ -94,7 +94,7 @@ class Singer(AbstractUser):
 
     @property
     def is_singer(self):
-        return not self.is_audience
+        return not self.is_audience or self.raffle_winner
 
     def save(self, *args, **kwargs):
         # Only validate on creation:
