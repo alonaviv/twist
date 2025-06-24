@@ -513,6 +513,28 @@ def lineup(request):
     return render(request, 'song_signup/lineup.html')
 
 
+@superuser_required('login')
+def start_raffle(request):
+    winner = Singer.objects.filter(is_audience=True, raffle_participant=True, raffle_winner=False, is_active=True).order_by('?').first()
+    if winner:
+        winner.raffle_winner = True
+        winner.active_raffle_winner = True
+        winner.save()
+    else:
+        winner = "NO RAFFLE PARTICIPANTS"
+
+    request.session['raffle_winner'] = str(winner)
+    return redirect(f'admin/song_signup/songrequest')
+
+@superuser_required('login')
+def end_raffle(request):
+    for active_winner in Singer.objects.filter(active_raffle_winner=True):
+        active_winner.active_raffle_winner = False
+        active_winner.save()
+
+    del request.session['raffle_winner']
+    return redirect(f'admin/song_signup/songrequest')
+
 @bwt_login_required('login')
 def suggest_group_song(request):
     current_user = request.user

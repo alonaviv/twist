@@ -60,5 +60,7 @@ urlpatterns = [
     path('select_trivia_answer', views.select_trivia_answer, name='select_trivia_answer'),
     path('get_selected_answer', views.get_selected_answer, name='get_selected_answer'),
     path('get_possible_partners', views.get_possible_partners, name='get_possible_partners'),
+    path('start_raffle', views.start_raffle, name='start_raffle'),
+    path('end_raffle', views.end_raffle, name='end_raffle'),
 ]
 
