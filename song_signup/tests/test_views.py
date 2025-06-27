@@ -45,7 +45,9 @@ from song_signup.tests.utils_for_tests import (
     create_audience,
     select_trivia_answer,
     TEST_START_TIME,
-    end_group_song
+    end_group_song,
+    participate_in_raffle,
+    unparticipate_in_raffle
 )
 from twist.utils import format_commas
 
@@ -2130,3 +2132,81 @@ class TestTriviaTemplates(TestTrivia):
 
         self.question.refresh_from_db()
         self.assertFalse(self.question.is_active)
+
+class TestRaffle(TestViews):
+    def setUp(self):
+        # Log in as superuser
+        user = login_singer(self, user_id=999)
+        user.is_superuser = True
+        user.save()
+
+    def _end_raffle_assert_winner(self, winner, winner_name):
+        self.assertEqual(str(winner), winner_name)
+        self.assertTrue(winner.is_audience)
+        self.assertTrue(winner.raffle_winner)
+        self.assertTrue(winner.active_raffle_winner)
+
+        res = self.client.get(reverse('end_raffle'))
+        self.assertRedirects(res, '/admin/song_signup/songrequest', target_status_code=301)
+        winner.refresh_from_db()
+        self.assertFalse(winner.active_raffle_winner)
+
+    def _assert_no_participants(self):
+        res = self.client.get(reverse('start_raffle'))
+        self.assertRedirects(res, '/admin/song_signup/songrequest', target_status_code=301)
+        self.assertEqual(self.client.session['raffle_winner'], 'NO RAFFLE PARTICIPANTS')
+
+        winners = Singer.objects.filter(raffle_winner=True)
+        self.assertFalse(winners.exists())
+
+    def test_raffle(self):
+        participants = set(create_audience(3))
+        participate_in_raffle(participants)
+        create_singers(3)
+        create_audience([4, 5, 6])
+        winners = set()
+
+        res = self.client.get(reverse('start_raffle'))
+        self.assertRedirects(res, '/admin/song_signup/songrequest', target_status_code=301)
+        winner1_name = self.client.session['raffle_winner']
+
+        [winner1] = Singer.objects.filter(active_raffle_winner=True)
+        self._end_raffle_assert_winner(winner1, winner1_name)
+        winners.add(winner1)
+
+        res = self.client.get(reverse('start_raffle'))
+        self.assertRedirects(res, '/admin/song_signup/songrequest', target_status_code=301)
+        winner2_name = self.client.session['raffle_winner']
+
+        [winner2] = Singer.objects.filter(active_raffle_winner=True)
+        self._end_raffle_assert_winner(winner2, winner2_name)
+        winners.add(winner2)
+
+        res = self.client.get(reverse('start_raffle'))
+        self.assertRedirects(res, '/admin/song_signup/songrequest', target_status_code=301)
+        winner3_name = self.client.session['raffle_winner']
+
+        [winner3] = Singer.objects.filter(active_raffle_winner=True)
+        self._end_raffle_assert_winner(winner3, winner3_name)
+        winners.add(winner3)
+
+        self.assertSetEqual(participants, winners)
+
+    def test_no_participants(self):
+        singers = create_singers(3)
+        participate_in_raffle(singers) # Verify that singers can never be winners
+        create_audience(3)
+
+        self._assert_no_participants()
+
+    def test_no_active_participants(self):
+        singers = create_singers(3)
+        participate_in_raffle(singers) # Verify that singers can never be winners
+        audiences = create_audience(3)
+        participate_in_raffle(audiences)
+
+        for audience in audiences:
+            audience.is_active = False
+            audience.save()
+
+        self._assert_no_participants()

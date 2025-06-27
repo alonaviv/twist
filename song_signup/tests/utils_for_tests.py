@@ -201,6 +201,15 @@ def add_partners(primary_singer_id, singer_partners_ids, song_num,
     Singer.ordering.calculate_positions()
     song.save()
 
+def participate_in_raffle(singers):
+    for singer in singers:
+        singer.raffle_participant = True
+        singer.save()
+
+def unparticipate_in_raffle(singers):
+    for singer in singers:
+        singer.raffle_participant = False
+        singer.save()
 
 def assert_singers_in_queryset(testcase, queryset, expected_singers: List[int]):
     testcase.assertEqual([singer.username for singer in queryset],
