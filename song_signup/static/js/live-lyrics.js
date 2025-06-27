@@ -15,8 +15,13 @@ const triviaWrapper = document.querySelector(".trivia-wrapper.live-lyrics-trivia
 const triviaWinnerName = document.querySelector(".trivia-winner-name.live-lyrics-trivia");
 const triviaAnswer = document.querySelector(".trivia-answer.live-lyrics-trivia");
 const triviaAnswerTitle = document.querySelector(".trivia-answer-title.live-lyrics-trivia");
+const raffleWinnerWrapper = document.querySelector(".raffle-winner-wrapper");
+const raffleWinnerTitle = document.querySelector(".raffle-winner-title");
+const raffleWinnerName = document.querySelector(".raffle-winner-name");
+const raffleWinnerDescription = document.querySelector(".raffle-winner-description");
 let currentSong = '';
 let showPasscode = false;
+let activeRaffleWinner = false;
 
 
 // Allow dragging on computers - useful for projector screen
@@ -94,6 +99,8 @@ async function populateLyrics() {
     const boho = (await bohoRes.json()).boho;
     const questionRes = await fetch("/get_active_question");
     const question = await questionRes.json();
+    const raffleWinnerRes = await fetch("/get_active_raffle_winner");
+    const raffleWinner = await raffleWinnerRes.json();
 
     if (questionRes.status === 200 && Object.keys(question).length > 0 && isSuperuser) {
         const winner = question.winner;
@@ -138,7 +145,39 @@ async function populateLyrics() {
     else {
         lyricsWrapper.classList.remove('hidden');
         triviaWrapper.classList.add('hidden');
+        raffleWinnerWrapper.classList.add('hidden');
     }
+
+    if (raffleWinnerRes.status === 200 && Object.keys(raffleWinner).length > 0 && isSuperuser) {
+        if (!activeRaffleWinner) {
+            setTimeout(() => {
+                raffleWinnerTitle.classList.add('active');
+                setTimeout(() => {
+                    raffleWinnerName.classList.add('active');
+                    raffleWinnerDescription.classList.add('active');
+                }, 2000)
+            }, 500)
+        }
+
+        activeRaffleWinner = true;
+
+        lyricsWrapper.classList.add('hidden');
+        triviaWrapper.classList.add('hidden');
+        raffleWinnerWrapper.classList.remove('hidden');
+        raffleWinnerName.innerHTML = `<p>${raffleWinner.full_name}</p>`
+
+    }
+    else {
+        activeRaffleWinner = false;
+        lyricsWrapper.classList.remove('hidden');
+        triviaWrapper.classList.add('hidden');
+        raffleWinnerWrapper.classList.add('hidden');
+        raffleWinnerTitle.classList.remove('active');
+        raffleWinnerName.classList.remove('active');
+        raffleWinnerDescription.classList.remove('active');
+        raffleWinnerName.innerHTML = ``
+    }
+
 
     if (!eveningStarted) {
         if (!lyricsWrapper.classList.contains('not-started')) {
@@ -181,7 +220,6 @@ async function populateLyrics() {
         logo.classList.remove('hidden');
         lyricsWrapper.classList.remove('boho');
     }
-
 
 
     const lyricsRes = await fetch("/current_lyrics");

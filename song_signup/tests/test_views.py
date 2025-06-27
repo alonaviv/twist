@@ -2146,10 +2146,18 @@ class TestRaffle(TestViews):
         self.assertTrue(winner.raffle_winner)
         self.assertTrue(winner.active_raffle_winner)
 
+        response = self.client.get(reverse('get_active_raffle_winner'))
+        self.assertEqual(response.status_code, 200)
+        self.assertDictEqual(response.data, dict(id=winner.id, full_name=winner.get_full_name()))
+
         res = self.client.get(reverse('end_raffle'))
         self.assertRedirects(res, '/admin/song_signup/songrequest', target_status_code=301)
         winner.refresh_from_db()
         self.assertFalse(winner.active_raffle_winner)
+
+        response = self.client.get(reverse('get_active_raffle_winner'))
+        self.assertEqual(response.status_code, 200)
+        self.assertDictEqual(response.data, {})
 
     def _assert_no_participants(self):
         res = self.client.get(reverse('start_raffle'))
@@ -2158,6 +2166,10 @@ class TestRaffle(TestViews):
 
         winners = Singer.objects.filter(raffle_winner=True)
         self.assertFalse(winners.exists())
+
+        response = self.client.get(reverse('get_active_raffle_winner'))
+        self.assertEqual(response.status_code, 200)
+        self.assertDictEqual(response.data, {})
 
     def test_raffle(self):
         participants = set(create_audience(3))

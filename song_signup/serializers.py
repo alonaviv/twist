@@ -83,3 +83,14 @@ class TriviaResponseSerializer(ModelSerializer):
     class Meta:
         model = TriviaResponse
         fields = ['user', 'choice']
+
+
+class RaffleWinnerSerializer(ModelSerializer):
+    full_name = SerializerMethodField()
+
+    def get_full_name(self, instance):
+        return instance.get_full_name()
+
+    class Meta:
+        model = Singer
+        fields = ['id', 'full_name']

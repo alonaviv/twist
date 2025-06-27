@@ -62,5 +62,6 @@ urlpatterns = [
     path('get_possible_partners', views.get_possible_partners, name='get_possible_partners'),
     path('start_raffle', views.start_raffle, name='start_raffle'),
     path('end_raffle', views.end_raffle, name='end_raffle'),
+    path('get_active_raffle_winner', views.get_active_raffle_winner, name='get_active_raffle_winner'),
 ]
 

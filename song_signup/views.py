@@ -46,7 +46,8 @@ from .serializers import (
     GroupSongRequestLineupSerializer,
     LyricsSerializer,
     TriviaQuestionSerializer,
-    TriviaResponseSerializer
+    TriviaResponseSerializer,
+    RaffleWinnerSerializer
 )
 
 logger = logging.getLogger(__name__)
@@ -534,6 +535,15 @@ def end_raffle(request):
 
     del request.session['raffle_winner']
     return redirect(f'admin/song_signup/songrequest')
+
+@api_view(["GET"])
+def get_active_raffle_winner(request):
+    active_winner = Singer.objects.filter(active_raffle_winner=True).first()
+    if active_winner:
+        serialized = RaffleWinnerSerializer(active_winner)
+        return Response(serialized.data, status=status.HTTP_200_OK)
+    else:
+        return Response({}, status=status.HTTP_200_OK)
 
 @bwt_login_required('login')
 def suggest_group_song(request):
