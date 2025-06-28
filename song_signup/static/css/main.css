@@ -888,6 +888,36 @@ nav {
   #song-added .song-name {
     font-weight: 500; }
 
+#raffle-card {
+  background-color: #FFD700;
+  color: black; }
+  #raffle-card .raffle-btn {
+    padding: 10px;
+    font-size: 18px;
+    border-radius: 10px;
+    border-color: #000;
+    border-width: 1px; }
+    #raffle-card .raffle-btn.enter {
+      background-color: #ef8b5d;
+      color: #000; }
+    #raffle-card .raffle-btn.cancel {
+      background-color: #aaa;
+      font-size: 0.8em; }
+  #raffle-card .raffle-cancel-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: space-around;
+    padding: 10px 0 10px 0;
+    gap: 5px; }
+    #raffle-card .raffle-cancel-wrapper .raffle-your-in {
+      text-align: center;
+      font-size: 1.2em;
+      font-weight: 900;
+      color: #0a4919;
+      background-color: #7fd07f;
+      padding: 5px;
+      border-radius: 10px; }
+
 #faq-wrapper {
   background: #00C575;
   padding: 20px 15px; }

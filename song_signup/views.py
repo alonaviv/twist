@@ -536,6 +536,14 @@ def end_raffle(request):
     del request.session['raffle_winner']
     return redirect(f'admin/song_signup/songrequest')
 
+@bwt_login_required('login')
+def toggle_raffle_participation(request):
+    user = request.user
+
+    user.raffle_participant = not user.raffle_participant
+    user.save()
+    return redirect('home')
+
 @api_view(["GET"])
 def get_active_raffle_winner(request):
     active_winner = Singer.objects.filter(active_raffle_winner=True).first()

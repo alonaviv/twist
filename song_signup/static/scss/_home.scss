@@ -268,3 +268,49 @@
         font-weight: 500;
     }
 }
+
+#raffle-card {
+    background-color: $raffle-color;
+    color: black;
+
+    .column-1{
+        // padding: 0;
+    }
+
+    .raffle-btn {
+        padding: 10px;
+        font-size: 18px;
+        border-radius: 10px;
+        border-color: #000;
+        border-width: 1px;
+        
+        &.enter {
+            background-color: #ef8b5d;
+            color: #000;
+        }
+        &.cancel {
+            background-color: #aaa;
+            font-size: 0.8em;
+        }
+
+    }
+
+    .raffle-cancel-wrapper{
+        display: flex;
+        flex-direction: column;
+        align-items: space-around;
+        padding: 10px 0 10px 0;
+        gap: 5px;
+
+        .raffle-your-in {
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: 900;
+            color: #0a4919;
+            background-color: #7fd07f;
+            padding: 5px;
+            border-radius: 10px;
+        }
+    }
+
+}
