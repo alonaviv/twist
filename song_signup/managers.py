@@ -81,8 +81,19 @@ class DisneylandOrdering(UserManager):
         return [singer for singer in self.filter(is_audience=False) if singer.is_active
                 and singer.songs.filter(request_time__isnull=False).exists()]
 
+    def active_raffle_winners(self):
+        """
+        Return all logged-in raffle winners that have at least one song request
+        """
+        return [singer for singer in self.filter(is_audience=True, raffle_winner=True) if singer.is_active
+                and singer.songs.filter(request_time__isnull=False).exists()]
+
     def new_singers_num(self):
         return len([singer for singer in self.active_singers() if singer.all_songs.exists()
+                    and singer.last_performance_time is None])
+
+    def new_raffle_winners_num(self):
+        return len([singer for singer in self.active_raffle_winners() if singer.all_songs.exists()
                     and singer.last_performance_time is None])
 
     def calculate_positions(self):
