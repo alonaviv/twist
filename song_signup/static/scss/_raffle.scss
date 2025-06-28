@@ -3,17 +3,23 @@
     width: 100vw;
     z-index: 200;
     position: fixed;
-    background-color: blue;
+    background-color: #FFD700;
     text-align: center;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
-    padding: 50px 50px 50px 50px;
-    background-color: $secondary-color;
+    padding: 200px 50px 50px 50px;
+
+    .fireworks {
+        height: 100vh;
+        width: 100vw;
+        z-index: 500;
+        position: absolute;
+    }
 
     .raffle-winner-title {
-        font-size: 40px;
+        font-size: 70px;
         text-align: center;
         margin-bottom: 40px;
 
@@ -27,9 +33,9 @@
     }
 
     .raffle-winner-name {
-        font-size: 40px;
+        font-size: 80px;
         text-align: center;
-        margin-bottom: 100px;
+        margin-bottom: 50px;
         font-weight: 900;
         opacity: 0;
         transform: translateY(200px);
@@ -41,7 +47,7 @@
     }
 
     .raffle-winner-description {
-        font-size: 30px;
+        font-size: 40px;
         text-align: center;
         opacity: 0;
         transform: translateY(200px);
