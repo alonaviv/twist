@@ -33,9 +33,7 @@
                 {% endif %}
             </li>
             <li>
-                {% if not request.session.raffle_winner %}
-                    <a href="{% url 'start_raffle' %}">Raffle</a>
-                {% endif %}
+            <a href="{% url 'start_raffle' %}">Raffle</a>
             </li>
             <li>
                 <a href="{% url 'reset_database' %}"
