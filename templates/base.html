@@ -26,7 +26,7 @@
     </head>
 
     <body>
-        {% with is_singer=request.user.is_singer username=request.user.username raffle_winner=request.user.raffle_winner %}
+        {% with is_singer=request.user.is_singer username=request.user.username raffle_winner=request.user.raffle_winner already_sang=request.user.raffle_winner_already_sang %}
 
         <div class="trivia-wrapper hidden">
             <div id="trivia-logo" class="fixed-logo hidden side-logo">

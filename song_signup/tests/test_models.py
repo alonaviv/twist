@@ -80,6 +80,27 @@ class TestSingerModel(SongRequestTestCase):
             add_songs_to_singer(1, 1)
             self.assertEqual(singer.first_request_time, TEST_START_TIME + datetime.timedelta(seconds=1))
 
+    def test_raffle_winner_already_sang(self):
+        [singer] = create_singers(1)
+        self.assertFalse(singer.raffle_winner_already_sang)
+
+        add_songs_to_singer(1, 2)
+        self.assertFalse(singer.raffle_winner_already_sang)
+
+        set_performed(1, 1)
+        self.assertFalse(singer.raffle_winner_already_sang)
+
+        singer.raffle_winner = True
+        singer.save()
+        self.assertTrue(singer.raffle_winner_already_sang)
+
+        set_performed(1, 2)
+        self.assertTrue(singer.raffle_winner_already_sang)
+
+        singer.raffle_winner = False
+        singer.save()
+        self.assertFalse(singer.raffle_winner_already_sang)
+
 
 class TestTicketOrderModel(TestCase):
     def test_save_customers(self):

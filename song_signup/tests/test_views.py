@@ -808,7 +808,7 @@ class TestJsonRes(TestViews):
         login_singer(self)
         response = self.client.get(reverse('dashboard_data'))
         self.assertEqual(response.status_code, 200)
-        self.assertJSONEqual(response.content, {"user_next_song": None})
+        self.assertJSONEqual(response.content, {"user_next_song": None, "raffle_winner_already_sang": False})
 
     def test_dashboard_one_song(self):
         user = login_singer(self, user_id=1)
@@ -817,7 +817,7 @@ class TestJsonRes(TestViews):
         self.assertEqual(response.status_code, 200)
 
         res_json = get_json(response)
-        expected_json = {'user_next_song': get_song_basic_data(1, 1)}
+        expected_json = {'user_next_song': get_song_basic_data(1, 1), "raffle_winner_already_sang": False}
         self.assertDictEqual(self._remove_song_keys(res_json), self._remove_song_keys(expected_json))
 
     def test_dashboard_two_songs(self):
@@ -827,7 +827,7 @@ class TestJsonRes(TestViews):
         self.assertEqual(response.status_code, 200)
 
         res_json = get_json(response)
-        expected_json = {'user_next_song': get_song_basic_data(1, 1)}
+        expected_json = {'user_next_song': get_song_basic_data(1, 1), "raffle_winner_already_sang": False}
         self.assertDictEqual(self._remove_song_keys(res_json), self._remove_song_keys(expected_json))
 
     def test_dashboard_one_performed(self):
@@ -839,7 +839,7 @@ class TestJsonRes(TestViews):
         self.assertEqual(response.status_code, 200)
 
         res_json = get_json(response)
-        expected_json = {'user_next_song': get_song_basic_data(3, 2)}
+        expected_json = {'user_next_song': get_song_basic_data(3, 2), "raffle_winner_already_sang": False}
         self.assertDictEqual(self._remove_song_keys(res_json), self._remove_song_keys(expected_json))
 
 

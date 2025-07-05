@@ -46,7 +46,7 @@
         {% endif %}
     {% endif %}
     {% if is_singer %}
-    <div id="dashboard-wrapper" class="dark-card {% if raffle_winner %} raffle-winner {% endif %}">
+    <div id="dashboard-wrapper" class="dark-card {% if raffle_winner %} raffle-winner {% if already_sang %} already-sang {% endif %}{% endif %}">
         <div id="home-dashboard">
             <div>
                 <p id="user-next-song-title"></p>

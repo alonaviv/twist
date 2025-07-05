@@ -277,7 +277,7 @@ def assert_dashboards(testcase, expected_dashboards: List[ExpectedDashboard]):
         "wait_amount": dashboard.wait_amount
         }
 
-        testcase.assertEqual(data, {"user_next_song":expected_basic_data},
+        testcase.assertEqual(data, {"user_next_song":expected_basic_data, "raffle_winner_already_sang": False},
                                 f"Dashboard of singer {singer_id} is "
                                 f"{data['user_next_song']} and doesn't match {dashboard}")
 

@@ -63,9 +63,10 @@ function populateDashboard() {
         .then((response) => response.json())
         .then((data) => {
             const userNextSong = data.user_next_song;
+            const raffleWinnerAlreadySang = data.raffle_winner_already_sang;
             var wait_text;
 
-            if (userNextSong) {
+            if (userNextSong && !raffleWinnerAlreadySang) {
                 const wait_amount = userNextSong.wait_amount
                 dashboardElem.classList.remove("hidden");
                 noSongElem.classList.add("hidden");

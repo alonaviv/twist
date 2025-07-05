@@ -85,6 +85,8 @@ and choose a different SSH port number (not 22).
 ## Testing
 1. Run song_signup/tests from pycharm after selecting the docker compose file.
 2. If you get the error `database "test_twist_db" already exists`, delete all volumes with the command `./stop-dev.sh -v`
+3. A better option, without interfering with local server - enter the django container, and type this for a specific 
+   test: `./manage.py test song_signup.tests.test_models.TestSingerModel.test_already_sang` or to run all of them: `./manage.py test song_signup`
 
 
 ## Testing with coverage

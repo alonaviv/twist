@@ -145,6 +145,10 @@ class Singer(AbstractUser):
 
         return last_song.performance_time
 
+    @property
+    def raffle_winner_already_sang(self):
+        return self.raffle_winner and self.songs.all().filter(performance_time__isnull=False).exists()
+
     def __str__(self):
         return f'{self.first_name} {self.last_name}'
 

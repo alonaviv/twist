@@ -825,6 +825,10 @@ nav {
   #dashboard-wrapper.raffle-winner #user-next-song-title:after {
     content: "Stay tuned! We'll call you up at some point with:";
     font-size: 1rem; }
+  #dashboard-wrapper.raffle-winner.already-sang #no-song {
+    background-image: url("../img/main/golden-ticket-already-sang.jpeg"); }
+    #dashboard-wrapper.raffle-winner.already-sang #no-song #manage-songs-btn {
+      display: none; }
   #dashboard-wrapper #home-tips {
     margin-top: 1%;
     transform: scaleY(0);
