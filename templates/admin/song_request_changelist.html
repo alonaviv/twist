@@ -70,6 +70,12 @@
                     {% endif %}
                 </p>
             </div>
+            <a href="{% url 'end_group_song' %}?redirect_songrequest">
+                <button id="endSpotlight" type="button" style="margin: 10px; padding: 10px; font-size: 20px; cursor:
+                                                       pointer;">
+                    End Group Song
+                </button>
+            </a>
         </div>
         {% endif %}
         {% if spotlight %}
@@ -77,6 +83,9 @@
                 <div style="margin: 10px; border: 3px solid orangered; width: fit-content; padding: 10px;">
                     <p style="font-size:20px; margin: 0;">
                         Spotlight running: {{ spotlight.song_name }} - {{ spotlight.singer }}
+                    </p>
+                    <p style="font-size:16px; margin: 0;">
+                        From Shani: {{ spotlight.to_alon }}
                     </p>
                 </div>
                 <button id="endSpotlight" type="button" style="margin: 10px; padding: 10px; font-size: 20px; cursor:

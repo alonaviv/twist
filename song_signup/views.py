@@ -496,6 +496,9 @@ def start_group_song(request):
 @superuser_required('login')
 def end_group_song(request):
     CurrentGroupSong.end_song()
+    if "redirect_songrequest" in request.GET:
+        return redirect('admin/song_signup/songrequest')
+
     return redirect('admin/song_signup/groupsongrequest')
 
 
