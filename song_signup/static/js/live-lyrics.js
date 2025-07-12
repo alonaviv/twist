@@ -107,7 +107,7 @@ async function populateLyrics() {
         const image = question.image
 
         if (winner === null) {
-            questionText.innerHTML = `<p>${question.question}</p>`;
+            questionText.innerHTML = `<p style="font-size: ${question.question_font_size_live_lyrics}px;">${question.question}</p>`;
             if (image) {
                 questionImage.src = image;
                 questionImage.classList.remove('hidden');

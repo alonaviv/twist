@@ -385,7 +385,8 @@ class TriviaQuestion(Model):
     answer = IntegerField(choices=TRIVIA_CHOICES)
     is_active = BooleanField(default=False)
     notes = TextField(blank=True, null=True)
-    question_font_size = IntegerField(default=25)
+    question_font_size_mobile = IntegerField(default=25)
+    question_font_size_live_lyrics = IntegerField(default=60)
     choices_font_size = IntegerField(default=20)
 
 
