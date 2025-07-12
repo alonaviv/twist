@@ -43,11 +43,12 @@ async function getQuestion() {
                 questionImage.classList.add('hidden');
             }
 
-            questionText.innerHTML = `<p>${question.question}</p>`;
-            answer1.innerHTML = `<p>${question.choiceA}</p>`
-            answer2.innerHTML = `<p>${question.choiceB}</p>`
-            answer3.innerHTML = `<p>${question.choiceC}</p>`
-            answer4.innerHTML = `<p>${question.choiceD}</p>`
+            questionText.innerHTML = `<p style="font-size: ${question.question_font_size}px;">${question.question}</p>`;
+
+            answer1.innerHTML = `<p style="font-size: ${question.choices_font_size}px;">${question.choiceA}</p>`;
+            answer2.innerHTML = `<p style="font-size: ${question.choices_font_size}px;">${question.choiceB}</p>`;
+            answer3.innerHTML = `<p style="font-size: ${question.choices_font_size}px;">${question.choiceC}</p>`;
+            answer4.innerHTML = `<p style="font-size: ${question.choices_font_size}px;">${question.choiceD}</p>`;
             await getUserAnswer();
             triviaQuestionsWrapper.classList.remove('hidden');
             triviaWinnerWrapper.classList.add('hidden');

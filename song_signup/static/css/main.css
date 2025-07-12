@@ -1542,7 +1542,6 @@ nav {
         font-size: 35px;
         max-height: 10vh; }
       .trivia-wrapper .trivia-questions-wrapper.base-lyrics-trivia .question-text {
-        font-size: 25px;
         max-height: 20vh; }
       .trivia-wrapper .trivia-questions-wrapper.base-lyrics-trivia .trivia-image-wrapper {
         height: 20vh; }
@@ -1563,7 +1562,6 @@ nav {
             padding: 10px;
             margin: 10px;
             text-align: center;
-            font-size: 20px;
             font-weight: 900;
             border-radius: 20px;
             background-color: #66dcac; }

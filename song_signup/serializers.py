@@ -76,7 +76,8 @@ class TriviaQuestionSerializer(ModelSerializer):
 
     class Meta:
         model = TriviaQuestion
-        fields = ['question', 'choiceA', 'choiceB', 'choiceC', 'choiceD', 'winner', 'answer', 'answer_text', 'image']
+        fields = ['question', 'choiceA', 'choiceB', 'choiceC', 'choiceD', 'winner', 'answer', 'answer_text', 'image',
+                  'question_font_size', 'choices_font_size']
 
 
 class TriviaResponseSerializer(ModelSerializer):
