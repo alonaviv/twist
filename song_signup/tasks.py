@@ -15,10 +15,10 @@ from .models import GroupSongRequest, SongLyrics, SongRequest
 logger = getLogger(__name__)
 
 USER_AGENT = "Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36"
-SEARCH_MKT = "en-US"
+LOCATION = "Austin,Texas,United States"
 
-bing_endpoint = os.environ["BING_ENDPOINT"]
-bing_key = os.environ["BING_KEY"]
+serpapi_endpoint = os.environ["SERPAPI_ENDPOINT"]
+serpapi_key = os.environ["SERPAPI_KEY"]
 genius_key = os.environ["GENIUS_KEY"]
 
 # Lock for throttling requests to the same site. Will only be acquired, not released, and then let to expire.
@@ -41,11 +41,14 @@ class LyricsWebsiteParser:
     URL_FORMAT = re.compile("")
     SITE = ""
 
-    def bing_api(self, query):
-        params = {"q": query, "mkt": SEARCH_MKT, "responseFilter": "Webpages"}
-        headers = {"Ocp-Apim-Subscription-Key": bing_key}
-        res = requests.get(bing_endpoint, headers=headers, params=params)
-        return res.json()["webPages"]["value"]
+    def google_api(self, query):
+        # For testing - use query: "mama I'm a big girl now lyrics hairspray site:allmusicals.com"
+        params = {"q": query, "location": LOCATION, "api_key": serpapi_key}
+        res = requests.get(serpapi_endpoint, params=params)
+        results = res.json()['organic_results']
+
+        return [result['link'] for result in results]
+
 
     def fix_url(self, url):
         # Perform any necessary fixups on URL before requesting
@@ -63,13 +66,13 @@ class LyricsWebsiteParser:
         search_query = "{} lyrics {} site:{}".format(song_name, author, self.SITE)
 
         for _ in range(3):
-            search_results = self.bing_api(search_query)
+            search_results = self.google_api(search_query)
             if len(search_results) > 0:
                 break
             logger.info("No search results, retrying")
 
         for search_result in search_results:
-            url = self.fix_url(search_result["url"])
+            url = self.fix_url(search_result)
 
             if url in seen_urls:
                 continue
