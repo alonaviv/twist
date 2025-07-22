@@ -90,3 +90,4 @@ django-livereload-server==0.5.1
 coverage==7.4.4
 sherlock[redis]==0.4.1
 pillow==10.4.0
+exa-py==1.8.9

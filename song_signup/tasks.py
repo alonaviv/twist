@@ -3,6 +3,7 @@ import os
 import re
 from logging import getLogger
 from typing import Iterable, Optional
+from exa_py import Exa
 
 import bs4
 import requests
@@ -17,8 +18,7 @@ logger = getLogger(__name__)
 USER_AGENT = "Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36"
 LOCATION = "Austin,Texas,United States"
 
-serpapi_endpoint = os.environ["SERPAPI_ENDPOINT"]
-serpapi_key = os.environ["SERPAPI_KEY"]
+exa_key = os.environ["EXA_KEY"]
 genius_key = os.environ["GENIUS_KEY"]
 
 # Lock for throttling requests to the same site. Will only be acquired, not released, and then let to expire.
@@ -26,6 +26,8 @@ sherlock.configure(
     backend=sherlock.backends.REDIS, expire=1, client=Redis(host="redis")
 )
 
+# Using exa.ai as replacement for google search
+exa = Exa(api_key=exa_key)
 
 @dataclasses.dataclass
 class LyricsResult:
@@ -41,13 +43,15 @@ class LyricsWebsiteParser:
     URL_FORMAT = re.compile("")
     SITE = ""
 
-    def google_api(self, query):
+    def exa_search(self, query):
         # For testing - use query: "mama I'm a big girl now lyrics hairspray site:allmusicals.com"
-        params = {"q": query, "location": LOCATION, "api_key": serpapi_key}
-        res = requests.get(serpapi_endpoint, params=params)
-        results = res.json()['organic_results']
 
-        return [result['link'] for result in results]
+        res = exa.search(
+            query,
+            include_domains=[self.SITE]
+        )
+
+        return [result.url for result in res.results]
 
 
     def fix_url(self, url):
@@ -63,10 +67,10 @@ class LyricsWebsiteParser:
     def get_lyrics(self, song_name: str, author: str) -> Iterable[LyricsResult]:
         lock = sherlock.Lock(self.SITE)
         seen_urls = set()
-        search_query = "{} lyrics {} site:{}".format(song_name, author, self.SITE)
+        search_query = '"{}" lyrics from "{}"'.format(song_name, author)
 
         for _ in range(3):
-            search_results = self.google_api(search_query)
+            search_results = self.exa_search(search_query)
             if len(search_results) > 0:
                 break
             logger.info("No search results, retrying")
@@ -101,7 +105,7 @@ class LyricsWebsiteParser:
 
                 if not result:
                     logger.warning(
-                        f"Unable to parse search result {search_result['url']}"
+                        f"Unable to parse search result {search_result}"
                     )
                     # Something is broken in the parser, let's skip it
                     break
@@ -110,7 +114,7 @@ class LyricsWebsiteParser:
                 yield result
             except Exception as e:
                 # Skip exceptions in individual parsers
-                logger.exception(f"Exception in parser for url {search_result['url']}")
+                logger.exception(f"Exception in parser for url {search_result}")
 
 
 class GeniusParser(LyricsWebsiteParser):
