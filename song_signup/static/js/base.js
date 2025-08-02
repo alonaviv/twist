@@ -23,7 +23,7 @@ answers.forEach(answer => {
 const csrftoken = getCookie('csrftoken');
 
 if (isLoggedIn) {
-    setInterval(getQuestion, 500);
+    setInterval(getQuestion, 2000);
 }
 
 async function getQuestion() {
