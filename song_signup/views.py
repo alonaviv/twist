@@ -49,6 +49,7 @@ from .serializers import (
     TriviaResponseSerializer,
     RaffleWinnerSerializer
 )
+from .tasks import get_lyrics
 
 logger = logging.getLogger(__name__)
 
@@ -383,6 +384,24 @@ def alternative_lyrics(request, song_pk):
 
     lyrics = _sort_lyrics(song_request)
     return render(request, 'song_signup/alternative_lyrics.html', {"lyrics": lyrics, "song": song_request})
+
+
+@superuser_required('login')
+def force_refresh_lyrics(request, song_pk):
+    try:
+        song_request = SongRequest.objects.get(pk=song_pk)
+    except SongRequest.DoesNotExist:
+        return JsonResponse({'error': f"Song with ID {song_pk} does not exist"},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+    if request.method == 'POST':
+        # Trigger force refresh of lyrics
+        get_lyrics.delay(song_id=song_request.id, force_refresh=True)
+
+        # Redirect back to alternative lyrics page with success message
+        return redirect('alternative_lyrics', song_pk=song_pk)
+
+    return JsonResponse({'error': 'Method not allowed'}, status=405)
 
 
 @superuser_required('login')

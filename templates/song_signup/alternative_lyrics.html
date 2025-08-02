@@ -5,11 +5,30 @@
 {% block content %}
 {% include "partials/_navbar.html"%}
 <div id="lyrics-wrapper">
-    <div class="container">   
+    <div class="container">
         <h1> {{ song.song_name }} - {{ song.musical }} </h1>
+        {% if request.user.is_superuser %}
+            <form method="post" action="{% url 'force_refresh_lyrics' song.id %}">
+                {% csrf_token %}
+                <button type="submit" style="font-size: 12px; cursor:
+                pointer;" class="btn">
+                    Force New Search
+                </button>
+            </form>
+        {% endif %}
         {% for lyric in lyrics %}
         <br/><a href = "{% url 'lyrics_by_id' lyric.id%}">{{ lyric.song_name }} | {{ lyric.artist_name }} | {{ lyric.url }} </a><br/>
         {% endfor %}
+        {% if lyrics|length == 0 %}
+        <h2>
+        No lyrics found, refreshing in 5 seconds...
+        </h2>
+        <script>
+        setTimeout(function() {
+          location.reload();
+        }, 5000);
+        </script>
+        {% endif %}
     </div>
 </div>
 
