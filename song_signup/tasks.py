@@ -10,7 +10,7 @@ import sherlock
 from celery import shared_task
 from redis import Redis
 
-from .models import GroupSongRequest, SongLyrics, SongRequest
+from .models import GroupSongRequest, SongLyrics, SongRequest, PersistentLyrics
 
 logger = getLogger(__name__)
 
@@ -264,7 +264,12 @@ class TheMusicalLyricsParser(LyricsWebsiteParser):
             tag.replace_with("")
 
         # The correct p has a script tag in the middle that injects a tracking tag
-        lyrics = [p for p in soup.find_all("p") if p.find("script")][0].text.strip()
+        scripts = [p for p in soup.find_all("p") if p.find("script")]
+        if scripts:
+            lyrics = scripts[0].text.strip()
+        else:
+            # Sometimes there is no tracking, so we take the second p and hope it's right
+            lyrics = soup.find_all("p")[1].text.strip()
 
         return LyricsResult(
             lyrics=lyrics,
@@ -333,7 +338,7 @@ PARSERS = {parser.__name__: parser for parser in LyricsWebsiteParser.__subclasse
 
 
 @shared_task
-def get_lyrics(song_id: int | None = None, group_song_id: int | None = None):
+def get_lyrics(song_id: int | None = None, group_song_id: int | None = None, force_refresh: bool = False):
     if song_id is not None:
         assert group_song_id is None
         song = SongRequest.objects.get(id=song_id)
@@ -347,6 +352,36 @@ def get_lyrics(song_id: int | None = None, group_song_id: int | None = None):
         # Delete old lyrics
         SongLyrics.objects.filter(group_song_request=song).delete()
 
+    song_name = song.song_name
+    musical = song.musical
+
+    if not force_refresh:
+        # First, try to find existing persistent lyrics
+        existing_lyrics = PersistentLyrics.find_similar_lyrics(song_name, musical)
+
+        if existing_lyrics:
+            logger.info(f"Found {len(existing_lyrics)} existing lyrics for {song_name} from {musical}")
+
+            # Create SongLyrics entries from persistent lyrics
+            for i, persistent_lyric in enumerate(existing_lyrics):
+                SongLyrics.objects.create(
+                    song_name=persistent_lyric.song_name,
+                    artist_name=persistent_lyric.artist_name,
+                    url=persistent_lyric.url,
+                    lyrics=persistent_lyric.lyrics,
+                    song_request=song if song_id is not None else None,
+                    group_song_request=song if group_song_id is not None else None,
+                    default=(i == 0),  # First one is default
+                )
+                persistent_lyric.increment_usage()
+
+            logger.info(f"Using existing lyrics for {song_name} from {musical}")
+            return True
+        else:
+            logger.info(f"No existing lyrics found for {song_name} from {musical}")
+
+    # If no good matches found, fetch new lyrics
+    logger.info(f"Fetching new lyrics for {song_name} from {musical}")
     for parser_name in PARSERS:
         get_lyrics_for_provider.apply_async(args=(parser_name, song_id, group_song_id), queue=f'parser_{parser_name}_queue')
 
@@ -365,6 +400,20 @@ def get_lyrics_for_provider(
         song = GroupSongRequest.objects.get(id=group_song_id)
 
     for i, result in enumerate(parser().get_lyrics(song.song_name, song.musical)):
+        # Store in persistent lyrics first
+        persistent_lyric, created = PersistentLyrics.get_or_create_lyrics(
+            song_name=result.title,
+            artist_name=result.artist,
+            lyrics_text=result.lyrics,
+            url=result.url,
+        )
+
+        if created:
+            logger.info(f"Created new persistent lyrics for {result.title} from {song.musical}")
+        else:
+            logger.info(f"Found existing persistent lyrics for {result.title} from {song.musical}")
+
+        # Create SongLyrics entry
         SongLyrics.objects.create(
             song_name=result.title,
             artist_name=result.artist,

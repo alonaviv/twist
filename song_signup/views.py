@@ -738,7 +738,9 @@ def delete_song(request, song_pk):
 @superuser_required('login')
 def reset_database(request):
     call_command('dbbackup')
+    call_command('dumpdata', 'song_signup.PersistentLyrics', output='persistent_lyrics.json', format='json')
     call_command('reset_db')
+    call_command('loaddata', 'persistent_lyrics.json')
     disable_flag('CAN_SIGNUP')
     disable_flag('STARTED')
     config.PASSCODE = ''

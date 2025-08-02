@@ -18,9 +18,9 @@ document.addEventListener("DOMContentLoaded", () => {
     window.scrollTo(0, 0);
 });
 
-const formListner =  e => {
+const formListener =  e => {
     e.preventDefault();
-    
+
     const form = e.target
     const formData = new FormData(form);
     fetch("/login", { method: "POST", body: formData })
@@ -39,8 +39,8 @@ const formListner =  e => {
         });
     }
 
-singerFormWrapper.addEventListener("submit", formListner)
-audienceFormWrapper.addEventListener("submit", formListner)
+singerFormWrapper.addEventListener("submit", formListener)
+audienceFormWrapper.addEventListener("submit", formListener)
 
 audienceImagesCheckbox.parentNode.addEventListener("click", (e) => {
     if (e.target.checked) {
