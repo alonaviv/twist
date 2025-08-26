@@ -11,7 +11,7 @@ const dashboardElem = document.getElementById("home-dashboard");
 const noSongElem = document.getElementById("no-song");
 const spotlightElem = document.getElementById("now-singing-wrapper");
 
-setInterval(populateSpotlight, 1000);
+setInterval(populateSpotlight, 5000);
 window.addEventListener("DOMContentLoaded", loadWait(populateSpotlight));
 
 
@@ -95,7 +95,7 @@ function populateDashboard() {
 }
 
 if (isSinger) {
-    setInterval(populateDashboard, 1000);
+    setInterval(populateDashboard, 5000);
     window.addEventListener("DOMContentLoaded", loadWait(populateDashboard));
 
     // Open up dashboard tips
