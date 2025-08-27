@@ -120,9 +120,10 @@ db_backups/16-4-24-friends.psql
 2. Reset production DB and set passcode to `dev`
 3. Play on JMeter, and 100 threads (40 singers and 60 audience) will run. Singers use different names for each and 
 sign up with 2 different songs each (all data taken from CSV files in the twist/jmeter dir).
-4. I have an AWS instance for this - `bwt-stress` (in N. Virginia). May need to change the IP in the hosts file when 
-   after you turn it on. Has jmeter installed. TURN OFF INSTANCE WHEN 
-   DONE.
+4. I have an AWS instance for this - `bwt-stress` (in N. Virginia). May need to change the instance IP in your local 
+   hosts file so you can ssh to it - `bwt-stress`. Need to do it through hosts file, which has ssh key. Host has jmeter 
+   installed.
+TURN OFF INSTANCE WHEN DONE.
 5. If you made changes, scp the file `twist/jmeter.stress-test.jmx` to the instance's home path (user ubuntu). 
 6. Run the test from the instance like this: `jmeter -n -t stress-test.jmx  -l result.jtl -j jmeter.log`
 7. View failures in `jmeter.log`

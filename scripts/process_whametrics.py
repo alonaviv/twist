@@ -4,19 +4,18 @@ import csv
 import os
 
 def process_csv(input_file):
-    output_file = os.path.join(os.getcwd(), "meta_audience_whametrics.csv")
+    output_file = os.path.join(os.path.dirname(input_file), "meta_audience_whametrics.csv")
 
-    with open(input_file) as infile, \
-         open(output_file, 'w') as outfile:
+    with open(input_file, newline='', encoding='utf-8-sig') as infile, \
+         open(output_file, 'w', newline='', encoding='utf-8') as outfile:
 
         reader = csv.DictReader(infile)
-        fieldnames = ['phone', 'country', 'first_name', 'last_name']
+        fieldnames = ['phone', 'country', 'fn', 'ln']
         writer = csv.DictWriter(outfile, fieldnames=fieldnames)
 
         writer.writeheader()
 
         for row in reader:
-            import pdb; pdb.set_trace()
             phone = row.get('phone', '')
             country = row.get('country', '')
             name = row.get('name', '')
@@ -31,8 +30,8 @@ def process_csv(input_file):
             writer.writerow({
                 'phone': phone,
                 'country': country,
-                'first_name': first_name,
-                'last_name': last_name
+                'fn': first_name,
+                'ln': last_name
             })
 
     print(f"✅ Processed file saved to: {output_file}")
