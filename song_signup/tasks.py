@@ -50,6 +50,7 @@ class LyricsWebsiteParser:
             query,
             include_domains=[self.SITE]
         )
+        logger.info(f"Exa result: {res}")
 
         return [result.url for result in res.results]
 
@@ -358,7 +359,7 @@ def get_lyrics(song_id: int | None = None, group_song_id: int | None = None):
         get_lyrics_for_provider.apply_async(args=(parser_name, song_id, group_song_id), queue=f'parser_{parser_name}_queue')
 
 
-@shared_task(rate_limit="0.5/s")
+@shared_task(rate_limit="0.2/s")
 def get_lyrics_for_provider(
     parser_name: str, song_id: int | None, group_song_id: int | None
 ):
