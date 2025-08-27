@@ -2,6 +2,7 @@ import logging
 import traceback
 from functools import wraps
 import random
+import time
 
 import constance
 from constance import config
@@ -9,7 +10,7 @@ from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.core.management import call_command
 from django.db import transaction
 from django.db.utils import IntegrityError
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
@@ -22,6 +23,7 @@ from rest_framework.response import Response
 from titlecase import titlecase
 from django.core.exceptions import ValidationError
 from .forms import TickchakUploadForm
+from .tasks import get_lyrics
 from .models import (
     GroupSongRequest,
     SongLyrics,
@@ -357,6 +359,19 @@ def group_lyrics(request, song_pk):
 
     lyrics = _sort_lyrics(song_request)
     return render(request, 'song_signup/lyrics.html', {"lyrics": lyrics and lyrics[0], "group_song": song_request})
+
+
+@superuser_required('login')
+def force_reset_lyrics(request, song_pk):
+    get_lyrics.delay(song_id=song_pk)
+    time.sleep(4)
+    return redirect('alternative_lyrics', song_pk)
+
+@superuser_required('login')
+def force_reset_lyrics_group(request, song_pk):
+    get_lyrics.delay(group_song_id=song_pk)
+    time.sleep(4)
+    return redirect('alternative_group_lyrics', song_pk)
 
 
 @superuser_required('login')

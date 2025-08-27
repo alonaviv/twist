@@ -20,6 +20,17 @@
             {% endif %}
         {% endif %}
 
+        {% if user.is_superuser %}
+            {% if song %}
+              <a href="{% url 'force_reset_lyrics' song_pk=song.id %}" class="btn">Force
+                  Refresh</a>
+            {% elif group_song %}
+              <a href="{% url 'force_reset_lyrics_group' song_pk=group_song.id %}" class="btn">Force
+                  Refresh</a>
+            {% endif %}
+        {% endif %}
+
+
         <div class="center">
             <div id="lyrics-text">
                 {% if lyrics %}

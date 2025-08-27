@@ -10,7 +10,7 @@ from .models import (SongLyrics, SongRequest, Singer, GroupSongRequest, TicketOr
                      CurrentGroupSong, TriviaQuestion, TriviaResponse, Celebration
 )
 from .forms import SongRequestForm
-
+from .tasks import get_lyrics
 
 def set_solo_performed(modeladmin, request, queryset):
     for song in queryset:
@@ -79,6 +79,20 @@ unset_standby.short_description = "Undo standby"
 unset_standby.allowed_permissions = ['change']
 
 
+def force_lyrics_refresh(modeladmin, request, queryset):
+    for song in queryset:
+        get_lyrics.delay(song_id=song.id)
+
+force_lyrics_refresh.short_description = "Force lyrics refresh"
+force_lyrics_refresh.allowed_permissions = ['change']
+
+def force_group_lyrics_refresh(modeladmin, request, queryset):
+    for song in queryset:
+        get_lyrics.delay(group_song_id=song.id)
+
+force_group_lyrics_refresh.short_description = "Force lyrics refresh"
+force_group_lyrics_refresh.allowed_permissions = ['change']
+
 def prepare_group_song(modeladmin, request, queryset):
     if queryset.count() == 1:
         group_song = queryset.first()
@@ -142,7 +156,7 @@ class GroupSongRequestAdmin(admin.ModelAdmin):
     )
     list_filter = ('type',)
     list_editable = ('default_lyrics', 'found_music')
-    actions = [prepare_group_song]
+    actions = [prepare_group_song, force_group_lyrics_refresh]
     change_list_template = "admin/group_song_request_changelist.html"
 
     def display_id(self, obj):
@@ -209,7 +223,7 @@ class SongRequestAdmin(admin.ModelAdmin):
     list_filter = (NotYetPerformedFilter,)
     list_editable = ('default_lyrics', 'found_music')
     actions = [set_solo_performed, set_solo_not_performed, set_solo_skipped, set_solo_unskipped,
-               spotlight, set_standby, unset_standby]
+               spotlight, set_standby, unset_standby, force_lyrics_refresh]
     ordering = ['position']
     change_list_template = "admin/song_request_changelist.html"
     list_per_page = 500

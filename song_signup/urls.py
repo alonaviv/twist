@@ -64,5 +64,7 @@ urlpatterns = [
     path('end_raffle', views.end_raffle, name='end_raffle'),
     path('get_active_raffle_winner', views.get_active_raffle_winner, name='get_active_raffle_winner'),
     path('toggle_raffle_participation', views.toggle_raffle_participation, name='toggle_raffle_participation'),
+    path('force_reset_lyrics/<int:song_pk>', views.force_reset_lyrics, name='force_reset_lyrics'),
+    path('force_reset_lyrics_group/<int:song_pk>', views.force_reset_lyrics_group, name='force_reset_lyrics_group'),
 ]
 
