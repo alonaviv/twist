@@ -50,7 +50,7 @@ class LyricsWebsiteParser:
             query,
             include_domains=[self.SITE]
         )
-        logger.info(f"Exa result: {res}")
+        logger.info(f"Exa result for {self.SITE}: {res}")
 
         return [result.url for result in res.results]
 
