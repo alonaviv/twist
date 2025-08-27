@@ -4,6 +4,7 @@ from django.dispatch import receiver
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.contrib.postgres.fields import CITextField
+from django.contrib.postgres.search import TrigramSimilarity
 from django.core.exceptions import ValidationError
 from django.db.models import (
     CASCADE,
@@ -369,6 +370,62 @@ class SongLyrics(Model):
                 self.group_song_request.lyrics.update(default=False)
 
         super().save(*args, **kwargs)
+
+
+class PersistentLyrics(Model):
+    """
+    Persistent storage for lyrics that can be reused across different song requests.
+    This allows us to avoid re-fetching lyrics for the same song/musical combination.
+    """
+    song_name = TextField()
+    artist_name = TextField()
+    lyrics = TextField()
+    url = URLField(null=True, blank=True)
+    created_at = DateTimeField(auto_now_add=True)
+    last_used = DateTimeField(auto_now=True)
+    usage_count = IntegerField(default=1)
+
+    class Meta:
+        verbose_name_plural = "Persistent lyrics"
+
+    def save(self, *args, **kwargs):
+        # Limit consecutive newlines to three
+        self.lyrics = re.sub(r'\n{4,}', '\n' * 3, self.lyrics)
+        super().save(*args, **kwargs)
+
+    def increment_usage(self):
+        """Increment usage count and update last_used timestamp"""
+        self.usage_count += 1
+        self.last_used = timezone.now()
+        self.save(update_fields=['usage_count', 'last_used'])
+
+    @classmethod
+    def find_similar_lyrics(cls, song_name: str, artist_name: str, threshold: float = 0.3):
+        """
+        Find similar lyrics using trigram similarity.
+        Returns a queryset of PersistentLyrics ordered by similarity score.
+        """
+        # Only look at the song itself since the artists are often not the musical name
+        return cls.objects.annotate(similarity=TrigramSimilarity('song_name', song_name)).filter(similarity__gt=threshold).order_by('-similarity')
+
+    @classmethod
+    def get_or_create_lyrics(cls, song_name: str, artist_name: str,
+                           lyrics_text: str, url: str):
+        """
+        Get existing lyrics or create new ones. Returns (lyrics_obj, created).
+        """
+        lyrics_obj, created = cls.objects.get_or_create(
+            url=url
+        )
+        lyrics_obj.song_name = song_name
+        lyrics_obj.artist_name = artist_name
+        lyrics_obj.lyrics = lyrics_text
+        lyrics_obj.save()
+
+        if not created:
+            lyrics_obj.increment_usage()
+
+        return lyrics_obj, created
 
 TRIVIA_CHOICES = ((1, 'A'), (2, 'B'), (3, 'C'), (4, 'D'))
 

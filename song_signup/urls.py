@@ -32,6 +32,7 @@ urlpatterns = [
     path('passcode', views.get_passcode, name='passcode'),
     path('group_lyrics/<int:song_pk>', views.group_lyrics, name='group_lyrics'),
     path('alternative_lyrics/<int:song_pk>', views.alternative_lyrics, name='alternative_lyrics'),
+    path('force_refresh_lyrics/<int:song_pk>', views.force_refresh_lyrics, name='force_refresh_lyrics'),
     path('alternative_group_lyrics/<int:song_pk>', views.alternative_group_lyrics, name='alternative_group_lyrics'),
     path('lyrics_by_id/<int:lyrics_id>', views.lyrics_by_id, name='lyrics_by_id'),
     path('default_lyrics', views.default_lyrics, name='default_lyrics'),

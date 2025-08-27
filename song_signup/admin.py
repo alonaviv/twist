@@ -7,10 +7,10 @@ from django.core.exceptions import ValidationError
 from constance import config
 
 from .models import (SongLyrics, SongRequest, Singer, GroupSongRequest, TicketOrder,
-                     CurrentGroupSong, TriviaQuestion, TriviaResponse, Celebration
+                     CurrentGroupSong, TriviaQuestion, TriviaResponse, Celebration, PersistentLyrics
 )
 from .forms import SongRequestForm
-
+from .tasks import get_lyrics
 
 def set_solo_performed(modeladmin, request, queryset):
     for song in queryset:
@@ -78,6 +78,13 @@ def unset_standby(modeladmin, request, queryset):
 unset_standby.short_description = "Undo standby"
 unset_standby.allowed_permissions = ['change']
 
+
+def force_lyrics_refresh(modeladmin, request, queryset):
+    for song in queryset:
+        get_lyrics.delay(song_id=song.id, force_refresh=True)
+
+force_lyrics_refresh.short_description = "Force lyrics refresh"
+force_lyrics_refresh.allowed_permissions = ['change']
 
 def prepare_group_song(modeladmin, request, queryset):
     if queryset.count() == 1:
@@ -209,7 +216,7 @@ class SongRequestAdmin(admin.ModelAdmin):
     list_filter = (NotYetPerformedFilter,)
     list_editable = ('default_lyrics', 'found_music')
     actions = [set_solo_performed, set_solo_not_performed, set_solo_skipped, set_solo_unskipped,
-               spotlight, set_standby, unset_standby]
+               spotlight, set_standby, unset_standby, force_lyrics_refresh]
     ordering = ['position']
     change_list_template = "admin/song_request_changelist.html"
     list_per_page = 500
@@ -372,6 +379,16 @@ class LyricsAdmin(admin.ModelAdmin):
         return mark_safe(f'<a href="{reverse("lyrics_by_id", args=(obj.id,))}">Link</a>')
 
     link.short_description = "Link"
+
+
+@admin.register(PersistentLyrics)
+class PersistentLyricsAdmin(admin.ModelAdmin):
+    list_display = ['song_name', 'artist_name', 'url', 'usage_count', 'last_used', 'created_at']
+    list_filter = ('created_at', 'last_used')
+    search_fields = ('song_name', 'artist_name')
+    readonly_fields = ('created_at', 'last_used', 'usage_count')
+    list_per_page = 500
+    ordering = ['-usage_count', '-last_used']
 
 
 @admin.register(TicketOrder)
