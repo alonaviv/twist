@@ -364,13 +364,13 @@ def group_lyrics(request, song_pk):
 @superuser_required('login')
 def force_reset_lyrics(request, song_pk):
     get_lyrics.delay(song_id=song_pk)
-    time.sleep(4)
+    time.sleep(1)
     return redirect('alternative_lyrics', song_pk)
 
 @superuser_required('login')
 def force_reset_lyrics_group(request, song_pk):
     get_lyrics.delay(group_song_id=song_pk)
-    time.sleep(4)
+    time.sleep(1)
     return redirect('alternative_group_lyrics', song_pk)
 
 
