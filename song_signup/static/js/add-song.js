@@ -86,4 +86,4 @@ function checkDisableSignup() {
         });
 }
 
-setInterval(checkDisableSignup, 500);
+setInterval(checkDisableSignup, 5000);
