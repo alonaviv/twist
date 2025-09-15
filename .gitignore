@@ -133,3 +133,6 @@ local_settings.py
 /static
 /db_backups
 /media
+/song_lists
+meta_audience_whametrics.csv
+/jmeter
