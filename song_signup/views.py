@@ -3,6 +3,9 @@ import traceback
 from functools import wraps
 import random
 import time
+import csv
+import io
+from contextlib import redirect_stdout
 
 import constance
 from constance import config
@@ -51,6 +54,7 @@ from .serializers import (
     TriviaResponseSerializer,
     RaffleWinnerSerializer
 )
+from twist.utils import format_commas
 
 logger = logging.getLogger(__name__)
 
@@ -749,15 +753,63 @@ def delete_song(request, song_pk):
     Singer.ordering.calculate_positions()
     return HttpResponse()
 
+def _get_current_filename():
+    """
+    Returns file name of format 'bwt-5-1-25', according to the currnet event.
+    Derives current event from the last ticket order loaded
+    """
+    event_name = TicketOrder.objects.filter(is_freebie=False).last().event_name
+    event_date = event_name.split('-')[-1].strip().replace('.','-')
+    return f"bwt-{event_date}"
+
+def _make_setlist():
+    buffer = io.StringIO()
+    writer = csv.writer(buffer)
+    writer.writerow(['', 'Singers', 'Song', 'Musical'])
+
+    songs = SongRequest.objects.filter(performance_time__isnull=False).order_by('performance_time')
+    group_songs = GroupSongRequest.objects.filter(performance_time__isnull=False).order_by('performance_time')
+
+    all_songs = sorted(
+        list(songs) + list(group_songs),
+        key=lambda x: x.performance_time
+    )
+
+    if len(all_songs) >= 2:
+        all_songs[-1], all_songs[-2] = all_songs[-2], all_songs[-1]
+
+    for i, song in enumerate(all_songs, start=1):
+        if isinstance(song, SongRequest):
+            singers = format_commas([song.singer.get_full_name()] +
+                                    [singer.get_full_name() for singer in song.partners.all()])
+            writer.writerow([i, singers, song.song_name, song.musical])
+        elif isinstance(song, GroupSongRequest):
+            writer.writerow([i, 'Group Song', song.song_name, song.musical])
+
+    return buffer.getvalue()
 
 @superuser_required('login')
 def reset_database(request):
-    call_command('dbbackup')
+    download_csv = request.GET.get('csv') == 'true'
+    filename = _get_current_filename()
+
+    if download_csv:
+        setlist = _make_setlist()
+        call_command('dbbackup', output_path=f'./db_backups/complete_evenings/{filename}.psql')
+    else:
+        call_command('dbbackup')
+
     call_command('reset_db')
     disable_flag('CAN_SIGNUP')
     disable_flag('STARTED')
     config.PASSCODE = ''
     config.DRINKING_WORDS = ''
+
+    if download_csv:
+        response = HttpResponse(setlist, content_type='text/csv')
+        response['Content-Disposition'] = f'attachment; filename="{filename}.csv"'
+        return response
+
     return redirect('admin/song_signup/songrequest')
 
 
