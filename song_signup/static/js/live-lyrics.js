@@ -235,11 +235,19 @@ async function populateLyrics() {
         var lyrics = lyricsData.lyrics;
         const resDrinking = await fetch("/drinking_words");
         const drinkingWords = (await resDrinking.json()).drinking_words;
+        let regex;
 
-        drinkingWords.forEach(word => {
-            const regex = new RegExp(`\\b(${word}s?)\\b`, 'gi');
+        if (drinkingWords.includes('*')) {
+            regex = new RegExp(`\\b([\\w']+)\\b`, 'gi');
             lyrics = lyrics.replace(regex, `<span class="drink-highlight">$1</span>`);
-        })
+        }
+        else {
+            drinkingWords.forEach(word => {
+                regex = new RegExp(`\\b(${word}s?)\\b`, 'gi');
+                lyrics = lyrics.replace(regex, `<span class="drink-highlight">$1</span>`);
+            })
+        }
+        
         lyricsText.innerHTML = `${isGroupSong ? "<div id='group-song-title'>GROUP SONG!!!</div>" : ""}
         <h2>${lyricsData.song_name}</h2>
             <h3>${lyricsData.artist_name}</h3><br>
