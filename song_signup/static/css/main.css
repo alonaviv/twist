@@ -1221,8 +1221,8 @@ nav {
     position: fixed;
     display: block; }
     .fixed-logo.screen img, .fixed-logo.side-logo img {
-      height: 30%;
-      width: 30%;
+      height: 15%;
+      width: 15%;
       padding: 15px 0px 0px 15px; }
   .fixed-logo.not-started {
     position: inherit;
