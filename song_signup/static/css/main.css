@@ -1295,11 +1295,11 @@ nav {
     -webkit-font-smoothing: antialiased;
     font-family: "Font Awesome 6 Pro";
     font-weight: 300;
+    content: "\f57b";
     position: absolute;
     top: -30%;
     left: -25%;
-    content: "\e0b3";
-    transform: rotate(30deg) scaleX(-1); }
+    rotate: 30deg; }
 
 #lyrics-wrapper {
   min-height: 100vh;

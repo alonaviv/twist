@@ -128,13 +128,13 @@
         -webkit-font-smoothing: antialiased;
         font-family: "Font Awesome 6 Pro";
         font-weight: 300;
-        // content: "\f57b"; // Bring back for martini
+        content: "\f57b"; // Comment out to change martini icon
         position: absolute;
         top: -30%;
         left: -25%;
-        // rotate: (30deg); // Bring back for martini
-        content: "\e0b3"; // Remove beer
-        transform: rotate(30deg) scaleX(-1); // Remove beer
+        rotate: (30deg); // Comment out to change martini icon
+        // content: "\e0b3"; // For beer icon
+        // transform: rotate(30deg) scaleX(-1); // For beer icon
     }
 }
 
