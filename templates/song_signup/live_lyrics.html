@@ -82,7 +82,11 @@ crossorigin="anonymous"></script>
     const fireworks = new Fireworks.default(container)
     fireworks.start()
   </script>
+{% if demo_mode %}
+<script type="module" src="{% static "js/demo-live-lyrics.js" %}"></script>
+{% else %}
 <script type="module" src="{% static "js/live-lyrics.js" %}"></script>
+{% endif %}
 
 {% endblock %}
 

@@ -460,6 +460,18 @@ def get_current_lyrics(request):
 
 
 @api_view(["GET"])
+def demo_current_lyrics(request):
+    group_song = GroupSongRequest.objects.get(
+        song_name="Be Our Guest",
+        musical="Beauty And The Beast",
+    )
+
+    lyrics = group_song.lyrics.get(default=True)
+    serialized = LyricsSerializer(lyrics, many=False, read_only=True, context={'is_group_song': False})
+    return Response(serialized.data, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
 def get_active_question(request):
     active_question = TriviaQuestion.objects.filter(is_active=True).first()
     if active_question:
@@ -535,6 +547,11 @@ def live_lyrics(request):
 @bwt_login_required('login')
 def lineup(request):
     return render(request, 'song_signup/lineup.html')
+
+
+@superuser_required('login')
+def demo_live_lyrics(request):
+    return render(request, 'song_signup/live_lyrics.html', {'demo_mode': True})
 
 
 @superuser_required('login')
