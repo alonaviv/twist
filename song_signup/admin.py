@@ -238,6 +238,7 @@ class SongRequestAdmin(admin.ModelAdmin):
         extra_context = extra_context or {}
         extra_context['new_singers_num'] = Singer.ordering.new_singers_num() + Singer.ordering.new_raffle_winners_num()
         extra_context['singers_num'] = len(Singer.ordering.active_singers()) + len(Singer.ordering.active_raffle_winners())
+        extra_context['raffle_participants'] = len(Singer.ordering.active_raffle_participants())
         extra_context['group_songs_performed'] = GroupSongRequest.objects.num_performed()
         extra_context['group_songs_quota'] = config.EXPECTED_NUM_SONGS - len(
             Singer.ordering.active_singers()) - len(Singer.ordering.active_raffle_winners()) - config.TARGET_REPEAT_SINGERS
