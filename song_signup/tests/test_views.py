@@ -1870,6 +1870,11 @@ class TestAddSongView(TestViews):
 
 class TestTrivia(TestViews):
     def setUp(self):
+        self.default_fonts = dict(
+            question_font_size_mobile=25,
+            question_font_size_live_lyrics=60,
+            choices_font_size=20
+        )
         self.question_data = dict(
             question="When was Disney founded?",
             choiceA="1948",
@@ -1882,7 +1887,8 @@ class TestTrivia(TestViews):
         self.basic_expected_question = dict(**self.question_data,
             winner=None,
             answer_text="1923",
-            image=None
+            image=None,
+            **self.default_fonts
         )
 class TestGetActiveQuestion(TestTrivia):
     def test_get_active_question(self):
@@ -2001,6 +2007,7 @@ class TestGetActiveQuestion(TestTrivia):
             choiceC="The toys",
             choiceD="The feelings",
             answer=1,
+            **self.default_fonts
         )
         question2 = TriviaQuestion.objects.create(**question_data2, is_active=True)
         select_trivia_answer(question2, 1, user=singer1)
@@ -2029,6 +2036,7 @@ class TestGetActiveQuestion(TestTrivia):
             choiceC="The Chesier Cat",
             choiceD="The White Rabbit",
             answer=4,
+            **self.default_fonts
         )
         question3 = TriviaQuestion.objects.create(**question_data3, is_active=True)
         select_trivia_answer(question3, 1, user=singer1)
