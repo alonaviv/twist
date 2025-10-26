@@ -257,5 +257,5 @@ async function populateLyrics() {
             currentSong = lyricsData.song_name;
             window.scrollTo(0, 0);
         }
-    } 
+    }
 }
