@@ -1580,7 +1580,7 @@ class TestSuggestGroupSong(TestCase):
     @patch('song_signup.views.home', return_value=HttpResponse())
     def test_singer(self, home_mock):
         login_singer(self, user_id=1)
-        response = self.client.post(reverse('suggest_group_song'), {
+        response = self.client.post(reverse('suggest_song'), {
             'song-name': ["Brotherhood of man"],
             'musical': ['How to succeed in business without '
                         'really trying']
@@ -1599,7 +1599,7 @@ class TestSuggestGroupSong(TestCase):
 
     def test_audience(self):
         login_audience(self, user_id=1)
-        response = self.client.post(reverse('suggest_group_song'), {
+        response = self.client.post(reverse('suggest_song'), {
             'song-name': ["Brotherhood of man"],
             'musical': ['How to succeed in business without '
                         'really trying'],
@@ -1610,8 +1610,8 @@ class TestSuggestGroupSong(TestCase):
 
     def test_get(self):
         login_audience(self)
-        response = self.client.get(reverse('suggest_group_song'))
-        self.assertTemplateUsed(response, 'song_signup/suggest_group_song.html')
+        response = self.client.get(reverse('suggest_song'))
+        self.assertTemplateUsed(response, 'song_signup/suggest_song.html')
 
 
 class TestAddSongRequest(TransactionTestCase):

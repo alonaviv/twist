@@ -155,6 +155,7 @@ def add_song_request(request):
         notes = request.POST.get('notes')
         partners = request.POST.getlist('partners')
         approve_duplicate = request.POST.get('approve-duplicate')
+        crowd_pleaser = bool(request.POST.get('suggested_by'))
 
         song_request = SongRequest.objects.filter(song_name=song_name, musical=musical).first()
         if not song_request or approve_duplicate:
@@ -162,13 +163,16 @@ def add_song_request(request):
                 # Raffle winner add their songs as standby - to be spotlit when Shani decides.
                 new_song_request = SongRequest.objects.create(song_name=song_name, musical=musical,
                                                               singer=current_user, notes=notes,
-                                                              standby=current_user.raffle_winner)
+                                                              standby=current_user.raffle_winner,
+                                                              crowd_pleaser=crowd_pleaser)
                 try:
                     new_song_request.partners.set(partners) # Runs validation function using signal
                 except ValidationError as e:
                     return JsonResponse({"error": e.message}, status=400)
 
             Singer.ordering.calculate_positions()
+            SongSuggestion.objects.check_used_suggestions()
+
             return JsonResponse({
                 'requested_song': new_song_request.song_name,
             })
@@ -594,7 +598,7 @@ def get_active_raffle_winner(request):
         return Response({}, status=status.HTTP_200_OK)
 
 @bwt_login_required('login')
-def suggest_group_song(request):
+def suggest_song(request):
     current_user = request.user
 
     if request.method == 'POST':
@@ -602,11 +606,18 @@ def suggest_group_song(request):
         musical = _sanitize_string(request.POST['musical'], title=True)
         suggested_by = str(current_user)
 
-        GroupSongRequest.objects.create(song_name=song_name, musical=musical, suggested_by=suggested_by)
-        return redirect(f"{reverse('home')}?song={song_name}&is-group-song=true")
+        if request.POST.get('group-song') == 'on':
+            GroupSongRequest.objects.create(song_name=song_name, musical=musical, suggested_by=suggested_by)
+            return redirect(f"{reverse('home')}?song={song_name}&is-group-song=true")
+        else:
+            _, created = SongSuggestion.objects.get_or_create(song_name=song_name, musical=musical,
+                                                              defaults={'suggested_by': current_user})
+            if created:
+                SongSuggestion.objects.check_used_suggestions()
+            return redirect('view_suggestions')
 
     else:
-        return render(request, 'song_signup/suggest_group_song.html')
+        return render(request, 'song_signup/suggest_song.html')
 
 
 def logout(request):
@@ -768,6 +779,7 @@ def login(request):
 def delete_song(request, song_pk):
     SongRequest.objects.filter(pk=song_pk).delete()
     Singer.ordering.calculate_positions()
+    SongSuggestion.objects.check_used_suggestions()
     return HttpResponse()
 
 def _get_current_filename():

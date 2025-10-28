@@ -7,7 +7,8 @@ from django.core.exceptions import ValidationError
 from constance import config
 
 from .models import (SongLyrics, SongRequest, Singer, GroupSongRequest, TicketOrder,
-                     CurrentGroupSong, TriviaQuestion, TriviaResponse, Celebration
+                     CurrentGroupSong, TriviaQuestion, TriviaResponse, Celebration,
+                     SongSuggestion,
 )
 from .forms import SongRequestForm
 from .tasks import get_lyrics
@@ -199,25 +200,25 @@ class GroupSongRequestAdmin(admin.ModelAdmin):
         js = ["js/admin-reload.js"]
 
 
-# @admin.register(SongSuggestion)
-# class SongSuggestionAdmin(admin.ModelAdmin):
-#     list_display = (
-#         'song_name', 'musical', 'suggested_by', 'get_request_time', 'is_used',
-#     )
-#
-#     def get_request_time(self, obj):
-#         return obj.request_time.astimezone(timezone.get_current_timezone()).strftime("%H:%M %p")
-#
-#     get_request_time.short_description = 'Request Time'
-#     get_request_time.admin_order_field = 'request_time'
-#
-#     ordering = ['request_time']
+@admin.register(SongSuggestion)
+class SongSuggestionAdmin(admin.ModelAdmin):
+    list_display = (
+        'song_name', 'musical', 'suggested_by', 'get_request_time', 'is_used',
+    )
+
+    def get_request_time(self, obj):
+        return obj.request_time.astimezone(timezone.get_current_timezone()).strftime("%H:%M %p")
+
+    get_request_time.short_description = 'Request Time'
+    get_request_time.admin_order_field = 'request_time'
+
+    ordering = ['request_time']
 
 
 @admin.register(SongRequest)
 class SongRequestAdmin(admin.ModelAdmin):
     list_display = (
-        'display_position', 'get_skipped', 'lyrics', 'get_singer', 'get_song', 'get_musical', 'get_partners', 'get_notes', 'get_to_alon',
+        'display_position', 'get_skipped', 'get_crowd_pleaser', 'lyrics', 'get_singer', 'get_song', 'get_musical', 'get_partners', 'get_notes', 'get_to_alon',
         'default_lyrics', 'found_music', 'allows_filming', 'get_performance_time', 'get_request_time', 'get_initial_signup',
     )
     list_filter = (NotYetPerformedFilter,)
@@ -233,6 +234,11 @@ class SongRequestAdmin(admin.ModelAdmin):
         if obj.skipped:
             return mark_safe('<img src="/static/img/admin/forward.png" style="height: 16px;" />')
     get_skipped.short_description = 'S'
+
+    def get_crowd_pleaser(self, obj):
+        if obj.crowd_pleaser:
+            return mark_safe('<img src="/static/img/admin/sash.png" style="height: 16px;" />')
+    get_crowd_pleaser.short_description = 'C'
 
     def changelist_view(self, request, extra_context=None):
         extra_context = extra_context or {}

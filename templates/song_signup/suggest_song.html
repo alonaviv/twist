@@ -9,13 +9,14 @@
 <main>
     <div id="suggest-group-song-wrapper">
         <div id="suggest-song-header">
-            <h2>Suggest a Group Song</h2>
+            <h2>Suggest a Song</h2>
+            <a href={% url 'view_suggestions' %} class="btn btn-inverted">View Suggestions</a>
         </div>
         
-        <p id="add-song-text">What group song will bring down the house tonight?<p?
+        <p id="add-song-text">What song will bring down the house tonight?<p?
         </p>
         <div id="new-song-form-wrapper">
-            <form action="/suggest_group_song" method="POST" id="new-song-form" autocomplete="off">
+            <form action="/suggest_song" method="POST" id="new-song-form" autocomplete="off">
                 {% csrf_token %}
                 <input autocomplete="false" name="hidden" type="text" style="display:none;">
                 <div class="form-control">
@@ -23,6 +24,10 @@
                 </div>
                 <div class="form-control">
                     <input type="text" name="musical" id="musical" placeholder="Where's it from?" required>
+                </div>
+                <div class="checkbox">
+                    <input type="checkbox" name="group-song" id="group-song">
+                    <label for="group-song">This is a group song - for everyone</label>
                 </div>
                 <div class="form-control" id="submit-wrapper">
                         <input type="submit" value="Suggest" class="btn btn-inverted">

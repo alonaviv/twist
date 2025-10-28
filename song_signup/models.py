@@ -236,6 +236,9 @@ class SongSuggestion(Model):
 
     objects = SongSuggestionManager()
 
+    class Meta:
+        unique_together = ('song_name', 'musical')
+
 class SongRequest(Model):
     song_name = CITextField(max_length=50)
     musical = CITextField(max_length=50)
@@ -253,6 +256,7 @@ class SongRequest(Model):
     found_music = BooleanField(default=False)
     spotlight = BooleanField(default=False)
     standby = BooleanField(default=False) # If song is out of the regular ordering, waiting to be spotlighted
+    crowd_pleaser = BooleanField(default=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

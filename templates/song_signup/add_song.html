@@ -28,12 +28,13 @@
             <form action="" id="new-song-form" autocomplete="off">
                 {% csrf_token %}
                 <input autocomplete="false" name="hidden" type="text" style="display:none;">
+                <input type="hidden" id="suggested_by" name="suggested_by" value="{{ request.GET.suggested_by }}">
                 <div class="form-control">
-                    <input type="text" name="song-name" id="song-name" placeholder="Song name" required
+                    <input type="text" name="song-name" id="song-name" placeholder="Song name" {% if request.GET.song_name %} value="{{ request.GET.song_name }}" {% endif %} required
                      {% if can_signup %} {% else %} class="signups-disabled" disabled {% endif %}>
                 </div>
                 <div class="form-control">
-                    <input type="text" name="musical" id="musical" placeholder="Where's it from?" required
+                    <input type="text" name="musical" id="musical" placeholder="Where's it from?" {% if request.GET.musical %} value="{{ request.GET.musical }}" {% endif %} required
                      {% if can_signup %} {% else %} class="signups-disabled" disabled {% endif %}>
                 </div>
                 <div class="form-control">
