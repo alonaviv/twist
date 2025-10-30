@@ -23,6 +23,7 @@ urlpatterns = [
     path('get_current_songs', views.get_current_songs, name='get_current_songs'),
     path('get_current_user', views.get_current_user, name='get_current_user'),
     path('get_suggested_songs', views.get_suggested_songs, name='get_suggested_songs'),
+    path('toggle_vote/<int:suggestion_id>', views.toggle_vote, name='toggle_vote'),
     path('delete_song/<int:song_pk>', views.delete_song, name='delete_song'),
     path('get_song/<int:song_pk>', views.get_song, name='get_song'),
     path('lyrics/<int:song_pk>', views.lyrics, name='lyrics'),

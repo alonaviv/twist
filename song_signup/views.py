@@ -25,6 +25,7 @@ from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 from titlecase import titlecase
 from django.core.exceptions import ValidationError
+from django.db.models import Count
 from .forms import TickchakUploadForm
 from .tasks import get_lyrics
 from .models import (
@@ -196,8 +197,11 @@ def get_current_songs(request):
 
 @api_view(["GET"])
 def get_suggested_songs(request):
-    serialized = SongSuggestionSerializer(SongSuggestion.objects.all().order_by('is_used', '-request_time'),
-                                          many=True, read_only=True)
+    suggestions = SongSuggestion.objects.annotate(
+        num_votes=Count('voters')
+    ).order_by('is_used', '-num_votes', '-request_time')
+    
+    serialized = SongSuggestionSerializer(suggestions, many=True, read_only=True, context={'request': request})
     return Response(serialized.data, status=status.HTTP_200_OK)
 
 
@@ -205,6 +209,35 @@ def get_suggested_songs(request):
 def get_current_user(request):
     serialized = SingerSerializer(request.user, read_only=True)
     return Response(serialized.data, status=status.HTTP_200_OK)
+
+
+@api_view(["POST"])
+def toggle_vote(request, suggestion_id):
+    """
+    Toggle a user's vote for a song suggestion.
+    """
+    try:
+        suggestion = SongSuggestion.objects.get(pk=suggestion_id)
+        user = request.user
+
+        if not user.is_authenticated:
+            return Response({'error': 'User must be authenticated to vote'}, 
+                          status=status.HTTP_401_UNAUTHORIZED)
+
+        if suggestion.user_voted(user):
+            suggestion.voters.remove(user)
+            voted = False
+        else:
+            suggestion.voters.add(user)
+            voted = True
+
+        return Response({
+            'voted': voted
+        }, status=status.HTTP_200_OK)
+
+    except SongSuggestion.DoesNotExist:
+        return Response({'error': f'Song suggestion with ID {suggestion_id} does not exist'}, 
+                       status=status.HTTP_404_NOT_FOUND)
 
 
 @api_view(["GET"])

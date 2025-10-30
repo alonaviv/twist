@@ -4,6 +4,7 @@ from django.utils import timezone
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from django.core.exceptions import ValidationError
+from django.db.models import Count
 from constance import config
 
 from .models import (SongLyrics, SongRequest, Singer, GroupSongRequest, TicketOrder,
@@ -203,16 +204,18 @@ class GroupSongRequestAdmin(admin.ModelAdmin):
 @admin.register(SongSuggestion)
 class SongSuggestionAdmin(admin.ModelAdmin):
     list_display = (
-        'song_name', 'musical', 'suggested_by', 'get_request_time', 'is_used',
+        'song_name', 'musical', 'suggested_by', 'vote_count', 'get_request_time', 'is_used',
     )
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.annotate(num_votes=Count('voters')).order_by('-num_votes', 'request_time')
 
     def get_request_time(self, obj):
         return obj.request_time.astimezone(timezone.get_current_timezone()).strftime("%H:%M %p")
 
     get_request_time.short_description = 'Request Time'
     get_request_time.admin_order_field = 'request_time'
-
-    ordering = ['request_time']
 
 
 @admin.register(SongRequest)

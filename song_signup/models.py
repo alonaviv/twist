@@ -220,9 +220,10 @@ class CurrentGroupSong(Model):
 class SongSuggestion(Model):
     song_name = CITextField(max_length=50)
     musical = CITextField(max_length=50)
-    suggested_by = ForeignKey(settings.AUTH_USER_MODEL, on_delete=CASCADE, related_name='songs_suggested')
+    suggested_by = ForeignKey(Singer, on_delete=CASCADE, related_name='suggested')
     request_time = DateTimeField(auto_now_add=True)
     is_used = BooleanField(default=False)
+    voters = ManyToManyField(Singer, blank=True, related_name='voted')
 
     def check_if_used(self):
         try:
@@ -233,6 +234,14 @@ class SongSuggestion(Model):
             self.is_used = False
 
         self.save()
+
+    @property
+    def vote_count(self):
+        return self.voters.count()
+
+    def user_voted(self, user: Singer):
+        """Check if a specific user has voted for this song suggestion."""
+        return self.voters.filter(pk=user.pk).exists()
 
     objects = SongSuggestionManager()
 

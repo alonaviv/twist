@@ -1,13 +1,14 @@
 import datetime
 from freezegun import freeze_time
-from django.test import TestCase
+from django.test import TestCase, TransactionTestCase
 from song_signup.tests.utils_for_tests import (
     SongRequestTestCase, create_singers, add_songs_to_singer, set_performed,
     get_song, add_songs_to_singers, add_partners, TEST_START_TIME, create_order, SING_SKU, ATTN_SKU,
     get_singer_str, create_audience, get_audience_str
 )
-from song_signup.models import TicketsDepleted, Singer
+from song_signup.models import TicketsDepleted, Singer, SongSuggestion
 from django.core.management import call_command
+from django.db import IntegrityError
 
 
 class TestSingerModel(SongRequestTestCase):
@@ -100,6 +101,118 @@ class TestSingerModel(SongRequestTestCase):
         singer.raffle_winner = False
         singer.save()
         self.assertFalse(singer.raffle_winner_already_sang)
+
+
+class TestSongSuggestionModel(TestCase):
+    def setUp(self):
+        [self.suggester] = create_singers(1)
+        self.suggestion = SongSuggestion.objects.create(
+            song_name='Defying Gravity',
+            musical='Wicked',
+            suggested_by=self.suggester
+        )
+    
+    def test_vote_count_empty(self):
+        """Test vote_count returns 0 when no votes."""
+        self.assertEqual(self.suggestion.vote_count, 0)
+    
+    def test_vote_count_single_vote(self):
+        """Test vote_count returns 1 after one vote."""
+        [voter] = create_singers([2])
+        self.suggestion.voters.add(voter)
+        self.assertEqual(self.suggestion.vote_count, 1)
+    
+    def test_vote_count_multiple_votes(self):
+        """Test vote_count returns correct count with multiple votes."""
+        voters = create_singers([2, 3, 4])
+        self.suggestion.voters.set(voters)
+        self.assertEqual(self.suggestion.vote_count, 3)
+    
+    def test_vote_count_mixed_singers_and_audience(self):
+        """Test vote_count works with both singers and audience."""
+        singers = create_singers([2, 3])
+        audience = create_audience([4, 5])
+        self.suggestion.voters.set(singers + audience)
+        self.assertEqual(self.suggestion.vote_count, 4)
+    
+    def test_user_voted_false_when_no_vote(self):
+        """Test user_voted returns False when user hasn't voted."""
+        [user] = create_singers([2])
+        self.assertFalse(self.suggestion.user_voted(user))
+    
+    def test_user_voted_true_when_voted(self):
+        """Test user_voted returns True when user has voted."""
+        [user] = create_singers([2])
+        self.suggestion.voters.add(user)
+        self.assertTrue(self.suggestion.user_voted(user))
+    
+    def test_user_voted_after_unvote(self):
+        """Test user_voted returns False after removing vote."""
+        [user] = create_singers([2])
+        self.suggestion.voters.add(user)
+        self.assertTrue(self.suggestion.user_voted(user))
+        
+        self.suggestion.voters.remove(user)
+        self.assertFalse(self.suggestion.user_voted(user))
+    
+    def test_user_voted_different_users(self):
+        """Test user_voted correctly distinguishes between users."""
+        user1, user2 = create_singers([2, 3])
+        
+        self.suggestion.voters.add(user1)
+        self.assertTrue(self.suggestion.user_voted(user1))
+        self.assertFalse(self.suggestion.user_voted(user2))
+    
+    def test_user_voted_with_audience(self):
+        """Test user_voted works with audience members."""
+        [audience] = create_audience(1)
+        self.assertFalse(self.suggestion.user_voted(audience))
+        
+        self.suggestion.voters.add(audience)
+        self.assertTrue(self.suggestion.user_voted(audience))
+    
+    def test_unique_constraint_same_suggester(self):
+        """Test that same song+musical cannot be created twice, even by same suggester."""
+        with self.assertRaises(IntegrityError):
+            SongSuggestion.objects.create(
+                song_name='Defying Gravity',
+                musical='Wicked',
+                suggested_by=self.suggester
+            )
+    
+    def test_unique_constraint_different_suggester(self):
+        """Test that same song+musical cannot be created by different suggester."""
+        [other_suggester] = create_singers([2])
+        with self.assertRaises(IntegrityError):
+            SongSuggestion.objects.create(
+                song_name='Defying Gravity',
+                musical='Wicked',
+                suggested_by=other_suggester
+            )
+    
+    def test_same_song_different_musical_allowed(self):
+        """Test that same song from different musical is allowed."""
+        suggestion2 = SongSuggestion.objects.create(
+            song_name='Defying Gravity',
+            musical='Hamilton',  # Different musical
+            suggested_by=self.suggester
+        )
+        # Should have 2 total: 1 from setUp + 1 from this test
+        self.assertEqual(SongSuggestion.objects.count(), 2)
+        self.assertEqual(suggestion2.song_name, 'Defying Gravity')
+        self.assertEqual(suggestion2.musical, 'Hamilton')
+    
+    def test_different_song_same_musical_allowed(self):
+        """Test that different song from same musical is allowed."""
+        suggestion2 = SongSuggestion.objects.create(
+            song_name='Popular',  # Different song
+            musical='Wicked',
+            suggested_by=self.suggester
+        )
+        # Should have 2 total: 1 from setUp + 1 from this test
+        self.assertEqual(SongSuggestion.objects.count(), 2)
+        self.assertEqual(suggestion2.song_name, 'Popular')
+        self.assertEqual(suggestion2.musical, 'Wicked')
 
 
 class TestTicketOrderModel(TestCase):

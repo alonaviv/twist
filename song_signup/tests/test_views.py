@@ -17,7 +17,7 @@ from song_signup.views import _get_current_song
 from song_signup.models import (
     Singer, TicketOrder,
     CurrentGroupSong, GroupSongRequest,
-    SongRequest, TriviaQuestion, SING_SKU, ATTN_SKU
+    SongRequest, SongSuggestion, TriviaQuestion, SING_SKU, ATTN_SKU
 )
 from song_signup.tests.utils_for_tests import (
     EVENT_SKU,
@@ -1583,7 +1583,8 @@ class TestSuggestGroupSong(TestCase):
         response = self.client.post(reverse('suggest_song'), {
             'song-name': ["Brotherhood of man"],
             'musical': ['How to succeed in business without '
-                        'really trying']
+                        'really trying'],
+            'group-song': 'on'
         })
         self.assertEqual(GroupSongRequest.objects.count(), 1)
         created_song = GroupSongRequest.objects.first()
@@ -1603,6 +1604,7 @@ class TestSuggestGroupSong(TestCase):
             'song-name': ["Brotherhood of man"],
             'musical': ['How to succeed in business without '
                         'really trying'],
+            'group-song': 'on'
         })
         self.assertEqual(GroupSongRequest.objects.count(), 1)
         created_song = GroupSongRequest.objects.first()
@@ -1787,6 +1789,66 @@ class TestAddSongRequest(TransactionTestCase):
         self.assertEqual(created_song1.singer.id, other_singer.id)
         self.assertJSONEqual(response.content, {'requested_song': 'Defying Gravity'})
         self.assertEqual(response.status_code, 200)
+    
+    def test_suggestion_marked_used_on_add(self):
+        """Test that matching suggestions are marked as used when a song request is added."""
+        # Create a suggestion first
+        [suggester] = create_singers(1)
+        suggestion = SongSuggestion.objects.create(
+            song_name='Defying Gravity',
+            musical='Wicked',
+            suggested_by=suggester
+        )
+        self.assertFalse(suggestion.is_used)
+        
+        # Now add a matching song request
+        login_singer(self, user_id=2)
+        self.client.post(reverse('add_song_request'), {
+            'song-name': ["Defying Gravity"],
+            'musical': ['Wicked'],
+            'notes': ['']
+        })
+        
+        # The suggestion should now be marked as used
+        suggestion.refresh_from_db()
+        self.assertTrue(suggestion.is_used)
+
+
+class TestDeleteSong(TransactionTestCase):
+    """Tests for delete_song view."""
+    
+    def test_suggestion_unmarked_on_delete(self):
+        """Test that matching suggestions are unmarked when a song request is deleted."""
+        # Create a suggestion
+        [suggester] = create_singers(1)
+        suggestion = SongSuggestion.objects.create(
+            song_name='Defying Gravity',
+            musical='Wicked',
+            suggested_by=suggester
+        )
+        
+        # Create a matching song request (marks suggestion as used)
+        user = login_singer(self, user_id=2)
+        song = SongRequest.objects.create(
+            song_name='Defying Gravity',
+            musical='Wicked',
+            singer=user
+        )
+        SongSuggestion.objects.check_used_suggestions()
+        suggestion.refresh_from_db()
+        self.assertTrue(suggestion.is_used)
+        
+        # Delete the song request
+        response = self.client.post(reverse('delete_song', args=[song.id]))
+        self.assertEqual(response.status_code, 200)
+        
+        # The suggestion should now be unmarked
+        suggestion.refresh_from_db()
+        self.assertFalse(suggestion.is_used)
+        
+        # Verify song was actually deleted
+        self.assertEqual(SongRequest.objects.count(), 0)
+
 
 class TestHelpers(TestCase):
     def test_get_current_song(self):
@@ -2230,3 +2292,663 @@ class TestRaffle(TestViews):
             audience.save()
 
         self._assert_no_participants()
+
+
+class TestSongSuggestionSerializer(TestViews):
+    """Tests for SongSuggestionSerializer field structure and nested objects."""
+    
+    def test_serializer_all_fields_present(self):
+        """Test that all expected fields are present in serialized data."""
+        suggester, voter1, voter2 = create_singers(3)
+        suggestion = SongSuggestion.objects.create(
+            song_name='Defying Gravity',
+            musical='Wicked',
+            suggested_by=suggester
+        )
+        suggestion.voters.set([voter1, voter2])
+        
+        response = self.client.get(reverse('get_suggested_songs'))
+        self.assertEqual(response.status_code, 200)
+        
+        data = response.data[0]
+        # Basic fields from model
+        self.assertEqual(data['id'], suggestion.id)
+        self.assertEqual(data['song_name'], 'Defying Gravity')
+        self.assertEqual(data['musical'], 'Wicked')
+        self.assertFalse(data['is_used'])
+        self.assertIsNotNone(data['request_time'])
+        
+        # SerializerMethodFields
+        self.assertEqual(data['vote_count'], 2)
+        self.assertFalse(data['user_voted'])  # Not authenticated
+        
+        # Nested objects
+        self.assertIn('suggested_by', data)
+        self.assertIn('voters', data)
+    
+    def test_serializer_suggested_by_structure(self):
+        """Test that suggested_by contains proper nested Singer data."""
+        [suggester] = create_singers(1)
+        SongSuggestion.objects.create(
+            song_name='Defying Gravity',
+            musical='Wicked',
+            suggested_by=suggester
+        )
+        
+        response = self.client.get(reverse('get_suggested_songs'))
+        suggested_by = response.data[0]['suggested_by']
+        
+        self.assertEqual(suggested_by['id'], suggester.id)
+        self.assertEqual(suggested_by['first_name'], suggester.first_name)
+        self.assertEqual(suggested_by['last_name'], suggester.last_name)
+        self.assertIn('is_superuser', suggested_by)
+    
+    def test_serializer_voters_list_structure(self):
+        """Test that voters list contains proper nested Singer data."""
+        suggester, voter1, voter2 = create_singers(3)
+        suggestion = SongSuggestion.objects.create(
+            song_name='Defying Gravity',
+            musical='Wicked',
+            suggested_by=suggester
+        )
+        suggestion.voters.set([voter1, voter2])
+        
+        response = self.client.get(reverse('get_suggested_songs'))
+        voters = response.data[0]['voters']
+        
+        self.assertEqual(len(voters), 2)
+        voter_ids = {v['id'] for v in voters}
+        self.assertEqual(voter_ids, {voter1.id, voter2.id})
+        
+        # Check that each voter has complete Singer data
+        for voter_data in voters:
+            self.assertIn('id', voter_data)
+            self.assertIn('first_name', voter_data)
+            self.assertIn('last_name', voter_data)
+            self.assertIn('is_superuser', voter_data)
+    
+    def test_serializer_empty_voters_and_zero_votes(self):
+        """Test that voters list is empty and vote_count is 0 when no votes."""
+        [suggester] = create_singers(1)
+        SongSuggestion.objects.create(
+            song_name='Defying Gravity',
+            musical='Wicked',
+            suggested_by=suggester
+        )
+        
+        response = self.client.get(reverse('get_suggested_songs'))
+        data = response.data[0]
+        
+        self.assertEqual(data['vote_count'], 0)
+        self.assertEqual(len(data['voters']), 0)
+        self.assertIsInstance(data['voters'], list)
+
+
+class TestToggleVote(TestViews):
+    """Tests for the toggle_vote endpoint."""
+    
+    def setUp(self):
+        [self.suggester] = create_singers(1)
+        self.suggestion = SongSuggestion.objects.create(
+            song_name='Defying Gravity',
+            musical='Wicked',
+            suggested_by=self.suggester
+        )
+        self.voter = login_singer(self, user_id=2)
+    
+    def test_vote_unauthenticated(self):
+        """Test that unauthenticated users cannot vote."""
+        self.client.logout()
+        response = self.client.post(reverse('toggle_vote', args=[self.suggestion.id]))
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.data['error'], 'User must be authenticated to vote')
+    
+    def test_vote_nonexistent_suggestion(self):
+        """Test voting for non-existent suggestion returns 404."""
+        response = self.client.post(reverse('toggle_vote', args=[999]))
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.data['error'], 'Song suggestion with ID 999 does not exist')
+    
+    def test_add_vote(self):
+        """Test adding a vote to a suggestion."""
+        response = self.client.post(reverse('toggle_vote', args=[self.suggestion.id]))
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.data['voted'])
+        
+        self.suggestion.refresh_from_db()
+        self.assertEqual(self.suggestion.vote_count, 1)
+        self.assertTrue(self.suggestion.user_voted(self.voter))
+    
+    def test_remove_vote(self):
+        """Test removing a vote from a suggestion."""
+        # First add a vote
+        self.suggestion.voters.add(self.voter)
+        self.assertEqual(self.suggestion.vote_count, 1)
+        
+        # Then remove it
+        response = self.client.post(reverse('toggle_vote', args=[self.suggestion.id]))
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.data['voted'])
+        
+        self.suggestion.refresh_from_db()
+        self.assertEqual(self.suggestion.vote_count, 0)
+        self.assertFalse(self.suggestion.user_voted(self.voter))
+    
+    def test_toggle_vote_multiple_times(self):
+        """Test toggling vote multiple times."""
+        # Vote
+        response = self.client.post(reverse('toggle_vote', args=[self.suggestion.id]))
+        self.assertTrue(response.data['voted'])
+        
+        # Unvote
+        response = self.client.post(reverse('toggle_vote', args=[self.suggestion.id]))
+        self.assertFalse(response.data['voted'])
+        
+        # Vote again
+        response = self.client.post(reverse('toggle_vote', args=[self.suggestion.id]))
+        self.assertTrue(response.data['voted'])
+        
+        self.suggestion.refresh_from_db()
+        self.assertEqual(self.suggestion.vote_count, 1)
+    
+    def test_vote_with_audience_user(self):
+        """Test that audience members can vote."""
+        self.client.logout()
+        audience = login_audience(self, user_id=3)
+        
+        response = self.client.post(reverse('toggle_vote', args=[self.suggestion.id]))
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.data['voted'])
+        
+        self.suggestion.refresh_from_db()
+        self.assertTrue(self.suggestion.user_voted(audience))
+    
+    def test_multiple_users_vote(self):
+        """Test that multiple users can vote on the same suggestion."""
+        # First user votes
+        response = self.client.post(reverse('toggle_vote', args=[self.suggestion.id]))
+        self.assertTrue(response.data['voted'])
+        
+        # Second user votes
+        self.client.logout()
+        user2 = login_singer(self, user_id=3)
+        response = self.client.post(reverse('toggle_vote', args=[self.suggestion.id]))
+        self.assertTrue(response.data['voted'])
+        
+        # Third user votes
+        self.client.logout()
+        user3 = login_audience(self, user_id=4)
+        response = self.client.post(reverse('toggle_vote', args=[self.suggestion.id]))
+        self.assertTrue(response.data['voted'])
+        
+        self.suggestion.refresh_from_db()
+        self.assertEqual(self.suggestion.vote_count, 3)
+        self.assertTrue(self.suggestion.user_voted(self.voter))
+        self.assertTrue(self.suggestion.user_voted(user2))
+        self.assertTrue(self.suggestion.user_voted(user3))
+
+
+class TestGetSuggestedSongs(TestViews):
+    """Tests for the get_suggested_songs endpoint with voting."""
+    
+    def setUp(self):
+        [self.suggester] = create_singers(1)
+        with freeze_time(TEST_START_TIME) as frozen_time:
+            self.suggestion1 = SongSuggestion.objects.create(
+                song_name='Defying Gravity',
+                musical='Wicked',
+                suggested_by=self.suggester
+            )
+            frozen_time.tick()
+            self.suggestion2 = SongSuggestion.objects.create(
+                song_name='Seasons Of Love',
+                musical='Rent',
+                suggested_by=self.suggester
+            )
+            frozen_time.tick()
+            self.suggestion3 = SongSuggestion.objects.create(
+                song_name='On My Own',
+                musical='Les Misérables',
+                suggested_by=self.suggester
+            )
+    
+    def test_get_suggestions_empty(self):
+        """Test getting suggestions when none exist."""
+        SongSuggestion.objects.all().delete()
+        response = self.client.get(reverse('get_suggested_songs'))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 0)
+    
+    def test_get_suggestions_no_votes(self):
+        """Test suggestions are ordered by recency when no votes."""
+        response = self.client.get(reverse('get_suggested_songs'))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 3)
+        
+        # Most recent first when no votes
+        self.assertEqual(response.data[0]['song_name'], 'On My Own')
+        self.assertEqual(response.data[0]['vote_count'], 0)
+        self.assertEqual(response.data[1]['song_name'], 'Seasons Of Love')
+        self.assertEqual(response.data[1]['vote_count'], 0)
+        self.assertEqual(response.data[2]['song_name'], 'Defying Gravity')
+        self.assertEqual(response.data[2]['vote_count'], 0)
+    
+    def test_get_suggestions_ordered_by_votes(self):
+        """Test suggestions are ordered by vote count descending."""
+        voter1, voter2, voter3 = create_singers([2, 3, 4])
+        
+        # suggestion1: 3 votes
+        self.suggestion1.voters.set([voter1, voter2, voter3])
+        # suggestion2: 1 vote
+        self.suggestion2.voters.set([voter1])
+        # suggestion3: 2 votes
+        self.suggestion3.voters.set([voter2, voter3])
+        
+        response = self.client.get(reverse('get_suggested_songs'))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 3)
+        
+        self.assertEqual(response.data[0]['song_name'], 'Defying Gravity')  # 3 votes
+        self.assertEqual(response.data[0]['vote_count'], 3)
+        
+        self.assertEqual(response.data[1]['song_name'], 'On My Own')  # 2 votes
+        self.assertEqual(response.data[1]['vote_count'], 2)
+        
+        self.assertEqual(response.data[2]['song_name'], 'Seasons Of Love')  # 1 vote
+        self.assertEqual(response.data[2]['vote_count'], 1)
+    
+    def test_get_suggestions_mixed_votes_and_no_votes(self):
+        """Test ordering when some suggestions have votes and others don't."""
+        voter1, voter2 = create_singers([5, 6])
+        
+        # suggestion1: 2 votes
+        self.suggestion1.voters.set([voter1, voter2])
+        # suggestion2: 0 votes
+        # suggestion3: 1 vote
+        self.suggestion3.voters.add(voter1)
+        
+        response = self.client.get(reverse('get_suggested_songs'))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 3)
+        
+        # Verify ordering: votes desc, then time desc
+        # suggestion1: 2 votes
+        self.assertEqual(response.data[0]['song_name'], 'Defying Gravity')
+        self.assertEqual(response.data[0]['musical'], 'Wicked')
+        self.assertEqual(response.data[0]['vote_count'], 2)
+        self.assertFalse(response.data[0]['is_used'])
+        self.assertIsNotNone(response.data[0]['id'])
+        self.assertIsNotNone(response.data[0]['request_time'])
+        self.assertIn('suggested_by', response.data[0])
+        self.assertEqual(response.data[0]['suggested_by']['id'], self.suggester.id)
+        self.assertIn('voters', response.data[0])
+        self.assertEqual(len(response.data[0]['voters']), 2)
+        
+        # suggestion3: 1 vote
+        self.assertEqual(response.data[1]['song_name'], 'On My Own')
+        self.assertEqual(response.data[1]['musical'], 'Les Misérables')
+        self.assertEqual(response.data[1]['vote_count'], 1)
+        self.assertFalse(response.data[1]['is_used'])
+        
+        # suggestion2: 0 votes (most recent of the 0-vote suggestions)
+        self.assertEqual(response.data[2]['song_name'], 'Seasons Of Love')
+        self.assertEqual(response.data[2]['musical'], 'Rent')
+        self.assertEqual(response.data[2]['vote_count'], 0)
+        self.assertFalse(response.data[2]['is_used'])
+        self.assertEqual(len(response.data[2]['voters']), 0)
+    
+    def test_get_suggestions_same_votes_ordered_by_time(self):
+        """Test suggestions with same vote count are ordered by recency."""
+        voter1, voter2 = create_singers([7, 8])
+        
+        # Both have 1 vote, so order by time (most recent first)
+        self.suggestion1.voters.set([voter1])
+        self.suggestion3.voters.set([voter2])
+        
+        response = self.client.get(reverse('get_suggested_songs'))
+        self.assertEqual(response.status_code, 200)
+        
+        # suggestion3 is most recent
+        self.assertEqual(response.data[0]['song_name'], 'On My Own')
+        self.assertEqual(response.data[0]['vote_count'], 1)
+        
+        # suggestion1 is older
+        self.assertEqual(response.data[1]['song_name'], 'Defying Gravity')
+        self.assertEqual(response.data[1]['vote_count'], 1)
+    
+    def test_user_voted_authenticated(self):
+        """Test user_voted field is correct for authenticated user."""
+        user = login_singer(self, user_id=2)
+        self.suggestion1.voters.add(user)
+        self.suggestion3.voters.add(user)
+        
+        response = self.client.get(reverse('get_suggested_songs'))
+        self.assertEqual(response.status_code, 200)
+        
+        suggestions_by_name = {s['song_name']: s for s in response.data}
+        
+        self.assertTrue(suggestions_by_name['Defying Gravity']['user_voted'])
+        self.assertFalse(suggestions_by_name['Seasons Of Love']['user_voted'])
+        self.assertTrue(suggestions_by_name['On My Own']['user_voted'])
+    
+    def test_user_voted_unauthenticated(self):
+        """Test user_voted is False for unauthenticated users."""
+        response = self.client.get(reverse('get_suggested_songs'))
+        self.assertEqual(response.status_code, 200)
+        
+        for suggestion in response.data:
+            self.assertFalse(suggestion['user_voted'])
+    
+    def test_user_voted_audience(self):
+        """Test user_voted works for audience members."""
+        audience = login_audience(self, user_id=2)
+        self.suggestion2.voters.add(audience)
+        
+        response = self.client.get(reverse('get_suggested_songs'))
+        self.assertEqual(response.status_code, 200)
+        
+        suggestions_by_name = {s['song_name']: s for s in response.data}
+        
+        self.assertFalse(suggestions_by_name['Defying Gravity']['user_voted'])
+        self.assertTrue(suggestions_by_name['Seasons Of Love']['user_voted'])
+        self.assertFalse(suggestions_by_name['On My Own']['user_voted'])
+    
+    def test_voters_list_included(self):
+        """Test that voters list is included in response."""
+        voter1, voter2 = create_singers([9, 10])
+        self.suggestion1.voters.set([voter1, voter2])
+        
+        response = self.client.get(reverse('get_suggested_songs'))
+        self.assertEqual(response.status_code, 200)
+        
+        suggestion1_data = response.data[0]  # Has most votes
+        self.assertEqual(len(suggestion1_data['voters']), 2)
+        voter_ids = {v['id'] for v in suggestion1_data['voters']}
+        self.assertEqual(voter_ids, {voter1.id, voter2.id})
+    
+    def test_is_used_ordering(self):
+        """Test that unused suggestions appear before used ones."""
+        [voter] = create_singers([11])
+        
+        # Give all equal votes
+        self.suggestion1.voters.add(voter)
+        self.suggestion2.voters.add(voter)
+        self.suggestion3.voters.add(voter)
+        
+        # Mark suggestion1 as used
+        self.suggestion1.is_used = True
+        self.suggestion1.save()
+        
+        response = self.client.get(reverse('get_suggested_songs'))
+        self.assertEqual(response.status_code, 200)
+        
+        # Used suggestion should be last
+        self.assertFalse(response.data[0]['is_used'])
+        self.assertFalse(response.data[1]['is_used'])
+        self.assertTrue(response.data[2]['is_used'])
+        self.assertEqual(response.data[2]['song_name'], 'Defying Gravity')
+
+
+class TestSuggestSong(TestViews):
+    """Tests for the suggest_song view (creating song suggestions)."""
+    
+    def test_suggest_song_get(self):
+        """Test GET request renders the template."""
+        login_singer(self, user_id=1)
+        response = self.client.get(reverse('suggest_song'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'song_signup/suggest_song.html')
+    
+    def test_suggest_song_post_singer(self):
+        """Test creating a song suggestion as a singer."""
+        user = login_singer(self, user_id=1)
+        
+        response = self.client.post(reverse('suggest_song'), {
+            'song-name': 'defying gravity',
+            'musical': 'wicked'
+        })
+        
+        self.assertRedirects(response, reverse('view_suggestions'))
+        
+        self.assertEqual(SongSuggestion.objects.count(), 1)
+        suggestion = SongSuggestion.objects.first()
+        self.assertEqual(suggestion.song_name, 'Defying Gravity')
+        self.assertEqual(suggestion.musical, 'Wicked')
+        self.assertEqual(suggestion.suggested_by, user)
+        self.assertFalse(suggestion.is_used)
+        self.assertEqual(suggestion.vote_count, 0)
+    
+    def test_suggest_song_post_audience(self):
+        """Test creating a song suggestion as an audience member."""
+        user = login_audience(self, user_id=1)
+        
+        response = self.client.post(reverse('suggest_song'), {
+            'song-name': 'the wizard and i',
+            'musical': 'wicked'
+        })
+        
+        self.assertRedirects(response, reverse('view_suggestions'))
+        
+        self.assertEqual(SongSuggestion.objects.count(), 1)
+        suggestion = SongSuggestion.objects.first()
+        self.assertEqual(suggestion.song_name, 'The Wizard and I')
+        self.assertEqual(suggestion.suggested_by, user)
+    
+    def test_suggest_song_titlecase(self):
+        """Test that song names and musicals are properly titlecased."""
+        login_singer(self, user_id=1)
+        
+        self.client.post(reverse('suggest_song'), {
+            'song-name': 'for GOOD',
+            'musical': 'wicked'
+        })
+        
+        suggestion = SongSuggestion.objects.first()
+        self.assertEqual(suggestion.song_name, 'For Good')
+        self.assertEqual(suggestion.musical, 'Wicked')
+    
+    def test_suggest_song_duplicate(self):
+        """Test suggesting an existing song doesn't create duplicate."""
+        [suggester] = create_singers(1)
+        SongSuggestion.objects.create(
+            song_name='Defying Gravity',
+            musical='Wicked',
+            suggested_by=suggester
+        )
+        
+        login_singer(self, user_id=2)
+        response = self.client.post(reverse('suggest_song'), {
+            'song-name': 'defying gravity',
+            'musical': 'wicked'
+        })
+        
+        # Should still redirect successfully
+        self.assertRedirects(response, reverse('view_suggestions'))
+        
+        # Should not create a duplicate
+        self.assertEqual(SongSuggestion.objects.count(), 1)
+        suggestion = SongSuggestion.objects.first()
+        # Original suggester should remain
+        self.assertEqual(suggestion.suggested_by, suggester)
+    
+    def test_suggest_song_case_insensitive(self):
+        """Test that duplicate detection is case-insensitive."""
+        [suggester] = create_singers(1)
+        SongSuggestion.objects.create(
+            song_name='Defying Gravity',
+            musical='Wicked',
+            suggested_by=suggester
+        )
+        
+        login_singer(self, user_id=2)
+        self.client.post(reverse('suggest_song'), {
+            'song-name': 'DEFYING GRAVITY',
+            'musical': 'WICKED'
+        })
+        
+        # Should not create duplicate
+        self.assertEqual(SongSuggestion.objects.count(), 1)
+    
+    def test_suggest_multiple_songs(self):
+        """Test that multiple different suggestions can be created."""
+        user = login_singer(self, user_id=1)
+        
+        self.client.post(reverse('suggest_song'), {
+            'song-name': 'Defying Gravity',
+            'musical': 'Wicked'
+        })
+        
+        self.client.post(reverse('suggest_song'), {
+            'song-name': 'Popular',
+            'musical': 'Wicked'
+        })
+        
+        self.client.post(reverse('suggest_song'), {
+            'song-name': 'For Good',
+            'musical': 'Wicked'
+        })
+        
+        self.assertEqual(SongSuggestion.objects.count(), 3)
+        song_names = set(SongSuggestion.objects.values_list('song_name', flat=True))
+        self.assertEqual(song_names, {'Defying Gravity', 'Popular', 'For Good'})
+        
+        # Verify all suggestions were created by the logged-in user
+        for suggestion in SongSuggestion.objects.all():
+            self.assertEqual(suggestion.suggested_by, user)
+    
+    def test_suggest_song_timestamp(self):
+        """Test that suggestions have proper timestamps."""
+        login_singer(self, user_id=1)
+        
+        with freeze_time(TEST_START_TIME) as frozen_time:
+            self.client.post(reverse('suggest_song'), {
+                'song-name': 'Defying Gravity',
+                'musical': 'Wicked'
+            })
+            
+            suggestion1 = SongSuggestion.objects.first()
+            time1 = suggestion1.request_time
+            
+            frozen_time.tick()
+            
+            self.client.post(reverse('suggest_song'), {
+                'song-name': 'Popular',
+                'musical': 'Wicked'
+            })
+            
+            suggestion2 = SongSuggestion.objects.get(song_name='Popular')
+            time2 = suggestion2.request_time
+            
+            self.assertLess(time1, time2)
+    
+    def test_suggestion_checked_for_use_on_create(self):
+        """Test that suggestions are checked and marked as used when created if matching request exists."""
+        # Create a singer with a song request
+        [singer] = create_singers(1)
+        SongRequest.objects.create(
+            song_name='Defying Gravity',
+            musical='Wicked',
+            singer=singer
+        )
+        
+        # Now suggest the same song
+        login_singer(self, user_id=2)
+        self.client.post(reverse('suggest_song'), {
+            'song-name': 'Defying Gravity',
+            'musical': 'Wicked'
+        })
+        
+        # The suggestion should be marked as used
+        suggestion = SongSuggestion.objects.get(song_name='Defying Gravity', musical='Wicked')
+        self.assertTrue(suggestion.is_used)
+    
+    def test_suggestion_not_marked_used_if_no_matching_request(self):
+        """Test that new suggestions are not marked as used if no matching request exists."""
+        login_singer(self, user_id=1)
+        
+        self.client.post(reverse('suggest_song'), {
+            'song-name': 'Defying Gravity',
+            'musical': 'Wicked'
+        })
+        
+        # The suggestion should NOT be marked as used
+        suggestion = SongSuggestion.objects.get(song_name='Defying Gravity', musical='Wicked')
+        self.assertFalse(suggestion.is_used)
+
+
+class TestVotingIntegration(TestViews):
+    """Integration tests for the full voting workflow."""
+    
+    def test_full_voting_workflow(self):
+        """Test complete workflow: suggest, vote, check ordering."""
+        # Create suggestions
+        [suggester] = create_singers(1)
+        suggestion1 = SongSuggestion.objects.create(
+            song_name='Song A',
+            musical='Musical',
+            suggested_by=suggester
+        )
+        suggestion2 = SongSuggestion.objects.create(
+            song_name='Song B',
+            musical='Musical',
+            suggested_by=suggester
+        )
+        suggestion3 = SongSuggestion.objects.create(
+            song_name='Song C',
+            musical='Musical',
+            suggested_by=suggester
+        )
+        
+        # User 1 votes for suggestion1 and suggestion2
+        user1 = login_singer(self, user_id=2)
+        self.client.post(reverse('toggle_vote', args=[suggestion1.id]))
+        self.client.post(reverse('toggle_vote', args=[suggestion2.id]))
+        
+        # User 2 votes for suggestion1
+        self.client.logout()
+        user2 = login_singer(self, user_id=3)
+        self.client.post(reverse('toggle_vote', args=[suggestion1.id]))
+        
+        # Check ordering: suggestion1 (2 votes), suggestion2 (1 vote), suggestion3 (0 votes)
+        response = self.client.get(reverse('get_suggested_songs'))
+        self.assertEqual(response.data[0]['song_name'], 'Song A')
+        self.assertEqual(response.data[0]['vote_count'], 2)
+        self.assertEqual(response.data[1]['song_name'], 'Song B')
+        self.assertEqual(response.data[1]['vote_count'], 1)
+        self.assertEqual(response.data[2]['song_name'], 'Song C')
+        self.assertEqual(response.data[2]['vote_count'], 0)
+        
+        # User 2 changes their vote
+        self.client.post(reverse('toggle_vote', args=[suggestion1.id]))  # Unvote
+        self.client.post(reverse('toggle_vote', args=[suggestion3.id]))  # Vote for suggestion3
+        
+        # Check new ordering: all have 1 vote, should be ordered by recency
+        response = self.client.get(reverse('get_suggested_songs'))
+        vote_counts = [s['vote_count'] for s in response.data]
+        self.assertEqual(vote_counts, [1, 1, 1])
+    
+    def test_vote_persistence_across_sessions(self):
+        """Test that votes persist when user logs out and back in."""
+        [suggester] = create_singers(1)
+        suggestion = SongSuggestion.objects.create(
+            song_name='Test Song',
+            musical='Musical',
+            suggested_by=suggester
+        )
+        
+        # User votes
+        user = login_singer(self, user_id=2)
+        self.client.post(reverse('toggle_vote', args=[suggestion.id]))
+        
+        # Check vote is recorded
+        response = self.client.get(reverse('get_suggested_songs'))
+        self.assertTrue(response.data[0]['user_voted'])
+        
+        # Logout and login again
+        self.client.logout()
+        login_singer(self, user_id=2)
+        
+        # Vote should still be there
+        response = self.client.get(reverse('get_suggested_songs'))
+        self.assertTrue(response.data[0]['user_voted'])
+        self.assertEqual(response.data[0]['vote_count'], 1)
