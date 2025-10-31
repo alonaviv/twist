@@ -582,6 +582,11 @@ def live_lyrics(request):
 
 
 @bwt_login_required('login')
+def song_voting(request):
+    return render(request, 'song_signup/song_voting.html')
+
+
+@bwt_login_required('login')
 def lineup(request):
     return render(request, 'song_signup/lineup.html')
 
@@ -647,7 +652,7 @@ def suggest_song(request):
                                                               defaults={'suggested_by': current_user})
             if created:
                 SongSuggestion.objects.check_used_suggestions()
-            return redirect('view_suggestions')
+            return redirect('song_voting')
 
     else:
         return render(request, 'song_signup/suggest_song.html')

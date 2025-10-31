@@ -880,8 +880,26 @@ nav {
   height: 100%;
   width: 100%; }
 
-#home-suggest-song img {
-  object-position: right; }
+#home-vote-song {
+  background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+  color: #fff; }
+  #home-vote-song .column-1 h3,
+  #home-vote-song .column-1 p {
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25); }
+  #home-vote-song .column-2 {
+    justify-content: flex-end;
+    align-items: center;
+    padding: 0;
+    margin-right: 0; }
+  #home-vote-song img {
+    display: block;
+    object-fit: contain;
+    object-position: right;
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    margin-left: auto; }
 
 #song-added {
   display: flex;
@@ -914,6 +932,8 @@ nav {
     align-items: space-around;
     padding: 10px 0 10px 0;
     gap: 5px; }
+    #raffle-card .raffle-cancel-wrapper .column-2 {
+      padding: 10px 0 10px 10px; }
     #raffle-card .raffle-cancel-wrapper .raffle-your-in {
       text-align: center;
       font-size: 14px;
@@ -1192,6 +1212,79 @@ nav {
         #suggestion-list-wrapper .container ul li.claimed {
           color: #666;
           pointer-events: none; }
+
+#explanation-text {
+  font-size: 18px;
+  margin: 20px 0px; }
+
+#song-voting-wrapper {
+  height: 100%;
+  width: 100%;
+  background: #00b3c5;
+  color: #000; }
+  #song-voting-wrapper .container {
+    overflow: scroll;
+    height: 100%;
+    width: 100%;
+    padding: 5% 0 140px; }
+    #song-voting-wrapper .container h1,
+    #song-voting-wrapper .container #explanation-text {
+      padding: 0 5%; }
+    #song-voting-wrapper .container #explanation-text {
+      font-size: 22px;
+      font-weight: 600; }
+    #song-voting-wrapper .container ol {
+      width: 100%;
+      counter-reset: suggestion-counter;
+      list-style: none;
+      padding-left: 0;
+      margin: 10px 0; }
+      #song-voting-wrapper .container ol li {
+        display: flex;
+        flex-direction: column;
+        margin: 0;
+        counter-increment: suggestion-counter; }
+        #song-voting-wrapper .container ol li .song-wrapper {
+          position: relative;
+          width: 100%;
+          padding: 12px 5% 12px calc(28px + 5%);
+          background: #0fb8c8;
+          border-radius: 0;
+          box-shadow: none;
+          display: flex;
+          justify-content: space-between;
+          font-size: 20px;
+          padding-bottom: 2px; }
+          #song-voting-wrapper .container ol li .song-wrapper::before {
+            content: counter(suggestion-counter) ".  ";
+            font-weight: bold;
+            font-size: 20px;
+            margin-right: 5px;
+            position: absolute;
+            left: 5%; }
+          #song-voting-wrapper .container ol li .song-wrapper .song-details {
+            display: flex;
+            flex-direction: column;
+            width: 100%; }
+            #song-voting-wrapper .container ol li .song-wrapper .song-details .song-name {
+              font-weight: 500;
+              display: flex;
+              align-items: center; }
+            #song-voting-wrapper .container ol li .song-wrapper .song-details .song-musical {
+              font-style: italic;
+              font-size: 17px; }
+          #song-voting-wrapper .container ol li .song-wrapper .vote-controls {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-left: 12px; }
+            #song-voting-wrapper .container ol li .song-wrapper .vote-controls .vote-btn {
+              padding: 6px 12px; }
+              #song-voting-wrapper .container ol li .song-wrapper .vote-controls .vote-btn.voted {
+                background: #ffd700;
+                color: #333; }
+        #song-voting-wrapper .container ol li:nth-child(even) .song-wrapper {
+          background: #009ead; }
 
 #passcode-reveal-wrapper {
   display: none;

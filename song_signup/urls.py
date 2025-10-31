@@ -16,6 +16,7 @@ urlpatterns = [
     path('logout', views.logout, name='logout'),
     path('manage_songs', views.manage_songs, name='manage_songs'),
     path('view_suggestions', views.view_suggestions, name='view_suggestions'),
+    path('song_voting', views.song_voting, name='song_voting'),
     path('add_song', views.add_song, name='add_song'),
     path('update_song', views.update_song, name='update_song'),
     path('suggest_song', views.suggest_song, name='suggest_song'),

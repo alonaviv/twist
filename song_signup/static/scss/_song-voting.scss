@@ -1,0 +1,101 @@
+#explanation-text {
+    font-size: 18px;
+    margin: 20px 0px;
+}
+
+#song-voting-wrapper {
+    height: 100%;
+    width: 100%;
+    background: $secondary-color;
+    color: set-text-color($secondary-color);
+
+    .container {
+        overflow: scroll;
+        height: 100%;
+        width: 100%;
+        padding: 5% 0 140px; // remove horizontal padding so stripes can go full width
+
+        // keep margins for header text
+        h1,
+        #explanation-text {
+            padding: 0 5%;
+        }
+        #explanation-text {
+            font-size: 22px;
+            font-weight: 600;
+        }
+
+        ol {
+            width: 100%;
+            counter-reset: suggestion-counter;
+            list-style: none;
+            padding-left: 0;
+            margin: 10px 0; // no horizontal margins
+
+            li {
+                display: flex;
+                flex-direction: column;
+                margin: 0; // no gaps between rows
+                counter-increment: suggestion-counter;
+
+                .song-wrapper {
+                    position: relative;
+                    width: 100%;
+                    padding: 12px 5% 12px calc(28px + 5%);
+                    background: mix(#fff, $secondary-color, 6%);
+                    border-radius: 0;
+                    box-shadow: none;
+                    &::before {
+                        content: counter(suggestion-counter) ".  ";
+                        font-weight: bold;
+                        font-size: 20px;
+                        margin-right: 5px;
+                        position: absolute;
+                        left: 5%;
+                    }
+                    display: flex;
+                    justify-content: space-between;
+                    font-size: 20px;
+                    padding-bottom: 2px;
+
+                    .song-details {
+                        display: flex;
+                        flex-direction: column;
+                        width: 100%;
+
+                        .song-name {
+                            font-weight: 500;
+                            display: flex;
+                            align-items: center;
+                        }
+
+                        .song-musical {
+                            font-style: italic;
+                            font-size: 17px;
+                        }
+                    }
+
+                    .vote-controls {
+                        display: flex;
+                        gap: 12px;
+                        align-items: center;
+                        margin-left: 12px;
+
+                        .vote-btn {
+                            padding: 6px 12px;
+                            &.voted {
+                                background: #ffd700;
+                                color: #333;
+                            }
+                        }
+                    }
+                }
+                &:nth-child(even) {
+                    .song-wrapper {
+                        background: mix(#000, $secondary-color, 12%);
+                    }
+                }
+            }
+        }
+    }
+}

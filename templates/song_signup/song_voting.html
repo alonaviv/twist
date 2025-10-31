@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+{% include "partials/_navbar.html" with current="song-voting" %}
+
+<main>
+    <div id="song-voting-wrapper">
+        <div class="container">
+            <h1>Vote for Songs</h1>
+            <p id="explanation-text">What do you want to hear tonight?</p>
+            <ol id="voting-list"></ol>
+        </div>
+    </div>
+
+    
+
+    {% include "partials/_footer.html" %}
+</main>
+
+<script type="module" src="{% static "js/song-voting.js" %}"></script>
+<script src="{% static "js/navbar.js" %}"></script>
+
+{% endblock %}
