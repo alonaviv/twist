@@ -5,6 +5,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Manager, Max
 from django.utils import timezone
 from flags.state import flag_enabled
+from django.db.models import Count
 
 
 class SongSuggestionManager(Manager):
@@ -14,6 +15,30 @@ class SongSuggestionManager(Manager):
         """
         for suggestion in self.all():
             suggestion.check_if_used()
+
+    def recalculate_positions(self):
+        """
+        Assign positions to suggestions based on votes/time while keeping 'used' suggestions at their existing positions.
+        """
+        suggestions = list(
+            self.annotate(num_votes=Count('voters')).order_by('-num_votes', '-request_time')
+        )
+
+        # If a used suggestion has a position set, keep it; otherwise we'll assign it below
+        occupied = {s.position for s in suggestions if s.is_used and s.position}
+
+        pos = 1
+        for s in suggestions:
+            if s.is_used and s.position:
+                # Skip pinned used items
+                continue
+            # Find next free position
+            while pos in occupied:
+                pos += 1
+
+            s.position = pos
+            s.save()
+            pos += 1
 
 
 class SongRequestManager(Manager):

@@ -50,6 +50,52 @@
                     }
                 }
 
+                &.used {
+                    // Chosen song background should be darker than the greyed-out button (#bdbdbd)
+                    .song-wrapper {
+                        background: #9a9a9a; // darker grey than button
+                        color: #111;
+                    }
+                    .vote-controls {
+                        display: flex; // keep visible but disabled
+                        .vote-btn {
+                            background: #bdbdbd !important;
+                            color: #666 !important;
+                            cursor: not-allowed;
+                            pointer-events: none;
+                        }
+                    }
+                    .chosen-banner {
+                        position: absolute;
+                        top: 50%;
+                        left: 55%;
+                        width: 100px;
+                        text-align: center;
+                        background: linear-gradient(
+                            135deg,
+                            #6a0dad 0%,
+                            /* deep purple */ #5a0b95 35%,
+                            #4b087d 65%,
+                            /* darker royal purple */ #3a0663 100% /* near-eggplant */
+                        ); // dark purple gradient
+                        color: #fff; // readable on dark ribbon
+                        padding: 3px 0;
+                        font-size: 11px;
+                        font-weight: 700;
+                        transform: translate(-50%, -50%) rotate(10deg);
+                        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.25);
+                        border: 2px solid #2c044d; // darkest edge
+                        pointer-events: none;
+                        z-index: 3; // over text
+                    }
+                }
+                // Slight alternation for used even rows while staying in bluish-gray family
+                &.used:nth-child(even) {
+                    .song-wrapper {
+                        background: #8a8a8a; // slightly darker for stripe effect
+                    }
+                }
+
                 .song-wrapper {
                     position: relative;
                     width: 100%;
@@ -102,6 +148,18 @@
                         }
                     }
                 }
+                // Gray out vote button for used items (overrides any state)
+                &.used {
+                    .vote-controls {
+                        display: flex;
+                        .vote-btn {
+                            background: #bdbdbd !important;
+                            color: #666 !important;
+                            cursor: not-allowed;
+                            pointer-events: none;
+                        }
+                    }
+                }
                 &:nth-child(even) {
                     .song-wrapper {
                         background: #d9d9d9; // lighter grayscale for even rows
@@ -126,7 +184,7 @@
                     left: 0;
                     width: 100%;
                     height: 60px;
-                    background-image: url("/static/img/voting/Playbill.jpg");
+                    background-image: url("/static/img/voting/peoples-choice.png");
                     background-size: cover;
                     background-position: center;
                     border-bottom: 3px solid #000; // strong separator reminiscent of playbill

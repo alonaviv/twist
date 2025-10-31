@@ -24,7 +24,10 @@ setInterval(populateVotingList, 3000);
 
 function votingListItem(suggestion) {
     const li = document.createElement("li");
-
+    if (suggestion.is_used) {
+        li.classList.add('used');
+    }
+    li.dataset.used = suggestion.is_used ? 'true' : 'false';
     const votedClass = suggestion.user_voted ? "voted" : "";
     const buttonText = suggestion.user_voted ? UNVOTE_LABEL : VOTE_LABEL;
 
@@ -39,10 +42,16 @@ function votingListItem(suggestion) {
             <div class="vote-controls">
                 <button class="btn vote-btn ${votedClass}" data-id="${suggestion.id}">${buttonText}</button>
             </div>
+            ${suggestion.is_used ? `<div class="chosen-banner">Chosen by ${suggestion.chosen_by || 'a singer'}!</div>` : ''}
         </div>
     `;
 
-    li.querySelector('.vote-btn').addEventListener('click', async (e) => {
+    const btn = li.querySelector('.vote-btn');
+    if (suggestion.is_used && btn) {
+        btn.disabled = true;
+    }
+
+    btn && btn.addEventListener('click', async (e) => {
         e.preventDefault();
         const id = e.currentTarget.dataset.id;
         const btn = e.currentTarget;
@@ -110,9 +119,20 @@ function drawPeoplesChoiceFrame() {
         return;
     }
 
-    const lastIndex = Math.min(count - 1, children.length - 1);
-    const firstWrapper = children[0].querySelector('.song-wrapper');
-    const lastWrapper = children[lastIndex].querySelector('.song-wrapper');
+    // Find the index of the last element needed to cover 'count' non-used items
+    let remaining = count;
+    let lastIndex = -1;
+    for (let i = 0; i < children.length; i++) {
+        const li = children[i];
+        lastIndex = i;
+        if (li.dataset.used !== 'true') {
+            remaining -= 1;
+            if (remaining === 0) break;
+        }
+    }
+
+    const firstWrapper = children[0]?.querySelector('.song-wrapper');
+    const lastWrapper = children[lastIndex]?.querySelector('.song-wrapper');
     if (!firstWrapper || !lastWrapper) return;
 
     const listRect = votingList.getBoundingClientRect();
@@ -136,13 +156,17 @@ function drawPeoplesChoiceFrame() {
 function markPeoplesChoiceItems() {
     const count = topSuggestionCount;
     const children = Array.from(votingList.children);
-    children.forEach((li, idx) => {
-        if (idx < count) {
-            li.classList.add('peoples-choice-item');
-        } else {
-            li.classList.remove('peoples-choice-item');
-        }
+    let remaining = count;
+    children.forEach((li) => {
+        li.classList.remove('peoples-choice-item');
     });
+    for (const li of children) {
+        const isUsed = li.dataset.used === 'true';
+        if (!isUsed && remaining > 0) {
+            li.classList.add('peoples-choice-item');
+            remaining -= 1;
+        }
+    }
 }
 
 // Recompute frame on resize

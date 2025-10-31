@@ -223,6 +223,7 @@ class SongSuggestion(Model):
     suggested_by = ForeignKey(Singer, on_delete=CASCADE, related_name='suggested')
     request_time = DateTimeField(auto_now_add=True)
     is_used = BooleanField(default=False)
+    position = IntegerField(null=True, blank=True)
     voters = ManyToManyField(Singer, blank=True, related_name='voted')
 
     def check_if_used(self):

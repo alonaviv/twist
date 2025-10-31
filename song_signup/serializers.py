@@ -14,6 +14,7 @@ class SongSuggestionSerializer(ModelSerializer):
     vote_count = SerializerMethodField()
     user_voted = SerializerMethodField()
     voters = SingerSerializer(many=True, read_only=True)
+    chosen_by = SerializerMethodField()
 
     def get_vote_count(self, obj):
         """Returns the total number of votes for this song suggestion."""
@@ -26,9 +27,16 @@ class SongSuggestionSerializer(ModelSerializer):
             return obj.user_voted(request.user)
         return False
 
+    def get_chosen_by(self, obj):
+        try:
+            req = SongRequest.objects.get(song_name=obj.song_name, musical=obj.musical)
+            return req.singer.get_full_name()
+        except SongRequest.DoesNotExist:
+            return None
+
     class Meta:
         model = SongSuggestion
-        fields = ['id', 'song_name', 'musical', 'suggested_by', 'request_time', 'is_used', 
+        fields = ['id', 'song_name', 'musical', 'suggested_by', 'request_time', 'is_used', 'chosen_by',
                   'vote_count', 'user_voted', 'voters']
 
 

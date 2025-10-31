@@ -2952,3 +2952,244 @@ class TestVotingIntegration(TestViews):
         response = self.client.get(reverse('get_suggested_songs'))
         self.assertTrue(response.data[0]['user_voted'])
         self.assertEqual(response.data[0]['vote_count'], 1)
+
+
+class TestSuggestionPositions(TestViews):
+    """Tests for suggestion position calculation and pinning behavior."""
+
+    def test_ordering_by_votes_then_time(self):
+        # Create suggester and voters
+        suggester, v1, v2, v3, v4, v5, v6 = create_singers(7)
+
+        # Create three suggestions at staggered times
+        with freeze_time(auto_tick_seconds=1) as frozen:
+            a = SongSuggestion.objects.create(song_name="A", musical="M", suggested_by=suggester)
+            frozen.tick()
+            b = SongSuggestion.objects.create(song_name="B", musical="M", suggested_by=suggester)
+            frozen.tick()
+            c = SongSuggestion.objects.create(song_name="C", musical="M", suggested_by=suggester)
+
+        # Votes: C(3), B(3 but older than C), A(2)
+        a.voters.set([v1, v2])
+        b.voters.set([v1, v2, v3])
+        c.voters.set([v1, v2, v4])
+
+        SongSuggestion.objects.recalculate_positions()
+        a.refresh_from_db(); b.refresh_from_db(); c.refresh_from_db()
+
+        self.assertEqual(c.position, 1)
+        self.assertEqual(b.position, 2)
+        self.assertEqual(a.position, 3)
+
+    def test_used_with_existing_position_is_pinned(self):
+        suggester, v1, v2, v3, v4, v5 = create_singers(6)
+
+        # Control recency so A is the most recent among A/B (for tie-breaks)
+        with freeze_time(auto_tick_seconds=1) as frozen:
+            b = SongSuggestion.objects.create(song_name="B", musical="M", suggested_by=suggester)
+            frozen.tick()
+            c = SongSuggestion.objects.create(song_name="C", musical="M", suggested_by=suggester)
+            frozen.tick()
+            a = SongSuggestion.objects.create(song_name="A", musical="M", suggested_by=suggester)
+
+        a.voters.set([v1])          # 1
+        b.voters.set([v1, v2, v3])  # 3
+        c.voters.set([v1, v2])      # 2
+
+        SongSuggestion.objects.recalculate_positions()
+        a.refresh_from_db(); b.refresh_from_db(); c.refresh_from_db()
+
+        # Mark C as used but keep its existing calculated position
+        c.is_used = True
+        c.save()
+
+        # Boost A to become top
+        a.voters.add(v4, v5)
+
+        SongSuggestion.objects.recalculate_positions()
+        a.refresh_from_db(); b.refresh_from_db(); c.refresh_from_db()
+
+        self.assertEqual(c.position, 2)
+        self.assertEqual(a.position, 1)
+        self.assertEqual(b.position, 3)
+
+    def test_newly_used_without_position_gets_current_rank_slot(self):
+        suggester, v1, v2, v3 = create_singers(4)
+
+        a = SongSuggestion.objects.create(song_name="A", musical="M", suggested_by=suggester)
+        b = SongSuggestion.objects.create(song_name="B", musical="M", suggested_by=suggester)
+        c = SongSuggestion.objects.create(song_name="C", musical="M", suggested_by=suggester)
+
+        a.voters.set([v1, v2])      # 2
+        b.voters.set([v1])          # 1
+        c.voters.set([v1, v2, v3])  # 3
+
+        SongSuggestion.objects.recalculate_positions()
+        a.refresh_from_db(); b.refresh_from_db(); c.refresh_from_db()
+
+        # Mark A as used (no preset position); recalc should pin it at current slot = 2
+        a.is_used = True
+        a.save()
+
+        SongSuggestion.objects.recalculate_positions()
+        a.refresh_from_db(); b.refresh_from_db(); c.refresh_from_db()
+
+        self.assertEqual(c.position, 1)
+        self.assertEqual(a.position, 2)
+        self.assertEqual(b.position, 3)
+
+    def test_multiple_used_with_gaps_filled(self):
+        suggester, v1, v2, v3, v4 = create_singers(5)
+
+        a = SongSuggestion.objects.create(song_name="A", musical="M", suggested_by=suggester)
+        b = SongSuggestion.objects.create(song_name="B", musical="M", suggested_by=suggester)
+        c = SongSuggestion.objects.create(song_name="C", musical="M", suggested_by=suggester)
+        d = SongSuggestion.objects.create(song_name="D", musical="M", suggested_by=suggester)
+
+        # Votes base order: D(4), C(3), B(2), A(1)
+        a.voters.set([v1])
+        b.voters.set([v1, v2])
+        c.voters.set([v1, v2, v3])
+        d.voters.set([v1, v2, v3, v4])
+
+        SongSuggestion.objects.recalculate_positions()
+        a.refresh_from_db(); b.refresh_from_db(); c.refresh_from_db(); d.refresh_from_db()
+
+        # Mark B and C as used at their current positions (do not set position manually)
+        # Base positions should be: D=1, C=2, B=3, A=4
+        self.assertEqual(d.position, 1)
+        self.assertEqual(c.position, 2)
+        self.assertEqual(b.position, 3)
+        self.assertEqual(a.position, 4)
+
+        b.is_used = True; b.save()
+        c.is_used = True; c.save()
+
+        # Recalculate (positions for used stay pinned; others fill around)
+        SongSuggestion.objects.recalculate_positions()
+        a.refresh_from_db(); b.refresh_from_db(); c.refresh_from_db(); d.refresh_from_db()
+
+        self.assertEqual(d.position, 1)
+        self.assertEqual(c.position, 2)
+        self.assertEqual(b.position, 3)
+        self.assertEqual(a.position, 4)
+
+    def test_get_suggested_songs_calls_recalculate_positions(self):
+        # Build a full scenario with votes and used items (no manual position setting)
+        suggester, v1, v2, v3, v4, v5 = create_singers(6)
+
+        # Control recency; B, C, D, then A
+        with freeze_time(auto_tick_seconds=1) as frozen:
+            b = SongSuggestion.objects.create(song_name='B', musical='M', suggested_by=suggester)
+            frozen.tick()
+            c = SongSuggestion.objects.create(song_name='C', musical='M', suggested_by=suggester)
+            frozen.tick()
+            d = SongSuggestion.objects.create(song_name='D', musical='M', suggested_by=suggester)
+            frozen.tick()
+            a = SongSuggestion.objects.create(song_name='A', musical='M', suggested_by=suggester)
+
+        # Votes base rank: D(4), C(3), B(2), A(1)
+        a.voters.set([v1])
+        b.voters.set([v1, v2])
+        c.voters.set([v1, v2, v3])
+        d.voters.set([v1, v2, v3, v4])
+
+        SongSuggestion.objects.recalculate_positions()
+        a.refresh_from_db(); b.refresh_from_db(); c.refresh_from_db(); d.refresh_from_db()
+        # Mark B and C as used at their current slots (3 and 2 respectively)
+        b.is_used = True; b.save()
+        c.is_used = True; c.save()
+
+        # Change votes significantly: make A the top by adding voters
+        a.voters.add(v2, v3, v4, v5)
+
+        # Now expected order after fetching suggestions: A(1), C(2 pinned), B(3 pinned), D(4)
+        response = self.client.get(reverse('get_suggested_songs'))
+        self.assertEqual(response.status_code, 200)
+        names_in_order = [item['song_name'] for item in response.data]
+        self.assertEqual(names_in_order, ['A', 'C', 'B', 'D'])
+
+    def test_used_locked_after_multiple_vote_changes(self):
+        # Create five suggestions and pin middle two by marking used
+        suggester, v1, v2, v3, v4, v5, v6 = create_singers(7)
+        with freeze_time(auto_tick_seconds=1) as frozen:
+            s1 = SongSuggestion.objects.create(song_name='S1', musical='M', suggested_by=suggester)
+            frozen.tick()
+            s2 = SongSuggestion.objects.create(song_name='S2', musical='M', suggested_by=suggester)
+            frozen.tick()
+            s3 = SongSuggestion.objects.create(song_name='S3', musical='M', suggested_by=suggester)
+            frozen.tick()
+            s4 = SongSuggestion.objects.create(song_name='S4', musical='M', suggested_by=suggester)
+            frozen.tick()
+            s5 = SongSuggestion.objects.create(song_name='S5', musical='M', suggested_by=suggester)
+
+        # Base votes: S5(5), S4(4), S3(3), S2(2), S1(1)
+        s1.voters.set([v1])
+        s2.voters.set([v1, v2])
+        s3.voters.set([v1, v2, v3])
+        s4.voters.set([v1, v2, v3, v4])
+        s5.voters.set([v1, v2, v3, v4, v5])
+
+        SongSuggestion.objects.recalculate_positions()
+        s1.refresh_from_db(); s2.refresh_from_db(); s3.refresh_from_db(); s4.refresh_from_db(); s5.refresh_from_db()
+        # Pin S3 and S2 at their current slots (3 and 4 or 2 and 4 depending on tie-breaks); assert now
+        self.assertEqual(s5.position, 1)
+        self.assertEqual(s4.position, 2)
+        self.assertEqual(s3.position, 3)
+        self.assertEqual(s2.position, 4)
+        self.assertEqual(s1.position, 5)
+
+        s3.is_used = True; s3.save()
+        s2.is_used = True; s2.save()
+
+        # Round 1 vote changes: make S1 very popular, reduce S5 popularity relative by adding to others
+        s1.voters.add(v2, v3, v4, v5, v6)  # S1 now top
+        s4.voters.add(v5)
+
+        SongSuggestion.objects.recalculate_positions()
+        s1.refresh_from_db(); s2.refresh_from_db(); s3.refresh_from_db(); s4.refresh_from_db(); s5.refresh_from_db()
+
+        # Used S3 and S2 should remain at 3 and 4; others move around them
+        self.assertEqual(s3.position, 3)
+        self.assertEqual(s2.position, 4)
+        # S1 should now be 1; S4 or S5 fill remaining slot 2/5 based on votes/time
+        self.assertEqual(s1.position, 1)
+        self.assertIn(s4.position, (2, 5))
+        self.assertIn(s5.position, (2, 5))
+
+    def test_add_song_request_does_not_recalculate_positions_directly(self):
+        singer = login_singer(self, user_id=1)
+        # Pre-create suggestion that will be marked as used by add_song_request
+        SongSuggestion.objects.create(song_name='Defying Gravity', musical='Wicked', suggested_by=singer)
+
+        with patch('song_signup.views.SongSuggestion.objects.recalculate_positions') as recalc:
+            # Add a matching song request
+            response = self.client.post(reverse('add_song_request'), {
+                'song-name': ["defying gravity"],
+                'musical': ['wicked'],
+                'notes': ['']
+            })
+            self.assertEqual(response.status_code, 200)
+            # View should not call recalc here; calculation happens when fetching suggestions
+            recalc.assert_not_called()
+
+        # Now fetching suggestions should call recalc
+        with patch('song_signup.views.SongSuggestion.objects.recalculate_positions') as recalc:
+            response = self.client.get(reverse('get_suggested_songs'))
+            self.assertEqual(response.status_code, 200)
+            recalc.assert_called_once()
+
+    def test_delete_song_then_fetch_suggestions(self):
+        # Create a suggestion and matching request
+        singer = login_singer(self, user_id=1)
+        SongSuggestion.objects.create(song_name='A', musical='M', suggested_by=singer)
+        song = SongRequest.objects.create(song_name='A', musical='M', singer=singer)
+        SongSuggestion.objects.check_used_suggestions()
+
+        # Deleting a song should succeed
+        response = self.client.post(reverse('delete_song', args=[song.id]))
+        self.assertEqual(response.status_code, 200)
+
+        # Fetching suggestions should succeed and reflect current ordering (implicitly recalculated by the view)
+        response = self.client.get(reverse('get_suggested_songs'))
+        self.assertEqual(response.status_code, 200)
