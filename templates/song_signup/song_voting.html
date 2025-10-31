@@ -10,7 +10,7 @@
         <div class="container">
             <h1>Vote for Songs</h1>
             <p id="explanation-text">What do you want to hear tonight?</p>
-            <ol id="voting-list"></ol>
+            <ol id="voting-list" data-top-count="{{ config.NUM_PEOPLES_CHOICE|default:0 }}"></ol>
         </div>
     </div>
 

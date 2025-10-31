@@ -103,7 +103,8 @@ CONSTANCE_CONFIG = {
     'DRINKING_WORDS': ('', "Tonight's drinking game words!\nMultiple words: separate with a semicolon without spaces (e.g. love;rain;umbrella)"),
     'FREEBIE_TICKET': ('', "Mock ticket number that anyone can use to sign up as a singer"),
     'EXPECTED_NUM_SONGS': (50, "How many songs we expect there to be this evening"),
-    'TARGET_REPEAT_SINGERS': (4, "How many singers do we want to repeat at the end of the evening")
+    'TARGET_REPEAT_SINGERS': (4, "How many singers do we want to repeat at the end of the evening"),
+    'NUM_PEOPLES_CHOICE': (5, "Number of top-voted suggestions that are the 'people's choice'"),
 }
 
 CONSTANCE_BACKEND = 'constance.backends.redisd.RedisBackend'

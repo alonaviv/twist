@@ -1214,41 +1214,48 @@ nav {
           pointer-events: none; }
 
 #explanation-text {
-  font-size: 18px;
-  margin: 20px 0px; }
+  font-size: 16px;
+  margin: 6px 0; }
 
 #song-voting-wrapper {
   height: 100%;
   width: 100%;
-  background: #00b3c5;
+  background: #f2f2f2;
   color: #000; }
   #song-voting-wrapper .container {
     overflow: scroll;
     height: 100%;
     width: 100%;
-    padding: 5% 0 140px; }
+    padding: 0 0 120px; }
     #song-voting-wrapper .container h1,
     #song-voting-wrapper .container #explanation-text {
-      padding: 0 5%; }
-    #song-voting-wrapper .container #explanation-text {
-      font-size: 22px;
-      font-weight: 600; }
+      display: none; }
     #song-voting-wrapper .container ol {
       width: 100%;
       counter-reset: suggestion-counter;
       list-style: none;
       padding-left: 0;
-      margin: 10px 0; }
+      padding-top: 60px;
+      margin: 0 0 10px;
+      position: relative;
+      color: #333; }
       #song-voting-wrapper .container ol li {
         display: flex;
         flex-direction: column;
         margin: 0;
         counter-increment: suggestion-counter; }
+        #song-voting-wrapper .container ol li.peoples-choice-item .song-wrapper {
+          background: #0fb8c8; }
+        #song-voting-wrapper .container ol li.peoples-choice-item .song-details .song-name p {
+          color: inherit;
+          font-weight: 600; }
+        #song-voting-wrapper .container ol li.peoples-choice-item .song-details .song-musical {
+          color: inherit; }
         #song-voting-wrapper .container ol li .song-wrapper {
           position: relative;
           width: 100%;
           padding: 12px 5% 12px calc(28px + 5%);
-          background: #0fb8c8;
+          background: #e6e6e6;
           border-radius: 0;
           box-shadow: none;
           display: flex;
@@ -1281,10 +1288,32 @@ nav {
             #song-voting-wrapper .container ol li .song-wrapper .vote-controls .vote-btn {
               padding: 6px 12px; }
               #song-voting-wrapper .container ol li .song-wrapper .vote-controls .vote-btn.voted {
-                background: #ffd700;
+                background: #fce300;
                 color: #333; }
         #song-voting-wrapper .container ol li:nth-child(even) .song-wrapper {
-          background: #009ead; }
+          background: #d9d9d9; }
+      #song-voting-wrapper .container ol #peoples-choice-frame {
+        position: absolute;
+        left: 0;
+        right: 0;
+        border: 3px solid #fce300;
+        box-shadow: 0 0 0 4px #000 inset, 0 6px 18px rgba(0, 0, 0, 0.35);
+        pointer-events: none;
+        z-index: 1; }
+        #song-voting-wrapper .container ol #peoples-choice-frame::before {
+          content: "";
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 60px;
+          background-image: url("/static/img/voting/Playbill.jpg");
+          background-size: cover;
+          background-position: center;
+          border-bottom: 3px solid #000;
+          pointer-events: none; }
+      #song-voting-wrapper .container ol li.peoples-choice-item:nth-child(even) .song-wrapper {
+        background: #009ead; }
 
 #passcode-reveal-wrapper {
   display: none;

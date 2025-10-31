@@ -1,28 +1,24 @@
 #explanation-text {
-    font-size: 18px;
-    margin: 20px 0px;
+    font-size: 16px;
+    margin: 6px 0;
 }
 
 #song-voting-wrapper {
     height: 100%;
     width: 100%;
-    background: $secondary-color;
-    color: set-text-color($secondary-color);
+    background: #f2f2f2; // lighter grey background for the top section
+    color: #000; // black text
 
     .container {
         overflow: scroll;
         height: 100%;
         width: 100%;
-        padding: 5% 0 140px; // remove horizontal padding so stripes can go full width
+        padding: 0 0 120px; // remove top spacing so playbill sits at top
 
         // keep margins for header text
         h1,
         #explanation-text {
-            padding: 0 5%;
-        }
-        #explanation-text {
-            font-size: 22px;
-            font-weight: 600;
+            display: none; // hide header and subtitle; top becomes playbill image
         }
 
         ol {
@@ -30,7 +26,10 @@
             counter-reset: suggestion-counter;
             list-style: none;
             padding-left: 0;
-            margin: 10px 0; // no horizontal margins
+            padding-top: 60px; // reserve space for the playbill banner
+            margin: 0 0 10px; // remove top margin so banner touches navbar
+            position: relative; // anchor unified frame
+            color: #333; // restore regular text color for the list area
 
             li {
                 display: flex;
@@ -38,11 +37,24 @@
                 margin: 0; // no gaps between rows
                 counter-increment: suggestion-counter;
 
+                &.peoples-choice-item {
+                    .song-wrapper {
+                        background: mix(#fff, $secondary-color, 6%);
+                    }
+                    .song-details .song-name p {
+                        color: inherit;
+                        font-weight: 600;
+                    }
+                    .song-details .song-musical {
+                        color: inherit;
+                    }
+                }
+
                 .song-wrapper {
                     position: relative;
                     width: 100%;
                     padding: 12px 5% 12px calc(28px + 5%);
-                    background: mix(#fff, $secondary-color, 6%);
+                    background: #e6e6e6; // lighter grayscale default
                     border-radius: 0;
                     box-shadow: none;
                     &::before {
@@ -84,7 +96,7 @@
                         .vote-btn {
                             padding: 6px 12px;
                             &.voted {
-                                background: #ffd700;
+                                background: #fce300; // playbill yellow for Unvote
                                 color: #333;
                             }
                         }
@@ -92,8 +104,39 @@
                 }
                 &:nth-child(even) {
                     .song-wrapper {
-                        background: mix(#000, $secondary-color, 12%);
+                        background: #d9d9d9; // lighter grayscale for even rows
                     }
+                }
+            }
+            // Unified people's choice frame overlay
+            #peoples-choice-frame {
+                position: absolute;
+                left: 0;
+                right: 0;
+                border: 3px solid #fce300; // playbill yellow
+                box-shadow: 0 0 0 4px #000 inset, 0 6px 18px rgba(0, 0, 0, 0.35);
+                pointer-events: none;
+                z-index: 1;
+
+                // Playbill banner at the top spanning full width
+                &::before {
+                    content: "";
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 60px;
+                    background-image: url("/static/img/voting/Playbill.jpg");
+                    background-size: cover;
+                    background-position: center;
+                    border-bottom: 3px solid #000; // strong separator reminiscent of playbill
+                    pointer-events: none;
+                }
+            }
+            // ensure even rows within the top block use blue shade
+            li.peoples-choice-item:nth-child(even) {
+                .song-wrapper {
+                    background: mix(#000, $secondary-color, 12%);
                 }
             }
         }

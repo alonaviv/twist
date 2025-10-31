@@ -16,6 +16,7 @@ function setVoteButtonState(button, voted) {
 const wrapper = document.getElementById("song-voting-wrapper");
 const container = wrapper.querySelector(".container");
 const votingList = document.getElementById('voting-list');
+const topSuggestionCount = parseInt(votingList?.dataset?.topCount || '0', 10) || 0;
 const csrftoken = getCookie('csrftoken');
 
 populateVotingList();
@@ -89,6 +90,62 @@ async function populateVotingList() {
 
     const lis = data.map(votingListItem);
     votingList.replaceChildren(...lis);
+
+    markPeoplesChoiceItems();
+    drawPeoplesChoiceFrame();
 }
+
+function drawPeoplesChoiceFrame() {
+    const count = topSuggestionCount;
+    if (!votingList || count <= 0) {
+        const existing = document.getElementById('peoples-choice-frame');
+        if (existing) existing.remove();
+        return;
+    }
+
+    const children = Array.from(votingList.children);
+    if (children.length === 0) {
+        const existing = document.getElementById('peoples-choice-frame');
+        if (existing) existing.remove();
+        return;
+    }
+
+    const lastIndex = Math.min(count - 1, children.length - 1);
+    const firstWrapper = children[0].querySelector('.song-wrapper');
+    const lastWrapper = children[lastIndex].querySelector('.song-wrapper');
+    if (!firstWrapper || !lastWrapper) return;
+
+    const listRect = votingList.getBoundingClientRect();
+    const firstRect = firstWrapper.getBoundingClientRect();
+    const lastRect = lastWrapper.getBoundingClientRect();
+
+    const BANNER_HEIGHT = 60; // must match SCSS banner height
+    const top = 0; // start frame at top of list; banner space is via padding
+    const height = Math.max(BANNER_HEIGHT, (lastRect.bottom - listRect.top));
+
+    let frame = document.getElementById('peoples-choice-frame');
+    if (!frame) {
+        frame = document.createElement('div');
+        frame.id = 'peoples-choice-frame';
+        votingList.appendChild(frame);
+    }
+    frame.style.top = `${top}px`;
+    frame.style.height = `${height}px`;
+}
+
+function markPeoplesChoiceItems() {
+    const count = topSuggestionCount;
+    const children = Array.from(votingList.children);
+    children.forEach((li, idx) => {
+        if (idx < count) {
+            li.classList.add('peoples-choice-item');
+        } else {
+            li.classList.remove('peoples-choice-item');
+        }
+    });
+}
+
+// Recompute frame on resize
+window.addEventListener('resize', drawPeoplesChoiceFrame);
 
 
