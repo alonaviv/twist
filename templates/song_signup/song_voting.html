@@ -19,7 +19,37 @@
     {% include "partials/_footer.html" %}
 </main>
 
+<dialog id="suggest-song-modal">
+    <div id="suggest-song-modal-content">
+        <div id="suggest-song-modal-header">
+            <h2>Suggest a Song</h2>
+            <button id="close-modal-btn" class="close-btn" aria-label="Close">
+                <i class="fa-solid fa-times"></i>
+            </button>
+        </div>
+        <p id="add-song-text">What song are you hoping for?</p>
+        <p id="modal-subtitle">Singers who select People's Choice songs get the sash!</p>
+        <div id="new-song-form-wrapper">
+            <form action="/suggest_song" method="POST" id="suggest-song-form" autocomplete="off">
+                {% csrf_token %}
+                <input autocomplete="false" name="hidden" type="text" style="display:none;">
+                <div class="form-control">
+                    <input type="text" name="song-name" id="modal-song-name" placeholder="Song Name" required>
+                </div>
+                <div class="form-control">
+                    <input type="text" name="musical" id="modal-musical" placeholder="Where's it from?" required>
+                </div>
+                <div class="form-control" id="submit-wrapper">
+                    <input type="submit" value="Suggest Song" class="btn btn-inverted">
+                </div>
+            </form>
+        </div>
+    </div>
+</dialog>
+
+<button id="suggest-song-floating-btn" class="floating-btn"><i class="fa-solid fa-plus"></i> Suggest a song</button>
+
 <script type="module" src="{% static "js/song-voting.js" %}"></script>
 <script src="{% static "js/navbar.js" %}"></script>
-
+        
 {% endblock %}

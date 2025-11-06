@@ -1350,6 +1350,108 @@ nav {
       #song-voting-wrapper .container ol li.peoples-choice-item:nth-child(even) .song-wrapper {
         background: #009ead; }
 
+#suggest-song-floating-btn {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  background-color: #00b3c5;
+  color: #000;
+  padding: 14px 20px;
+  border-radius: 10px;
+  border: 3px solid #006d79;
+  font-size: 20px;
+  font-weight: 500;
+  white-space: nowrap;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3); }
+  #suggest-song-floating-btn i {
+    margin-right: 8px; }
+  #suggest-song-floating-btn:active {
+    transform: translateX(-50%) scale(0.98); }
+
+#suggest-song-modal {
+  border: none;
+  border-radius: 10px;
+  padding: 0;
+  width: 90%;
+  max-width: 500px;
+  background: #00C575;
+  color: #000;
+  z-index: 2000;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0; }
+  #suggest-song-modal::backdrop {
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(2px); }
+  #suggest-song-modal #suggest-song-modal-content {
+    padding: 3% 7%;
+    position: relative; }
+    #suggest-song-modal #suggest-song-modal-content #suggest-song-modal-header {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 10px 0px 15px;
+      position: relative; }
+      #suggest-song-modal #suggest-song-modal-content #suggest-song-modal-header h2 {
+        margin: 0;
+        font-size: 24px;
+        text-align: center; }
+      #suggest-song-modal #suggest-song-modal-content #suggest-song-modal-header .close-btn {
+        background: transparent;
+        border: none;
+        color: inherit;
+        font-size: 24px;
+        padding: 5px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        transition: background-color 0.2s ease;
+        position: absolute;
+        right: 0;
+        top: 50%;
+        transform: translateY(-50%); }
+        #suggest-song-modal #suggest-song-modal-content #suggest-song-modal-header .close-btn:active {
+          background-color: rgba(0, 0, 0, 0.1); }
+    #suggest-song-modal #suggest-song-modal-content #add-song-text {
+      font-size: 22px;
+      margin-bottom: 15px;
+      text-align: center; }
+    #suggest-song-modal #suggest-song-modal-content #modal-subtitle {
+      font-size: 21px;
+      font-style: italic;
+      margin-bottom: 20px;
+      opacity: 0.9;
+      text-align: center; }
+    #suggest-song-modal #suggest-song-modal-content form {
+      width: 100%; }
+      #suggest-song-modal #suggest-song-modal-content form #submit-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: 25px; }
+      #suggest-song-modal #suggest-song-modal-content form .form-control {
+        margin-bottom: 15px; }
+        #suggest-song-modal #suggest-song-modal-content form .form-control input[type="text"] {
+          width: 100%;
+          padding: 4px;
+          height: 40px;
+          border: #333 2px solid;
+          border-radius: 5px;
+          background: #333;
+          color: #fff;
+          font-size: 18px;
+          box-sizing: border-box; }
+          #suggest-song-modal #suggest-song-modal-content form .form-control input[type="text"]::placeholder {
+            color: #aaa;
+            font-size: 18px; }
+
 #passcode-reveal-wrapper {
   display: none;
   color: white; }

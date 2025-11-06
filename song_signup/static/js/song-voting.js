@@ -172,4 +172,59 @@ function markPeoplesChoiceItems() {
 // Recompute frame on resize
 window.addEventListener('resize', drawPeoplesChoiceFrame);
 
+// Modal handling for suggesting a song
+const suggestSongBtn = document.getElementById('suggest-song-floating-btn');
+const suggestSongModal = document.getElementById('suggest-song-modal');
+const closeModalBtn = document.getElementById('close-modal-btn');
+const suggestSongForm = document.getElementById('suggest-song-form');
 
+// Open modal when button is clicked
+suggestSongBtn.addEventListener('click', () => {
+    suggestSongModal.showModal();
+});
+
+// Close modal when close button is clicked
+closeModalBtn.addEventListener('click', () => {
+    suggestSongModal.close();
+    suggestSongForm.reset();
+});
+
+// Close modal when clicking on backdrop
+suggestSongModal.addEventListener('click', (e) => {
+    if (e.target === suggestSongModal) {
+        suggestSongModal.close();
+        suggestSongForm.reset();
+    }
+});
+
+// Handle form submission
+suggestSongForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const formData = new FormData(suggestSongForm);
+
+    try {
+        const response = await fetch('/suggest_song', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': csrftoken,
+            },
+            redirect: 'follow',
+        });
+
+        // The endpoint redirects on success, so check for redirect or success status
+        if (response.ok || response.redirected) {
+            // Close modal and reset form
+            suggestSongModal.close();
+            suggestSongForm.reset();
+            // Refresh the voting list to show the new suggestion
+            populateVotingList();
+        } else {
+            // Handle error - could show a message to user
+            console.error('Failed to submit suggestion');
+        }
+    } catch (error) {
+        console.error('Error submitting suggestion:', error);
+    }
+});
