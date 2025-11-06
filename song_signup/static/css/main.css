@@ -1220,16 +1220,49 @@ nav {
 #song-voting-wrapper {
   height: 100%;
   width: 100%;
-  background: #f2f2f2;
+  background: #d9d9d9;
   color: #000; }
   #song-voting-wrapper .container {
     overflow: scroll;
     height: 100%;
     width: 100%;
-    padding: 0 0 120px; }
+    padding: 0 0 120px;
+    position: relative; }
     #song-voting-wrapper .container h1,
     #song-voting-wrapper .container #explanation-text {
       display: none; }
+    #song-voting-wrapper .container #empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 20px;
+      text-align: center;
+      color: #333;
+      background: #e6e6e6;
+      margin: 0;
+      border-radius: 0;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      min-height: 100%;
+      z-index: 1; }
+      #song-voting-wrapper .container #empty-state p {
+        font-size: 20px;
+        margin: 10px 0; }
+        #song-voting-wrapper .container #empty-state p:first-child {
+          font-size: 24px;
+          font-weight: 500;
+          margin-bottom: 15px; }
+        #song-voting-wrapper .container #empty-state p:last-child {
+          font-style: italic;
+          margin-top: 20px;
+          opacity: 0.9; }
+      #song-voting-wrapper .container #empty-state.hidden {
+        display: none; }
     #song-voting-wrapper .container ol {
       width: 100%;
       counter-reset: suggestion-counter;
@@ -1279,6 +1312,8 @@ nav {
           z-index: 3; }
         #song-voting-wrapper .container ol li.used:nth-child(even) .song-wrapper {
           background: #8a8a8a; }
+        #song-voting-wrapper .container ol li.peoples-choice-item.used .song-wrapper {
+          background: #9a9a9a !important; }
         #song-voting-wrapper .container ol li .song-wrapper {
           position: relative;
           width: 100%;
@@ -1334,7 +1369,7 @@ nav {
         border: 3px solid #fce300;
         box-shadow: 0 0 0 4px #000 inset, 0 6px 18px rgba(0, 0, 0, 0.35);
         pointer-events: none;
-        z-index: 1; }
+        z-index: 2; }
         #song-voting-wrapper .container ol #peoples-choice-frame::before {
           content: "";
           position: absolute;

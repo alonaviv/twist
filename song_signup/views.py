@@ -197,7 +197,6 @@ def get_current_songs(request):
 
 @api_view(["GET"])
 def get_suggested_songs(request):
-    SongSuggestion.objects.recalculate_positions()
     suggestions = SongSuggestion.objects.all().order_by('position', '-request_time')
     serialized = SongSuggestionSerializer(suggestions, many=True, read_only=True, context={'request': request})
     return Response(serialized.data, status=status.HTTP_200_OK)
@@ -228,6 +227,9 @@ def toggle_vote(request, suggestion_id):
         else:
             suggestion.voters.add(user)
             voted = True
+
+        # Recalculate positions and People's Choice after vote change
+        SongSuggestion.objects.recalculate_positions()
 
         return Response({
             'voted': voted

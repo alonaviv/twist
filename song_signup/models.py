@@ -224,6 +224,7 @@ class SongSuggestion(Model):
     request_time = DateTimeField(auto_now_add=True)
     is_used = BooleanField(default=False)
     position = IntegerField(null=True, blank=True)
+    is_peoples_choice = BooleanField(default=False)
     voters = ManyToManyField(Singer, blank=True, related_name='voted')
 
     def check_if_used(self):

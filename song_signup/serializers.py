@@ -37,7 +37,7 @@ class SongSuggestionSerializer(ModelSerializer):
     class Meta:
         model = SongSuggestion
         fields = ['id', 'song_name', 'musical', 'suggested_by', 'request_time', 'is_used', 'chosen_by',
-                  'vote_count', 'user_voted', 'voters']
+                  'vote_count', 'user_voted', 'voters', 'is_peoples_choice']
 
 
 class SongRequestSerializer(ModelSerializer):

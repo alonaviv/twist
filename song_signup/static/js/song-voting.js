@@ -16,7 +16,7 @@ function setVoteButtonState(button, voted) {
 const wrapper = document.getElementById("song-voting-wrapper");
 const container = wrapper.querySelector(".container");
 const votingList = document.getElementById('voting-list');
-const topSuggestionCount = parseInt(votingList?.dataset?.topCount || '0', 10) || 0;
+const emptyState = document.getElementById('empty-state');
 const csrftoken = getCookie('csrftoken');
 
 populateVotingList();
@@ -26,6 +26,9 @@ function votingListItem(suggestion) {
     const li = document.createElement("li");
     if (suggestion.is_used) {
         li.classList.add('used');
+    }
+    if (suggestion.is_peoples_choice) {
+        li.classList.add('peoples-choice-item');
     }
     li.dataset.used = suggestion.is_used ? 'true' : 'false';
     const votedClass = suggestion.user_voted ? "voted" : "";
@@ -64,6 +67,8 @@ function votingListItem(suggestion) {
         const result = await toggleVote(id);
         if (result && typeof result.voted === 'boolean') {
             setVoteButtonState(btn, result.voted);
+            // Refresh the list to get updated People's Choice status
+            populateVotingList();
         } else {
             // Revert on error
             setVoteButtonState(btn, wasVoted);
@@ -94,79 +99,59 @@ async function populateVotingList() {
 
     if (!data || data.length === 0) {
         votingList.replaceChildren();
+        if (emptyState) {
+            emptyState.classList.remove('hidden');
+        }
+        // Still draw the banner even when there are no songs
+        drawPeoplesChoiceFrame();
         return;
+    }
+
+    if (emptyState) {
+        emptyState.classList.add('hidden');
     }
 
     const lis = data.map(votingListItem);
     votingList.replaceChildren(...lis);
 
-    markPeoplesChoiceItems();
     drawPeoplesChoiceFrame();
 }
 
 function drawPeoplesChoiceFrame() {
-    const count = topSuggestionCount;
-    if (!votingList || count <= 0) {
+    if (!votingList) {
         const existing = document.getElementById('peoples-choice-frame');
         if (existing) existing.remove();
         return;
     }
 
-    const children = Array.from(votingList.children);
-    if (children.length === 0) {
-        const existing = document.getElementById('peoples-choice-frame');
-        if (existing) existing.remove();
-        return;
-    }
-
-    // Find the index of the last element needed to cover 'count' non-used items
-    let remaining = count;
-    let lastIndex = -1;
-    for (let i = 0; i < children.length; i++) {
-        const li = children[i];
-        lastIndex = i;
-        if (li.dataset.used !== 'true') {
-            remaining -= 1;
-            if (remaining === 0) break;
-        }
-    }
-
-    const firstWrapper = children[0]?.querySelector('.song-wrapper');
-    const lastWrapper = children[lastIndex]?.querySelector('.song-wrapper');
-    if (!firstWrapper || !lastWrapper) return;
-
-    const listRect = votingList.getBoundingClientRect();
-    const firstRect = firstWrapper.getBoundingClientRect();
-    const lastRect = lastWrapper.getBoundingClientRect();
+    // Find all People's Choice items (already marked by backend)
+    const peoplesChoiceItems = Array.from(votingList.querySelectorAll('.peoples-choice-item'));
 
     const BANNER_HEIGHT = 60; // must match SCSS banner height
     const top = 0; // start frame at top of list; banner space is via padding
-    const height = Math.max(BANNER_HEIGHT, (lastRect.bottom - listRect.top));
 
+    let height = BANNER_HEIGHT; // default to banner height
+
+    // If there are People's Choice items, calculate height based on the last one
+    if (peoplesChoiceItems.length > 0) {
+        const lastWrapper = peoplesChoiceItems[peoplesChoiceItems.length - 1]?.querySelector('.song-wrapper');
+        if (lastWrapper) {
+            const listRect = votingList.getBoundingClientRect();
+            const lastRect = lastWrapper.getBoundingClientRect();
+            height = Math.max(BANNER_HEIGHT, (lastRect.bottom - listRect.top));
+        }
+    }
+
+    // Always create/update the frame, even if there are no People's Choice items
     let frame = document.getElementById('peoples-choice-frame');
     if (!frame) {
         frame = document.createElement('div');
         frame.id = 'peoples-choice-frame';
-        votingList.appendChild(frame);
+        // Insert at the beginning of the list so it appears at the top
+        votingList.insertBefore(frame, votingList.firstChild);
     }
     frame.style.top = `${top}px`;
     frame.style.height = `${height}px`;
-}
-
-function markPeoplesChoiceItems() {
-    const count = topSuggestionCount;
-    const children = Array.from(votingList.children);
-    let remaining = count;
-    children.forEach((li) => {
-        li.classList.remove('peoples-choice-item');
-    });
-    for (const li of children) {
-        const isUsed = li.dataset.used === 'true';
-        if (!isUsed && remaining > 0) {
-            li.classList.add('peoples-choice-item');
-            remaining -= 1;
-        }
-    }
 }
 
 // Recompute frame on resize
@@ -228,3 +213,5 @@ suggestSongForm.addEventListener('submit', async (e) => {
         console.error('Error submitting suggestion:', error);
     }
 });
+
+

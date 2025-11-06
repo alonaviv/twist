@@ -6,7 +6,7 @@
 #song-voting-wrapper {
     height: 100%;
     width: 100%;
-    background: #f2f2f2; // lighter grey background for the top section
+    background: #d9d9d9; // darker grey background for the top section
     color: #000; // black text
 
     .container {
@@ -14,11 +14,54 @@
         height: 100%;
         width: 100%;
         padding: 0 0 120px; // remove top spacing so playbill sits at top
+        position: relative;
 
         // keep margins for header text
         h1,
         #explanation-text {
             display: none; // hide header and subtitle; top becomes playbill image
+        }
+
+        #empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            text-align: center;
+            color: #333;
+            background: #e6e6e6;
+            margin: 0;
+            border-radius: 0;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100%;
+            min-height: 100%;
+            z-index: 1;
+
+            p {
+                font-size: 20px;
+                margin: 10px 0;
+
+                &:first-child {
+                    font-size: 24px;
+                    font-weight: 500;
+                    margin-bottom: 15px;
+                }
+
+                &:last-child {
+                    font-style: italic;
+                    margin-top: 20px;
+                    opacity: 0.9;
+                }
+            }
+
+            &.hidden {
+                display: none;
+            }
         }
 
         ol {
@@ -93,6 +136,12 @@
                 &.used:nth-child(even) {
                     .song-wrapper {
                         background: #8a8a8a; // slightly darker for stripe effect
+                    }
+                }
+                // Used songs in People's Choice should be grayed out (same darker grey for all)
+                &.peoples-choice-item.used {
+                    .song-wrapper {
+                        background: #9a9a9a !important;
                     }
                 }
 
@@ -174,7 +223,7 @@
                 border: 3px solid #fce300; // playbill yellow
                 box-shadow: 0 0 0 4px #000 inset, 0 6px 18px rgba(0, 0, 0, 0.35);
                 pointer-events: none;
-                z-index: 1;
+                z-index: 2; // above empty state (z-index: 1)
 
                 // Playbill banner at the top spanning full width
                 &::before {

@@ -6,6 +6,7 @@ from django.db.models import Manager, Max
 from django.utils import timezone
 from flags.state import flag_enabled
 from django.db.models import Count
+from constance import config
 
 
 class SongSuggestionManager(Manager):
@@ -15,6 +16,8 @@ class SongSuggestionManager(Manager):
         """
         for suggestion in self.all():
             suggestion.check_if_used()
+        # Recalculate positions and People's Choice when songs become used/unused
+        self.recalculate_positions()
 
     def recalculate_positions(self):
         """
@@ -39,6 +42,43 @@ class SongSuggestionManager(Manager):
             s.position = pos
             s.save()
             pos += 1
+        
+        self.recalculate_peoples_choice()
+
+    def recalculate_peoples_choice(self):
+        """
+        Recalculate which songs are People's Choice.
+        People's Choice = top N unused songs with at least one vote, plus any used songs
+        that are in those top N positions. Used songs expand the box but don't count towards the limit.
+        """
+        num_peoples_choice = config.NUM_PEOPLES_CHOICE
+        
+        # First, reset all to False
+        self.all().update(is_peoples_choice=False)
+        
+        # Get all suggestions ordered by position (refresh from DB to ensure positions are current)
+        all_suggestions = list(
+            self.annotate(num_votes=Count('voters'))
+            .filter(num_votes__gt=0, position__isnull=False)
+            .order_by('position', '-request_time')
+        )
+        
+        # Find the top N unused songs
+        unused_suggestions = [s for s in all_suggestions if not s.is_used]
+        top_n_unused = unused_suggestions[:num_peoples_choice]
+        
+        if not top_n_unused:
+            return
+        
+        # Find the maximum position among the top N unused songs
+        max_position = max(s.position for s in top_n_unused)
+        
+        # Mark all songs with position <= max_position as People's Choice
+        # This includes both unused songs and used songs in those positions
+        for suggestion in all_suggestions:
+            if suggestion.position <= max_position:
+                suggestion.is_peoples_choice = True
+                suggestion.save()
 
 
 class SongRequestManager(Manager):

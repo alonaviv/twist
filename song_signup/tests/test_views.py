@@ -2973,6 +2973,9 @@ class TestSuggestionPositions(TestViews):
         a.voters.set([v1, v2])
         b.voters.set([v1, v2, v3])
         c.voters.set([v1, v2, v4])
+        
+        # Refresh to ensure votes are visible
+        a.refresh_from_db(); b.refresh_from_db(); c.refresh_from_db()
 
         SongSuggestion.objects.recalculate_positions()
         a.refresh_from_db(); b.refresh_from_db(); c.refresh_from_db()
@@ -2995,6 +2998,9 @@ class TestSuggestionPositions(TestViews):
         a.voters.set([v1])          # 1
         b.voters.set([v1, v2, v3])  # 3
         c.voters.set([v1, v2])      # 2
+        
+        # Refresh to ensure votes are visible
+        a.refresh_from_db(); b.refresh_from_db(); c.refresh_from_db()
 
         SongSuggestion.objects.recalculate_positions()
         a.refresh_from_db(); b.refresh_from_db(); c.refresh_from_db()
@@ -3002,9 +3008,11 @@ class TestSuggestionPositions(TestViews):
         # Mark C as used but keep its existing calculated position
         c.is_used = True
         c.save()
+        c.refresh_from_db()
 
         # Boost A to become top
         a.voters.add(v4, v5)
+        a.refresh_from_db()
 
         SongSuggestion.objects.recalculate_positions()
         a.refresh_from_db(); b.refresh_from_db(); c.refresh_from_db()
@@ -3023,6 +3031,9 @@ class TestSuggestionPositions(TestViews):
         a.voters.set([v1, v2])      # 2
         b.voters.set([v1])          # 1
         c.voters.set([v1, v2, v3])  # 3
+        
+        # Refresh to ensure votes are visible
+        a.refresh_from_db(); b.refresh_from_db(); c.refresh_from_db()
 
         SongSuggestion.objects.recalculate_positions()
         a.refresh_from_db(); b.refresh_from_db(); c.refresh_from_db()
@@ -3030,6 +3041,7 @@ class TestSuggestionPositions(TestViews):
         # Mark A as used (no preset position); recalc should pin it at current slot = 2
         a.is_used = True
         a.save()
+        a.refresh_from_db()
 
         SongSuggestion.objects.recalculate_positions()
         a.refresh_from_db(); b.refresh_from_db(); c.refresh_from_db()
@@ -3051,6 +3063,9 @@ class TestSuggestionPositions(TestViews):
         b.voters.set([v1, v2])
         c.voters.set([v1, v2, v3])
         d.voters.set([v1, v2, v3, v4])
+        
+        # Refresh to ensure votes are visible
+        a.refresh_from_db(); b.refresh_from_db(); c.refresh_from_db(); d.refresh_from_db()
 
         SongSuggestion.objects.recalculate_positions()
         a.refresh_from_db(); b.refresh_from_db(); c.refresh_from_db(); d.refresh_from_db()
@@ -3062,8 +3077,8 @@ class TestSuggestionPositions(TestViews):
         self.assertEqual(b.position, 3)
         self.assertEqual(a.position, 4)
 
-        b.is_used = True; b.save()
-        c.is_used = True; c.save()
+        b.is_used = True; b.save(); b.refresh_from_db()
+        c.is_used = True; c.save(); c.refresh_from_db()
 
         # Recalculate (positions for used stay pinned; others fill around)
         SongSuggestion.objects.recalculate_positions()
@@ -3093,15 +3108,23 @@ class TestSuggestionPositions(TestViews):
         b.voters.set([v1, v2])
         c.voters.set([v1, v2, v3])
         d.voters.set([v1, v2, v3, v4])
+        
+        # Refresh to ensure votes are visible
+        a.refresh_from_db(); b.refresh_from_db(); c.refresh_from_db(); d.refresh_from_db()
 
         SongSuggestion.objects.recalculate_positions()
         a.refresh_from_db(); b.refresh_from_db(); c.refresh_from_db(); d.refresh_from_db()
         # Mark B and C as used at their current slots (3 and 2 respectively)
-        b.is_used = True; b.save()
-        c.is_used = True; c.save()
+        b.is_used = True; b.save(); b.refresh_from_db()
+        c.is_used = True; c.save(); c.refresh_from_db()
 
         # Change votes significantly: make A the top by adding voters
         a.voters.add(v2, v3, v4, v5)
+        a.refresh_from_db()
+        
+        # Recalculate positions to reflect the vote changes
+        SongSuggestion.objects.recalculate_positions()
+        a.refresh_from_db(); b.refresh_from_db(); c.refresh_from_db(); d.refresh_from_db()
 
         # Now expected order after fetching suggestions: A(1), C(2 pinned), B(3 pinned), D(4)
         response = self.client.get(reverse('get_suggested_songs'))
@@ -3129,6 +3152,9 @@ class TestSuggestionPositions(TestViews):
         s3.voters.set([v1, v2, v3])
         s4.voters.set([v1, v2, v3, v4])
         s5.voters.set([v1, v2, v3, v4, v5])
+        
+        # Refresh to ensure votes are visible
+        s1.refresh_from_db(); s2.refresh_from_db(); s3.refresh_from_db(); s4.refresh_from_db(); s5.refresh_from_db()
 
         SongSuggestion.objects.recalculate_positions()
         s1.refresh_from_db(); s2.refresh_from_db(); s3.refresh_from_db(); s4.refresh_from_db(); s5.refresh_from_db()
@@ -3139,12 +3165,13 @@ class TestSuggestionPositions(TestViews):
         self.assertEqual(s2.position, 4)
         self.assertEqual(s1.position, 5)
 
-        s3.is_used = True; s3.save()
-        s2.is_used = True; s2.save()
+        s3.is_used = True; s3.save(); s3.refresh_from_db()
+        s2.is_used = True; s2.save(); s2.refresh_from_db()
 
         # Round 1 vote changes: make S1 very popular, reduce S5 popularity relative by adding to others
         s1.voters.add(v2, v3, v4, v5, v6)  # S1 now top
         s4.voters.add(v5)
+        s1.refresh_from_db(); s4.refresh_from_db()
 
         SongSuggestion.objects.recalculate_positions()
         s1.refresh_from_db(); s2.refresh_from_db(); s3.refresh_from_db(); s4.refresh_from_db(); s5.refresh_from_db()

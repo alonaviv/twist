@@ -10,7 +10,12 @@
         <div class="container">
             <h1>Vote for Songs</h1>
             <p id="explanation-text">What do you want to hear tonight?</p>
-            <ol id="voting-list" data-top-count="{{ config.NUM_PEOPLES_CHOICE|default:0 }}"></ol>
+            <div id="empty-state" class="hidden">
+                <p>No songs suggested yet!</p>
+                <p>Be the first to suggest a song using the button below.</p>
+                <p>The top voted songs will be the "People's Choice" list. Singers who choose from this list will get the sash!</p>
+            </div>
+            <ol id="voting-list"></ol>
         </div>
     </div>
 
@@ -51,5 +56,5 @@
 
 <script type="module" src="{% static "js/song-voting.js" %}"></script>
 <script src="{% static "js/navbar.js" %}"></script>
-        
+
 {% endblock %}
