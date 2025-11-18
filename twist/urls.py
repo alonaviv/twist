@@ -20,4 +20,5 @@ from django.conf import settings
 urlpatterns = [
     path('admin/', admin.site.urls, name='admin'),
     path('', include('song_signup.urls')),
+    path('peoples-choice/', include('peoples_choice.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

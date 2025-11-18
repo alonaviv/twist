@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+{% load static %}
+{% load img_tags %}
+{% block content %}
+{% if is_active %}
+<!-- Mode Selection Modal -->
+<div class="pc-mode-selection-modal" id="pc-mode-selection-modal">
+    <div class="pc-mode-selection-content">
+        <div class="pc-mode-selection-header">
+            <h1 class="pc-mode-selection-title">
+                Song Suggestions
+                <span class="pc-mode-selection-date">{{ event_date }}</span>
+            </h1>
+            <h2>What ticket do you have?</h2>
+            <p class="pc-mode-selection-link">
+                <span class="pc-link-title">Don't have tickets yet?</span>
+                <a
+                    href="https://tic.li/gBq7ody"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    Get them here!
+                </a>
+            </p>
+        </div>
+        <div class="pc-mode-selection-buttons">
+            <button
+                type="button"
+                class="pc-mode-button"
+                data-mode="audience"
+                value="audience"
+            >
+                Audience
+            </button>
+            <button
+                type="button"
+                class="pc-mode-button"
+                data-mode="singer"
+                value="singer"
+            >
+                Singer
+            </button>
+        </div>
+        <div class="pc-singer-name-input" id="pc-singer-name-input" style="display: none">
+            <label for="pc-singer-name" class="pc-link-title">Your name</label>
+            <input
+                type="text"
+                id="pc-singer-name"
+                placeholder="Enter your name"
+                maxlength="255"
+            />
+            <button type="button" id="pc-mode-submit-btn" class="pc-mode-submit-btn">
+                Continue
+            </button>
+        </div>
+    </div>
+</div>
+<main class="pc-layout">
+    <header class="pc-hero">
+        <div class="pc-logo-wrapper">
+            <img src="{% bwt_small_logo %}" alt="Broadway With a Twist" class="pc-logo" />
+        </div>
+        <h1>
+            Broadway With a Twist -
+            <span id="pc-event-date-text" class="pc-event-date">{{ event_date }}</span>
+        </h1>
+        <p class="pc-hero-subtitle">Audience Suggestions</p>
+        <p class="pc-hero-description" id="pc-hero-description">
+            What songs would you like to hear? Let our singers know what the people want!
+        </p>
+        <div class="pc-mode-status" id="pc-mode-status" style="display: none">
+            <span id="pc-current-mode">Viewing as Audience</span>
+            <button type="button" id="pc-change-mode-btn">Change ticket type</button>
+        </div>
+        <div class="pc-singer-hint" id="pc-singer-hint" style="display: none">
+            <p>
+                If you select a song to sing from the list, you'll get the <strong>People's Choice</strong> sash, and bring down the house!
+            </p>
+            <p>
+                (At the event itself, you'll sign up to sing with any song you want - you don't have to stick to this list)
+            </p>
+        </div>
+        <button
+            type="button"
+            class="pc-suggest-song-btn"
+            id="pc-header-suggest-btn"
+            aria-label="Suggest a song"
+        >
+            Suggest Song
+        </button>
+        <div class="pc-people-choice-notice">
+            <p class="pc-notice-text">
+                Singers are free to choose any song, but if they choose from this list -
+                they'll be our evening's <strong>People's Choice!</strong>
+            </p>
+        </div>
+    </header>
+
+    <section class="pc-section" aria-labelledby="pc-top-heading">
+        <div class="pc-section-heading">
+            <h2 id="pc-top-heading">Top Voted</h2>
+            <p>The top 10 suggestions with the most votes</p>
+        </div>
+        <div id="pc-top-list" class="pc-card-grid" aria-live="polite"></div>
+    </section>
+
+    <section class="pc-section" aria-labelledby="pc-rest-heading">
+        <div class="pc-section-heading">
+            <h2 id="pc-rest-heading">More From the Crowd</h2>
+            <p>The rest of the audience suggestions</p>
+        </div>
+        <div id="pc-rest-list" class="pc-card-stack" aria-live="polite"></div>
+    </section>
+
+    <div class="pc-meta">
+        <span id="pc-last-updated">Last updated: initializing…</span>
+        <button type="button" id="pc-refresh-button">Refresh now</button>
+    </div>
+</main>
+
+<button
+    type="button"
+    class="pc-floating-add-btn"
+    id="pc-floating-add-btn"
+    aria-label="Add new song"
+>
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"></path>
+    </svg>
+    <span class="pc-floating-add-btn-text">Suggest Song</span>
+</button>
+
+<div class="pc-add-song-modal" id="pc-add-song-modal">
+    <div class="pc-add-song-modal-backdrop" id="pc-modal-backdrop"></div>
+    <div class="pc-add-song-modal-content">
+        <button
+            type="button"
+            class="pc-modal-close"
+            id="pc-modal-close"
+            aria-label="Close modal"
+        >
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path
+                    d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
+                ></path>
+            </svg>
+        </button>
+        <h3 class="pc-add-song-modal-title">Add New Song</h3>
+        <form id="pc-add-song-form">
+            <div class="pc-form-control">
+                <label for="pc-song-name">Song Name</label>
+                <input
+                    type="text"
+                    id="pc-song-name"
+                    name="song_name"
+                    placeholder="Enter song name"
+                    required
+                />
+            </div>
+            <div class="pc-form-control">
+                <label for="pc-musical">Musical</label>
+                <input
+                    type="text"
+                    id="pc-musical"
+                    name="musical"
+                    placeholder="Enter musical name"
+                    required
+                />
+            </div>
+            <div class="pc-form-actions">
+                <button type="submit" id="pc-submit-song-btn">Suggest Song</button>
+            </div>
+            <div id="pc-form-message" class="pc-form-message"></div>
+        </form>
+    </div>
+</div>
+
+<script type="text/javascript">
+    window.peoplesChoiceConfig = {
+        apiUrl: "{% url 'peoples_choice:dev_song_suggestions' %}",
+        createSongUrl: "{% url 'peoples_choice:create_song_suggestion' %}",
+        voteSongUrl: "{% url 'peoples_choice:vote_song_suggestion' 0 %}".replace(
+            /\/0\/?$/,
+            "/"
+        ),
+        chooseSongUrl: "{% url 'peoples_choice:choose_song_suggestion' 0 %}".replace(
+            /\/0\/?$/,
+            "/"
+        ),
+        pollIntervalMs: 6000,
+        eventSku: "{{ event_sku }}",
+    };
+</script>
+
+<script
+    type="module"
+    src="{% static 'peoples_choice/js/audience_suggestions.js' %}"
+></script>
+{% else %}
+<main class="pc-layout">
+    <header class="pc-hero">
+        <div class="pc-logo-wrapper">
+            <img src="{% bwt_small_logo %}" alt="Broadway With a Twist" class="pc-logo" />
+        </div>
+        <h1>Broadway With a Twist</h1>
+        <p class="pc-hero-subtitle">Audience Suggestions</p>
+        <div class="pc-inactive-message">
+            <p class="pc-inactive-text">
+                The People's Choice list isn't active yet. Check back soon!
+            </p>
+        </div>
+    </header>
+</main>
+{% endif %} {% endblock %}

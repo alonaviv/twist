@@ -95,6 +95,7 @@ INSTALLED_APPS = [
     'dbbackup',
     'flags',
     'rest_framework',
+    'peoples_choice.apps.PeoplesChoiceConfig',
 ]
 
 CONSTANCE_CONFIG = {
@@ -103,7 +104,9 @@ CONSTANCE_CONFIG = {
     'DRINKING_WORDS': ('', "Tonight's drinking game words!\nMultiple words: separate with a semicolon without spaces (e.g. love;rain;umbrella)"),
     'FREEBIE_TICKET': ('', "Mock ticket number that anyone can use to sign up as a singer"),
     'EXPECTED_NUM_SONGS': (50, "How many songs we expect there to be this evening"),
-    'TARGET_REPEAT_SINGERS': (4, "How many singers do we want to repeat at the end of the evening")
+    'TARGET_REPEAT_SINGERS': (4, "How many singers do we want to repeat at the end of the evening"),
+    'PEOPLES_CHOICE_EVENT_DATE': ('', "Event date for People's Choice page (e.g., '23.11.25') - REQUIRED FOR PEOPLE'S CHOICE"),
+    'PEOPLES_CHOICE_EVENT_SKU': ('', "Event SKU for People's Choice page - REQUIRED FOR PEOPLE'S CHOICE"),
 }
 
 CONSTANCE_BACKEND = 'constance.backends.redisd.RedisBackend'

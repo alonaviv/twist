@@ -11,12 +11,12 @@
 @import "add_song";
 @import "suggest_group_song";
 @import "view-suggestions";
+@import "audience_suggestions";
 @import "lyrics";
 @import "lineup";
 @import "trivia";
 @import "raffle";
 @import "footer";
-
 
 * {
     box-sizing: border-box;
@@ -73,6 +73,14 @@ main {
 
     &.nested-footer {
         height: 100vh-$navbar-height;
+    }
+
+    &.pc-layout {
+        position: relative;
+        top: 0;
+        z-index: 0;
+        min-height: 100vh;
+        height: auto;
     }
 }
 
