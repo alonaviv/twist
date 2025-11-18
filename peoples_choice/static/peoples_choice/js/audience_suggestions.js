@@ -566,6 +566,7 @@
         const floatingBtn = document.getElementById('pc-floating-add-btn');
         const singerHint = document.getElementById('pc-singer-hint');
         const heroDescription = document.getElementById('pc-hero-description');
+        const peopleChoiceNotice = document.getElementById('pc-people-choice-notice');
 
         if (mode === 'singer') {
             layout.classList.add('is-singer-mode');
@@ -577,11 +578,11 @@
             if (singerHint) {
                 singerHint.style.display = 'block';
             }
+            if (peopleChoiceNotice) {
+                peopleChoiceNotice.style.display = 'none';
+            }
             if (heroDescription) {
                 heroDescription.textContent = "Our audience would love to hear you sing these songs!";
-            }
-            if (modeStatusWrapper) {
-                modeStatusWrapper.style.display = 'none';
             }
         } else {
             layout.classList.remove('is-singer-mode');
@@ -592,6 +593,9 @@
             }
             if (singerHint) {
                 singerHint.style.display = 'none';
+            }
+            if (peopleChoiceNotice) {
+                peopleChoiceNotice.style.display = 'block';
             }
             if (heroDescription) {
                 heroDescription.textContent = "What songs would you like to hear? Let our singers know what the people want!";

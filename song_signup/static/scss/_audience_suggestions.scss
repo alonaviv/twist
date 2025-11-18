@@ -136,22 +136,36 @@ main.pc-layout {
 
 .pc-singer-hint {
     display: none;
-    color: $secondary-color;
-    font-size: 1.1rem;
-    font-weight: 700;
-    text-align: center;
-    margin: 1.5rem auto 1.75rem;
-    max-width: 500px;
-    font-family: "Roboto", sans-serif;
-    background: rgba(0, 197, 117, 0.12);
-    border: 1px solid rgba(0, 197, 117, 0.4);
+    margin: 1rem auto 1rem;
+    max-width: 560px;
+    padding: 1rem 1.25rem;
+    background: rgba(0, 197, 117, 0.15);
+    border: 2px solid var(--pc-accent);
     border-radius: 1rem;
-    padding: 0.9rem 1.2rem;
-    line-height: 1.5;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 4px 16px rgba(0, 197, 117, 0.2);
 
     p {
         margin: 0;
+        color: var(--pc-text-primary);
+        font-size: 1.05rem;
+        line-height: 1.6;
+        text-align: center;
+
+        &:first-child {
+            margin-bottom: 0.5rem;
+        }
+
+        &:last-child {
+            font-size: 0.9rem;
+            font-weight: 400;
+            color: var(--pc-text-secondary);
+            font-style: italic;
+        }
+    }
+
+    strong {
+        color: var(--pc-accent);
+        font-weight: 700;
     }
 
     &.is-visible,
@@ -189,7 +203,7 @@ main.pc-layout {
 }
 
 .pc-people-choice-notice {
-    margin: 1rem auto 1rem;
+    margin: 2.5rem auto 1rem;
     max-width: 560px;
     padding: 1rem 1.25rem;
     background: rgba(0, 197, 117, 0.15);
