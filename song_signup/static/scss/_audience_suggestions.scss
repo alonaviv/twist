@@ -837,11 +837,6 @@ main.pc-layout {
     width: 100%;
     margin-top: 0.75rem;
 
-    .pc-link-title {
-        margin: 0;
-        text-align: left;
-    }
-
     input {
         width: 100%;
         padding: 0.75rem 1rem;
@@ -850,8 +845,15 @@ main.pc-layout {
         background: rgba(255, 255, 255, 0.1);
         color: var(--pc-text-primary);
         font-size: 1rem;
+        font-weight: 500;
         font-family: "Roboto", sans-serif;
         transition: border-color 0.2s ease, background 0.2s ease;
+
+        &::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+            opacity: 1;
+            font-weight: 500;
+        }
 
         &:focus {
             outline: none;
