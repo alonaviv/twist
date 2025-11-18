@@ -407,7 +407,9 @@
         document.title = `Broadway With a Twist - ${eventDate}`;
 
         if (!songs.length) {
-            const emptyMarkup = '<div class="pc-empty-state">Be the first to suggest a song!</div>';
+            const emptyMarkup = currentMode === 'singer'
+                ? '<div class="pc-empty-state">No audience suggestions yet!</div>'
+                : '<div class="pc-empty-state">Be the first to suggest a song!</div>';
             topListEl.innerHTML = emptyMarkup;
             restListEl.innerHTML = emptyMarkup;
             return;
