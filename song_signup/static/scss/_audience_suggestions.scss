@@ -572,7 +572,7 @@ main.pc-layout {
     background: var(--pc-card-highlight);
     border: 1px solid var(--pc-border);
     border-radius: 1rem;
-    padding: 2rem;
+    padding: 1.5rem;
     box-shadow: var(--pc-shadow);
     transform: scale(0.9);
     transition: transform 0.3s ease;
@@ -614,7 +614,7 @@ main.pc-layout {
     font-size: 1.3rem;
     font-weight: 600;
     color: var(--pc-text-primary);
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem;
     text-align: center;
     text-transform: uppercase;
     letter-spacing: 0.08em;
@@ -623,7 +623,7 @@ main.pc-layout {
 #pc-add-song-form {
     display: flex;
     flex-direction: column;
-    gap: 0.85rem;
+    gap: 0.75rem;
 }
 
 .pc-form-control {
@@ -666,7 +666,7 @@ main.pc-layout {
 .pc-form-actions {
     display: flex;
     justify-content: center;
-    margin-top: 0.5rem;
+    margin-top: 0.25rem;
 }
 
 #pc-submit-song-btn {
@@ -705,6 +705,17 @@ main.pc-layout {
     border-radius: 0.5rem;
     margin-top: 0.5rem;
     min-height: 1.5rem;
+}
+
+.pc-form-disclaimer {
+    margin-top: 0.25rem;
+    padding: 0.5rem 0.75rem;
+    text-align: center;
+    font-size: 0.95rem;
+    color: var(--pc-text-primary);
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 0.5rem;
+    font-style: italic;
 }
 
 .pc-form-message--success {
@@ -1051,7 +1062,7 @@ body:has(.pc-layout.is-singer-mode) .pc-floating-add-btn {
     }
 
     .pc-add-song-modal-content {
-        padding: 2.5rem;
+        padding: 1.75rem;
     }
 
     #pc-add-song-form {
