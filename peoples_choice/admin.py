@@ -16,13 +16,16 @@ class EventSkuFilter(admin.SimpleListFilter):
         return [(sku, sku) for sku in event_skus]
 
     def queryset(self, request, queryset):
+        # Apply filter based on selection or default
         if self.value():
             return queryset.filter(event_sku=self.value())
-        # If no filter selected, apply default from config
-        default_event_sku = getattr(config, 'EVENT_SKU', '')
-        if default_event_sku:
-            return queryset.filter(event_sku=default_event_sku)
-        return queryset
+        else:
+            # If no filter selected, apply default from config
+            default_event_sku = getattr(config, 'EVENT_SKU', '')
+            if default_event_sku:
+                return queryset.filter(event_sku=default_event_sku)
+            else:
+                return queryset
 
 
 @admin.register(SongSuggestion)
@@ -36,6 +39,8 @@ class SongSuggestionAdmin(admin.ModelAdmin):
         'event_sku',
     )
     list_filter = (EventSkuFilter, 'chosen')
+    # Set default ordering: chosen=True first, then by votes descending
+    ordering = ('-chosen', '-votes')
 
     def changelist_view(self, request, extra_context=None):
         # If no filter is selected, redirect to show default filter as selected
@@ -48,8 +53,3 @@ class SongSuggestionAdmin(admin.ModelAdmin):
                 changelist_url = reverse('admin:%s_%s_changelist' % info)
                 return redirect(f"{changelist_url}?{query.urlencode()}")
         return super().changelist_view(request, extra_context)
-
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        # Sort: chosen=True first, then by votes descending
-        return qs.order_by('-chosen', '-votes')
