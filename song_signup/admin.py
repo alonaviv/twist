@@ -199,21 +199,6 @@ class GroupSongRequestAdmin(admin.ModelAdmin):
         js = ["js/admin-reload.js"]
 
 
-# @admin.register(SongSuggestion)
-# class SongSuggestionAdmin(admin.ModelAdmin):
-#     list_display = (
-#         'song_name', 'musical', 'suggested_by', 'get_request_time', 'is_used',
-#     )
-#
-#     def get_request_time(self, obj):
-#         return obj.request_time.astimezone(timezone.get_current_timezone()).strftime("%H:%M %p")
-#
-#     get_request_time.short_description = 'Request Time'
-#     get_request_time.admin_order_field = 'request_time'
-#
-#     ordering = ['request_time']
-
-
 @admin.register(SongRequest)
 class SongRequestAdmin(admin.ModelAdmin):
     list_display = (
