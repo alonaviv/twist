@@ -1,5 +1,6 @@
 import logging
 import re
+from difflib import SequenceMatcher
 from django.dispatch import receiver
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
@@ -25,6 +26,7 @@ from django.db.models.signals import m2m_changed
 from twist.utils import format_commas
 from django.utils import timezone
 from titlecase import titlecase
+from constance import config
 
 from song_signup.managers import (
     DisneylandOrdering,
@@ -236,6 +238,50 @@ class SongSuggestion(Model):
 
     objects = SongSuggestionManager()
 
+
+def _normalize_string(s):
+    """Normalize a string for fuzzy matching: lowercase and remove extra spaces."""
+    if not s:
+        return ''
+    return ' '.join(s.lower().split())
+
+
+def _fuzzy_match(s1, s2, threshold=0.85):
+    """
+    Check if two strings match using fuzzy matching.
+    Returns True if the similarity ratio is above the threshold.
+    """
+    if not s1 or not s2:
+        return False
+    norm1 = _normalize_string(s1)
+    norm2 = _normalize_string(s2)
+    if norm1 == norm2:
+        return True
+    ratio = SequenceMatcher(None, norm1, norm2).ratio()
+    return ratio >= threshold
+
+
+def _check_peoples_choice_match(song_name, musical, event_sku):
+    """
+    Check if a song request matches any song suggestion in the people's choice list
+    for the given event SKU. Uses fuzzy matching for both song name and musical.
+    """
+    if not event_sku:
+        return False
+    
+    try:
+        from peoples_choice.models import SongSuggestion
+        suggestions = SongSuggestion.objects.filter(event_sku=event_sku)
+        
+        for suggestion in suggestions:
+            if (_fuzzy_match(song_name, suggestion.song_name) and 
+                _fuzzy_match(musical, suggestion.musical)):
+                return True
+        return False
+    except Exception:
+        return False
+
+
 class SongRequest(Model):
     song_name = CITextField(max_length=50)
     musical = CITextField(max_length=50)
@@ -253,11 +299,12 @@ class SongRequest(Model):
     found_music = BooleanField(default=False)
     spotlight = BooleanField(default=False)
     standby = BooleanField(default=False) # If song is out of the regular ordering, waiting to be spotlighted
+    is_peoples_choice = BooleanField(default=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._original_song_name = titlecase(self.song_name)
-        self._original_musical = titlecase(self.musical)
+        self._original_song_name = titlecase(self.song_name) if self.song_name else ''
+        self._original_musical = titlecase(self.musical) if self.musical else ''
 
     def get_partners(self):
         return ", ".join([str(singer) for singer in self.partners.all()])
@@ -302,15 +349,23 @@ class SongRequest(Model):
 
         # Update the lyrics if the song was just added, or if its name or musical changed
         fetch_lyrics = False
-        if (
+        song_changed = (
                 self.id is None
                 or self._original_song_name != self.song_name
                 or self._original_musical != self.musical
-        ):
-            fetch_lyrics = True
+        )
 
         self.song_name = titlecase(self.song_name)
         self.musical = titlecase(self.musical)
+        
+        if song_changed:
+            fetch_lyrics = True
+            # Check if this song matches a people's choice suggestion
+            event_sku = getattr(config, 'EVENT_SKU', '')
+            self.is_peoples_choice = _check_peoples_choice_match(
+                self.song_name, self.musical, event_sku
+            )
+        
         super().save(*args, **kwargs)
 
         if fetch_lyrics:

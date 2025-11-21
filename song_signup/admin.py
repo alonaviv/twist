@@ -217,7 +217,7 @@ class GroupSongRequestAdmin(admin.ModelAdmin):
 @admin.register(SongRequest)
 class SongRequestAdmin(admin.ModelAdmin):
     list_display = (
-        'display_position', 'get_skipped', 'lyrics', 'get_singer', 'get_song', 'get_musical', 'get_partners', 'get_notes', 'get_to_alon',
+        'display_position', 'get_skipped', 'get_peoples_choice_sash', 'lyrics', 'get_singer', 'get_song', 'get_musical', 'get_partners', 'get_notes', 'get_to_alon',
         'default_lyrics', 'found_music', 'allows_filming', 'get_performance_time', 'get_request_time', 'get_initial_signup',
     )
     list_filter = (NotYetPerformedFilter,)
@@ -233,6 +233,12 @@ class SongRequestAdmin(admin.ModelAdmin):
         if obj.skipped:
             return mark_safe('<img src="/static/img/admin/forward.png" style="height: 16px;" />')
     get_skipped.short_description = 'S'
+
+    def get_peoples_choice_sash(self, obj):
+        if obj.is_peoples_choice:
+            return mark_safe('<img src="/static/peoples_choice/img/sash.png" alt="People\'s Choice" style="height: 30px;" />')
+        return ''
+    get_peoples_choice_sash.short_description = 'P'
 
     def changelist_view(self, request, extra_context=None):
         extra_context = extra_context or {}
