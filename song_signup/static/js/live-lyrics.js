@@ -16,12 +16,20 @@ const triviaWinnerName = document.querySelector(".trivia-winner-name.live-lyrics
 const triviaAnswer = document.querySelector(".trivia-answer.live-lyrics-trivia");
 const triviaAnswerTitle = document.querySelector(".trivia-answer-title.live-lyrics-trivia");
 const raffleWinnerWrapper = document.querySelector(".raffle-winner-wrapper");
-const raffleWinnerTitle = document.querySelector(".raffle-winner-title");
-const raffleWinnerName = document.querySelector(".raffle-winner-name");
-const raffleWinnerDescription = document.querySelector(".raffle-winner-description");
+const raffleParticipantsWrapper = document.querySelector(".raffle-participants");
+const raffleSlotAbove = document.querySelector(".raffle-slot-above");
+const raffleSlotMiddle = document.querySelector(".raffle-slot-middle");
+const raffleSlotBelow = document.querySelector(".raffle-slot-below");
+const raffleSubtitle = document.querySelector(".raffle-subtitle");
+const fireworksContainer = document.querySelector(".fireworks");
+let fireworksInstance = null;
+let fireworksRunning = false;
+const rafflePhaseNumber = document.getElementById("raffle-phase-number");
 let currentSong = '';
 let showPasscode = false;
 let activeRaffleWinner = false;
+let slotAnimationRunning = false;
+let slotAnimationCompleted = false;
 
 
 // Allow dragging on computers - useful for projector screen
@@ -99,8 +107,8 @@ async function populateLyrics() {
     const boho = (await bohoRes.json()).boho;
     const questionRes = await fetch("/get_active_question");
     const question = await questionRes.json();
-    const raffleWinnerRes = await fetch("/get_active_raffle_winner");
-    const raffleWinner = await raffleWinnerRes.json();
+    const raffleParticipantsRes = await fetch("/get_raffle_participants");
+    const raffleParticipants = await raffleParticipantsRes.json();
 
     if (questionRes.status === 200 && Object.keys(question).length > 0 && isSuperuser) {
         const winner = question.winner;
@@ -148,34 +156,57 @@ async function populateLyrics() {
         raffleWinnerWrapper.classList.add('hidden');
     }
 
-    if (raffleWinnerRes.status === 200 && Object.keys(raffleWinner).length > 0 && isSuperuser) {
-        if (!activeRaffleWinner) {
-            setTimeout(() => {
-                raffleWinnerTitle.classList.add('active');
-                setTimeout(() => {
-                    raffleWinnerName.classList.add('active');
-                    raffleWinnerDescription.classList.add('active');
-                }, 2000)
-            }, 500)
-        }
+    // Only show raffle view if participants list is non-empty (backend only returns list if active winner exists)
+    const hasParticipants = raffleParticipantsRes.status === 200 &&
+        raffleParticipants &&
+        Array.isArray(raffleParticipants.participants) &&
+        raffleParticipants.participants.length > 0 &&
+        isSuperuser;
 
+    if (hasParticipants) {
         activeRaffleWinner = true;
 
         lyricsWrapper.classList.add('hidden');
         triviaWrapper.classList.add('hidden');
         raffleWinnerWrapper.classList.remove('hidden');
-        raffleWinnerName.innerHTML = `<p>${raffleWinner.full_name}</p>`
 
+        // Start slot machine animation (only once, if not already completed)
+        if (!slotAnimationRunning && !slotAnimationCompleted) {
+            slotAnimationRunning = true;
+            runSlotMachineAnimation(raffleParticipants.participants);
+        }
+        raffleParticipantsWrapper.classList.remove("hidden");
     }
     else {
         activeRaffleWinner = false;
         lyricsWrapper.classList.remove('hidden');
         triviaWrapper.classList.add('hidden');
         raffleWinnerWrapper.classList.add('hidden');
-        raffleWinnerTitle.classList.remove('active');
-        raffleWinnerName.classList.remove('active');
-        raffleWinnerDescription.classList.remove('active');
-        raffleWinnerName.innerHTML = ``
+        if (raffleParticipantsWrapper) {
+            raffleParticipantsWrapper.classList.add("hidden");
+        }
+        if (raffleSlotMiddle) {
+            raffleSlotMiddle.classList.remove("raffle-slot-middle-winner");
+        }
+        if (raffleSlotAbove) {
+            raffleSlotAbove.classList.remove("raffle-slot-faded");
+        }
+        if (raffleSlotBelow) {
+            raffleSlotBelow.classList.remove("raffle-slot-faded");
+        }
+        if (raffleSubtitle) {
+            raffleSubtitle.classList.remove("raffle-subtitle-faded");
+        }
+        slotAnimationRunning = false;
+        slotAnimationCompleted = false;
+        // Stop fireworks when leaving raffle view
+        if (fireworksInstance && fireworksRunning) {
+            fireworksInstance.stop();
+            fireworksRunning = false;
+        }
+        if (raffleParticipantsWrapper) {
+            raffleParticipantsWrapper.classList.add("hidden");
+        }
     }
 
 
@@ -247,7 +278,7 @@ async function populateLyrics() {
                 lyrics = lyrics.replace(regex, `<span class="drink-highlight">$1</span>`);
             })
         }
-        
+
         lyricsText.innerHTML = `${isGroupSong ? "<div id='group-song-title'>GROUP SONG!!!</div>" : ""}
         <h2>${lyricsData.song_name}</h2>
             <h3>${lyricsData.artist_name}</h3><br>
@@ -257,5 +288,115 @@ async function populateLyrics() {
             currentSong = lyricsData.song_name;
             window.scrollTo(0, 0);
         }
-    } 
+    }
+}
+
+function runSlotMachineAnimation(participants) {
+    // Backend only returns list if there's a winner, so winner is guaranteed to exist
+    if (!participants || participants.length === 0 || !raffleSlotMiddle) {
+        slotAnimationRunning = false;
+        return;
+    }
+
+    // Find the winner index - backend guarantees winner exists with is_winner=true
+    const winnerIndex = participants.findIndex(p => p.is_winner);
+
+    let currentIndex = 0;
+    let currentDelay = 80; // Start fast
+
+    function animateSlot() {
+        if (!slotAnimationRunning) return;
+
+        // Show participants in slots (one above, middle, one below)
+        const aboveIndex = currentIndex > 0 ? currentIndex - 1 : null;
+        const middleIndex = currentIndex;
+        const belowIndex = currentIndex < participants.length - 1 ? currentIndex + 1 : null;
+
+        // Update slots
+        if (raffleSlotAbove) {
+            raffleSlotAbove.textContent = aboveIndex !== null ? participants[aboveIndex].full_name : "";
+        }
+        if (raffleSlotMiddle) {
+            raffleSlotMiddle.textContent = participants[middleIndex].full_name;
+        }
+        if (raffleSlotBelow) {
+            raffleSlotBelow.textContent = belowIndex !== null ? participants[belowIndex].full_name : "";
+        }
+
+        // Check if we've reached the winner in the middle slot
+        if (middleIndex === winnerIndex) {
+            // Winner is in the middle - stop here and mark as completed
+            if (raffleSlotMiddle) {
+                raffleSlotMiddle.classList.add("raffle-slot-middle-winner");
+            }
+            if (raffleSlotAbove) {
+                raffleSlotAbove.classList.add("raffle-slot-faded");
+            }
+            if (raffleSlotBelow) {
+                raffleSlotBelow.classList.add("raffle-slot-faded");
+            }
+            if (raffleSubtitle) {
+                raffleSubtitle.classList.add("raffle-subtitle-faded");
+            }
+            slotAnimationRunning = false;
+            slotAnimationCompleted = true;
+            startFireworksOnce();
+            return;
+        }
+
+        // Three-phase animation based on progress towards the winner
+        const progressToWinner = currentIndex / winnerIndex;
+
+        let currentPhase = 1;
+        if (progressToWinner < 0.5) {
+            currentPhase = 1;
+            currentDelay = Math.min(currentDelay * 1.02, 150);
+        } else if (progressToWinner < 0.9) {
+            currentPhase = 2;
+            currentDelay = Math.min(currentDelay * 1.08, 900);
+        } else {
+            currentPhase = 3;
+            currentDelay = Math.min(currentDelay * 1.08, 300);
+        }
+
+        if (rafflePhaseNumber) {
+            rafflePhaseNumber.textContent = currentPhase;
+        }
+
+        // Move to next index - scroll through list until we reach the winner
+        currentIndex++;
+        setTimeout(animateSlot, currentDelay);
+    }
+
+    // Start animation
+    animateSlot();
+}
+
+function startFireworksOnce() {
+    if (!fireworksContainer || typeof Fireworks === "undefined" || !Fireworks || !Fireworks.default) {
+        return;
+    }
+
+    if (!fireworksInstance) {
+        // Make fireworks bigger and more intense
+        fireworksInstance = new Fireworks.default(fireworksContainer, {
+            autoresize: true,
+            opacity: 0.5,
+            acceleration: 1.05,
+            friction: 0.97,
+            gravity: 1.5,
+            particles: 260,
+            traceLength: 3,
+            traceSpeed: 8,
+            explosion: 8,
+            intensity: 55,
+            flickering: 45,
+            lineStyle: 'round',
+        });
+    }
+
+    if (!fireworksRunning) {
+        fireworksInstance.start();
+        fireworksRunning = true;
+    }
 }

@@ -52,7 +52,8 @@ from .serializers import (
     LyricsSerializer,
     TriviaQuestionSerializer,
     TriviaResponseSerializer,
-    RaffleWinnerSerializer
+    RaffleWinnerSerializer,
+    RaffleParticipantSerializer
 )
 from twist.utils import format_commas
 
@@ -592,6 +593,42 @@ def get_active_raffle_winner(request):
         return Response(serialized.data, status=status.HTTP_200_OK)
     else:
         return Response({}, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+def get_raffle_participants(request):
+    """
+    Return all active raffle participants and mark the current active winner.
+    Only returns a list if there's an active winner (prevents race conditions).
+    Used by the live lyrics raffle display to show everyone in the draw and highlight the winner.
+    """
+    active_winner = Singer.objects.filter(active_raffle_winner=True).first()
+
+    if not active_winner:
+        return Response({"participants": []}, status=status.HTTP_200_OK)
+    
+    participants = list(Singer.ordering.active_raffle_participants())
+    
+    random.shuffle(participants)
+    insert_position = max(0, len(participants) - 1) if participants else 0
+    participants.insert(insert_position, active_winner)
+
+    # Double the list for the animation
+    participants = participants * 2
+    
+    participants_data = RaffleParticipantSerializer(participants, many=True).data
+    
+    # The first winner should appear as false for the animation
+    for i, participant in enumerate(participants_data):
+        if participant["id"] == active_winner.id:
+            participants_data[i]["is_winner"] = False
+            break
+    
+    data = {
+        "participants": participants_data
+    }
+
+    return Response(data, status=status.HTTP_200_OK)
 
 @bwt_login_required('login')
 def suggest_group_song(request):

@@ -55,13 +55,20 @@
 
 <div class="raffle-winner-wrapper hidden">
         <div class="fireworks"></div>
-        <div class="raffle-winner-title">
-            OUR NEW SURPRISE SINGER IS...
+        <div class="raffle-participants">
+            <div class="raffle-participants-title">
+                AUDIENCE RAFFLE
+            </div>
+            <div class="raffle-subtitle">
+                Who will come on stage??
+            </div>
+            <div class="raffle-slot-machine">
+                <div class="raffle-slot-wrapper">
+                    <div class="raffle-slot raffle-slot-above"></div>
+                    <div class="raffle-slot raffle-slot-middle"></div>
+                    <div class="raffle-slot raffle-slot-below"></div>
         </div>
-        <div class="raffle-winner-name">
         </div>
-        <div class="raffle-winner-description">
-            CHOOSE YOUR SONG, AND WE'LL CALL YOU ON STAGE!
         </div>
 </div>
 
@@ -77,11 +84,6 @@ src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"
 integrity="sha256-lSjKY0/srUM9BE3dPm+c4fBo1dky2v27Gdjm2uoZaL0="
 crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/fireworks-js@2.x/dist/index.umd.js"></script>
-<script>
-    const container = document.querySelector('.fireworks')
-    const fireworks = new Fireworks.default(container)
-    fireworks.start()
-  </script>
 {% if demo_mode %}
 <script type="module" src="{% static "js/demo-live-lyrics.js" %}"></script>
 {% else %}

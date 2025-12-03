@@ -2230,3 +2230,224 @@ class TestRaffle(TestViews):
             audience.save()
 
         self._assert_no_participants()
+
+    def test_get_raffle_participants_no_active_winner(self):
+        """Test get_raffle_participants returns empty list when no active winner."""
+        participants = create_audience(3)
+        participate_in_raffle(participants)
+
+        response = self.client.get(reverse('get_raffle_participants'))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('participants', response.data)
+        self.assertEqual(len(response.data['participants']), 0)
+
+    def test_get_raffle_participants_with_winner(self):
+        """Test get_raffle_participants with an active winner - basic functionality."""
+        participants = create_audience(3)
+        participate_in_raffle(participants)
+
+        # Start a raffle to create a winner
+        self.client.get(reverse('start_raffle'))
+        winner = Singer.objects.filter(active_raffle_winner=True).first()
+        self.assertIsNotNone(winner)
+
+        response = self.client.get(reverse('get_raffle_participants'))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('participants', response.data)
+
+        participants_list = response.data['participants']
+        self.assertEqual(len(participants_list), 6)
+
+        # Verify all participants have required fields
+        for p in participants_list:
+            self.assertIn('id', p)
+            self.assertIn('full_name', p)
+            self.assertIn('is_winner', p)
+
+        # Find all winner occurrences
+        winner_items = [p for p in participants_list if p['id'] == winner.id]
+        # Winner should appear twice (once in each cycle)
+        self.assertEqual(len(winner_items), 2)
+
+        # First occurrence should have is_winner=False, second should have is_winner=True
+        first_winner_index = next(i for i, p in enumerate(participants_list) if p['id'] == winner.id)
+        second_winner_index = next(i for i, p in enumerate(participants_list[first_winner_index + 1:], start=first_winner_index + 1) if p['id'] == winner.id)
+
+        self.assertFalse(participants_list[first_winner_index]['is_winner'])
+        self.assertTrue(participants_list[second_winner_index]['is_winner'])
+
+    def test_get_raffle_participants_winner_in_both_cycles(self):
+        """Test that winner appears in both cycles of the doubled list."""
+        participants = create_audience(3)
+        participate_in_raffle(participants)
+
+        self.client.get(reverse('start_raffle'))
+        winner = Singer.objects.filter(active_raffle_winner=True).first()
+
+        response = self.client.get(reverse('get_raffle_participants'))
+        participants_list = response.data['participants']
+
+        # Winner should appear exactly twice
+        winner_count = sum(1 for p in participants_list if p['id'] == winner.id)
+        self.assertEqual(winner_count, 2)
+
+        # Find both occurrences
+        winner_indices = [i for i, p in enumerate(participants_list) if p['id'] == winner.id]
+        self.assertEqual(len(winner_indices), 2)
+
+        # First half and second half should each have one winner
+        mid_point = len(participants_list) // 2
+        first_half_winners = sum(1 for i in winner_indices if i < mid_point)
+        second_half_winners = sum(1 for i in winner_indices if i >= mid_point)
+        self.assertEqual(first_half_winners, 1)
+        self.assertEqual(second_half_winners, 1)
+
+    def test_get_raffle_participants_first_winner_is_false(self):
+        """Test that first winner occurrence has is_winner=False."""
+        participants = create_audience(2)
+        participate_in_raffle(participants)
+
+        self.client.get(reverse('start_raffle'))
+        winner = Singer.objects.filter(active_raffle_winner=True).first()
+
+        response = self.client.get(reverse('get_raffle_participants'))
+        participants_list = response.data['participants']
+
+        # Find first winner occurrence
+        first_winner_index = next(i for i, p in enumerate(participants_list) if p['id'] == winner.id)
+        self.assertFalse(participants_list[first_winner_index]['is_winner'],
+                        "First winner occurrence should have is_winner=False")
+
+    def test_get_raffle_participants_second_winner_is_true(self):
+        """Test that second winner occurrence has is_winner=True."""
+        participants = create_audience(2)
+        participate_in_raffle(participants)
+
+        self.client.get(reverse('start_raffle'))
+        winner = Singer.objects.filter(active_raffle_winner=True).first()
+
+        response = self.client.get(reverse('get_raffle_participants'))
+        participants_list = response.data['participants']
+
+        # Find both winner occurrences
+        winner_indices = [i for i, p in enumerate(participants_list) if p['id'] == winner.id]
+        self.assertEqual(len(winner_indices), 2)
+
+        # Second occurrence should have is_winner=True
+        self.assertTrue(participants_list[winner_indices[1]]['is_winner'],
+                       "Second winner occurrence should have is_winner=True")
+
+    def test_get_raffle_participants_list_is_doubled(self):
+        """Test that the list is properly doubled."""
+        participants = create_audience(3)
+        participate_in_raffle(participants)
+
+        self.client.get(reverse('start_raffle'))
+
+        response = self.client.get(reverse('get_raffle_participants'))
+        participants_list = response.data['participants']
+
+        # Should have 6 items (3 participants doubled)
+        self.assertEqual(len(participants_list), 6)
+
+        # First half and second half should have same participant IDs (in same order after doubling)
+        mid_point = len(participants_list) // 2
+        first_half_ids = [p['id'] for p in participants_list[:mid_point]]
+        second_half_ids = [p['id'] for p in participants_list[mid_point:]]
+
+        self.assertEqual(first_half_ids, second_half_ids)
+
+    def test_get_raffle_participants_only_winner(self):
+        """Test edge case where winner is the only participant."""
+        # Create one participant who will be the winner
+        participant = create_audience(1)[0]
+        participate_in_raffle([participant])
+
+        self.client.get(reverse('start_raffle'))
+        winner = Singer.objects.filter(active_raffle_winner=True).first()
+        self.assertEqual(winner.id, participant.id)
+
+        response = self.client.get(reverse('get_raffle_participants'))
+        participants_list = response.data['participants']
+
+        # Should have 2 items (1 participant doubled)
+        self.assertEqual(len(participants_list), 2)
+
+        # Both should be the winner
+        self.assertEqual(participants_list[0]['id'], winner.id)
+        self.assertEqual(participants_list[1]['id'], winner.id)
+
+        # First should have is_winner=False, second should have is_winner=True
+        self.assertFalse(participants_list[0]['is_winner'])
+        self.assertTrue(participants_list[1]['is_winner'])
+
+    def test_get_raffle_participants_excludes_previous_winners(self):
+        """Test that previous winners (no longer active) are excluded."""
+        participants = create_audience(3)
+        participate_in_raffle(participants)
+
+        # Start and end a raffle
+        self.client.get(reverse('start_raffle'))
+        first_winner = Singer.objects.filter(active_raffle_winner=True).first()
+        self.client.get(reverse('end_raffle'))
+
+        # First winner should no longer be active
+        first_winner.refresh_from_db()
+        self.assertTrue(first_winner.raffle_winner)
+        self.assertFalse(first_winner.active_raffle_winner)
+
+        # Start another raffle with remaining participants
+        self.client.get(reverse('start_raffle'))
+        second_winner = Singer.objects.filter(active_raffle_winner=True).first()
+
+        response = self.client.get(reverse('get_raffle_participants'))
+        participants_list = response.data['participants']
+
+        # First winner should not be in the list
+        participant_ids = [p['id'] for p in participants_list]
+        self.assertNotIn(first_winner.id, participant_ids)
+
+        # Second winner should be in the list
+        self.assertIn(second_winner.id, participant_ids)
+
+    def test_get_raffle_participants_excludes_inactive(self):
+        """Test that inactive participants are excluded."""
+        participants = create_audience(3)
+        participate_in_raffle(participants)
+
+        # Make one inactive
+        participants[0].is_active = False
+        participants[0].save()
+
+        self.client.get(reverse('start_raffle'))
+
+        response = self.client.get(reverse('get_raffle_participants'))
+        participants_list = response.data['participants']
+
+        participant_ids = [p['id'] for p in participants_list]
+        # Inactive participant should not be in list
+        self.assertNotIn(participants[0].id, participant_ids)
+
+        self.assertEqual(len(participants_list), 6)
+
+    def test_get_raffle_participants_randomization(self):
+        """Test that the order is randomized on each call."""
+        participants = create_audience(5)
+        participate_in_raffle(participants)
+
+        self.client.get(reverse('start_raffle'))
+
+        # Get the list multiple times and collect orders
+        orders = []
+        for _ in range(10):
+            response = self.client.get(reverse('get_raffle_participants'))
+            participants_list = response.data['participants']
+            # Get first half IDs (before doubling) - but since it's doubled, get first 3 items
+            mid_point = len(participants_list) // 2
+            first_half_ids = tuple([p['id'] for p in participants_list[:mid_point]])
+            orders.append(first_half_ids)
+
+        # Check if we got at least 2 different orders (very likely with randomization)
+        unique_orders = set(orders)
+        self.assertGreater(len(unique_orders), 1,
+                          "Randomization should produce different orders across multiple calls")

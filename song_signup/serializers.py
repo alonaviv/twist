@@ -95,3 +95,18 @@ class RaffleWinnerSerializer(ModelSerializer):
     class Meta:
         model = Singer
         fields = ['id', 'full_name']
+
+
+class RaffleParticipantSerializer(ModelSerializer):
+    full_name = SerializerMethodField()
+    is_winner = SerializerMethodField()
+
+    def get_full_name(self, instance):
+        return instance.get_full_name()
+
+    def get_is_winner(self, instance):
+        return instance.active_raffle_winner
+
+    class Meta:
+        model = Singer
+        fields = ['id', 'full_name', 'is_winner']
