@@ -67,7 +67,7 @@ class LyricsWebsiteParser:
     def get_lyrics(self, song_name: str, author: str) -> Iterable[LyricsResult]:
         lock = sherlock.Lock(self.SITE)
         seen_urls = set()
-        search_query = '"{}" lyrics from "{}"'.format(song_name, author)
+        search_query = '"{}" lyrics "{}"'.format(song_name, author)
 
         for _ in range(3):
             search_results = self.exa_search(search_query)
@@ -98,7 +98,7 @@ class LyricsWebsiteParser:
                 logger.warning(f"Received status {r.status_code} for URL {url}")
                 continue
 
-            soup = bs4.BeautifulSoup(r.content.decode(), features="html.parser")
+            soup = bs4.BeautifulSoup(r.text, features="html.parser")
 
             try:
                 result = self.parse_lyrics(soup)
@@ -118,59 +118,39 @@ class LyricsWebsiteParser:
 
 
 class GeniusParser(LyricsWebsiteParser):
+    URL_FORMAT = re.compile("genius\.com\/.*-lyrics$")
     SITE = "genius.com"
-    # Paying through rapidapi: https://rapidapi.com/Glavier/api/genius-song-lyrics1
 
-    @property
-    def api_headers(self):
-        return {
-            "X-RapidAPI-Key": genius_key,
-            "X-RapidAPI-Host": "genius-song-lyrics1.p.rapidapi.com"
-        }
+    def fix_url(self, url):
+        # Common URLs that are close enough that we can just fixup
+        return url.removesuffix("/q/writer").removesuffix("/q/producer")
 
-    def search_api(self, query) -> list:
-        """
-        Returns list of matching song ids
-        """
-        endpoint = "https://genius-song-lyrics1.p.rapidapi.com/search/"
-        params = {'q': query}
-        res = requests.get(endpoint, params=params, headers=self.api_headers)
-        return [hit['result']['id'] for hit in res.json()['hits']]
+    def parse_lyrics(self, soup: bs4.BeautifulSoup) -> LyricsResult:
+        page_title = soup.find("title").text
+        artist, title = page_title.split("–")[
+            :2
+        ]  # Note that this is a unicode character
+        artist = artist.strip()
+        if "Lyrics" in title:
+            title = title[: title.index("Lyrics")]
+        title = title.strip()
 
+        for br in soup.find_all("br"):
+            br.replace_with("\n")
 
-    def lyric_api(self, song_id) -> dict:
-        endpoint = "https://genius-song-lyrics1.p.rapidapi.com/song/lyrics/"
-        params = {'id': song_id, 'text_format': 'plain'}
-        res = requests.get(endpoint, params=params, headers=self.api_headers)
-        return res.json()['lyrics']
+        lyrics_parts = []
+        for verse in soup.findAll("div", {"data-lyrics-container": "true"}):
+            # Remove elements marked for exclusion (headers, navigation, etc.)
+            for excluded in verse.find_all(attrs={"data-exclude-from-selection": "true"}):
+                excluded.decompose()
+            lyrics_parts.append(verse.get_text())
 
-
-    def get_lyrics(self, song_name: str, author: str) -> Iterable[LyricsResult]:
-        search_query = f"{author} {song_name}"
-        song_ids = self.search_api(search_query)
-        for song_id in song_ids:
-            try:
-                res = self.lyric_api(song_id)
-
-            except Exception:
-                logger.exception(f"Exception when requesting lyrics via Genius API for song {song_id}")
-                continue
-
-            try:
-                lyrics = res['lyrics']['body']['plain']
-                title = res['tracking_data']['title']
-                album = res['tracking_data']['primary_album'] or res['tracking_data']['primary_artist']
-                url = self.SITE + res['path']
-            except Exception:
-                logger.exception(f"Exception when exctracting API lyrics data for song {song_id}")
-                continue
-
-            yield LyricsResult(
-                lyrics=lyrics,
-                artist=album or author,
-                title=title,
-                url=url,
-            )
+        return LyricsResult(
+            lyrics="\n\n".join(lyrics_parts),
+            artist=artist,
+            title=title,
+            url=None,
+        )
 
 
 class AllMusicalsParser(LyricsWebsiteParser):
@@ -234,9 +214,6 @@ class AzLyricsParser(LyricsWebsiteParser):
             # Oops we're blocked, need to find workaround later :(
             return None
 
-        for br in soup.find_all("br"):
-            br.replace_with("\n")
-
         return LyricsResult(
             lyrics=max(soup.findAll("div", {"class": None}), key=len).text.strip(),
             artist=artist,
@@ -271,7 +248,22 @@ class TheMusicalLyricsParser(LyricsWebsiteParser):
             tag.replace_with("")
 
         # The correct p has a script tag in the middle that injects a tracking tag
-        lyrics = [p for p in soup.find_all("p") if p.find("script")][0].text.strip()
+        # First try: p tags that contain script as a child
+        p_with_script_child = [p for p in soup.find_all("p") if p.find("script")]
+        
+        if p_with_script_child:
+            lyrics = p_with_script_child[0].text.strip()
+        else:
+            # Second try: find the longest p tag that has a script relationship (sibling or child)
+            p_with_script_relationship = [
+                p for p in soup.find_all("p")
+                if p.find("script") or p.find_next_sibling("script") or p.find_previous_sibling("script")
+            ]
+            if p_with_script_relationship:
+                # Pick the longest one (lyrics are typically the longest text)
+                lyrics = max(p_with_script_relationship, key=lambda p: len(p.text.strip())).text.strip()
+            else:
+                raise Exception("Could not find lyrics paragraph with script tag")
 
         return LyricsResult(
             lyrics=lyrics,
@@ -282,7 +274,7 @@ class TheMusicalLyricsParser(LyricsWebsiteParser):
 
 
 class LyricsTranslateParser(LyricsWebsiteParser):
-    URL_FORMAT = re.compile("-lyrics\.html$")
+    URL_FORMAT = re.compile("lyricstranslate\.com\/.*-lyrics$")
     SITE = "lyricstranslate.com"
 
     def parse_lyrics(self, soup: bs4.BeautifulSoup) -> LyricsResult:
@@ -381,6 +373,6 @@ def get_lyrics_for_provider(
             group_song_request=song if group_song_id is not None else None,
         )
 
-        # 2 lyrics per site is plenty for now
-        if i == 1:
+        # 3 lyrics per site
+        if i == 2:
             break
