@@ -18,6 +18,22 @@ logger = getLogger(__name__)
 USER_AGENT = "Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36"
 LOCATION = "Austin,Texas,United States"
 
+# Browser-like headers to avoid being blocked
+BROWSER_HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Referer": "https://www.azlyrics.com/",
+    "Connection": "keep-alive",
+    "Upgrade-Insecure-Requests": "1",
+    "Sec-Fetch-Dest": "document",
+    "Sec-Fetch-Mode": "navigate",
+    "Sec-Fetch-Site": "same-origin",
+    "Sec-Fetch-User": "?1",
+    "Cache-Control": "max-age=0",
+}
+
 exa_key = os.environ["EXA_KEY"]
 genius_key = os.environ["GENIUS_KEY"]
 
@@ -200,6 +216,19 @@ class AllMusicalsParser(LyricsWebsiteParser):
 class AzLyricsParser(LyricsWebsiteParser):
     URL_FORMAT = re.compile("azlyrics.com\/lyrics\/.*html$")
     SITE = "azlyrics.com"
+
+    def __init__(self):
+        # Use a session to maintain cookies between requests
+        self.session = requests.Session()
+        self.session.headers.update(BROWSER_HEADERS)
+
+    def get_url(self, url: str) -> requests.Response:
+        # Use session with browser-like headers to avoid being blocked
+        if not hasattr(self, '_session_initialized'):
+            self.session.get("https://www.azlyrics.com/", timeout=10)
+            self._session_initialized = True
+        
+        return self.session.get(url, timeout=10)
 
     def parse_lyrics(self, soup: bs4.BeautifulSoup) -> Optional[LyricsResult]:
         page_title = soup.find("title").text
