@@ -1,8 +1,10 @@
 import dataclasses
 import os
 import re
+import time
 from logging import getLogger
 from typing import Iterable, Optional
+from urllib.parse import urlparse
 from exa_py import Exa
 
 import bs4
@@ -32,6 +34,7 @@ BROWSER_HEADERS = {
     "Sec-Fetch-Site": "same-origin",
     "Sec-Fetch-User": "?1",
     "Cache-Control": "max-age=0",
+    "DNT": "1",
 }
 
 exa_key = os.environ["EXA_KEY"]
@@ -133,7 +136,7 @@ class LyricsWebsiteParser:
                 logger.exception(f"Exception in parser for url {search_result}")
 
 
-class GeniusParser(LyricsWebsiteParser):
+class GeniusExaParser(LyricsWebsiteParser):
     URL_FORMAT = re.compile("genius\.com\/.*-lyrics$")
     SITE = "genius.com"
 
@@ -167,6 +170,63 @@ class GeniusParser(LyricsWebsiteParser):
             title=title,
             url=None,
         )
+
+
+class GeniusApiParser(LyricsWebsiteParser):
+    """
+    Genius parser using the official Genius API (via RapidAPI).
+    This is separate from GeniusExaParser which uses Exa search to scrape the website.
+    """
+    URL_FORMAT = re.compile("genius\.com")
+    SITE = "genius.com"
+
+    @property
+    def api_headers(self):
+        return {
+            "X-RapidAPI-Key": genius_key,
+            "X-RapidAPI-Host": "genius-song-lyrics1.p.rapidapi.com"
+        }
+
+    def search_api(self, query) -> list:
+        """
+        Returns list of matching song ids
+        """
+        endpoint = "https://genius-song-lyrics1.p.rapidapi.com/search/"
+        params = {'q': query}
+        res = requests.get(endpoint, params=params, headers=self.api_headers)
+        return [hit['result']['id'] for hit in res.json()['hits']]
+
+    def lyric_api(self, song_id) -> dict:
+        endpoint = "https://genius-song-lyrics1.p.rapidapi.com/song/lyrics/"
+        params = {'id': song_id, 'text_format': 'plain'}
+        res = requests.get(endpoint, params=params, headers=self.api_headers)
+        return res.json()['lyrics']
+
+    def get_lyrics(self, song_name: str, author: str) -> Iterable[LyricsResult]:
+        search_query = f"{author} {song_name}"
+        song_ids = self.search_api(search_query)
+        for song_id in song_ids:
+            try:
+                res = self.lyric_api(song_id)
+            except Exception:
+                logger.exception(f"Exception when requesting lyrics via Genius API for song {song_id}")
+                continue
+
+            try:
+                lyrics = res['lyrics']['body']['plain']
+                title = res['tracking_data']['title']
+                album = res['tracking_data']['primary_album'] or res['tracking_data']['primary_artist']
+                url = "https://" + self.SITE + res['path']
+            except Exception:
+                logger.exception(f"Exception when extracting API lyrics data for song {song_id}")
+                continue
+
+            yield LyricsResult(
+                lyrics=lyrics,
+                artist=album or author,
+                title=title,
+                url=url,
+            )
 
 
 class AllMusicalsParser(LyricsWebsiteParser):
@@ -225,10 +285,39 @@ class AzLyricsParser(LyricsWebsiteParser):
     def get_url(self, url: str) -> requests.Response:
         # Use session with browser-like headers to avoid being blocked
         if not hasattr(self, '_session_initialized'):
+            # First visit homepage to establish session and cookies
             self.session.get("https://www.azlyrics.com/", timeout=10)
+            time.sleep(0.5)  # Small delay to simulate human behavior
+            # Visit a search page to establish browsing context
+            self.session.get("https://www.azlyrics.com/search.html", timeout=10)
             self._session_initialized = True
         
-        return self.session.get(url, timeout=10)
+        # Extract base path from URL to set appropriate Referer
+        # URLs are like https://www.azlyrics.com/lyrics/artist/song.html
+        # So referer should be like https://www.azlyrics.com/lyrics/artist/ or homepage
+        try:
+            parsed = urlparse(url)
+            if '/lyrics/' in parsed.path:
+                # Extract artist path for more realistic referer
+                path_parts = parsed.path.split('/')
+                if len(path_parts) >= 3:
+                    referer_path = '/'.join(path_parts[:3]) + '/'
+                    referer = f"{parsed.scheme}://{parsed.netloc}{referer_path}"
+                else:
+                    referer = f"{parsed.scheme}://{parsed.netloc}/"
+            else:
+                referer = f"{parsed.scheme}://{parsed.netloc}/"
+        except Exception:
+            referer = "https://www.azlyrics.com/"
+        
+        # Update Referer to make request appear to come from browsing the site
+        headers = BROWSER_HEADERS.copy()
+        headers["Referer"] = referer
+        
+        # Small delay before request to avoid appearing automated
+        time.sleep(0.3)
+        
+        return self.session.get(url, headers=headers, timeout=10)
 
     def parse_lyrics(self, soup: bs4.BeautifulSoup) -> Optional[LyricsResult]:
         page_title = soup.find("title").text

@@ -1,5 +1,5 @@
 from django.test import TestCase
-from song_signup.tasks import (GeniusParser, AllMusicalsParser, ShironetParser,
+from song_signup.tasks import (GeniusExaParser, GeniusApiParser, AllMusicalsParser, ShironetParser,
                                AzLyricsParser, LyricsTranslateParser, TheMusicalLyricsParser)
 
 
@@ -15,9 +15,16 @@ class TestParsers(TestCase):
         lyrics = list(parser.get_lyrics(SONG_NAME, MUSICAL))
         breakpoint()
 
-    def no_test_get_lyrics_genius(self):
+    def no_test_get_lyrics_genius_exa(self):
+        # Uses Exa search to scrape website
+        parser = GeniusExaParser()
+
+        lyrics = list(parser.get_lyrics(SONG_NAME, MUSICAL))
+        breakpoint()
+
+    def no_test_get_lyrics_genius_api(self):
         # Uses dedicated API
-        parser = GeniusParser()
+        parser = GeniusApiParser()
 
         lyrics = list(parser.get_lyrics(SONG_NAME, MUSICAL))
         breakpoint()
