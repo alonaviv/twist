@@ -1,0 +1,8 @@
+{% extends 'admin/change_list.html' %}
+
+{% block content %}
+{{ block.super }}
+<p style="margin-top: 1.5rem;">
+    <a href="{% url 'admin:pub_quiz_round_clear_all' %}" class="button">Clear all URLs</a>
+</p>
+{% endblock %}

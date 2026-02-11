@@ -10,20 +10,34 @@
 
         <title>Broadway With a Twist – Pub Quiz</title>
 
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Oleo+Script+Swash+Caps&family=Roboto:ital,wght@0,300;0,400;0,500;1,300&display=swap">
+        <script src="https://kit.fontawesome.com/4078bed46b.js" crossorigin="anonymous"></script>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300&display=swap">
         <link rel="stylesheet" href="{% static 'pub_quiz/css/main.css' %}">
     </head>
 
     <body>
-        <main class="pub-quiz-page">
-            <section class="pub-quiz-hero">
-                <div class="pub-quiz-logo-wrapper">
+        <main class="pq-page">
+            <header class="pq-hero">
+                <h1 class="pq-title">Welcome to Broadway With a Twist: Pub Quiz</h1>
+                <div class="pq-logo-wrapper">
                     <img src="{% static 'pub_quiz/img/pub_quiz_logo.png' %}"
-                         alt="Broadway With a Twist Pub Quiz logo"
-                         class="pub-quiz-logo">
+                         alt="Broadway With a Twist Pub Quiz"
+                         class="pq-logo">
                 </div>
-            </section>
+                <p class="pq-whatsapp-link">
+                    <a href="https://links.broadwaywithatwist.xyz/whatsapp?utm_source=pub-quiz-page&utm_campaign=webapp&utm_content=pub-quiz-whatsapp" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-whatsapp"></i> Join our WhatsApp group</a>
+                </p>
+                <p class="pq-choose-label">Choose your round</p>
+                <nav class="pq-rounds">
+                    {% for round in round_links %}
+                    {% if round.url %}
+                    <a href="{{ round.url }}" class="pq-round-btn" target="_blank" rel="noopener noreferrer">Round {{ round.number }}</a>
+                    {% else %}
+                    <a href="{% url 'pub_quiz:round_no_link_number' round.number %}" class="pq-round-btn">Round {{ round.number }}</a>
+                    {% endif %}
+                    {% endfor %}
+                </nav>
+            </header>
         </main>
     </body>
 </html>
-

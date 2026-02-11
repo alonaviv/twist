@@ -157,12 +157,13 @@
             res = await fetch("/shani_pinged");
             shani_pinged = await res.json()
             const storedColor = localStorage.getItem('bgColor');
+            const defaultBg = window.ADMIN_DEFAULT_BG || '#fff';
             if (storedColor){
                 document.body.style.backgroundColor = storedColor;
             } else if (shani_pinged.shani_ping){
                 document.body.style.backgroundColor = '#b19cd9';
             } else {
-                document.body.style.backgroundColor = "#fff"
+                document.body.style.backgroundColor = defaultBg;
             }
         }
 

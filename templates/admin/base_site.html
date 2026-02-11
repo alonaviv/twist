@@ -1,0 +1,17 @@
+{% extends "admin/base.html" %}
+{% load i18n %}
+
+{% block extrastyle %}
+{{ block.super }}
+{% if config.EVENING_TYPE == 'pub_quiz' %}
+<style>
+    body {
+        background-color: #2d6b2d;
+    }
+</style>
+<script>
+    window.ADMIN_DEFAULT_BG = '#2d6b2d';
+</script>
+{% endif %}
+{% endblock %}
+
