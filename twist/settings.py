@@ -96,6 +96,7 @@ INSTALLED_APPS = [
     'flags',
     'rest_framework',
     'peoples_choice.apps.PeoplesChoiceConfig',
+    'pub_quiz.apps.PubQuizConfig',
 ]
 
 CONSTANCE_CONFIG = {
@@ -107,6 +108,7 @@ CONSTANCE_CONFIG = {
     'TARGET_REPEAT_SINGERS': (4, "How many singers do we want to repeat at the end of the evening"),
     'PEOPLES_CHOICE_EVENT_DATE': ('', "Event date for People's Choice page (e.g., '23.11.25') - REQUIRED FOR PEOPLE'S CHOICE"),
     'PEOPLES_CHOICE_EVENT_SKU': ('', "Event SKU for People's Choice page - REQUIRED FOR PEOPLE'S CHOICE"),
+    'PUB_QUIZ_MODE': (False, "If true, root URL shows Pub Quiz instead of Open Mic signup"),
 }
 
 CONSTANCE_BACKEND = 'constance.backends.redisd.RedisBackend'

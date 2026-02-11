@@ -17,8 +17,11 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf.urls.static import static
 from django.conf import settings
+from .views import root_router
 urlpatterns = [
     path('admin/', admin.site.urls, name='admin'),
+    path('', root_router, name='root'),
     path('', include('song_signup.urls')),
     path('peoples-choice/', include('peoples_choice.urls')),
+    path('pub-quiz/', include('pub_quiz.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
