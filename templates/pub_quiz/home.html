@@ -24,14 +24,15 @@
                          alt="Broadway With a Twist Pub Quiz"
                          class="pq-logo">
                 </div>
+                <p class="pq-next-event-label">When's the next event??</p>
                 <p class="pq-whatsapp-link">
-                    <a href="https://links.broadwaywithatwist.xyz/whatsapp?utm_source=pub-quiz-page&utm_campaign=webapp&utm_content=pub-quiz-whatsapp" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-whatsapp"></i> Join our WhatsApp group</a>
+                    <a href="https://links.broadwaywithatwist.xyz/whatsapp?utm_source=pub-quiz-page&utm_campaign=webapp&utm_content=pub-quiz-whatsapp" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-whatsapp"></i> Join our silent WhatsApp group!</a>
                 </p>
                 <p class="pq-choose-label">Choose your round</p>
                 <nav class="pq-rounds">
                     {% for round in round_links %}
-                    {% if round.url %}
-                    <a href="{{ round.url }}" class="pq-round-btn" target="_blank" rel="noopener noreferrer">Round {{ round.number }}</a>
+                    {% if round.configured %}
+                    <a href="#" class="pq-round-btn" data-round="{{ round.number }}" data-configured="true">Round {{ round.number }}</a>
                     {% else %}
                     <a href="{% url 'pub_quiz:round_no_link_number' round.number %}" class="pq-round-btn">Round {{ round.number }}</a>
                     {% endif %}
@@ -39,5 +40,37 @@
                 </nav>
             </header>
         </main>
+        <script>
+        (function () {
+            var buttons = document.querySelectorAll('.pq-round-btn[data-configured=\"true\"]');
+            buttons.forEach(function (btn) {
+                btn.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    var roundNumber = this.getAttribute('data-round');
+                    var password = window.prompt('Enter the password for Round ' + roundNumber + ':');
+                    if (password === null || password === '') {
+                        return;
+                    }
+                    fetch('/pub-quiz/round/' + roundNumber + '/check/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({password: password})
+                    }).then(function (resp) {
+                        return resp.json();
+                    }).then(function (data) {
+                        if (data.ok && data.url) {
+                            window.location.href = data.url;
+                        } else {
+                            alert(data.error || 'Wrong password, try again.');
+                        }
+                    }).catch(function () {
+                        alert('Something went wrong. Please try again.');
+                    });
+                });
+            });
+        })();
+        </script>
     </body>
 </html>

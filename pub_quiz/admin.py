@@ -8,8 +8,8 @@ from .models import Round
 
 @admin.register(Round)
 class RoundAdmin(admin.ModelAdmin):
-    list_display = ('round_number', 'url', 'has_link', 'clear_button')
-    list_editable = ('url',)
+    list_display = ('round_number', 'url', 'password', 'has_link', 'clear_button')
+    list_editable = ('url', 'password')
     ordering = ('round_number',)
     change_list_template = 'admin/pub_quiz/round/change_list.html'
 
@@ -30,13 +30,14 @@ class RoundAdmin(admin.ModelAdmin):
     def clear_round_view(self, request, pk):
         obj = Round.objects.get(pk=pk)
         obj.url = ''
-        obj.save(update_fields=['url'])
-        messages.success(request, f'Cleared URL for Round {obj.round_number}.')
+        obj.password = ''
+        obj.save(update_fields=['url', 'password'])
+        messages.success(request, f'Cleared URL and password for Round {obj.round_number}.')
         return HttpResponseRedirect(reverse('admin:pub_quiz_round_changelist'))
 
     def clear_all_view(self, request):
-        updated = Round.objects.all().update(url='')
-        messages.success(request, f'Cleared all {updated} round URLs.')
+        updated = Round.objects.all().update(url='', password='')
+        messages.success(request, f'Cleared all URLs and passwords for {updated} rounds.')
         return HttpResponseRedirect(reverse('admin:pub_quiz_round_changelist'))
 
     def clear_button(self, obj):
@@ -50,6 +51,6 @@ class RoundAdmin(admin.ModelAdmin):
         return False  # Keep exactly 6 round slots
 
     def has_link(self, obj):
-        return bool(obj.url)
+        return bool(obj.url and obj.password)
     has_link.boolean = True
     has_link.short_description = 'Link set'
