@@ -14,10 +14,24 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, reverse
 from django.conf.urls.static import static
 from django.conf import settings
-from .views import root_router
+from constance import config
+from django.http import HttpResponseRedirect
+
+
+def root_router(request):
+    """
+    Decide what the site root (/) should show based on the configured event type.
+
+    When EVENING_TYPE is 'pub_quiz' we send visitors to the Pub Quiz landing page.
+    Otherwise we send them to the open mic login.
+    """
+    if getattr(config, 'EVENING_TYPE', 'open_mic') == 'pub_quiz':
+        return HttpResponseRedirect(reverse('pub_quiz:home'))
+
+    return HttpResponseRedirect(reverse('login'))
 urlpatterns = [
     path('admin/', admin.site.urls, name='admin'),
     path('', root_router, name='root'),
