@@ -13,6 +13,7 @@ from django.core.management import call_command
 
 ALON_USER = ('Alon', 'Aviv', os.environ.get('ALON_PASSWORD'))
 SHANI_USER = ('Shani', 'Wahrman', os.environ.get('SHANI_PASSWORD'))
+LEE_USER = ('Lee', 'Ballan', os.environ.get('LEE_PASSWORD'))
 
 
 def create_superuser(first_name, last_name, password):
@@ -34,6 +35,7 @@ if __name__ == '__main__':
 
     create_superuser(*ALON_USER)
     create_superuser(*SHANI_USER)
+    create_superuser(*LEE_USER)
 
     disable_flag('CAN_SIGNUP')
     call_command('collectstatic', '--noinput')
