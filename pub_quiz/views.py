@@ -50,8 +50,9 @@ def round_check_password(request, round_number):
     except ValueError:
         data = {}
 
-    entered = data.get('password', '')
-    if entered == round_obj.password:
+    entered = (data.get('password', '') or '').strip().lower()
+    expected = ((round_obj.password or '').strip().lower() or None)
+    if entered == expected:
         return JsonResponse({'ok': True, 'url': round_obj.url})
 
     return JsonResponse(
