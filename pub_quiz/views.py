@@ -35,15 +35,15 @@ def round_check_password(request, round_number):
     JSON endpoint used by the JS prompt to validate the password and get the URL.
     """
     if request.method != 'POST':
-        return JsonResponse({'ok': False, 'error': 'Invalid method'}, status=405)
+        return JsonResponse({'ok': False, 'error': 'שגיאת שרת. נסו שוב.'}, status=405)
 
     try:
         round_obj = Round.objects.get(round_number=round_number)
     except Round.DoesNotExist:
-        return JsonResponse({'ok': False, 'error': 'Round does not exist'}, status=404)
+        return JsonResponse({'ok': False, 'error': 'הסיבוב לא קיים.'}, status=404)
 
     if not (round_obj.url and round_obj.password):
-        return JsonResponse({'ok': False, 'error': 'Round not configured'}, status=400)
+        return JsonResponse({'ok': False, 'error': 'הסיבוב עדיין לא מוכן.'}, status=400)
 
     try:
         data = json.loads(request.body.decode() or '{}')
@@ -56,7 +56,7 @@ def round_check_password(request, round_number):
         return JsonResponse({'ok': True, 'url': round_obj.url})
 
     return JsonResponse(
-        {'ok': False, 'error': "That's not the right password for this round. Try again!"},
+        {'ok': False, 'error': 'זו לא הסיסמה הנכונה לסיבוב הזה. נסו שוב!'},
         status=400,
     )
 

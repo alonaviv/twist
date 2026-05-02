@@ -25,8 +25,13 @@ body {
   padding-inline: max(1.25rem, env(safe-area-inset-left)) max(1.25rem, env(safe-area-inset-right));
   background: radial-gradient(circle at top, #2a3a5a, #1a2332 60%);
   color: #f4f4f4;
-  font-family: "Roboto", sans-serif;
+  font-family: "Rubik", "Segoe UI", sans-serif;
   overflow-x: hidden; }
+
+html[dir="rtl"] .pq-next-event-label,
+html[dir="rtl"] .pq-choose-label {
+  letter-spacing: normal;
+  text-transform: none; }
 
 .pq-hero {
   text-align: center;
@@ -38,11 +43,18 @@ body {
   align-items: center; }
 
 .pq-title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
   font-size: clamp(1.5rem, 6vw, 2.25rem);
   font-weight: 700;
   line-height: 1.2;
   margin-bottom: 0.5rem;
   color: #f4f4f4; }
+
+.pq-title-line {
+  display: block; }
 
 .pq-logo-wrapper {
   margin-bottom: 0.75rem;
@@ -58,28 +70,132 @@ body {
   filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.35)); }
 
 .pq-next-event-label {
-  font-size: 1.1rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
+  font-size: clamp(1.35rem, 4.8vw, 1.75rem);
+  font-weight: 800;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
-  color: #f4f4f4;
-  margin: 0 0 0.3rem; }
+  color: #ffffff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  margin: 0.15rem 0 0.65rem;
+  padding: 0;
+  line-height: 1.35;
+  border: none;
+  background: none;
+  box-shadow: none; }
 
-.pq-whatsapp-link {
-  margin: 0 0 0.5rem;
-  font-size: 1.15rem;
-  font-weight: 500; }
-  .pq-whatsapp-link a {
-    color: #25D366;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    transition: color 0.2s ease; }
-    .pq-whatsapp-link a:hover {
-      color: #2ee66e; }
-    .pq-whatsapp-link a i {
-      font-size: 1.2em; }
+.pq-whatsapp-cta {
+  width: 100%;
+  margin: 0.25rem 0 1rem; }
+
+.pq-whatsapp-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  width: 100%;
+  padding: 0.95rem 1.15rem;
+  border-radius: 999px;
+  border: 2px solid #25d366;
+  background: linear-gradient(180deg, #3d4f68 0%, #2a3548 48%, #1e2636 100%);
+  color: #fff;
+  font-family: "Rubik", "Segoe UI", sans-serif;
+  font-size: clamp(1.05rem, 3.8vw, 1.2rem);
+  font-weight: 700;
+  line-height: 1.35;
+  text-align: center;
+  text-decoration: none;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.09);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease; }
+  .pq-whatsapp-btn:hover {
+    transform: translateY(-2px);
+    border-color: #3ddf84;
+    background: linear-gradient(180deg, #455a77 0%, #303d52 48%, #232e3f 100%);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(37, 211, 102, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.11); }
+  .pq-whatsapp-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06); }
+  .pq-whatsapp-btn:focus-visible {
+    outline: 3px solid #25d366;
+    outline-offset: 3px; }
+
+.pq-whatsapp-btn__icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: #25d366;
+  color: #fff;
+  font-size: 1.45rem;
+  line-height: 1;
+  box-shadow: 0 2px 8px rgba(37, 211, 102, 0.45); }
+
+.pq-whatsapp-btn:hover .pq-whatsapp-btn__icon {
+  background: #2ee66e;
+  box-shadow: 0 3px 12px rgba(37, 211, 102, 0.55); }
+
+.pq-whatsapp-footnote {
+  width: 100%;
+  margin-top: 0.25rem;
+  padding-top: 0.35rem;
+  display: flex;
+  justify-content: center; }
+
+.pq-whatsapp-footnote-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  max-width: 100%;
+  padding: 0.65rem 1rem;
+  border-radius: 999px;
+  border: 1px solid rgba(37, 211, 102, 0.55);
+  background: rgba(22, 30, 44, 0.65);
+  color: #f0fdf4;
+  font-family: "Rubik", "Segoe UI", sans-serif;
+  font-size: clamp(0.9rem, 3.2vw, 1.05rem);
+  font-weight: 600;
+  line-height: 1.35;
+  text-align: center;
+  text-decoration: none;
+  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease, transform 0.2s ease; }
+  .pq-whatsapp-footnote-link:hover {
+    border-color: #25d366;
+    background: rgba(30, 42, 58, 0.85);
+    color: #ffffff;
+    transform: translateY(-1px); }
+  .pq-whatsapp-footnote-link:active {
+    transform: translateY(0); }
+  .pq-whatsapp-footnote-link:focus-visible {
+    outline: 2px solid #25d366;
+    outline-offset: 2px; }
+
+.pq-whatsapp-footnote-link__icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: #25d366;
+  color: #fff;
+  font-size: 1.1rem;
+  line-height: 1; }
+
+.pq-whatsapp-footnote-link__text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  text-align: center;
+  padding-inline-end: 0.15rem; }
+
+.pq-whatsapp-footnote-link__line {
+  display: block;
+  line-height: 1.35; }
 
 .pq-choose-label {
   font-size: 1.35rem;
@@ -111,7 +227,7 @@ body {
   color: #fff;
   font-size: clamp(1.15rem, 5vw, 1.5rem);
   font-weight: 600;
-  font-family: "Roboto", sans-serif;
+  font-family: "Rubik", "Segoe UI", sans-serif;
   text-align: center;
   text-decoration: none;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);

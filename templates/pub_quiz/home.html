@@ -1,43 +1,64 @@
 {% load static %}
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="he" dir="rtl">
     <head>
         <meta charset="UTF-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta name="robots" content="noindex, nofollow" />
 
-        <title>Broadway With a Twist – Pub Quiz</title>
+        <title>Broadway With a Twist – חידון פאב</title>
 
         <script src="https://kit.fontawesome.com/4078bed46b.js" crossorigin="anonymous"></script>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300&display=swap">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap">
         <link rel="stylesheet" href="{% static 'pub_quiz/css/main.css' %}">
     </head>
 
     <body>
         <main class="pq-page">
             <header class="pq-hero">
-                <h1 class="pq-title">Welcome to Broadway With a Twist: Pub Quiz</h1>
+                <h1 class="pq-title">
+                    <span class="pq-title-line pq-title-line--he">ברוכים הבאים לפאב קוויז של</span>
+                    <span class="pq-title-line pq-title-line--en" dir="ltr" lang="en">Broadway With a Twist</span>
+                </h1>
                 <div class="pq-logo-wrapper">
                     <img src="{% static 'pub_quiz/img/pub_quiz_logo.png' %}"
-                         alt="Broadway With a Twist Pub Quiz"
+                         alt="Broadway With a Twist חידון פאב"
                          class="pq-logo">
                 </div>
-                <p class="pq-next-event-label">When's the next event??</p>
-                <p class="pq-whatsapp-link">
-                    <a href="https://links.broadwaywithatwist.xyz/whatsapp?utm_source=pub-quiz-page&utm_campaign=webapp&utm_content=pub-quiz-whatsapp" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-whatsapp"></i> Join our silent WhatsApp group!</a>
-                </p>
-                <p class="pq-choose-label">Choose your round</p>
+                <h2 class="pq-next-event-label">מתי האירוע הבא??</h2>
+                <div class="pq-whatsapp-cta">
+                    <a href="https://links.broadwaywithatwist.xyz/whatsapp?utm_source=pub-quiz-page&utm_campaign=webapp&utm_content=pub-quiz-whatsapp"
+                       class="pq-whatsapp-btn"
+                       target="_blank"
+                       rel="noopener noreferrer">
+                        <span class="pq-whatsapp-btn__label">הצטרפו לקבוצת הוואטסאפ השקטה!</span>
+                        <span class="pq-whatsapp-btn__icon" aria-hidden="true"><i class="fa-brands fa-whatsapp"></i></span>
+                    </a>
+                </div>
+                <p class="pq-choose-label">בחרו את הסיבוב הנוכחי:</p>
                 <nav class="pq-rounds">
                     {% for round in round_links %}
                     {% if round.configured %}
-                    <a href="#" class="pq-round-btn" data-round="{{ round.number }}" data-configured="true">Round {{ round.number }}</a>
+                    <a href="#" class="pq-round-btn" data-round="{{ round.number }}" data-configured="true">סיבוב {{ round.number }}</a>
                     {% else %}
-                    <a href="{% url 'pub_quiz:round_no_link_number' round.number %}" class="pq-round-btn">Round {{ round.number }}</a>
+                    <a href="{% url 'pub_quiz:round_no_link_number' round.number %}" class="pq-round-btn">סיבוב {{ round.number }}</a>
                     {% endif %}
                     {% endfor %}
                 </nav>
+                <div class="pq-whatsapp-footnote">
+                    <a href="https://links.broadwaywithatwist.xyz/whatsapp?utm_source=pub-quiz-page&utm_campaign=webapp&utm_content=pub-quiz-whatsapp-footer"
+                       class="pq-whatsapp-footnote-link"
+                       target="_blank"
+                       rel="noopener noreferrer">
+                        <span class="pq-whatsapp-footnote-link__text">
+                            <span class="pq-whatsapp-footnote-link__line">רוצים לדעת מתי האירוע הבא?</span>
+                            <span class="pq-whatsapp-footnote-link__line">הצטרפו לקבוצת הוואטסאפ השקטה</span>
+                        </span>
+                        <span class="pq-whatsapp-footnote-link__icon" aria-hidden="true"><i class="fa-brands fa-whatsapp"></i></span>
+                    </a>
+                </div>
             </header>
         </main>
         <script>
@@ -47,7 +68,7 @@
                 btn.addEventListener('click', function (event) {
                     event.preventDefault();
                     var roundNumber = this.getAttribute('data-round');
-                    var password = window.prompt('Enter the password for Round ' + roundNumber + ':');
+                    var password = window.prompt('הזינו את הסיסמה לסיבוב ' + roundNumber + ':');
                     if (password === null || password === '') {
                         return;
                     }
@@ -63,10 +84,10 @@
                         if (data.ok && data.url) {
                             window.location.href = data.url;
                         } else {
-                            alert(data.error || 'Wrong password, try again.');
+                            alert(data.error || 'סיסמה שגויה, נסו שוב.');
                         }
                     }).catch(function () {
-                        alert('Something went wrong. Please try again.');
+                        alert('משהו השתבש. נסו שוב.');
                     });
                 });
             });
