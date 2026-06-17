@@ -298,7 +298,8 @@ def add_song(request):
     return render(request, 'song_signup/add_song.html', {'possible_partners': _get_possible_partners(request)})
 
 def _get_possible_partners(request):
-    superusers = Singer.objects.filter(is_superuser=True).all()
+    # Superusers who are marked as audience are admin-only (e.g. Lee) — exclude them from partner options
+    superusers = Singer.objects.filter(is_superuser=True, is_audience=False).all()
     partner_options = Singer.objects.filter(is_active=True).exclude(pk=request.user.pk).exclude(is_superuser=True).order_by(
         'first_name')
     return list(superusers) + list(partner_options)

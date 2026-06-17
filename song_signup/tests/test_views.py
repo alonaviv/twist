@@ -1868,6 +1868,17 @@ class TestAddSongView(TestViews):
                               singer7
                               ])
 
+    def test_audience_superuser_not_in_possible_partners(self):
+        """Superusers marked as audience are admin-only (e.g. Lee) and should not appear as duet partners.
+        Superusers who are performers (e.g. Shani, Alon) should still appear."""
+        lee = Singer.objects.create_user(username='lee_ballan', first_name='Lee', last_name='Ballan',
+                                         is_superuser=True, is_audience=True)
+        response = self.client.get(reverse('add_song'))
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn(lee, response.context['possible_partners'])
+        self.assertIn(self.shani, response.context['possible_partners'])
+        self.assertIn(self.alon, response.context['possible_partners'])
+
 class TestTrivia(TestViews):
     def setUp(self):
         self.default_fonts = dict(
