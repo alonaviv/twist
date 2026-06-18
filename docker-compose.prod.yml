@@ -53,8 +53,8 @@ services:
     command: sh -c "./prod_setup.py && gunicorn -w $(($(nproc) + 1)) twist.wsgi:application --bind 0.0.0.0:8000"
     volumes:
       - django_static_vol:/twist/static
-      - /home/alona/media:/twist/media
-      - /home/alona/db_backups:/twist/db_backups
+      - /home/ubuntu/media:/twist/media
+      - /home/ubuntu/db_backups:/twist/db_backups
     environment:
       - INIT=false
     env_file: .env
@@ -71,7 +71,7 @@ services:
       dockerfile: docker/prod/Dockerfile.caddy
     volumes:
       - django_static_vol:/usr/share/caddy/django_static
-      - /home/alona/media:/usr/share/caddy/django_media
+      - /home/ubuntu/media:/usr/share/caddy/django_media
       - caddy_static_vol:/data
     ports:
       - "80:80"
