@@ -103,7 +103,7 @@ and choose a different SSH port number (not 22).
 3. Connect to django container with `docker exec -it twist-django-1  /bin/bash`
 4. Run `./manage.py import_group_songs` to import from the path above. Can also pass in a custom path.
 
-## Loading DB backup to local env
+## Loading DB backup file db live DB
 1. Download DB backup from server to twist/db_backups:
 ```sh
 $twist git:(master): scp digital-ocean-twist:~/db_backups/default-5e939168e488-2024-05-06-112039.psql 
