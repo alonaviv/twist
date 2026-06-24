@@ -123,11 +123,11 @@ Two scripts read the results: `verdict.py` gives a performance pass/fail, `check
 
 ### Setup (once, in the browser admin)
 Set these in the live procution site (admin view) so the test can log in with no extra flags:
+- Reset DB to prepare for test
 - `PASSCODE` = `dev`
 - `EVENT_SKU` = `LOADTEST` (any non-empty value)
 - `FREEBIE_TICKET` = `123456`
-- Enable the `CAN_SIGNUP` flag
-- Reset DB to prepare for test
+- Allow signups
 
 ### Quick check from your laptop
 A few threads, just to confirm it works:

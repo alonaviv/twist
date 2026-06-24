@@ -157,10 +157,25 @@ def put_json(path, body, headers):
 </HTTPSamplerProxy>''', [hm])
 
 def csrf_extractor():
+    # Scrape the hidden form field (works on pages that have {% csrf_token %} in a form)
     return ('''<RegexExtractor guiclass="RegexExtractorGui" testclass="RegexExtractor" testname="Extract csrfmiddlewaretoken" enabled="true">
   <stringProp name="RegexExtractor.useHeaders">false</stringProp>
   <stringProp name="RegexExtractor.refname">csrf</stringProp>
   <stringProp name="RegexExtractor.regex">name=&quot;csrfmiddlewaretoken&quot; value=&quot;([^&quot;]+)&quot;</stringProp>
+  <stringProp name="RegexExtractor.template">$1$</stringProp>
+  <stringProp name="RegexExtractor.default">CSRF_NOT_FOUND</stringProp>
+  <stringProp name="RegexExtractor.match_number">1</stringProp>
+</RegexExtractor>''', [])
+
+def csrf_cookie_extractor():
+    # Extract csrftoken from the Set-Cookie response header after login.
+    # Django rotates the session (and thus the cookie) on login, so this gives the
+    # definitive post-login token — used as a fallback for threads that may not reach
+    # GET /add_song before the rendezvous fires.
+    return ('''<RegexExtractor guiclass="RegexExtractorGui" testclass="RegexExtractor" testname="Extract csrf from cookie" enabled="true">
+  <stringProp name="RegexExtractor.useHeaders">true</stringProp>
+  <stringProp name="RegexExtractor.refname">csrf</stringProp>
+  <stringProp name="RegexExtractor.regex">csrftoken=([^;]+)</stringProp>
   <stringProp name="RegexExtractor.template">$1$</stringProp>
   <stringProp name="RegexExtractor.default">CSRF_NOT_FOUND</stringProp>
   <stringProp name="RegexExtractor.match_number">1</stringProp>
@@ -222,7 +237,7 @@ def login_chain(ticket_type, first_name):
             ("order-id", "${FREEBIE}"),
             ("no-upload", "on"),
             ("csrfmiddlewaretoken", "${csrf}"),
-        ]),
+        ], [csrf_cookie_extractor()]),
         get("/home"),
     ]
 

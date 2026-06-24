@@ -203,7 +203,17 @@ do the real 100-user tier benchmark from the bwt-stress EC2 box (in-region). Res
   <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
   <stringProp name="HTTPSampler.contentEncoding">UTF-8</stringProp>
 </HTTPSamplerProxy>
+<hashTree>
+<RegexExtractor guiclass="RegexExtractorGui" testclass="RegexExtractor" testname="Extract csrf from cookie" enabled="true">
+  <stringProp name="RegexExtractor.useHeaders">true</stringProp>
+  <stringProp name="RegexExtractor.refname">csrf</stringProp>
+  <stringProp name="RegexExtractor.regex">csrftoken=([^;]+)</stringProp>
+  <stringProp name="RegexExtractor.template">$1$</stringProp>
+  <stringProp name="RegexExtractor.default">CSRF_NOT_FOUND</stringProp>
+  <stringProp name="RegexExtractor.match_number">1</stringProp>
+</RegexExtractor>
 <hashTree/>
+</hashTree>
 <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /home" enabled="true">
   <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
   <stringProp name="HTTPSampler.path">/home</stringProp>
@@ -535,7 +545,17 @@ do the real 100-user tier benchmark from the bwt-stress EC2 box (in-region). Res
   <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
   <stringProp name="HTTPSampler.contentEncoding">UTF-8</stringProp>
 </HTTPSamplerProxy>
+<hashTree>
+<RegexExtractor guiclass="RegexExtractorGui" testclass="RegexExtractor" testname="Extract csrf from cookie" enabled="true">
+  <stringProp name="RegexExtractor.useHeaders">true</stringProp>
+  <stringProp name="RegexExtractor.refname">csrf</stringProp>
+  <stringProp name="RegexExtractor.regex">csrftoken=([^;]+)</stringProp>
+  <stringProp name="RegexExtractor.template">$1$</stringProp>
+  <stringProp name="RegexExtractor.default">CSRF_NOT_FOUND</stringProp>
+  <stringProp name="RegexExtractor.match_number">1</stringProp>
+</RegexExtractor>
 <hashTree/>
+</hashTree>
 <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /home" enabled="true">
   <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
   <stringProp name="HTTPSampler.path">/home</stringProp>
