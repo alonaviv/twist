@@ -116,23 +116,48 @@ db_backups/16-4-24-friends.psql
 4. Use restored DB on local system. Remember that your admin pass is now the production one.
 
 ## Stress testing production
-1. For editing the test: Run JMeter (`jmeter` from terminal) and open the JMX file in twist/jmeter
-2. Reset production DB and set passcode to `dev`
-3. Play on JMeter, and 100 threads (40 singers and 60 audience) will run. Singers use different names for each and 
-sign up with 2 different songs each (all data taken from CSV files in the twist/jmeter dir).
-4. I have an AWS instance for this - `bwt-stress` (in N. Virginia). May need to change the instance IP in your local 
-   hosts file so you can ssh to it - `bwt-stress`. Need to do it through hosts file, which has ssh key. Host has jmeter 
-   installed.
-TURN OFF INSTANCE WHEN DONE.
-5. If you made changes, scp the file `twist/jmeter.stress-test.jmx` to the instance's home path (user ubuntu). 
-6. Run the test from the instance like this: `jmeter -n -t stress-test.jmx  -l result.jtl -j jmeter.log`
-7. View failures in `jmeter.log`
-8. TURN OFF INSTANCE!!
-9. Restart app when done - otherwise celery will keep working hard
 
-Note: The audience part of the test is depricated since audiences log in. For now I disabled it
-and doubled the number of singers instead (I'm just testing lyrics stress). In the future you'll probably want to 
-re-record and create the audience test again. 
+`jmeter/money-time.jmx` simulates "money time": 40 singers signing up at the exact same moment, plus 60 audience members watching = 100 users at once, all over HTTPS against the live production site. Each singer also renames their song to a real one, so exa.ai lyric search gets exercised too. It only talks to the site from outside, like a real browser would.
+
+Two scripts read the results: `verdict.py` gives a performance pass/fail, `check_lyrics.py` confirms exa.ai found lyrics.
+
+### Setup (once, in the browser admin)
+Set these in the live procution site (admin view) so the test can log in with no extra flags:
+- `PASSCODE` = `dev`
+- `EVENT_SKU` = `LOADTEST` (any non-empty value)
+- `FREEBIE_TICKET` = `123456`
+- Enable the `CAN_SIGNUP` flag
+- Reset DB to prepare for test
+
+### Quick check from your laptop
+A few threads, just to confirm it works:
+```
+cd jmeter
+jmeter -n -t money-time.jmx -Jsingers=5 -Jaudience=5 -Jduration=30 -Jrun_id=$(date +%s) -l val.jtl
+python3 verdict.py val.jtl
+```
+
+### Full test from the stress box
+Run the real load from `bwt-stress`, not your laptop, so the generator isn't the bottleneck. It's in the Israel region, type c6i.large - suitable for this test, jmeter installed, and set up in `~/.ssh/config` so you connect with `ssh bwt-stress`.
+If it doesn't work, the DNS address may have changed. Find "Public DNS" in the AWS GUI and replace it in the bwt-stress ssh config file
+ **TURN OFF INSTANCE WHEN DONE!!**
+
+
+The twist repo is already cloned there, so just pull the branch and run:
+```
+cd ~/twist/jmeter
+RID=$(date +%s)
+jmeter -n -t money-time.jmx -Jsingers=40 -Jaudience=60 -Jduration=300 -Jrun_id=$RID -l result.jtl
+python3 verdict.py result.jtl
+python3 check_lyrics.py --run-id $RID --count 10
+```
+It should fail on the small productio tier (t3.medium) pass on the expanded one. Lyrics are fetched in the background, so give `check_lyrics.py` a minute. Also, check lyrics manually on the site to see that it functioned correctly
+
+### When done
+- Turn off the stress instance.
+- Reset the production DB from the admin to clear the test singers and songs.
+
+To change the test, edit `gen_money_time.py` and run `python3 gen_money_time.py` to rebuild the jmx.
 
 
 

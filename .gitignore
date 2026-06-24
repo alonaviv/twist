@@ -135,4 +135,6 @@ local_settings.py
 /media
 /song_lists
 meta_audience_whametrics.csv
-/jmeter
+/jmeter/*.jtl
+/jmeter/*_report/
+/jmeter/results-tree
