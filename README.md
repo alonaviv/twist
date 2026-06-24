@@ -143,7 +143,10 @@ AWS instance `bwt-stress` (Israel region) is purpose-built for this — jmeter i
 configured in `~/.ssh/config`, so you can connect with `ssh bwt-stress` (no IP/key setup needed).
 **TURN OFF INSTANCE WHEN DONE.**
 Generator tier: use **c7i.large** (2 dedicated vCPU — predictable, no burst-credit surprises, cheap).
-A burstable t3.medium is marginal: under a sustained run it can exhaust CPU credits and throttle, making
+If c7i isn't offered in your AZ (common in newer regions like il-central-1 / Tel Aviv — try a different AZ,
+e.g. il-central-1a), use an equivalent x86 family: **c6i.large** or **m6i.large**. Pick an **x86** AMI +
+instance (NOT Graviton/ARM c7g/m7g/t4g). A burstable t3.medium is marginal: under a sustained run it can
+exhaust CPU credits and throttle, making
 the GENERATOR the bottleneck (you'd measure the generator, not prod). If you do use a t3, enable T3
 Unlimited or bump to t3.large. Either way, watch the generator's own CPU during the run (`top`, or
 CloudWatch CPUUtilization + CPUCreditBalance) — if it pegs ~100%, the run is invalid; use a bigger box.
