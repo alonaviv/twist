@@ -142,10 +142,13 @@ python3 verdict.py val.jtl      # expect PASS, ~0% errors
 AWS instance `bwt-stress` (Israel region) is purpose-built for this — jmeter is installed. It's already
 configured in `~/.ssh/config`, so you can connect with `ssh bwt-stress` (no IP/key setup needed).
 **TURN OFF INSTANCE WHEN DONE.**
-Tier note: a 2-vCPU burstable box (e.g. t3.medium) is marginal for generating 100 HTTPS threads —
-under a sustained run it can exhaust CPU credits and throttle, making the GENERATOR the bottleneck.
-Use T3 Unlimited mode or a non-burstable box (c7i.large / t3.large), and watch the generator's own CPU
-during the run (`top`, or CloudWatch CPUUtilization + CPUCreditBalance). If it pegs ~100%, the run is invalid.
+Generator tier: use **c7i.large** (2 dedicated vCPU — predictable, no burst-credit surprises, cheap).
+A burstable t3.medium is marginal: under a sustained run it can exhaust CPU credits and throttle, making
+the GENERATOR the bottleneck (you'd measure the generator, not prod). If you do use a t3, enable T3
+Unlimited or bump to t3.large. Either way, watch the generator's own CPU during the run (`top`, or
+CloudWatch CPUUtilization + CPUCreditBalance) — if it pegs ~100%, the run is invalid; use a bigger box.
+Cost: a STOPPED instance bills ~nothing (only the small EBS volume, ~$0.64/mo for 8GB); TERMINATE it to
+pay zero. The run takes minutes — **stop or terminate it the moment you're done.**
 
 One-time setup on the box (the twist repo is already cloned there):
 ```
