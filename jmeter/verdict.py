@@ -26,6 +26,7 @@ a = ap.parse_args()
 elapsed_all, elapsed_signup = [], []
 total = errors = 0
 by_label_err = defaultdict(int); by_label_tot = defaultdict(int)
+ts_min = ts_max = None
 
 with open(a.jtl, newline="") as f:
     for row in csv.DictReader(f):
@@ -33,6 +34,10 @@ with open(a.jtl, newline="") as f:
             el = int(row["elapsed"])
         except (KeyError, ValueError):
             continue
+        ts = int(row.get("timeStamp", 0))
+        if ts:
+            ts_min = min(ts_min, ts) if ts_min else ts
+            ts_max = max(ts_max, ts) if ts_max else ts
         total += 1
         label = row.get("label", "")
         by_label_tot[label] += 1
@@ -45,6 +50,12 @@ with open(a.jtl, newline="") as f:
 
 if total == 0:
     print("No samples found in", a.jtl); sys.exit(2)
+
+if ts_min and ts_max:
+    span_min = (ts_max - ts_min) / 60000
+    if span_min > 20:
+        print(f"\n⚠️  WARNING: samples span {span_min:.0f} minutes — this looks like multiple runs")
+        print("   Delete result.jtl and re-run to get a clean verdict.\n")
 
 err_pct = 100.0 * errors / total
 p99 = pct(elapsed_all, 99)
