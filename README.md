@@ -146,6 +146,7 @@ If it doesn't work, the DNS address may have changed. Find "Public DNS" in the A
 The twist repo is already cloned there, so just pull the branch and run:
 ```
 cd ~/twist/jmeter
+rm -f result.jtl
 RID=$(date +%s)
 jmeter -n -t money-time.jmx -Jsingers=40 -Jaudience=60 -Jduration=300 -Jrun_id=$RID -l result.jtl
 python3 verdict.py result.jtl
