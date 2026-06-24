@@ -106,6 +106,16 @@ do the real 100-user tier benchmark from the bwt-stress EC2 box (in-region). Res
   </collectionProp>
 </HeaderManager>
 <hashTree/>
+<JSR223Listener guiclass="TestBeanGUI" testclass="JSR223Listener" testname="Print failures to stdout" enabled="true">
+  <stringProp name="scriptLanguage">groovy</stringProp>
+  <stringProp name="script">if (!sampleEvent.result.isSuccessful()) {
+    def r = sampleEvent.result
+    def msg = r.getFirstAssertionFailureMessage() ?: (&quot;HTTP &quot; + r.getResponseCode())
+    def body = r.getResponseDataAsString().take(300).replaceAll(&quot;\\s+&quot;, &quot; &quot;)
+    println(&quot;[FAIL] &quot; + r.getSampleLabel() + &quot; | &quot; + msg + &quot; | body: &quot; + body)
+}</stringProp>
+</JSR223Listener>
+<hashTree/>
 <SetupThreadGroup guiclass="SetupThreadGroupGui" testclass="SetupThreadGroup" testname="Preflight checks (config + one login)" enabled="true">
   <stringProp name="ThreadGroup.on_sample_error">stoptest</stringProp>
   <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller">
@@ -204,13 +214,17 @@ do the real 100-user tier benchmark from the bwt-stress EC2 box (in-region). Res
   <stringProp name="RegexExtractor.match_number">1</stringProp>
 </RegexExtractor>
 <hashTree/>
-<JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="Assert login succeeded (not redirected back to /login)" enabled="true">
+<JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="Assert login succeeded" enabled="true">
   <stringProp name="scriptLanguage">groovy</stringProp>
-  <stringProp name="script">def loc = prev.getRedirectLocation() ?: &quot;&quot;;
-def code = prev.getResponseCode();
+  <stringProp name="script">def code = prev.getResponseCode();
+def body = prev.getResponseDataAsString();
+def loc = prev.getRedirectLocation() ?: &quot;&quot;;
 if (code == &quot;403&quot;) {
     AssertionResult.setFailure(true);
-    AssertionResult.setFailureMessage(&quot;POST /login returned 403 — CSRF or config problem&quot;);
+    AssertionResult.setFailureMessage(&quot;POST /login → 403 Forbidden — CSRF token rejected&quot;);
+} else if (code != &quot;200&quot;) {
+    AssertionResult.setFailure(true);
+    AssertionResult.setFailureMessage(&quot;POST /login → &quot; + code + &quot; — body: &quot; + body.take(200));
 } else if (loc.contains(&quot;/login&quot;)) {
     AssertionResult.setFailure(true);
     AssertionResult.setFailureMessage(&quot;POST /login redirected back to /login — wrong PASSCODE or FREEBIE_TICKET&quot;);

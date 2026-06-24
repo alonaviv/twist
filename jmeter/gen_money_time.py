@@ -210,12 +210,16 @@ def preflight():
         '}'
     )
     login_ok = jsr223_assertion(
-        "Assert login succeeded (not redirected back to /login)",
-        'def loc = prev.getRedirectLocation() ?: "";\n'
+        "Assert login succeeded",
         'def code = prev.getResponseCode();\n'
+        'def body = prev.getResponseDataAsString();\n'
+        'def loc = prev.getRedirectLocation() ?: "";\n'
         'if (code == "403") {\n'
         '    AssertionResult.setFailure(true);\n'
-        '    AssertionResult.setFailureMessage("POST /login returned 403 — CSRF or config problem");\n'
+        '    AssertionResult.setFailureMessage("POST /login → 403 Forbidden — CSRF token rejected");\n'
+        '} else if (code != "200") {\n'
+        '    AssertionResult.setFailure(true);\n'
+        '    AssertionResult.setFailureMessage("POST /login → " + code + " — body: " + body.take(200));\n'
         '} else if (loc.contains("/login")) {\n'
         '    AssertionResult.setFailure(true);\n'
         '    AssertionResult.setFailureMessage("POST /login redirected back to /login — wrong PASSCODE or FREEBIE_TICKET");\n'
@@ -248,6 +252,20 @@ def preflight():
             ("csrfmiddlewaretoken", "${csrf}"),
         ], [signup_ok]),
     ])
+
+def failure_printer():
+    script = (
+        'if (!sampleEvent.result.isSuccessful()) {\n'
+        '    def r = sampleEvent.result\n'
+        '    def msg = r.getFirstAssertionFailureMessage() ?: ("HTTP " + r.getResponseCode())\n'
+        '    def body = r.getResponseDataAsString().take(300).replaceAll("\\\\s+", " ")\n'
+        '    println("[FAIL] " + r.getSampleLabel() + " | " + msg + " | body: " + body)\n'
+        '}'
+    )
+    return (f'''<JSR223Listener guiclass="TestBeanGUI" testclass="JSR223Listener" testname="Print failures to stdout" enabled="true">
+  <stringProp name="scriptLanguage">groovy</stringProp>
+  <stringProp name="script">{esc(script)}</stringProp>
+</JSR223Listener>''', [])
 
 def sync_timer():
     return ('''<SyncTimer guiclass="TestBeanGUI" testclass="SyncTimer" testname="Rendezvous - all singers submit at once" enabled="true">
@@ -378,7 +396,7 @@ def build():
                             [audience_once_only()] + poll_batch(AUDIENCE_POLLS) +
                             [duration_assertion(), code_assertion()])
 
-    plan_children = [config, http_defaults(), cookie_mgr(), header_mgr(), preflight(), singers, audience]
+    plan_children = [config, http_defaults(), cookie_mgr(), header_mgr(), failure_printer(), preflight(), singers, audience]
 
     comments = esc(
         "BWT MONEY-TIME LOAD TEST  (40 singers sign up at once + 60 audience polling = 100 concurrent)\n"
