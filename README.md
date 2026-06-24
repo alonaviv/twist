@@ -116,23 +116,71 @@ db_backups/16-4-24-friends.psql
 4. Use restored DB on local system. Remember that your admin pass is now the production one.
 
 ## Stress testing production
-1. For editing the test: Run JMeter (`jmeter` from terminal) and open the JMX file in twist/jmeter
-2. Reset production DB and set passcode to `dev`
-3. Play on JMeter, and 100 threads (40 singers and 60 audience) will run. Singers use different names for each and 
-sign up with 2 different songs each (all data taken from CSV files in the twist/jmeter dir).
-4. I have an AWS instance for this - `bwt-stress` (in N. Virginia). May need to change the instance IP in your local 
-   hosts file so you can ssh to it - `bwt-stress`. Need to do it through hosts file, which has ssh key. Host has jmeter 
-   installed.
-TURN OFF INSTANCE WHEN DONE.
-5. If you made changes, scp the file `twist/jmeter.stress-test.jmx` to the instance's home path (user ubuntu). 
-6. Run the test from the instance like this: `jmeter -n -t stress-test.jmx  -l result.jtl -j jmeter.log`
-7. View failures in `jmeter.log`
-8. TURN OFF INSTANCE!!
-9. Restart app when done - otherwise celery will keep working hard
 
-Note: The audience part of the test is depricated since audiences log in. For now I disabled it
-and doubled the number of singers instead (I'm just testing lyrics stress). In the future you'll probably want to 
-re-record and create the audience test again. 
+Use `twist/jmeter/money-time.jmx` — it reproduces "money time": 40 singers signing up at the
+**exact same instant** (a JMeter rendezvous on `POST /add_song_request`) plus 60 audience members
+polling the live endpoints = 100 concurrent users. It drives load **only from outside over HTTP**
+(never SSH/exec into the prod box). Pass/fail is built in via a per-request response-time SLA + HTTP-200
+assertion. Regenerate it with `python3 gen_money_time.py` if you tweak the generator.
+
+### 1. Configure a throwaway event (from outside — browser admin)
+Set these so the hardcoded defaults in the JMX just work (no `-J` flags needed):
+- Constance `PASSCODE` = `dev`
+- Constance `EVENT_SKU` = `LOADTEST` (any non-empty value — required to open the app)
+- Constance `FREEBIE_TICKET` = `123456` (must match the order-id baked into the JMX; lets all 100 log in, bypassing ticket limits)
+- Enable feature flag `CAN_SIGNUP`
+
+### 2. Functional check from your laptop (does it work?)
+Small + short — confirms logins/signups succeed. NOT a tier verdict (a laptop can't honestly push 100 TLS users).
+```
+cd twist/jmeter
+jmeter -n -t money-time.jmx -Jsingers=5 -Jaudience=5 -Jduration=30 -Jrun_id=$(date +%s) -l val.jtl -e -o val_report
+python3 verdict.py val.jtl      # expect PASS, ~0% errors
+```
+
+### 3. The real tier benchmark (from the cloud, in-region)
+AWS instance `bwt-stress` (Israel region) is purpose-built for this — jmeter is installed. It's already
+configured in `~/.ssh/config`, so you can connect with `ssh bwt-stress` (no IP/key setup needed).
+**TURN OFF INSTANCE WHEN DONE.**
+Tier note: a 2-vCPU burstable box (e.g. t3.medium) is marginal for generating 100 HTTPS threads —
+under a sustained run it can exhaust CPU credits and throttle, making the GENERATOR the bottleneck.
+Use T3 Unlimited mode or a non-burstable box (c7i.large / t3.large), and watch the generator's own CPU
+during the run (`top`, or CloudWatch CPUUtilization + CPUCreditBalance). If it pegs ~100%, the run is invalid.
+
+One-time setup on the box (the twist repo is already cloned there):
+```
+sudo apt-get update && sudo apt-get install -y default-jre python3-pip   # Java for JMeter, pip for the checker
+pip3 install requests                                                     # needed by check_lyrics.py
+# install Apache JMeter 5.6.x and put it on PATH:
+curl -LO https://dlcdn.apache.org//jmeter/binaries/apache-jmeter-5.6.3.tgz && tar xf apache-jmeter-5.6.3.tgz
+export PATH=$PATH:~/apache-jmeter-5.6.3/bin     # add to ~/.bashrc to persist
+```
+Run it (NO scp — files are in the cloned repo). Run before AND after the resize, capture the run_id:
+```
+cd ~/twist/jmeter
+RID=$(date +%s)
+jmeter -n -t money-time.jmx -Jsingers=40 -Jaudience=60 -Jduration=300 -Jramp=1 -Jrun_id=$RID -l result.jtl -j jmeter.log
+python3 verdict.py result.jtl          # expect FAIL on the smaller tier, PASS on c8i.4xlarge
+```
+By default it targets `broadwaywithatwist.xyz` over HTTPS; override with `-Jhost=` if prod moved.
+Pass/fail defaults: error rate < 1%, p99 (all requests) < 2000 ms, signup-burst p95 < 3000 ms.
+Tune with `-Jsla=`, `-Jpoll_interval=` (lower = more pressure per user), `-Jsingers=`, `-Jaudience=`, `-Jduration=`.
+
+### 3b. Validate lyrics/exa actually worked
+Each singer edits to a real song from `songs.csv`, which fires the `get_lyrics` Celery task → exa.ai.
+Celery is async + rate-limited, so give it a minute. From outside (no box access — it logs in as a
+superuser by name with the event passcode, then reads the superuser lyrics page):
+```
+python3 check_lyrics.py --run-id $RID --count 10   # PASS if the sampled songs got >=1 lyric each
+```
+
+### 4. When done
+- **TURN OFF the bwt-stress INSTANCE!!**
+- Reset the production DB (admin "reset database" button) to clear the test singers/songs.
+- The signup burst fires lyric Celery tasks — let it settle / restart the app so celery isn't churning.
+
+Note: the old `stress-test.jmx` / `singer-signup-exa-test.jmx` (Chrome-recorded, CSV names, audience disabled) are
+superseded by `money-time.jmx`.
 
 
 

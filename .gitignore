@@ -135,4 +135,7 @@ local_settings.py
 /media
 /song_lists
 meta_audience_whametrics.csv
-/jmeter
+# JMeter: keep the test plans + scripts under jmeter/, ignore generated run output
+/jmeter/*.jtl
+/jmeter/*_report/
+/jmeter/results-tree

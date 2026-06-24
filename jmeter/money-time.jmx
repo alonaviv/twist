@@ -1,0 +1,609 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.6.3">
+<hashTree>
+<TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="BWT Money Time" enabled="true">
+  <stringProp name="TestPlan.comments">BWT MONEY-TIME LOAD TEST  (40 singers sign up at once + 60 audience polling = 100 concurrent)
+
+BEFORE RUNNING, configure a throwaway event from OUTSIDE (browser admin / People's-Choice admin):
+  - Constance PASSCODE        = dev
+  - Constance EVENT_SKU       = LOADTEST   (any non-empty value; required to open the app)
+  - Constance FREEBIE_TICKET  = 123456     (must match the hardcoded order-id below)
+  - Enable feature flag CAN_SIGNUP
+These match the hardcoded defaults in this plan, so you can just hit Run with no -J flags.
+Override any of them with -Jpasscode= -Jfreebie= etc. if you change the event.
+
+RUN (headless, with HTML dashboard + pass/fail):
+  jmeter -n -t money-time.jmx -Jrun_id=$(date +%s) -l result.jtl -e -o report
+  python3 verdict.py result.jtl        # PASS/FAIL vs SLA
+
+FLOW per singer: login (clustered via ramp) -&gt; warm up polling on /home (-Jwarmup loops) -&gt;
+  open /add_song -&gt; RENDEZVOUS (all 40 wait) -&gt; POST /add_song_request with a short name typed
+  fast ('ready set go') -&gt; then edit to the real name (manage_songs/get_current_songs/update_song).
+Audience just log in and poll. Trivia: /get_active_question is always polled; /get_selected_answer
+only fires during an ACTIVE trivia round (404s otherwise) so it is a separate scenario, not money-time.
+LYRICS/EXA: the edit renames to a real song from songs.csv (distinct per singer), which re-fires the
+get_lyrics celery task -&gt; exa.ai really searches. So ~40 real lyric fetches per run (uses Exa quota).
+Keep songs.csv next to the jmx (scp it to bwt-stress too); override path with -Jsongs_csv=.
+
+KNOBS: -Jsingers=40 -Jaudience=60 -Jduration=300 -Jramp=1 -Jwarmup=8 -Jsla=2000 -Jpoll_interval=1000
+       -Jhost=broadwaywithatwist.xyz -Jrun_id=&lt;unique each run, avoids 'already logged in'&gt;
+Run the laptop only as a small functional check (e.g. -Jsingers=5 -Jaudience=5 -Jduration=30);
+do the real 100-user tier benchmark from the bwt-stress EC2 box (in-region). Reset the DB when done.</stringProp>
+  <boolProp name="TestPlan.functional_mode">false</boolProp>
+  <boolProp name="TestPlan.tearDown_on_shutdown">true</boolProp>
+  <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
+  <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+    <collectionProp name="Arguments.arguments"/>
+  </elementProp>
+  <stringProp name="TestPlan.user_define_classpath"></stringProp>
+</TestPlan>
+<hashTree>
+<Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="Config" enabled="true"><collectionProp name="Arguments.arguments"><elementProp name="HOST" elementType="Argument">
+  <stringProp name="Argument.name">HOST</stringProp>
+  <stringProp name="Argument.value">${__P(host,broadwaywithatwist.xyz)}</stringProp>
+  <stringProp name="Argument.metadata">=</stringProp>
+</elementProp><elementProp name="PROTOCOL" elementType="Argument">
+  <stringProp name="Argument.name">PROTOCOL</stringProp>
+  <stringProp name="Argument.value">${__P(protocol,https)}</stringProp>
+  <stringProp name="Argument.metadata">=</stringProp>
+</elementProp><elementProp name="PORT" elementType="Argument">
+  <stringProp name="Argument.name">PORT</stringProp>
+  <stringProp name="Argument.value">${__P(port,443)}</stringProp>
+  <stringProp name="Argument.metadata">=</stringProp>
+</elementProp><elementProp name="PASSCODE" elementType="Argument">
+  <stringProp name="Argument.name">PASSCODE</stringProp>
+  <stringProp name="Argument.value">${__P(passcode,dev)}</stringProp>
+  <stringProp name="Argument.metadata">=</stringProp>
+</elementProp><elementProp name="FREEBIE" elementType="Argument">
+  <stringProp name="Argument.name">FREEBIE</stringProp>
+  <stringProp name="Argument.value">${__P(freebie,123456)}</stringProp>
+  <stringProp name="Argument.metadata">=</stringProp>
+</elementProp><elementProp name="DURATION" elementType="Argument">
+  <stringProp name="Argument.name">DURATION</stringProp>
+  <stringProp name="Argument.value">${__P(duration,300)}</stringProp>
+  <stringProp name="Argument.metadata">=</stringProp>
+</elementProp><elementProp name="WARMUP_LOOPS" elementType="Argument">
+  <stringProp name="Argument.name">WARMUP_LOOPS</stringProp>
+  <stringProp name="Argument.value">${__P(warmup,8)}</stringProp>
+  <stringProp name="Argument.metadata">=</stringProp>
+</elementProp><elementProp name="POLL_INTERVAL" elementType="Argument">
+  <stringProp name="Argument.name">POLL_INTERVAL</stringProp>
+  <stringProp name="Argument.value">${__P(poll_interval,1000)}</stringProp>
+  <stringProp name="Argument.metadata">=</stringProp>
+</elementProp><elementProp name="SLA_MS" elementType="Argument">
+  <stringProp name="Argument.name">SLA_MS</stringProp>
+  <stringProp name="Argument.value">${__P(sla,2000)}</stringProp>
+  <stringProp name="Argument.metadata">=</stringProp>
+</elementProp><elementProp name="RUN_ID" elementType="Argument">
+  <stringProp name="Argument.name">RUN_ID</stringProp>
+  <stringProp name="Argument.value">${__P(run_id,run${__time(YMDHMS)})}</stringProp>
+  <stringProp name="Argument.metadata">=</stringProp>
+</elementProp><elementProp name="SONGS_CSV" elementType="Argument">
+  <stringProp name="Argument.name">SONGS_CSV</stringProp>
+  <stringProp name="Argument.value">${__P(songs_csv,songs.csv)}</stringProp>
+  <stringProp name="Argument.metadata">=</stringProp>
+</elementProp></collectionProp></Arguments>
+<hashTree/>
+<ConfigTestElement guiclass="HttpDefaultsGui" testclass="ConfigTestElement" testname="HTTP Request Defaults" enabled="true">
+  <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
+  <stringProp name="HTTPSampler.domain">${HOST}</stringProp>
+  <stringProp name="HTTPSampler.protocol">${PROTOCOL}</stringProp>
+  <stringProp name="HTTPSampler.port">${PORT}</stringProp>
+  <stringProp name="HTTPSampler.connect_timeout">10000</stringProp>
+  <stringProp name="HTTPSampler.response_timeout">30000</stringProp>
+</ConfigTestElement>
+<hashTree/>
+<CookieManager guiclass="CookiePanel" testclass="CookieManager" testname="HTTP Cookie Manager" enabled="true">
+  <collectionProp name="CookieManager.cookies"/>
+  <boolProp name="CookieManager.clearEachIteration">false</boolProp>
+  <boolProp name="CookieManager.controlledByThreadGroup">false</boolProp>
+</CookieManager>
+<hashTree/>
+<HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
+  <collectionProp name="HeaderManager.headers">
+    <elementProp name="" elementType="Header"><stringProp name="Header.name">Referer</stringProp><stringProp name="Header.value">${PROTOCOL}://${HOST}/</stringProp></elementProp>
+    <elementProp name="" elementType="Header"><stringProp name="Header.name">Origin</stringProp><stringProp name="Header.value">${PROTOCOL}://${HOST}</stringProp></elementProp>
+  </collectionProp>
+</HeaderManager>
+<hashTree/>
+<ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Singers (login + simultaneous signup + poll)" enabled="true">
+  <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+  <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller">
+    <boolProp name="LoopController.continue_forever">false</boolProp>
+    <intProp name="LoopController.loops">-1</intProp>
+  </elementProp>
+  <stringProp name="ThreadGroup.num_threads">${__P(singers,40)}</stringProp>
+  <stringProp name="ThreadGroup.ramp_time">${__P(ramp,1)}</stringProp>
+  <boolProp name="ThreadGroup.scheduler">true</boolProp>
+  <stringProp name="ThreadGroup.duration">${DURATION}</stringProp>
+  <stringProp name="ThreadGroup.delay">0</stringProp>
+  <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+</ThreadGroup>
+<hashTree>
+<CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="Real songs (for lyrics/exa)" enabled="true">
+  <stringProp name="filename">${SONGS_CSV}</stringProp>
+  <stringProp name="fileEncoding">UTF-8</stringProp>
+  <stringProp name="variableNames">song,musical</stringProp>
+  <boolProp name="ignoreFirstLine">false</boolProp>
+  <stringProp name="delimiter">,</stringProp>
+  <boolProp name="quotedData">true</boolProp>
+  <boolProp name="recycle">true</boolProp>
+  <boolProp name="stopThread">false</boolProp>
+  <stringProp name="shareMode">shareMode.all</stringProp>
+</CSVDataSet>
+<hashTree/>
+<OnceOnlyController guiclass="OnceOnlyControllerGui" testclass="OnceOnlyController" testname="Login + warm-up + simultaneous signup + edit (once per user)" enabled="true"/>
+<hashTree>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /login" enabled="true">
+  <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
+  <stringProp name="HTTPSampler.path">/login</stringProp>
+  <stringProp name="HTTPSampler.method">GET</stringProp>
+  <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+  <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+</HTTPSamplerProxy>
+<hashTree>
+<RegexExtractor guiclass="RegexExtractorGui" testclass="RegexExtractor" testname="Extract csrfmiddlewaretoken" enabled="true">
+  <stringProp name="RegexExtractor.useHeaders">false</stringProp>
+  <stringProp name="RegexExtractor.refname">csrf</stringProp>
+  <stringProp name="RegexExtractor.regex">name=&quot;csrfmiddlewaretoken&quot; value=&quot;([^&quot;]+)&quot;</stringProp>
+  <stringProp name="RegexExtractor.template">$1$</stringProp>
+  <stringProp name="RegexExtractor.default">CSRF_NOT_FOUND</stringProp>
+  <stringProp name="RegexExtractor.match_number">1</stringProp>
+</RegexExtractor>
+<hashTree/>
+</hashTree>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST /login" enabled="true">
+  <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"><elementProp name="ticket-type" elementType="HTTPArgument">
+  <boolProp name="HTTPArgument.always_encode">true</boolProp>
+  <stringProp name="Argument.value">singer</stringProp>
+  <stringProp name="Argument.metadata">=</stringProp>
+  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+  <stringProp name="Argument.name">ticket-type</stringProp>
+</elementProp><elementProp name="first-name" elementType="HTTPArgument">
+  <boolProp name="HTTPArgument.always_encode">true</boolProp>
+  <stringProp name="Argument.value">Loadsinger</stringProp>
+  <stringProp name="Argument.metadata">=</stringProp>
+  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+  <stringProp name="Argument.name">first-name</stringProp>
+</elementProp><elementProp name="last-name" elementType="HTTPArgument">
+  <boolProp name="HTTPArgument.always_encode">true</boolProp>
+  <stringProp name="Argument.value">${RUN_ID}n${__threadNum}</stringProp>
+  <stringProp name="Argument.metadata">=</stringProp>
+  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+  <stringProp name="Argument.name">last-name</stringProp>
+</elementProp><elementProp name="passcode" elementType="HTTPArgument">
+  <boolProp name="HTTPArgument.always_encode">true</boolProp>
+  <stringProp name="Argument.value">${PASSCODE}</stringProp>
+  <stringProp name="Argument.metadata">=</stringProp>
+  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+  <stringProp name="Argument.name">passcode</stringProp>
+</elementProp><elementProp name="order-id" elementType="HTTPArgument">
+  <boolProp name="HTTPArgument.always_encode">true</boolProp>
+  <stringProp name="Argument.value">${FREEBIE}</stringProp>
+  <stringProp name="Argument.metadata">=</stringProp>
+  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+  <stringProp name="Argument.name">order-id</stringProp>
+</elementProp><elementProp name="no-upload" elementType="HTTPArgument">
+  <boolProp name="HTTPArgument.always_encode">true</boolProp>
+  <stringProp name="Argument.value">on</stringProp>
+  <stringProp name="Argument.metadata">=</stringProp>
+  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+  <stringProp name="Argument.name">no-upload</stringProp>
+</elementProp><elementProp name="csrfmiddlewaretoken" elementType="HTTPArgument">
+  <boolProp name="HTTPArgument.always_encode">true</boolProp>
+  <stringProp name="Argument.value">${csrf}</stringProp>
+  <stringProp name="Argument.metadata">=</stringProp>
+  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+  <stringProp name="Argument.name">csrfmiddlewaretoken</stringProp>
+</elementProp></collectionProp></elementProp>
+  <stringProp name="HTTPSampler.path">/login</stringProp>
+  <stringProp name="HTTPSampler.method">POST</stringProp>
+  <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+  <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+  <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
+  <stringProp name="HTTPSampler.contentEncoding">UTF-8</stringProp>
+</HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /home" enabled="true">
+  <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
+  <stringProp name="HTTPSampler.path">/home</stringProp>
+  <stringProp name="HTTPSampler.method">GET</stringProp>
+  <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+  <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+</HTTPSamplerProxy>
+<hashTree/>
+<LoopController guiclass="LoopControlPanel" testclass="LoopController" testname="Warm-up polling on /home (before the burst)" enabled="true">
+  <boolProp name="LoopController.continue_forever">false</boolProp>
+  <stringProp name="LoopController.loops">${WARMUP_LOOPS}</stringProp>
+</LoopController>
+<hashTree>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /evening_started" enabled="true">
+  <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
+  <stringProp name="HTTPSampler.path">/evening_started</stringProp>
+  <stringProp name="HTTPSampler.method">GET</stringProp>
+  <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+  <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+</HTTPSamplerProxy>
+<hashTree>
+<UniformRandomTimer guiclass="UniformRandomTimerGui" testclass="UniformRandomTimer" testname="Poll interval" enabled="true">
+  <stringProp name="ConstantTimer.delay">${POLL_INTERVAL}</stringProp>
+  <stringProp name="RandomTimer.range">200</stringProp>
+</UniformRandomTimer>
+<hashTree/>
+</hashTree>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /next_singer" enabled="true">
+  <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
+  <stringProp name="HTTPSampler.path">/next_singer</stringProp>
+  <stringProp name="HTTPSampler.method">GET</stringProp>
+  <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+  <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+</HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /spotlight_data" enabled="true">
+  <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
+  <stringProp name="HTTPSampler.path">/spotlight_data</stringProp>
+  <stringProp name="HTTPSampler.method">GET</stringProp>
+  <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+  <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+</HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /dashboard_data" enabled="true">
+  <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
+  <stringProp name="HTTPSampler.path">/dashboard_data</stringProp>
+  <stringProp name="HTTPSampler.method">GET</stringProp>
+  <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+  <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+</HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /get_active_question" enabled="true">
+  <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
+  <stringProp name="HTTPSampler.path">/get_active_question</stringProp>
+  <stringProp name="HTTPSampler.method">GET</stringProp>
+  <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+  <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+</HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /get_active_question" enabled="true">
+  <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
+  <stringProp name="HTTPSampler.path">/get_active_question</stringProp>
+  <stringProp name="HTTPSampler.method">GET</stringProp>
+  <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+  <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+</HTTPSamplerProxy>
+<hashTree/>
+</hashTree>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /add_song" enabled="true">
+  <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
+  <stringProp name="HTTPSampler.path">/add_song</stringProp>
+  <stringProp name="HTTPSampler.method">GET</stringProp>
+  <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+  <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+</HTTPSamplerProxy>
+<hashTree>
+<RegexExtractor guiclass="RegexExtractorGui" testclass="RegexExtractor" testname="Extract csrfmiddlewaretoken" enabled="true">
+  <stringProp name="RegexExtractor.useHeaders">false</stringProp>
+  <stringProp name="RegexExtractor.refname">csrf</stringProp>
+  <stringProp name="RegexExtractor.regex">name=&quot;csrfmiddlewaretoken&quot; value=&quot;([^&quot;]+)&quot;</stringProp>
+  <stringProp name="RegexExtractor.template">$1$</stringProp>
+  <stringProp name="RegexExtractor.default">CSRF_NOT_FOUND</stringProp>
+  <stringProp name="RegexExtractor.match_number">1</stringProp>
+</RegexExtractor>
+<hashTree/>
+</hashTree>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /signup_disabled" enabled="true">
+  <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
+  <stringProp name="HTTPSampler.path">/signup_disabled</stringProp>
+  <stringProp name="HTTPSampler.method">GET</stringProp>
+  <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+  <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+</HTTPSamplerProxy>
+<hashTree/>
+<SyncTimer guiclass="TestBeanGUI" testclass="SyncTimer" testname="Rendezvous - all singers submit at once" enabled="true">
+  <intProp name="groupSize">0</intProp>
+  <longProp name="timeoutInMs">30000</longProp>
+</SyncTimer>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST /add_song_request" enabled="true">
+  <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"><elementProp name="song-name" elementType="HTTPArgument">
+  <boolProp name="HTTPArgument.always_encode">true</boolProp>
+  <stringProp name="Argument.value">${__threadNum}</stringProp>
+  <stringProp name="Argument.metadata">=</stringProp>
+  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+  <stringProp name="Argument.name">song-name</stringProp>
+</elementProp><elementProp name="musical" elementType="HTTPArgument">
+  <boolProp name="HTTPArgument.always_encode">true</boolProp>
+  <stringProp name="Argument.value">Loadtest Musical</stringProp>
+  <stringProp name="Argument.metadata">=</stringProp>
+  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+  <stringProp name="Argument.name">musical</stringProp>
+</elementProp><elementProp name="notes" elementType="HTTPArgument">
+  <boolProp name="HTTPArgument.always_encode">true</boolProp>
+  <stringProp name="Argument.value">loadtest</stringProp>
+  <stringProp name="Argument.metadata">=</stringProp>
+  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+  <stringProp name="Argument.name">notes</stringProp>
+</elementProp><elementProp name="csrfmiddlewaretoken" elementType="HTTPArgument">
+  <boolProp name="HTTPArgument.always_encode">true</boolProp>
+  <stringProp name="Argument.value">${csrf}</stringProp>
+  <stringProp name="Argument.metadata">=</stringProp>
+  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+  <stringProp name="Argument.name">csrfmiddlewaretoken</stringProp>
+</elementProp></collectionProp></elementProp>
+  <stringProp name="HTTPSampler.path">/add_song_request</stringProp>
+  <stringProp name="HTTPSampler.method">POST</stringProp>
+  <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+  <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+  <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
+  <stringProp name="HTTPSampler.contentEncoding">UTF-8</stringProp>
+</HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /manage_songs" enabled="true">
+  <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
+  <stringProp name="HTTPSampler.path">/manage_songs</stringProp>
+  <stringProp name="HTTPSampler.method">GET</stringProp>
+  <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+  <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+</HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /get_current_songs" enabled="true">
+  <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
+  <stringProp name="HTTPSampler.path">/get_current_songs</stringProp>
+  <stringProp name="HTTPSampler.method">GET</stringProp>
+  <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+  <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+</HTTPSamplerProxy>
+<hashTree>
+<JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract songid" enabled="true">
+  <stringProp name="JSONPostProcessor.referenceNames">songid</stringProp>
+  <stringProp name="JSONPostProcessor.jsonPathExprs">$[0].id</stringProp>
+  <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
+  <stringProp name="JSONPostProcessor.defaultValues">SONGID_NOT_FOUND</stringProp>
+</JSONPostProcessor>
+<hashTree/>
+</hashTree>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="PUT /update_song" enabled="true">
+  <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+  <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments">
+    <elementProp name="" elementType="HTTPArgument">
+      <boolProp name="HTTPArgument.always_encode">false</boolProp>
+      <stringProp name="Argument.value">{&quot;song_id&quot;: ${songid}, &quot;song_name&quot;: &quot;${song}&quot;, &quot;musical&quot;: &quot;${musical}&quot;, &quot;notes&quot;: &quot;loadtest&quot;, &quot;partners&quot;: []}</stringProp>
+      <stringProp name="Argument.metadata">=</stringProp>
+    </elementProp>
+  </collectionProp></elementProp>
+  <stringProp name="HTTPSampler.path">/update_song</stringProp>
+  <stringProp name="HTTPSampler.method">PUT</stringProp>
+  <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+  <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+  <stringProp name="HTTPSampler.contentEncoding">UTF-8</stringProp>
+</HTTPSamplerProxy>
+<hashTree>
+<HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="JSON + CSRF headers" enabled="true">
+  <collectionProp name="HeaderManager.headers"><elementProp name="" elementType="Header"><stringProp name="Header.name">X-CSRFToken</stringProp><stringProp name="Header.value">${csrf}</stringProp></elementProp><elementProp name="" elementType="Header"><stringProp name="Header.name">Content-Type</stringProp><stringProp name="Header.value">application/json</stringProp></elementProp></collectionProp>
+</HeaderManager>
+<hashTree/>
+</hashTree>
+</hashTree>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /evening_started" enabled="true">
+  <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
+  <stringProp name="HTTPSampler.path">/evening_started</stringProp>
+  <stringProp name="HTTPSampler.method">GET</stringProp>
+  <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+  <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+</HTTPSamplerProxy>
+<hashTree>
+<UniformRandomTimer guiclass="UniformRandomTimerGui" testclass="UniformRandomTimer" testname="Poll interval" enabled="true">
+  <stringProp name="ConstantTimer.delay">${POLL_INTERVAL}</stringProp>
+  <stringProp name="RandomTimer.range">200</stringProp>
+</UniformRandomTimer>
+<hashTree/>
+</hashTree>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /next_singer" enabled="true">
+  <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
+  <stringProp name="HTTPSampler.path">/next_singer</stringProp>
+  <stringProp name="HTTPSampler.method">GET</stringProp>
+  <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+  <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+</HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /spotlight_data" enabled="true">
+  <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
+  <stringProp name="HTTPSampler.path">/spotlight_data</stringProp>
+  <stringProp name="HTTPSampler.method">GET</stringProp>
+  <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+  <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+</HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /dashboard_data" enabled="true">
+  <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
+  <stringProp name="HTTPSampler.path">/dashboard_data</stringProp>
+  <stringProp name="HTTPSampler.method">GET</stringProp>
+  <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+  <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+</HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /get_active_question" enabled="true">
+  <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
+  <stringProp name="HTTPSampler.path">/get_active_question</stringProp>
+  <stringProp name="HTTPSampler.method">GET</stringProp>
+  <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+  <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+</HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /get_active_question" enabled="true">
+  <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
+  <stringProp name="HTTPSampler.path">/get_active_question</stringProp>
+  <stringProp name="HTTPSampler.method">GET</stringProp>
+  <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+  <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+</HTTPSamplerProxy>
+<hashTree/>
+<DurationAssertion guiclass="DurationAssertionGui" testclass="DurationAssertion" testname="SLA: response under ${SLA_MS} ms" enabled="true">
+  <stringProp name="DurationAssertion.duration">${SLA_MS}</stringProp>
+</DurationAssertion>
+<hashTree/>
+<ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="HTTP 200" enabled="true">
+  <collectionProp name="Asserion.test_strings"><stringProp name="49586">200</stringProp></collectionProp>
+  <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
+  <boolProp name="Assertion.assume_success">false</boolProp>
+  <intProp name="Assertion.test_type">8</intProp>
+  <stringProp name="Assertion.custom_message"></stringProp>
+</ResponseAssertion>
+<hashTree/>
+</hashTree>
+<ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Audience (login + poll)" enabled="true">
+  <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+  <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller">
+    <boolProp name="LoopController.continue_forever">false</boolProp>
+    <intProp name="LoopController.loops">-1</intProp>
+  </elementProp>
+  <stringProp name="ThreadGroup.num_threads">${__P(audience,60)}</stringProp>
+  <stringProp name="ThreadGroup.ramp_time">${__P(ramp_aud,3)}</stringProp>
+  <boolProp name="ThreadGroup.scheduler">true</boolProp>
+  <stringProp name="ThreadGroup.duration">${DURATION}</stringProp>
+  <stringProp name="ThreadGroup.delay">0</stringProp>
+  <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+</ThreadGroup>
+<hashTree>
+<OnceOnlyController guiclass="OnceOnlyControllerGui" testclass="OnceOnlyController" testname="Login (once per user)" enabled="true"/>
+<hashTree>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /login" enabled="true">
+  <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
+  <stringProp name="HTTPSampler.path">/login</stringProp>
+  <stringProp name="HTTPSampler.method">GET</stringProp>
+  <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+  <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+</HTTPSamplerProxy>
+<hashTree>
+<RegexExtractor guiclass="RegexExtractorGui" testclass="RegexExtractor" testname="Extract csrfmiddlewaretoken" enabled="true">
+  <stringProp name="RegexExtractor.useHeaders">false</stringProp>
+  <stringProp name="RegexExtractor.refname">csrf</stringProp>
+  <stringProp name="RegexExtractor.regex">name=&quot;csrfmiddlewaretoken&quot; value=&quot;([^&quot;]+)&quot;</stringProp>
+  <stringProp name="RegexExtractor.template">$1$</stringProp>
+  <stringProp name="RegexExtractor.default">CSRF_NOT_FOUND</stringProp>
+  <stringProp name="RegexExtractor.match_number">1</stringProp>
+</RegexExtractor>
+<hashTree/>
+</hashTree>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST /login" enabled="true">
+  <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"><elementProp name="ticket-type" elementType="HTTPArgument">
+  <boolProp name="HTTPArgument.always_encode">true</boolProp>
+  <stringProp name="Argument.value">audience</stringProp>
+  <stringProp name="Argument.metadata">=</stringProp>
+  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+  <stringProp name="Argument.name">ticket-type</stringProp>
+</elementProp><elementProp name="first-name" elementType="HTTPArgument">
+  <boolProp name="HTTPArgument.always_encode">true</boolProp>
+  <stringProp name="Argument.value">Loadaudience</stringProp>
+  <stringProp name="Argument.metadata">=</stringProp>
+  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+  <stringProp name="Argument.name">first-name</stringProp>
+</elementProp><elementProp name="last-name" elementType="HTTPArgument">
+  <boolProp name="HTTPArgument.always_encode">true</boolProp>
+  <stringProp name="Argument.value">${RUN_ID}n${__threadNum}</stringProp>
+  <stringProp name="Argument.metadata">=</stringProp>
+  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+  <stringProp name="Argument.name">last-name</stringProp>
+</elementProp><elementProp name="passcode" elementType="HTTPArgument">
+  <boolProp name="HTTPArgument.always_encode">true</boolProp>
+  <stringProp name="Argument.value">${PASSCODE}</stringProp>
+  <stringProp name="Argument.metadata">=</stringProp>
+  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+  <stringProp name="Argument.name">passcode</stringProp>
+</elementProp><elementProp name="order-id" elementType="HTTPArgument">
+  <boolProp name="HTTPArgument.always_encode">true</boolProp>
+  <stringProp name="Argument.value">${FREEBIE}</stringProp>
+  <stringProp name="Argument.metadata">=</stringProp>
+  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+  <stringProp name="Argument.name">order-id</stringProp>
+</elementProp><elementProp name="no-upload" elementType="HTTPArgument">
+  <boolProp name="HTTPArgument.always_encode">true</boolProp>
+  <stringProp name="Argument.value">on</stringProp>
+  <stringProp name="Argument.metadata">=</stringProp>
+  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+  <stringProp name="Argument.name">no-upload</stringProp>
+</elementProp><elementProp name="csrfmiddlewaretoken" elementType="HTTPArgument">
+  <boolProp name="HTTPArgument.always_encode">true</boolProp>
+  <stringProp name="Argument.value">${csrf}</stringProp>
+  <stringProp name="Argument.metadata">=</stringProp>
+  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+  <stringProp name="Argument.name">csrfmiddlewaretoken</stringProp>
+</elementProp></collectionProp></elementProp>
+  <stringProp name="HTTPSampler.path">/login</stringProp>
+  <stringProp name="HTTPSampler.method">POST</stringProp>
+  <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+  <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+  <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
+  <stringProp name="HTTPSampler.contentEncoding">UTF-8</stringProp>
+</HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /home" enabled="true">
+  <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
+  <stringProp name="HTTPSampler.path">/home</stringProp>
+  <stringProp name="HTTPSampler.method">GET</stringProp>
+  <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+  <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+</HTTPSamplerProxy>
+<hashTree/>
+</hashTree>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /evening_started" enabled="true">
+  <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
+  <stringProp name="HTTPSampler.path">/evening_started</stringProp>
+  <stringProp name="HTTPSampler.method">GET</stringProp>
+  <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+  <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+</HTTPSamplerProxy>
+<hashTree>
+<UniformRandomTimer guiclass="UniformRandomTimerGui" testclass="UniformRandomTimer" testname="Poll interval" enabled="true">
+  <stringProp name="ConstantTimer.delay">${POLL_INTERVAL}</stringProp>
+  <stringProp name="RandomTimer.range">200</stringProp>
+</UniformRandomTimer>
+<hashTree/>
+</hashTree>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /next_singer" enabled="true">
+  <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
+  <stringProp name="HTTPSampler.path">/next_singer</stringProp>
+  <stringProp name="HTTPSampler.method">GET</stringProp>
+  <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+  <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+</HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /spotlight_data" enabled="true">
+  <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
+  <stringProp name="HTTPSampler.path">/spotlight_data</stringProp>
+  <stringProp name="HTTPSampler.method">GET</stringProp>
+  <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+  <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+</HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /get_active_question" enabled="true">
+  <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
+  <stringProp name="HTTPSampler.path">/get_active_question</stringProp>
+  <stringProp name="HTTPSampler.method">GET</stringProp>
+  <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+  <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+</HTTPSamplerProxy>
+<hashTree/>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /get_active_question" enabled="true">
+  <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
+  <stringProp name="HTTPSampler.path">/get_active_question</stringProp>
+  <stringProp name="HTTPSampler.method">GET</stringProp>
+  <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+  <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+</HTTPSamplerProxy>
+<hashTree/>
+<DurationAssertion guiclass="DurationAssertionGui" testclass="DurationAssertion" testname="SLA: response under ${SLA_MS} ms" enabled="true">
+  <stringProp name="DurationAssertion.duration">${SLA_MS}</stringProp>
+</DurationAssertion>
+<hashTree/>
+<ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="HTTP 200" enabled="true">
+  <collectionProp name="Asserion.test_strings"><stringProp name="49586">200</stringProp></collectionProp>
+  <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
+  <boolProp name="Assertion.assume_success">false</boolProp>
+  <intProp name="Assertion.test_type">8</intProp>
+  <stringProp name="Assertion.custom_message"></stringProp>
+</ResponseAssertion>
+<hashTree/>
+</hashTree>
+</hashTree>
+</hashTree>
+</jmeterTestPlan>
