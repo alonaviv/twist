@@ -106,6 +106,181 @@ do the real 100-user tier benchmark from the bwt-stress EC2 box (in-region). Res
   </collectionProp>
 </HeaderManager>
 <hashTree/>
+<SetupThreadGroup guiclass="SetupThreadGroupGui" testclass="SetupThreadGroup" testname="Preflight checks (config + one login)" enabled="true">
+  <stringProp name="ThreadGroup.on_sample_error">stoptest</stringProp>
+  <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller">
+    <boolProp name="LoopController.continue_forever">false</boolProp>
+    <intProp name="LoopController.loops">1</intProp>
+  </elementProp>
+  <stringProp name="ThreadGroup.num_threads">1</stringProp>
+  <stringProp name="ThreadGroup.ramp_time">1</stringProp>
+  <boolProp name="ThreadGroup.scheduler">false</boolProp>
+</SetupThreadGroup>
+<hashTree>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /login" enabled="true">
+  <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
+  <stringProp name="HTTPSampler.path">/login</stringProp>
+  <stringProp name="HTTPSampler.method">GET</stringProp>
+  <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+  <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+</HTTPSamplerProxy>
+<hashTree>
+<RegexExtractor guiclass="RegexExtractorGui" testclass="RegexExtractor" testname="Extract csrfmiddlewaretoken" enabled="true">
+  <stringProp name="RegexExtractor.useHeaders">false</stringProp>
+  <stringProp name="RegexExtractor.refname">csrf</stringProp>
+  <stringProp name="RegexExtractor.regex">name=&quot;csrfmiddlewaretoken&quot; value=&quot;([^&quot;]+)&quot;</stringProp>
+  <stringProp name="RegexExtractor.template">$1$</stringProp>
+  <stringProp name="RegexExtractor.default">CSRF_NOT_FOUND</stringProp>
+  <stringProp name="RegexExtractor.match_number">1</stringProp>
+</RegexExtractor>
+<hashTree/>
+<JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="Assert CSRF token found (EVENT_SKU + PASSCODE must be set)" enabled="true">
+  <stringProp name="scriptLanguage">groovy</stringProp>
+  <stringProp name="script">if (vars.get(&quot;csrf&quot;) == &quot;CSRF_NOT_FOUND&quot;) {
+    AssertionResult.setFailure(true);
+    AssertionResult.setFailureMessage(&quot;No csrfmiddlewaretoken on /login — set EVENT_SKU and PASSCODE in Constance admin before running&quot;);
+}</stringProp>
+</JSR223Assertion>
+<hashTree/>
+</hashTree>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST /login" enabled="true">
+  <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"><elementProp name="ticket-type" elementType="HTTPArgument">
+  <boolProp name="HTTPArgument.always_encode">true</boolProp>
+  <stringProp name="Argument.value">singer</stringProp>
+  <stringProp name="Argument.metadata">=</stringProp>
+  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+  <stringProp name="Argument.name">ticket-type</stringProp>
+</elementProp><elementProp name="first-name" elementType="HTTPArgument">
+  <boolProp name="HTTPArgument.always_encode">true</boolProp>
+  <stringProp name="Argument.value">Preflight</stringProp>
+  <stringProp name="Argument.metadata">=</stringProp>
+  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+  <stringProp name="Argument.name">first-name</stringProp>
+</elementProp><elementProp name="last-name" elementType="HTTPArgument">
+  <boolProp name="HTTPArgument.always_encode">true</boolProp>
+  <stringProp name="Argument.value">Check</stringProp>
+  <stringProp name="Argument.metadata">=</stringProp>
+  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+  <stringProp name="Argument.name">last-name</stringProp>
+</elementProp><elementProp name="passcode" elementType="HTTPArgument">
+  <boolProp name="HTTPArgument.always_encode">true</boolProp>
+  <stringProp name="Argument.value">${PASSCODE}</stringProp>
+  <stringProp name="Argument.metadata">=</stringProp>
+  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+  <stringProp name="Argument.name">passcode</stringProp>
+</elementProp><elementProp name="order-id" elementType="HTTPArgument">
+  <boolProp name="HTTPArgument.always_encode">true</boolProp>
+  <stringProp name="Argument.value">${FREEBIE}</stringProp>
+  <stringProp name="Argument.metadata">=</stringProp>
+  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+  <stringProp name="Argument.name">order-id</stringProp>
+</elementProp><elementProp name="no-upload" elementType="HTTPArgument">
+  <boolProp name="HTTPArgument.always_encode">true</boolProp>
+  <stringProp name="Argument.value">on</stringProp>
+  <stringProp name="Argument.metadata">=</stringProp>
+  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+  <stringProp name="Argument.name">no-upload</stringProp>
+</elementProp><elementProp name="csrfmiddlewaretoken" elementType="HTTPArgument">
+  <boolProp name="HTTPArgument.always_encode">true</boolProp>
+  <stringProp name="Argument.value">${csrf}</stringProp>
+  <stringProp name="Argument.metadata">=</stringProp>
+  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+  <stringProp name="Argument.name">csrfmiddlewaretoken</stringProp>
+</elementProp></collectionProp></elementProp>
+  <stringProp name="HTTPSampler.path">/login</stringProp>
+  <stringProp name="HTTPSampler.method">POST</stringProp>
+  <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+  <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+  <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
+  <stringProp name="HTTPSampler.contentEncoding">UTF-8</stringProp>
+</HTTPSamplerProxy>
+<hashTree>
+<RegexExtractor guiclass="RegexExtractorGui" testclass="RegexExtractor" testname="Extract csrf from cookie" enabled="true">
+  <stringProp name="RegexExtractor.useHeaders">true</stringProp>
+  <stringProp name="RegexExtractor.refname">csrf</stringProp>
+  <stringProp name="RegexExtractor.regex">csrftoken=([^;]+)</stringProp>
+  <stringProp name="RegexExtractor.template">$1$</stringProp>
+  <stringProp name="RegexExtractor.default">CSRF_NOT_FOUND</stringProp>
+  <stringProp name="RegexExtractor.match_number">1</stringProp>
+</RegexExtractor>
+<hashTree/>
+<JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="Assert login succeeded (not redirected back to /login)" enabled="true">
+  <stringProp name="scriptLanguage">groovy</stringProp>
+  <stringProp name="script">def loc = prev.getRedirectLocation() ?: &quot;&quot;;
+def code = prev.getResponseCode();
+if (code == &quot;403&quot;) {
+    AssertionResult.setFailure(true);
+    AssertionResult.setFailureMessage(&quot;POST /login returned 403 — CSRF or config problem&quot;);
+} else if (loc.contains(&quot;/login&quot;)) {
+    AssertionResult.setFailure(true);
+    AssertionResult.setFailureMessage(&quot;POST /login redirected back to /login — wrong PASSCODE or FREEBIE_TICKET&quot;);
+}</stringProp>
+</JSR223Assertion>
+<hashTree/>
+</hashTree>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /add_song" enabled="true">
+  <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
+  <stringProp name="HTTPSampler.path">/add_song</stringProp>
+  <stringProp name="HTTPSampler.method">GET</stringProp>
+  <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+  <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+</HTTPSamplerProxy>
+<hashTree>
+<RegexExtractor guiclass="RegexExtractorGui" testclass="RegexExtractor" testname="Extract csrfmiddlewaretoken" enabled="true">
+  <stringProp name="RegexExtractor.useHeaders">false</stringProp>
+  <stringProp name="RegexExtractor.refname">csrf</stringProp>
+  <stringProp name="RegexExtractor.regex">name=&quot;csrfmiddlewaretoken&quot; value=&quot;([^&quot;]+)&quot;</stringProp>
+  <stringProp name="RegexExtractor.template">$1$</stringProp>
+  <stringProp name="RegexExtractor.default">CSRF_NOT_FOUND</stringProp>
+  <stringProp name="RegexExtractor.match_number">1</stringProp>
+</RegexExtractor>
+<hashTree/>
+</hashTree>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST /add_song_request" enabled="true">
+  <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"><elementProp name="song-name" elementType="HTTPArgument">
+  <boolProp name="HTTPArgument.always_encode">true</boolProp>
+  <stringProp name="Argument.value">preflight</stringProp>
+  <stringProp name="Argument.metadata">=</stringProp>
+  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+  <stringProp name="Argument.name">song-name</stringProp>
+</elementProp><elementProp name="musical" elementType="HTTPArgument">
+  <boolProp name="HTTPArgument.always_encode">true</boolProp>
+  <stringProp name="Argument.value">Preflight Musical</stringProp>
+  <stringProp name="Argument.metadata">=</stringProp>
+  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+  <stringProp name="Argument.name">musical</stringProp>
+</elementProp><elementProp name="notes" elementType="HTTPArgument">
+  <boolProp name="HTTPArgument.always_encode">true</boolProp>
+  <stringProp name="Argument.value">preflight</stringProp>
+  <stringProp name="Argument.metadata">=</stringProp>
+  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+  <stringProp name="Argument.name">notes</stringProp>
+</elementProp><elementProp name="csrfmiddlewaretoken" elementType="HTTPArgument">
+  <boolProp name="HTTPArgument.always_encode">true</boolProp>
+  <stringProp name="Argument.value">${csrf}</stringProp>
+  <stringProp name="Argument.metadata">=</stringProp>
+  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+  <stringProp name="Argument.name">csrfmiddlewaretoken</stringProp>
+</elementProp></collectionProp></elementProp>
+  <stringProp name="HTTPSampler.path">/add_song_request</stringProp>
+  <stringProp name="HTTPSampler.method">POST</stringProp>
+  <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+  <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+  <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
+  <stringProp name="HTTPSampler.contentEncoding">UTF-8</stringProp>
+</HTTPSamplerProxy>
+<hashTree>
+<JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="Assert add_song_request succeeded" enabled="true">
+  <stringProp name="scriptLanguage">groovy</stringProp>
+  <stringProp name="script">def code = prev.getResponseCode();
+if (code != &quot;200&quot;) {
+    AssertionResult.setFailure(true);
+    AssertionResult.setFailureMessage(&quot;POST /add_song_request returned &quot; + code + &quot; — check CAN_SIGNUP flag and singer auth&quot;);
+}</stringProp>
+</JSR223Assertion>
+<hashTree/>
+</hashTree>
+</hashTree>
 <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Singers (login + simultaneous signup + poll)" enabled="true">
   <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
   <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller">

@@ -181,6 +181,74 @@ def csrf_cookie_extractor():
   <stringProp name="RegexExtractor.match_number">1</stringProp>
 </RegexExtractor>''', [])
 
+def jsr223_assertion(name, script):
+    return (f'''<JSR223Assertion guiclass="TestBeanGUI" testclass="JSR223Assertion" testname="{name}" enabled="true">
+  <stringProp name="scriptLanguage">groovy</stringProp>
+  <stringProp name="script">{esc(script)}</stringProp>
+</JSR223Assertion>''', [])
+
+def setup_thread_group(body):
+    tg = '''<SetupThreadGroup guiclass="SetupThreadGroupGui" testclass="SetupThreadGroup" testname="Preflight checks (config + one login)" enabled="true">
+  <stringProp name="ThreadGroup.on_sample_error">stoptest</stringProp>
+  <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller">
+    <boolProp name="LoopController.continue_forever">false</boolProp>
+    <intProp name="LoopController.loops">1</intProp>
+  </elementProp>
+  <stringProp name="ThreadGroup.num_threads">1</stringProp>
+  <stringProp name="ThreadGroup.ramp_time">1</stringProp>
+  <boolProp name="ThreadGroup.scheduler">false</boolProp>
+</SetupThreadGroup>'''
+    return (tg, body)
+
+def preflight():
+    csrf_check = jsr223_assertion(
+        "Assert CSRF token found (EVENT_SKU + PASSCODE must be set)",
+        'if (vars.get("csrf") == "CSRF_NOT_FOUND") {\n'
+        '    AssertionResult.setFailure(true);\n'
+        '    AssertionResult.setFailureMessage("No csrfmiddlewaretoken on /login — '
+        'set EVENT_SKU and PASSCODE in Constance admin before running");\n'
+        '}'
+    )
+    login_ok = jsr223_assertion(
+        "Assert login succeeded (not redirected back to /login)",
+        'def loc = prev.getRedirectLocation() ?: "";\n'
+        'def code = prev.getResponseCode();\n'
+        'if (code == "403") {\n'
+        '    AssertionResult.setFailure(true);\n'
+        '    AssertionResult.setFailureMessage("POST /login returned 403 — CSRF or config problem");\n'
+        '} else if (loc.contains("/login")) {\n'
+        '    AssertionResult.setFailure(true);\n'
+        '    AssertionResult.setFailureMessage("POST /login redirected back to /login — wrong PASSCODE or FREEBIE_TICKET");\n'
+        '}'
+    )
+    signup_ok = jsr223_assertion(
+        "Assert add_song_request succeeded",
+        'def code = prev.getResponseCode();\n'
+        'if (code != "200") {\n'
+        '    AssertionResult.setFailure(true);\n'
+        '    AssertionResult.setFailureMessage("POST /add_song_request returned " + code + " — check CAN_SIGNUP flag and singer auth");\n'
+        '}'
+    )
+    return setup_thread_group([
+        get("/login", [csrf_extractor(), csrf_check]),
+        post("/login", [
+            ("ticket-type", "singer"),
+            ("first-name", "Preflight"),
+            ("last-name", "Check"),
+            ("passcode", "${PASSCODE}"),
+            ("order-id", "${FREEBIE}"),
+            ("no-upload", "on"),
+            ("csrfmiddlewaretoken", "${csrf}"),
+        ], [csrf_cookie_extractor(), login_ok]),
+        get("/add_song", [csrf_extractor()]),
+        post("/add_song_request", [
+            ("song-name", "preflight"),
+            ("musical", "Preflight Musical"),
+            ("notes", "preflight"),
+            ("csrfmiddlewaretoken", "${csrf}"),
+        ], [signup_ok]),
+    ])
+
 def sync_timer():
     return ('''<SyncTimer guiclass="TestBeanGUI" testclass="SyncTimer" testname="Rendezvous - all singers submit at once" enabled="true">
   <intProp name="groupSize">0</intProp>
@@ -310,7 +378,7 @@ def build():
                             [audience_once_only()] + poll_batch(AUDIENCE_POLLS) +
                             [duration_assertion(), code_assertion()])
 
-    plan_children = [config, http_defaults(), cookie_mgr(), header_mgr(), singers, audience]
+    plan_children = [config, http_defaults(), cookie_mgr(), header_mgr(), preflight(), singers, audience]
 
     comments = esc(
         "BWT MONEY-TIME LOAD TEST  (40 singers sign up at once + 60 audience polling = 100 concurrent)\n"
