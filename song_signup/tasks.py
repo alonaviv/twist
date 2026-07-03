@@ -5,7 +5,6 @@ import time
 from logging import getLogger
 from typing import Iterable, Optional
 from urllib.parse import urlparse
-from exa_py import Exa
 
 import bs4
 import requests
@@ -37,7 +36,7 @@ BROWSER_HEADERS = {
     "DNT": "1",
 }
 
-exa_key = os.environ["EXA_KEY"]
+serper_key = os.environ["SERPER_KEY"]
 genius_key = os.environ["GENIUS_KEY"]
 
 # Lock for throttling requests to the same site. Will only be acquired, not released, and then let to expire.
@@ -45,8 +44,8 @@ sherlock.configure(
     backend=sherlock.backends.REDIS, expire=1, client=Redis(host="redis")
 )
 
-# Using exa.ai as replacement for google search
-exa = Exa(api_key=exa_key)
+# Using Serper (Google Search API) as a replacement for Exa
+SERPER_ENDPOINT = "https://google.serper.dev/search"
 
 @dataclasses.dataclass
 class LyricsResult:
@@ -62,15 +61,26 @@ class LyricsWebsiteParser:
     URL_FORMAT = re.compile("")
     SITE = ""
 
-    def exa_search(self, query):
+    def serper_search(self, query):
         # For testing - use query: "mama I'm a big girl now lyrics hairspray site:allmusicals.com"
-
-        res = exa.search(
-            query,
-            include_domains=[self.SITE]
-        )
-
-        return [result.url for result in res.results]
+        # Restrict to this parser's site via a `site:` operator, mirroring Exa's include_domains.
+        try:
+            response = requests.post(
+                SERPER_ENDPOINT,
+                headers={"X-API-KEY": serper_key, "Content-Type": "application/json"},
+                json={"q": f"{query} site:{self.SITE}"},
+                timeout=10,
+            )
+            response.raise_for_status()
+            return [result.get("link", "") for result in response.json().get("organic", [])]
+        except requests.HTTPError as e:
+            logger.error(
+                f"Serper search failed for {self.SITE}: HTTP {e.response.status_code} - {e.response.text}"
+            )
+            return []
+        except Exception:
+            logger.exception(f"Serper search failed for {self.SITE}")
+            return []
 
 
     def fix_url(self, url):
@@ -86,10 +96,10 @@ class LyricsWebsiteParser:
     def get_lyrics(self, song_name: str, author: str) -> Iterable[LyricsResult]:
         lock = sherlock.Lock(self.SITE)
         seen_urls = set()
-        search_query = '"{}" lyrics "{}"'.format(song_name, author)
+        search_query = '{} lyrics {}'.format(song_name, author)
 
         for _ in range(3):
-            search_results = self.exa_search(search_query)
+            search_results = self.serper_search(search_query)
             if len(search_results) > 0:
                 break
             logger.info("No search results, retrying")
@@ -392,7 +402,7 @@ class TheMusicalLyricsParser(LyricsWebsiteParser):
 
 
 class LyricsTranslateParser(LyricsWebsiteParser):
-    URL_FORMAT = re.compile("lyricstranslate\.com\/.*-lyrics$")
+    URL_FORMAT = re.compile("lyricstranslate\.com\/.*-lyrics\.html")
     SITE = "lyricstranslate.com"
 
     def parse_lyrics(self, soup: bs4.BeautifulSoup) -> LyricsResult:
