@@ -402,7 +402,7 @@ class TheMusicalLyricsParser(LyricsWebsiteParser):
 
 
 class LyricsTranslateParser(LyricsWebsiteParser):
-    URL_FORMAT = re.compile("lyricstranslate\.com\/.*-lyrics\.html")
+    URL_FORMAT = re.compile("lyricstranslate\.com\/.*(-lyrics\.html|-lyrics($|[?#]))")
     SITE = "lyricstranslate.com"
 
     def parse_lyrics(self, soup: bs4.BeautifulSoup) -> LyricsResult:
