@@ -2,6 +2,7 @@ from itertools import chain
 
 from django.contrib.auth.models import UserManager
 from django.core.exceptions import ObjectDoesNotExist
+from django.db import transaction
 from django.db.models import Manager, Max
 from django.utils import timezone
 from flags.state import flag_enabled
@@ -107,19 +108,28 @@ class DisneylandOrdering(UserManager):
         # Ignoring duets - only primary singer is relevant to the positioning.
         # Duet enforcement is now done in the Model - a singer can be a duetor in at most one song.
         from song_signup.models import SongRequest
-        SongRequest.objects.reset_positions()
 
-        position = 1
-        scheduled_songs = []
-        for singer in self.singer_disneyland_ordering():
-            song_to_schedule = singer.songs.filter(performance_time__isnull=True, standby=False,
-                                                   request_time__lte=timezone.now()).order_by('priority').first()
-            if song_to_schedule:
-                song_to_schedule.position = position
-                song_to_schedule.save()
-                scheduled_songs.append(song_to_schedule)
+        with transaction.atomic():
+            # Serialize concurrent recalcs to avoid deadlocks: when many singers sign up at
+            # once, each recalc rewrites the whole position table, and two of them locking the
+            # same rows in different orders deadlock (Postgres aborts one -> the signup 500s).
+            # Locking every row up front in a single, consistent order (by pk) forces recalcs
+            # to queue instead of collide. Held until this atomic block commits.
+            list(SongRequest.objects.select_for_update().order_by('pk'))
 
-                position += 1
+            SongRequest.objects.reset_positions()
+
+            position = 1
+            scheduled_songs = []
+            for singer in self.singer_disneyland_ordering():
+                song_to_schedule = singer.songs.filter(performance_time__isnull=True, standby=False,
+                                                       request_time__lte=timezone.now()).order_by('priority').first()
+                if song_to_schedule:
+                    song_to_schedule.position = position
+                    song_to_schedule.save()
+                    scheduled_songs.append(song_to_schedule)
+
+                    position += 1
 
     def singer_disneyland_ordering(self):
         """
