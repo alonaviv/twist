@@ -97,6 +97,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'peoples_choice.apps.PeoplesChoiceConfig',
     'pub_quiz.apps.PubQuizConfig',
+    'explanations.apps.ExplanationsConfig',
 ]
 
 CONSTANCE_ADDITIONAL_FIELDS = {

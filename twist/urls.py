@@ -38,4 +38,5 @@ urlpatterns = [
     path('', include('song_signup.urls')),
     path('peoples-choice/', include('peoples_choice.urls')),
     path('pub-quiz/', include('pub_quiz.urls')),
+    path('explanations/', include('explanations.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

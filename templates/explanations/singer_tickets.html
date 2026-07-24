@@ -1,0 +1,258 @@
+{% extends "base.html" %}
+{% load static %}
+{% load img_tags %}
+{% block content %}
+<svg class="exp-svg-defs" aria-hidden="true" focusable="false">
+    <defs>
+        <symbol id="exp-icon-stopwatch" viewBox="0 0 64 64">
+            <circle cx="32" cy="36" r="20" class="exp-ic-fill" />
+            <circle cx="32" cy="36" r="20" class="exp-ic-stroke" />
+            <path d="M32 24v12l8 5" class="exp-ic-stroke exp-ic-hand" />
+            <path d="M26 10h12M32 10v6" class="exp-ic-stroke" />
+            <path d="M48 18l5-5" class="exp-ic-stroke" />
+        </symbol>
+        <symbol id="exp-icon-target" viewBox="0 0 64 64">
+            <circle cx="32" cy="32" r="22" class="exp-ic-fill" />
+            <circle cx="32" cy="32" r="22" class="exp-ic-stroke" />
+            <circle cx="32" cy="32" r="13" class="exp-ic-stroke" />
+            <circle cx="32" cy="32" r="5" class="exp-ic-solid" />
+        </symbol>
+        <symbol id="exp-icon-refresh" viewBox="0 0 64 64">
+            <circle cx="32" cy="32" r="22" class="exp-ic-fill" />
+            <path d="M50 32a18 18 0 1 1-6-13.4" class="exp-ic-stroke" />
+            <path d="M46 8v12H34" class="exp-ic-stroke" />
+        </symbol>
+        <symbol id="exp-icon-card" viewBox="0 0 64 64">
+            <rect x="6" y="16" width="52" height="34" rx="6" class="exp-ic-fill" />
+            <rect x="6" y="16" width="52" height="34" rx="6" class="exp-ic-stroke" />
+            <path d="M6 27h52" class="exp-ic-stroke" />
+            <path d="M14 39h12" class="exp-ic-stroke" />
+        </symbol>
+        <symbol id="exp-icon-skip" viewBox="0 0 64 64">
+            <rect x="8" y="18" width="48" height="28" rx="8" class="exp-ic-fill" />
+            <rect x="8" y="18" width="48" height="28" rx="8" class="exp-ic-stroke" />
+            <path d="M22 26l20 12M42 26L22 38" class="exp-ic-stroke exp-ic-danger" />
+        </symbol>
+        <symbol id="exp-icon-practice" viewBox="0 0 64 64">
+            <path d="M14 26v12M50 26v12" class="exp-ic-stroke exp-ic-thick" />
+            <rect x="20" y="22" width="24" height="20" rx="6" class="exp-ic-fill" />
+            <rect x="20" y="22" width="24" height="20" rx="6" class="exp-ic-stroke" />
+            <path d="M8 30v4M56 30v4" class="exp-ic-stroke exp-ic-thick" />
+        </symbol>
+        <symbol id="exp-icon-hourglass" viewBox="0 0 64 64">
+            <path d="M18 8h28M18 56h28" class="exp-ic-stroke exp-ic-thick" />
+            <path d="M20 8c0 14 12 16 12 24 0-8 12-10 12-24" class="exp-ic-fill" />
+            <path d="M20 8c0 14 12 16 12 24 0-8 12-10 12-24M20 56c0-14 12-16 12-24 0 8 12 10 12 24" class="exp-ic-stroke" />
+        </symbol>
+        <symbol id="exp-icon-chair" viewBox="0 0 64 64">
+            <circle cx="32" cy="16" r="8" class="exp-ic-fill" />
+            <circle cx="32" cy="16" r="8" class="exp-ic-stroke" />
+            <path d="M32 26v14" class="exp-ic-stroke exp-ic-thick" />
+            <path d="M18 40h28M22 40v14M42 40v14" class="exp-ic-stroke" />
+            <path d="M32 40l10 8" class="exp-ic-stroke" />
+        </symbol>
+    </defs>
+</svg>
+
+<main class="exp-layout" dir="rtl" lang="he">
+    <header class="exp-hero">
+        <div class="exp-logo-wrapper">
+            <img src="{% bwt_small_logo %}" alt="Broadway With a Twist" class="exp-logo" />
+        </div>
+        <p class="exp-hero-eyebrow">מדריך מהיר</p>
+        <h1>איך משיגים כרטיס זמר/ת?</h1>
+        <p class="exp-hero-description">
+            כרטיסי הזמרים נחטפים במהירות מטורפת. הנה כל הטיפים שיעזרו לכם לתפוס אחד — בקריאה של דקה.
+        </p>
+
+        <div class="exp-stat-strip">
+            <div class="exp-stat">
+                <span class="exp-stat-value">&lt; דקה</span>
+                <span class="exp-stat-label">וכל הכרטיסים אזלו</span>
+            </div>
+            <div class="exp-stat">
+                <span class="exp-stat-value">20:00–20:30</span>
+                <span class="exp-stat-label">שעת פתיחת המכירה</span>
+            </div>
+            <div class="exp-stat">
+                <span class="exp-stat-value">אירוע אחד</span>
+                <span class="exp-stat-label">בחרו מראש ולכו עליו</span>
+            </div>
+        </div>
+    </header>
+
+    <section class="exp-headline-card" aria-label="הדבר הכי חשוב">
+        <span class="exp-headline-emoji" aria-hidden="true">⚡</span>
+        <p class="exp-headline-text">
+            השורה התחתונה: תהיו <strong>מוכנים ליד המסך</strong> לפני 20:00, ותכנסו
+            <strong>ברגע</strong> שהמכירה נפתחת. כל שנייה נחשבת.
+        </p>
+    </section>
+
+    <ol class="exp-tips">
+        <li class="exp-tip">
+            <div class="exp-tip-number" aria-hidden="true">1</div>
+            <div class="exp-tip-art">
+                <svg class="exp-icon" aria-hidden="true"><use href="#exp-icon-stopwatch"></use></svg>
+            </div>
+            <div class="exp-tip-body">
+                <h2>תהיו ״על זה״</h2>
+                <p>
+                    כרטיסי הזמרים לכל אירועי החודש אוזלים תוך <strong>פחות מדקה</strong> (!!) מרגע שפותחים
+                    את המכירה. חכו ליד הטלפון או המחשב — מה שאתם מהירים איתו יותר — והיכנסו מיד.
+                </p>
+                <p class="exp-tip-note">
+                    המכירה נפתחת בין 20:00 ל־20:30, בדרך כלל קרוב ל־20:00. אבל באמת תלוי בהירדמות של אדם שלנו 😴
+                </p>
+            </div>
+        </li>
+
+        <li class="exp-tip">
+            <div class="exp-tip-number" aria-hidden="true">2</div>
+            <div class="exp-tip-art">
+                <svg class="exp-icon" aria-hidden="true"><use href="#exp-icon-target"></use></svg>
+            </div>
+            <div class="exp-tip-body">
+                <h2>תבחרו אירוע אחד מראש</h2>
+                <p>
+                    רוב הסיכויים שתצליחו להשיג כרטיס זמר/ת רק לאירוע אחד. תחליטו מראש על מי אתם הולכים,
+                    ותיכנסו ישר אליו — בלי להתלבט תוך כדי.
+                </p>
+            </div>
+        </li>
+
+        <li class="exp-tip">
+            <div class="exp-tip-number" aria-hidden="true">3</div>
+            <div class="exp-tip-art">
+                <svg class="exp-icon" aria-hidden="true"><use href="#exp-icon-refresh"></use></svg>
+            </div>
+            <div class="exp-tip-body">
+                <h2>תפתחו את האתר מראש, ותרעננו</h2>
+                <p>
+                    פתחו את אתר הכרטיסים קצת לפני (הלינק בתיאור הקבוצה), וכשההודעה מגיעה —
+                    <strong>רעננו את הדף</strong> במקום ללחוץ על הלינק שבהודעה.
+                </p>
+                <p class="exp-tip-note">
+                    ואם יש לכם סבלנות: אפשר להתחיל לרענן עוד לפני שההודעה מגיעה. עוברות כמה שניות בין הרגע
+                    שהתאריכים עולים לאתר לבין שליחת ההודעה — אם תתפסו את הרגע הזה, תקנו לפני כולם 💨
+                </p>
+            </div>
+        </li>
+
+        <li class="exp-tip exp-tip--flow">
+            <div class="exp-tip-number" aria-hidden="true">4</div>
+            <div class="exp-tip-art">
+                <svg class="exp-icon" aria-hidden="true"><use href="#exp-icon-card"></use></svg>
+            </div>
+            <div class="exp-tip-body">
+                <h2>הכרטיס שלכם רק בשלב האשראי</h2>
+                <p>
+                    הכרטיסים באמת נשמרים לכם רק כשמגיעים <strong>לשלב פרטי האשראי</strong> — כלומר אחרי
+                    הפרטים האישיים. אז את הפרטים האישיים ממלאים מהר, ואת האשראי כבר אפשר ברוגע.
+                </p>
+
+                <div class="exp-flow" role="img" aria-label="שלב ראשון: פרטים אישיים - למלא מהר. שלב שני: פרטי אשראי - אפשר ברוגע">
+                    <div class="exp-flow-step exp-flow-step--fast">
+                        <span class="exp-flow-emoji" aria-hidden="true">🏃</span>
+                        <span class="exp-flow-title">פרטים אישיים</span>
+                        <span class="exp-flow-tag">מהר מהר!</span>
+                    </div>
+                    <div class="exp-flow-arrow" aria-hidden="true">←</div>
+                    <div class="exp-flow-step exp-flow-step--calm">
+                        <span class="exp-flow-emoji" aria-hidden="true">☕</span>
+                        <span class="exp-flow-title">פרטי אשראי</span>
+                        <span class="exp-flow-tag">עכשיו ברוגע</span>
+                    </div>
+                </div>
+
+                <p class="exp-tip-note">
+                    אם הכרטיסים נגמרו לפני שסיימתם את הפרטים האישיים — תראו הודעת שגיאה ולא תוכלו להמשיך.
+                    <br />
+                    התעלמו מהשעון שאומר שהכרטיסים שמורים ל־10 דקות: הוא תקף רק אחרי שמגיעים לפרטי האשראי.
+                </p>
+            </div>
+        </li>
+
+        <li class="exp-tip">
+            <div class="exp-tip-number" aria-hidden="true">5</div>
+            <div class="exp-tip-art">
+                <svg class="exp-icon" aria-hidden="true"><use href="#exp-icon-skip"></use></svg>
+            </div>
+            <div class="exp-tip-body">
+                <h2>דלגו על ״חוגגים משהו אצלנו״</h2>
+                <p>
+                    כל שנייה בפרטים האישיים עולה לכם בכרטיס, אז <strong>אל תמלאו</strong> את התיבה הזאת —
+                    אחרת אתם עלולים להפסיד אותו. (לצערנו עוד לא מצאנו לזה פתרון)
+                </p>
+                <p class="exp-tip-note">
+                    תמיד אפשר להוסיף את סיבת החגיגה בהזמנה אחרת, או פשוט לשלוח לנו הודעה — רק תגידו לנו
+                    את השם של מי שחוגג/ת :)
+                </p>
+            </div>
+        </li>
+
+        <li class="exp-tip exp-tip--highlight">
+            <div class="exp-tip-number" aria-hidden="true">6</div>
+            <div class="exp-tip-art">
+                <svg class="exp-icon" aria-hidden="true"><use href="#exp-icon-practice"></use></svg>
+            </div>
+            <div class="exp-tip-body">
+                <h2>אפשר להתאמן מראש! 🏋️</h2>
+                <p>
+                    הכנו לכם דף אירוע <strong>מזויף לגמרי</strong> שעובד בדיוק כמו אירוע אמיתי. תוכלו להתנסות
+                    במערכת ולראות כמה מהר אתם מצליחים להזמין. אין צורך באמת להזמין — החלק הקריטי הוא להגיע
+                    כמה שיותר מהר לאזור פרטי האשראי.
+                </p>
+                <p>
+                    <strong>והכי חשוב:</strong> תכניסו שם את הפרטים, כדי שהדפדפן שלכם כבר יזכור וימלא אותם
+                    אוטומטית ביום המכירה. זה מאוד תלוי דפדפן ומכשיר — אז כדאי לנסות כמה פעמים ולוודא שזה עובד לכם.
+                </p>
+                <a
+                    class="exp-cta"
+                    href="{{ practice_url }}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    לדף האימון (מזויף) →
+                </a>
+                <p class="exp-tip-note">
+                    שימו לב: זו סימולציה של דף של <strong>אירוע ספציפי</strong>, ולא הדף שמרכז את כל האירועים.
+                    הלינק לדף המרכז נמצא בתיאור הקבוצה, ומשם נכנסים לכל אירוע.
+                </p>
+            </div>
+        </li>
+
+        <li class="exp-tip">
+            <div class="exp-tip-number" aria-hidden="true">7</div>
+            <div class="exp-tip-art">
+                <svg class="exp-icon" aria-hidden="true"><use href="#exp-icon-hourglass"></use></svg>
+            </div>
+            <div class="exp-tip-body">
+                <h2>תנסו שוב אחרי כמה דקות</h2>
+                <p>
+                    למי שהגיע לשלב פרטי האשראי, הכרטיסים נשמרים 10 דקות. אז אם <strong>תנסו שוב קצת יותר
+                    מאוחר</strong>, ייתכן שישתחררו כרטיסי זמרים של אנשים שוויתרו.
+                </p>
+            </div>
+        </li>
+    </ol>
+
+    <section class="exp-fallback" aria-label="לא הצלחתם?">
+        <div class="exp-fallback-art">
+            <svg class="exp-icon" aria-hidden="true"><use href="#exp-icon-chair"></use></svg>
+        </div>
+        <div class="exp-fallback-body">
+            <h2>לא הצלחתם הפעם? ממש לא נורא 🤩</h2>
+            <p>
+                אתם לא צריכים לוותר על ערב בלתי נשכח! ממש כיף לשיר מהכיסא עם כרטיסי קהל, וגם איתם יש לכם
+                דרכים לעלות לבמה 😉
+            </p>
+            <p class="exp-tip-note">
+                הכרטיסים האלה אוזלים לאט יותר — אבל לא היינו מתעכבים יותר מדי...
+            </p>
+        </div>
+    </section>
+
+    <p class="exp-footer-note">נתראה על הבמה! 🎤</p>
+</main>
+{% endblock %}
