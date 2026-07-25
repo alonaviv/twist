@@ -45,6 +45,36 @@ are running, and run `./manage.py makemigrations` within the container. Then rer
    * Select python interpreter within the container, and run tests from within IDE.
 
 
+## Remote development on the EC2 box
+
+Dev runs on the `bwt-stress` EC2 box (Israel region, `t3.medium`, elastic IP, also the
+stress-test machine — not the Frankfurt production box). Powered on only for coding
+sessions, since it bills by the hour.
+
+Laptop aliases (defined in `~/.zshrc`):
+
+| Command | Does |
+| --- | --- |
+| `ssds` | start the box, wait until it's actually reachable |
+| `ssd` | ssh in, landing in `~/twist` |
+| `ssdk` | stop the box — run this when done, it's billing |
+
+A session is: `ssds`, `ssd`, `claude`, work, `ssdk`.
+
+Everything else is automatic. The docker stack comes back on boot with the database
+intact, and the django container runs livereload and the sass watchers, so template and
+`.scss` edits refresh the browser on their own. Starting `claude` in `~/twist` also
+starts the django server and prints its URL — on every new or resumed session, and only
+if it isn't already running.
+
+Without claude, or to get a TTY for interactive `ipdb`, start the server yourself with
+`./run-dev.sh`.
+
+The site is at `http://<elastic-ip>:8000/`, singer passcode `dev`, order `123456`.
+
+Never pass `-v` to `start-dev.sh` / `stop-dev.sh` — it destroys the database volume.
+Never compile sass outside the container.
+
 ## Production environment inital setup
 
 1. Verify that docker and docker-compose (version 2) are installed on production host.
@@ -138,7 +168,9 @@ python3 verdict.py val.jtl
 ```
 
 ### Full test from the stress box
-Run the real load from `bwt-stress`, not your laptop, so the generator isn't the bottleneck. It's in the Israel region, type c6i.large - suitable for this test, jmeter installed, and set up in `~/.ssh/config` so you connect with `ssh bwt-stress`.
+Run the real load from `bwt-stress`, not your laptop, so the generator isn't the bottleneck. It's in the Israel region, jmeter installed, and set up in `~/.ssh/config` so you connect with `ssh bwt-stress`.
+
+**This box is now also the dev machine and currently runs as `t3.medium`, which is too small to generate the full load** — it was `c6i.large` when this test was written. Before a real run, resize it up (see "Remote development on the EC2 box"), or the generator becomes the bottleneck and the results are meaningless.
 If it doesn't work, the DNS address may have changed. Find "Public DNS" in the AWS GUI and replace it in the bwt-stress ssh config file
  **TURN OFF INSTANCE WHEN DONE!!**
 
