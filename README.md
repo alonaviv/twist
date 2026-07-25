@@ -58,6 +58,7 @@ Laptop aliases (defined in `~/.zshrc`):
 | `ssds` | start the box, wait until it's actually reachable |
 | `ssd` | ssh in, landing in `~/twist` |
 | `ssdk` | stop the box — run this when done, it's billing |
+| `ssdc` | check whether it's running or stopped |
 
 A session is: `ssds`, `ssd`, `claude`, work, `ssdk`.
 
