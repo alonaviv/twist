@@ -4,34 +4,11 @@
 {% block content %}
 <svg class="exp-svg-defs" aria-hidden="true" focusable="false">
     <defs>
-        <symbol id="exp-icon-stopwatch" viewBox="0 0 64 64">
-            <circle cx="32" cy="36" r="20" class="exp-ic-fill" />
-            <circle cx="32" cy="36" r="20" class="exp-ic-stroke" />
-            <path d="M32 24v12l8 5" class="exp-ic-stroke exp-ic-hand" />
-            <path d="M26 10h12M32 10v6" class="exp-ic-stroke" />
-            <path d="M48 18l5-5" class="exp-ic-stroke" />
-        </symbol>
-        <symbol id="exp-icon-target" viewBox="0 0 64 64">
-            <circle cx="32" cy="32" r="22" class="exp-ic-fill" />
-            <circle cx="32" cy="32" r="22" class="exp-ic-stroke" />
-            <circle cx="32" cy="32" r="13" class="exp-ic-stroke" />
-            <circle cx="32" cy="32" r="5" class="exp-ic-solid" />
-        </symbol>
-        <symbol id="exp-icon-refresh" viewBox="0 0 64 64">
-            <circle cx="32" cy="32" r="22" class="exp-ic-fill" />
-            <path d="M50 32a18 18 0 1 1-6-13.4" class="exp-ic-stroke" />
-            <path d="M46 8v12H34" class="exp-ic-stroke" />
-        </symbol>
-        <symbol id="exp-icon-card" viewBox="0 0 64 64">
-            <rect x="6" y="16" width="52" height="34" rx="6" class="exp-ic-fill" />
-            <rect x="6" y="16" width="52" height="34" rx="6" class="exp-ic-stroke" />
-            <path d="M6 27h52" class="exp-ic-stroke" />
-            <path d="M14 39h12" class="exp-ic-stroke" />
-        </symbol>
-        <symbol id="exp-icon-skip" viewBox="0 0 64 64">
-            <rect x="8" y="18" width="48" height="28" rx="8" class="exp-ic-fill" />
-            <rect x="8" y="18" width="48" height="28" rx="8" class="exp-ic-stroke" />
-            <path d="M22 26l20 12M42 26L22 38" class="exp-ic-stroke exp-ic-danger" />
+        <symbol id="exp-icon-bell" viewBox="0 0 64 64">
+            <path d="M32 10a14 14 0 0 1 14 14v12l5 8H13l5-8V24a14 14 0 0 1 14-14z" class="exp-ic-fill" />
+            <path d="M32 10a14 14 0 0 1 14 14v12l5 8H13l5-8V24a14 14 0 0 1 14-14z" class="exp-ic-stroke" />
+            <path d="M27 48a5 5 0 0 0 10 0" class="exp-ic-stroke" />
+            <path d="M32 4v6" class="exp-ic-stroke exp-ic-thick" />
         </symbol>
         <symbol id="exp-icon-practice" viewBox="0 0 64 64">
             <path d="M14 26v12M50 26v12" class="exp-ic-stroke exp-ic-thick" />
@@ -39,220 +16,404 @@
             <rect x="20" y="22" width="24" height="20" rx="6" class="exp-ic-stroke" />
             <path d="M8 30v4M56 30v4" class="exp-ic-stroke exp-ic-thick" />
         </symbol>
+        <symbol id="exp-icon-target" viewBox="0 0 64 64">
+            <circle cx="32" cy="32" r="22" class="exp-ic-fill" />
+            <circle cx="32" cy="32" r="22" class="exp-ic-stroke" />
+            <circle cx="32" cy="32" r="13" class="exp-ic-stroke" />
+            <circle cx="32" cy="32" r="5" class="exp-ic-solid" />
+        </symbol>
+        <symbol id="exp-icon-bookmark" viewBox="0 0 64 64">
+            <path d="M16 8h32v48L32 44 16 56z" class="exp-ic-fill" />
+            <path d="M16 8h32v48L32 44 16 56z" class="exp-ic-stroke" />
+        </symbol>
+        <symbol id="exp-icon-stopwatch" viewBox="0 0 64 64">
+            <circle cx="32" cy="36" r="20" class="exp-ic-fill" />
+            <circle cx="32" cy="36" r="20" class="exp-ic-stroke" />
+            <path d="M32 24v12l8 5" class="exp-ic-stroke exp-ic-hand" />
+            <path d="M26 10h12M32 10v6" class="exp-ic-stroke" />
+            <path d="M48 18l5-5" class="exp-ic-stroke" />
+        </symbol>
+        <symbol id="exp-icon-refresh" viewBox="0 0 64 64">
+            <circle cx="32" cy="32" r="22" class="exp-ic-fill" />
+            <path d="M50 32a18 18 0 1 1-6-13.4" class="exp-ic-stroke" />
+            <path d="M46 8v12H34" class="exp-ic-stroke" />
+        </symbol>
+        <!-- The two "don't" steps draw their subject, not a prohibition: every other icon
+             on the page depicts its topic, and a red strike over "audience" or "celebration"
+             would read as us discouraging both — the opposite of what those steps say. The
+             headings carry the "not during this order" part. -->
+        <symbol id="exp-icon-audience" viewBox="0 0 64 64">
+            <circle cx="14" cy="27" r="7" class="exp-ic-fill" />
+            <circle cx="14" cy="27" r="7" class="exp-ic-stroke" />
+            <path d="M3 49a11 11 0 0 1 22 0" class="exp-ic-stroke" />
+            <circle cx="50" cy="27" r="7" class="exp-ic-fill" />
+            <circle cx="50" cy="27" r="7" class="exp-ic-stroke" />
+            <path d="M39 49a11 11 0 0 1 22 0" class="exp-ic-stroke" />
+            <circle cx="32" cy="21" r="9" class="exp-ic-fill" />
+            <circle cx="32" cy="21" r="9" class="exp-ic-stroke" />
+            <path d="M18 52a14 14 0 0 1 28 0" class="exp-ic-fill" />
+            <path d="M18 52a14 14 0 0 1 28 0" class="exp-ic-stroke" />
+        </symbol>
+        <!-- Party popper: cone at lower-left, confetti flying up and to the right. -->
+        <symbol id="exp-icon-celebrate" viewBox="0 0 64 64">
+            <path d="M8 56l15-31 16 16z" class="exp-ic-fill" />
+            <path d="M8 56l15-31 16 16z" class="exp-ic-stroke" />
+            <path d="M44 14v7M55 21l-5 5M57 38h-7" class="exp-ic-stroke exp-ic-thick" />
+            <circle cx="51" cy="11" r="2.6" class="exp-ic-solid" />
+            <circle cx="59" cy="29" r="2.6" class="exp-ic-solid" />
+        </symbol>
+        <symbol id="exp-icon-card" viewBox="0 0 64 64">
+            <rect x="6" y="16" width="52" height="34" rx="6" class="exp-ic-fill" />
+            <rect x="6" y="16" width="52" height="34" rx="6" class="exp-ic-stroke" />
+            <path d="M6 27h52" class="exp-ic-stroke" />
+            <path d="M14 39h12" class="exp-ic-stroke" />
+        </symbol>
         <symbol id="exp-icon-hourglass" viewBox="0 0 64 64">
             <path d="M18 8h28M18 56h28" class="exp-ic-stroke exp-ic-thick" />
             <path d="M20 8c0 14 12 16 12 24 0-8 12-10 12-24" class="exp-ic-fill" />
             <path d="M20 8c0 14 12 16 12 24 0-8 12-10 12-24M20 56c0-14 12-16 12-24 0 8 12 10 12 24" class="exp-ic-stroke" />
         </symbol>
-        <symbol id="exp-icon-chair" viewBox="0 0 64 64">
-            <circle cx="32" cy="16" r="8" class="exp-ic-fill" />
-            <circle cx="32" cy="16" r="8" class="exp-ic-stroke" />
-            <path d="M32 26v14" class="exp-ic-stroke exp-ic-thick" />
-            <path d="M18 40h28M22 40v14M42 40v14" class="exp-ic-stroke" />
-            <path d="M32 40l10 8" class="exp-ic-stroke" />
+        <!-- A speech bubble with a mic in it: the resale tip is about spotting a specific
+             message in a busy chat, and the 🎙️ convention the copy asks sellers to use. -->
+        <symbol id="exp-icon-resale" viewBox="0 0 64 64">
+            <path d="M12 8h40a8 8 0 0 1 8 8v20a8 8 0 0 1-8 8H28l-11 9v-9h-5a8 8 0 0 1-8-8V16a8 8 0 0 1 8-8z" class="exp-ic-fill" />
+            <path d="M12 8h40a8 8 0 0 1 8 8v20a8 8 0 0 1-8 8H28l-11 9v-9h-5a8 8 0 0 1-8-8V16a8 8 0 0 1 8-8z" class="exp-ic-stroke" />
+            <!-- Sized to clear the bubble's bottom border. At the previous scale the mic's
+                 base sat at y=41 against a border at y=44, and at 3.5 stroke width the two
+                 overlapped — the bubble looked like it was cutting through the mic. -->
+            <rect x="28.5" y="13" width="7" height="12" rx="3.5" class="exp-ic-solid" />
+            <path d="M24 23a8 8 0 0 0 16 0M32 31v4M28 35h8" class="exp-ic-stroke" />
+        </symbol>
+        <!-- A crowd, not a diagram of people. Three solid-bodied figures rather than stick
+             limbs, at three different heights so they overlap into a group with depth, arms
+             thrown up, confetti overhead. Stick figures read as instructional; filled
+             silhouettes read as a room full of people. -->
+        <symbol id="exp-icon-crowd" viewBox="0 0 64 64">
+            <circle cx="9" cy="12" r="2.2" class="exp-ic-solid" />
+            <circle cx="32" cy="6" r="2.2" class="exp-ic-solid" />
+            <circle cx="56" cy="14" r="2.2" class="exp-ic-solid" />
+            <path d="M20 8l2 3M45 9l-2 3" class="exp-ic-stroke" />
+
+            <circle cx="13" cy="31" r="5.5" class="exp-ic-fill" />
+            <circle cx="13" cy="31" r="5.5" class="exp-ic-stroke" />
+            <path d="M5 58v-13a8 8 0 0 1 16 0v13z" class="exp-ic-fill" />
+            <path d="M5 58v-13a8 8 0 0 1 16 0v13z" class="exp-ic-stroke" />
+            <path d="M7 46L2 36" class="exp-ic-stroke" />
+
+            <circle cx="32" cy="24" r="6" class="exp-ic-fill" />
+            <circle cx="32" cy="24" r="6" class="exp-ic-stroke" />
+            <path d="M23 58v-16a9 9 0 0 1 18 0v16z" class="exp-ic-fill" />
+            <path d="M23 58v-16a9 9 0 0 1 18 0v16z" class="exp-ic-stroke" />
+            <path d="M25 41l-3-10M39 41l3-10" class="exp-ic-stroke" />
+
+            <circle cx="51" cy="31" r="5.5" class="exp-ic-fill" />
+            <circle cx="51" cy="31" r="5.5" class="exp-ic-stroke" />
+            <path d="M43 58v-13a8 8 0 0 1 16 0v13z" class="exp-ic-fill" />
+            <path d="M43 58v-13a8 8 0 0 1 16 0v13z" class="exp-ic-stroke" />
+            <path d="M57 46l5-10" class="exp-ic-stroke" />
+        </symbol>
+        <!-- Single-colour glyph (currentColor), not the two-tone brand mark: on a coloured
+             button the mark's own green bubble vanishes into the background, and a white
+             disc behind it read as a sticker. A solid silhouette is also how WhatsApp's
+             own buttons show it. -->
+        <symbol id="exp-icon-whatsapp" viewBox="0 0 24 24">
+            <path
+                fill="currentColor"
+                d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0 0 20.465 3.488"
+            />
         </symbol>
     </defs>
 </svg>
 
-<main class="exp-layout" dir="rtl" lang="he">
+<main class="exp-layout" dir="{{ text_dir }}" lang="{{ lang }}">
     <header class="exp-hero">
+        <div class="exp-hero-media"></div>
+        <!-- A plain link, not a control: no JS on this page, and a GET the browser can
+             bookmark and share is the honest way to express "same page, other language".
+             Sits in the corner opposite the logo, which is pinned to inline-start. -->
+        <a class="exp-lang-toggle" href="?lang={{ other_lang }}" hreflang="{{ other_lang }}">
+            {{ other_lang_label }}
+        </a>
+        <!-- Outside .exp-hero-content so it pins to the photo's corner, not to the
+             centred text column. -->
         <div class="exp-logo-wrapper">
             <img src="{% bwt_small_logo %}" alt="Broadway With a Twist" class="exp-logo" />
         </div>
-        <p class="exp-hero-eyebrow">מדריך מהיר</p>
-        <h1>איך משיגים כרטיס זמר/ת?</h1>
-        <p class="exp-hero-description">
-            כרטיסי הזמרים נחטפים במהירות מטורפת. הנה כל הטיפים שיעזרו לכם לתפוס אחד — בקריאה של דקה.
-        </p>
-
-        <div class="exp-stat-strip">
-            <div class="exp-stat">
-                <span class="exp-stat-value">&lt; דקה</span>
-                <span class="exp-stat-label">וכל הכרטיסים אזלו</span>
-            </div>
-            <div class="exp-stat">
-                <span class="exp-stat-value">20:00–20:30</span>
-                <span class="exp-stat-label">שעת פתיחת המכירה</span>
-            </div>
-            <div class="exp-stat">
-                <span class="exp-stat-value">אירוע אחד</span>
-                <span class="exp-stat-label">בחרו מראש ולכו עליו</span>
-            </div>
+        <div class="exp-hero-content">
+            <!-- No slogan: readers arrive from the WhatsApp message already sold, so the
+                 hero just answers the question they clicked on. -->
+            <h1>{{ t.b01 }}</h1>
         </div>
     </header>
 
-    <section class="exp-headline-card" aria-label="הדבר הכי חשוב">
-        <span class="exp-headline-emoji" aria-hidden="true">⚡</span>
-        <p class="exp-headline-text">
-            השורה התחתונה: תהיו <strong>מוכנים ליד המסך</strong> לפני 20:00, ותכנסו
-            <strong>ברגע</strong> שהמכירה נפתחת. כל שנייה נחשבת.
-        </p>
+    <!-- Want, why, and the turn — two lines, so the numbered cards are reachable almost
+         without scrolling. The scarcity appears inside the same sentence as its answer
+         (כי...אבל), which is the only form it may take above the guide. -->
+    <section class="exp-intro" aria-label="Why a singer ticket">
+        <p>{{ t.b02 }}</p>
+        <p class="exp-intro-turn">{{ t.b03 }}</p>
     </section>
 
-    <ol class="exp-tips">
-        <li class="exp-tip">
-            <div class="exp-tip-number" aria-hidden="true">1</div>
-            <div class="exp-tip-art">
-                <svg class="exp-icon" aria-hidden="true"><use href="#exp-icon-stopwatch"></use></svg>
-            </div>
-            <div class="exp-tip-body">
-                <h2>תהיו ״על זה״</h2>
-                <p>
-                    כרטיסי הזמרים לכל אירועי החודש אוזלים תוך <strong>פחות מדקה</strong> (!!) מרגע שפותחים
-                    את המכירה. חכו ליד הטלפון או המחשב — מה שאתם מהירים איתו יותר — והיכנסו מיד.
-                </p>
-                <p class="exp-tip-note">
-                    המכירה נפתחת בין 20:00 ל־20:30, בדרך כלל קרוב ל־20:00. אבל באמת תלוי בהירדמות של אדם שלנו 😴
-                </p>
+    <!-- The two things, numbered so the promise above is visibly kept. They are siblings
+         on purpose — a reader should be able to count them without reading them. -->
+    <ol class="exp-things">
+        <li class="exp-thing">
+            <span class="exp-thing-num" aria-hidden="true">1</span>
+            <!-- Payoff in the heading, mechanism in the body: the rule change is the
+                 reason, but "your odds went up" is what has to land on sight. -->
+            <div class="exp-thing-body">
+                <h2>{{ t.b04 }}</h2>
+                <p>{{ t.b05 }}</p>
             </div>
         </li>
 
-        <li class="exp-tip">
-            <div class="exp-tip-number" aria-hidden="true">2</div>
-            <div class="exp-tip-art">
-                <svg class="exp-icon" aria-hidden="true"><use href="#exp-icon-target"></use></svg>
-            </div>
-            <div class="exp-tip-body">
-                <h2>תבחרו אירוע אחד מראש</h2>
-                <p>
-                    רוב הסיכויים שתצליחו להשיג כרטיס זמר/ת רק לאירוע אחד. תחליטו מראש על מי אתם הולכים,
-                    ותיכנסו ישר אליו — בלי להתלבט תוך כדי.
-                </p>
-            </div>
-        </li>
-
-        <li class="exp-tip">
-            <div class="exp-tip-number" aria-hidden="true">3</div>
-            <div class="exp-tip-art">
-                <svg class="exp-icon" aria-hidden="true"><use href="#exp-icon-refresh"></use></svg>
-            </div>
-            <div class="exp-tip-body">
-                <h2>תפתחו את האתר מראש, ותרעננו</h2>
-                <p>
-                    פתחו את אתר הכרטיסים קצת לפני (הלינק בתיאור הקבוצה), וכשההודעה מגיעה —
-                    <strong>רעננו את הדף</strong> במקום ללחוץ על הלינק שבהודעה.
-                </p>
-                <p class="exp-tip-note">
-                    ואם יש לכם סבלנות: אפשר להתחיל לרענן עוד לפני שההודעה מגיעה. עוברות כמה שניות בין הרגע
-                    שהתאריכים עולים לאתר לבין שליחת ההודעה — אם תתפסו את הרגע הזה, תקנו לפני כולם 💨
-                </p>
-            </div>
-        </li>
-
-        <li class="exp-tip exp-tip--flow">
-            <div class="exp-tip-number" aria-hidden="true">4</div>
-            <div class="exp-tip-art">
-                <svg class="exp-icon" aria-hidden="true"><use href="#exp-icon-card"></use></svg>
-            </div>
-            <div class="exp-tip-body">
-                <h2>הכרטיס שלכם רק בשלב האשראי</h2>
-                <p>
-                    הכרטיסים באמת נשמרים לכם רק כשמגיעים <strong>לשלב פרטי האשראי</strong> — כלומר אחרי
-                    הפרטים האישיים. אז את הפרטים האישיים ממלאים מהר, ואת האשראי כבר אפשר ברוגע.
-                </p>
-
-                <div class="exp-flow" role="img" aria-label="שלב ראשון: פרטים אישיים - למלא מהר. שלב שני: פרטי אשראי - אפשר ברוגע">
-                    <div class="exp-flow-step exp-flow-step--fast">
-                        <span class="exp-flow-emoji" aria-hidden="true">🏃</span>
-                        <span class="exp-flow-title">פרטים אישיים</span>
-                        <span class="exp-flow-tag">מהר מהר!</span>
-                    </div>
-                    <div class="exp-flow-arrow" aria-hidden="true">←</div>
-                    <div class="exp-flow-step exp-flow-step--calm">
-                        <span class="exp-flow-emoji" aria-hidden="true">☕</span>
-                        <span class="exp-flow-title">פרטי אשראי</span>
-                        <span class="exp-flow-tag">עכשיו ברוגע</span>
-                    </div>
-                </div>
-
-                <p class="exp-tip-note">
-                    אם הכרטיסים נגמרו לפני שסיימתם את הפרטים האישיים — תראו הודעת שגיאה ולא תוכלו להמשיך.
-                    <br />
-                    התעלמו מהשעון שאומר שהכרטיסים שמורים ל־10 דקות: הוא תקף רק אחרי שמגיעים לפרטי האשראי.
-                </p>
-            </div>
-        </li>
-
-        <li class="exp-tip">
-            <div class="exp-tip-number" aria-hidden="true">5</div>
-            <div class="exp-tip-art">
-                <svg class="exp-icon" aria-hidden="true"><use href="#exp-icon-skip"></use></svg>
-            </div>
-            <div class="exp-tip-body">
-                <h2>דלגו על ״חוגגים משהו אצלנו״</h2>
-                <p>
-                    כל שנייה בפרטים האישיים עולה לכם בכרטיס, אז <strong>אל תמלאו</strong> את התיבה הזאת —
-                    אחרת אתם עלולים להפסיד אותו. (לצערנו עוד לא מצאנו לזה פתרון)
-                </p>
-                <p class="exp-tip-note">
-                    תמיד אפשר להוסיף את סיבת החגיגה בהזמנה אחרת, או פשוט לשלוח לנו הודעה — רק תגידו לנו
-                    את השם של מי שחוגג/ת :)
-                </p>
-            </div>
-        </li>
-
-        <li class="exp-tip exp-tip--highlight">
-            <div class="exp-tip-number" aria-hidden="true">6</div>
-            <div class="exp-tip-art">
-                <svg class="exp-icon" aria-hidden="true"><use href="#exp-icon-practice"></use></svg>
-            </div>
-            <div class="exp-tip-body">
-                <h2>אפשר להתאמן מראש! 🏋️</h2>
-                <p>
-                    הכנו לכם דף אירוע <strong>מזויף לגמרי</strong> שעובד בדיוק כמו אירוע אמיתי. תוכלו להתנסות
-                    במערכת ולראות כמה מהר אתם מצליחים להזמין. אין צורך באמת להזמין — החלק הקריטי הוא להגיע
-                    כמה שיותר מהר לאזור פרטי האשראי.
-                </p>
-                <p>
-                    <strong>והכי חשוב:</strong> תכניסו שם את הפרטים, כדי שהדפדפן שלכם כבר יזכור וימלא אותם
-                    אוטומטית ביום המכירה. זה מאוד תלוי דפדפן ומכשיר — אז כדאי לנסות כמה פעמים ולוודא שזה עובד לכם.
-                </p>
-                <a
-                    class="exp-cta"
-                    href="{{ practice_url }}"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                >
-                    לדף האימון (מזויף) →
-                </a>
-                <p class="exp-tip-note">
-                    שימו לב: זו סימולציה של דף של <strong>אירוע ספציפי</strong>, ולא הדף שמרכז את כל האירועים.
-                    הלינק לדף המרכז נמצא בתיאור הקבוצה, ומשם נכנסים לכל אירוע.
-                </p>
-            </div>
-        </li>
-
-        <li class="exp-tip">
-            <div class="exp-tip-number" aria-hidden="true">7</div>
-            <div class="exp-tip-art">
-                <svg class="exp-icon" aria-hidden="true"><use href="#exp-icon-hourglass"></use></svg>
-            </div>
-            <div class="exp-tip-body">
-                <h2>תנסו שוב אחרי כמה דקות</h2>
-                <p>
-                    למי שהגיע לשלב פרטי האשראי, הכרטיסים נשמרים 10 דקות. אז אם <strong>תנסו שוב קצת יותר
-                    מאוחר</strong>, ייתכן שישתחררו כרטיסי זמרים של אנשים שוויתרו.
-                </p>
+        <!-- This one also carries what used to be a separate "it is a fair race" block:
+             claiming fairness denies an accusation most readers never made, and reads as
+             policing the regulars, who also read this page. The version that does the same
+             job without either cost is "it is not luck and not a club — it is knowing the
+             moves, and they are all here". -->
+        <!-- The regulars' advantage is experience, and this page levels it by publishing
+             what they know. That reasoning stays ours — saying it out loud would frame
+             them as an in-group, and they read this page too. What carries it instead is
+             "whoever applies all of them": the edge is available to anyone willing to do
+             the work, and it quietly implies most people will not. -->
+        <li class="exp-thing">
+            <span class="exp-thing-num" aria-hidden="true">2</span>
+            <div class="exp-thing-body">
+                <h2>{{ t.b06 }}</h2>
+                <p>{{ t.b07 }}</p>
+                <p>{{ t.b08 }}</p>
             </div>
         </li>
     </ol>
 
-    <section class="exp-fallback" aria-label="לא הצלחתם?">
-        <div class="exp-fallback-art">
-            <svg class="exp-icon" aria-hidden="true"><use href="#exp-icon-chair"></use></svg>
+    <!-- One flat guide, not three phase-grouped sections: the three-phase split was
+         imposing structure the content did not need. Order follows the original WhatsApp
+         checklist. The head below is the one thing still missing real copy — it is the
+         only line whose entire job is "the guide starts here", so it can't be lifted from
+         the WhatsApp text like everything else. -->
+    <section class="exp-guide" aria-labelledby="exp-guide-heading">
+        <div class="exp-guide-head">
+            <p class="exp-guide-eyebrow">{{ t.b09 }}</p>
+            <h2 id="exp-guide-heading">{{ t.b10 }}</h2>
         </div>
-        <div class="exp-fallback-body">
-            <h2>לא הצלחתם הפעם? ממש לא נורא 🤩</h2>
-            <p>
-                אתם לא צריכים לוותר על ערב בלתי נשכח! ממש כיף לשיר מהכיסא עם כרטיסי קהל, וגם איתם יש לכם
-                דרכים לעלות לבמה 😉
-            </p>
-            <p class="exp-tip-note">
-                הכרטיסים האלה אוזלים לאט יותר — אבל לא היינו מתעכבים יותר מדי...
-            </p>
+
+        <ul class="exp-steps">
+            <li class="exp-step">
+                <span class="exp-step-num" aria-hidden="true">1</span>
+                <div class="exp-step-art">
+                    <svg class="exp-icon" aria-hidden="true"><use href="#exp-icon-bell"></use></svg>
+                </div>
+                <div class="exp-step-body">
+                    <h3>{{ t.b11 }}</h3>
+                    <p>{{ t.b12 }}</p>
+                    <a class="exp-cta exp-cta--whatsapp" href="{{ whatsapp_group_url }}" target="_blank" rel="noopener noreferrer">{{ t.b13 }}</a>
+                </div>
+            </li>
+
+            <li class="exp-step">
+                <span class="exp-step-num" aria-hidden="true">2</span>
+                <div class="exp-step-art">
+                    <svg class="exp-icon" aria-hidden="true"><use href="#exp-icon-stopwatch"></use></svg>
+                </div>
+                <div class="exp-step-body">
+                    <h3>{{ t.b14 }}</h3>
+                    <p>{{ t.b15 }}</p>
+                    <!-- The one hard, actionable fact in this step: when to be ready. As an
+                         .exp-note it read as a footnote you could skip. The joke keeps its
+                         lighter weight underneath, where it belongs. -->
+                    <div class="exp-callout">
+                        <span class="exp-callout-emoji" aria-hidden="true">🕗</span>
+                        <p>{{ t.b16 }}</p>
+                    </div>
+                </div>
+            </li>
+
+            <li class="exp-step">
+                <span class="exp-step-num" aria-hidden="true">3</span>
+                <div class="exp-step-art">
+                    <svg class="exp-icon" aria-hidden="true"><use href="#exp-icon-target"></use></svg>
+                </div>
+                <div class="exp-step-body">
+                    <h3>{{ t.b17 }}</h3>
+                    <p>{{ t.b18 }}</p>
+                </div>
+            </li>
+
+            <!-- Split out of what used to be one step: "open the page early" is setup a
+                 reader does now, the refresh trick is what they do at the moment of the
+                 sale. Together they were one heading carrying two instructions and two
+                 parentheticals. -->
+            <li class="exp-step">
+                <span class="exp-step-num" aria-hidden="true">4</span>
+                <div class="exp-step-art">
+                    <svg class="exp-icon" aria-hidden="true"><use href="#exp-icon-bookmark"></use></svg>
+                </div>
+                <div class="exp-step-body">
+                    <h3>{{ t.b19 }}</h3>
+                    <p>{{ t.b20 }}</p>
+                    <p>{{ t.b21 }}</p>
+                    <a class="exp-cta exp-cta--ghost" href="{{ all_events_url }}" target="_blank" rel="noopener noreferrer">{{ t.b22 }}</a>
+                </div>
+            </li>
+
+            <li class="exp-step">
+                <span class="exp-step-num" aria-hidden="true">5</span>
+                <div class="exp-step-art">
+                    <svg class="exp-icon" aria-hidden="true"><use href="#exp-icon-refresh"></use></svg>
+                </div>
+                <div class="exp-step-body">
+                    <h3>{{ t.b23 }}</h3>
+                    <p>{{ t.b24 }}</p>
+                    <div class="exp-callout">
+                        <span class="exp-callout-emoji" aria-hidden="true">💨</span>
+                        <p>{{ t.b25 }}</p>
+                    </div>
+                </div>
+            </li>
+
+            <li class="exp-step">
+                <span class="exp-step-num" aria-hidden="true">6</span>
+                <div class="exp-step-art">
+                    <svg class="exp-icon" aria-hidden="true"><use href="#exp-icon-card"></use></svg>
+                </div>
+                <div class="exp-step-body">
+                    <h3>{{ t.b26 }}</h3>
+                    <p>{{ t.b27 }}</p>
+
+                    <div class="exp-flow" role="img" aria-label="{{ t.b59 }}">
+                        <div class="exp-flow-step exp-flow-step--fast">
+                            <span class="exp-flow-emoji" aria-hidden="true">🏃</span>
+                            <span class="exp-flow-title">{{ t.b28 }}</span>
+                            <span class="exp-flow-tag">{{ t.b29 }}</span>
+                        </div>
+                        <div class="exp-flow-arrow" aria-hidden="true">←</div>
+                        <div class="exp-flow-step exp-flow-step--calm">
+                            <span class="exp-flow-emoji" aria-hidden="true">☕</span>
+                            <span class="exp-flow-title">{{ t.b30 }}</span>
+                            <span class="exp-flow-tag">{{ t.b31 }}</span>
+                        </div>
+                    </div>
+
+                    <p class="exp-note">{{ t.b32 }}</p>
+                </div>
+            </li>
+
+            <!-- Deliberately mirrors the step below it: same "here is a good thing, just
+                 not during this order" shape, same quoted-objection note. The two are the
+                 only places the guide asks the reader NOT to do something, so they read as
+                 a pair rather than as nagging. -->
+            <li class="exp-step">
+                <span class="exp-step-num" aria-hidden="true">7</span>
+                <div class="exp-step-art">
+                    <svg class="exp-icon" aria-hidden="true"><use href="#exp-icon-audience"></use></svg>
+                </div>
+                <div class="exp-step-body">
+                    <h3>{{ t.b33 }}</h3>
+                    <p>{{ t.b34 }}</p>
+                    <p class="exp-note">{{ t.b35 }}</p>
+                </div>
+            </li>
+
+            <li class="exp-step">
+                <span class="exp-step-num" aria-hidden="true">8</span>
+                <div class="exp-step-art">
+                    <svg class="exp-icon" aria-hidden="true"><use href="#exp-icon-celebrate"></use></svg>
+                </div>
+                <div class="exp-step-body">
+                    <h3>{{ t.b36 }}</h3>
+                    <!-- Instruction first, and what the box actually does demoted to a
+                         parenthetical: this step is not the place to sell the feature, so
+                         explaining it up front buried the one thing the reader needs here.
+                         Deliberately no "you'll lose the ticket" — the consequence is already
+                         obvious from the step above, and repeating it here just makes a
+                         friendly feature sound like a trap. -->
+                    <p>{{ t.b37 }}</p>
+                    <!-- The reader's own objection, quoted and answered on the spot — the same
+                         device the top of the page uses for the scarcity line. -->
+                    <p class="exp-note">{{ t.b38 }}</p>
+                </div>
+            </li>
+
+            <li class="exp-step">
+                <span class="exp-step-num" aria-hidden="true">9</span>
+                <div class="exp-step-art">
+                    <svg class="exp-icon" aria-hidden="true"><use href="#exp-icon-practice"></use></svg>
+                </div>
+                <div class="exp-step-body">
+                    <h3>{{ t.b39 }}</h3>
+                    <p>{{ t.b40 }}</p>
+                    <p>{{ t.b41 }}</p>
+                    <a class="exp-cta" href="{{ practice_url }}" target="_blank" rel="noopener noreferrer">{{ t.b42 }}</a>
+                    <!-- Points at the all-events page by link rather than by describing where
+                         to find it — the WhatsApp-group-description route was written for a
+                         chat message and is meaningless once the link is right here. -->
+                    <p class="exp-note">{{ t.b43 }}</p>
+                </div>
+            </li>
+
+            <li class="exp-step">
+                <span class="exp-step-num" aria-hidden="true">10</span>
+                <div class="exp-step-art">
+                    <svg class="exp-icon" aria-hidden="true"><use href="#exp-icon-hourglass"></use></svg>
+                </div>
+                <div class="exp-step-body">
+                    <!-- The second chance is the point, so it lands before the mechanism that
+                         explains it. Deliberately does not open with "לא הצלחתם?" — the
+                         fallback box right below already opens that way. -->
+                    <h3>{{ t.b44 }}</h3>
+                    <p>{{ t.b45 }}</p>
+                </div>
+            </li>
+        </ul>
+
+        <div class="exp-fallback">
+            <div class="exp-fallback-art">
+                <svg class="exp-icon" aria-hidden="true"><use href="#exp-icon-crowd"></use></svg>
+            </div>
+            <!-- Deliberately last. -->
+            <div class="exp-fallback-body">
+                <h2>{{ t.b46 }}</h2>
+                <p>{{ t.b47 }}</p>
+                <!-- Both routes to the stage as a matched pair. They are the same promise
+                     ("you can still get up there") and both are real ways in, so neither
+                     gets demoted to an aside — the lead line counts them so the reader knows
+                     to expect two. -->
+                <div class="exp-fallback-star">
+                    <p>{{ t.b48 }}</p>
+                    <ul>
+                        <li>{{ t.b49 }}</li>
+                        <li>{{ t.b50 }}</li>
+                    </ul>
+                </div>
+                <p class="exp-note">{{ t.b51 }}</p>
+            </div>
+        </div>
+
+        <!-- Unnumbered on purpose: the ten steps are one sequence you work through on sale
+             night, and this is a separate route in that does not depend on the sale at all.
+             Numbering it would imply it is step 11 of the same run. Last on the page because
+             it is also the last thing chronologically — days after the sale, right up to the
+             night itself. -->
+        <div class="exp-step exp-step--extra">
+            <div class="exp-step-art">
+                <svg class="exp-icon" aria-hidden="true"><use href="#exp-icon-resale"></use></svg>
+            </div>
+            <div class="exp-step-body">
+                <h3>{{ t.b52 }}</h3>
+                <p>{{ t.b53 }}</p>
+                <p>{{ t.b54 }}</p>
+                <a class="exp-cta exp-cta--whatsapp" href="{{ community_group_url }}" target="_blank" rel="noopener noreferrer">{{ t.b55 }}</a>
+                <p class="exp-note">{{ t.b56 }}</p>
+            </div>
         </div>
     </section>
 
-    <p class="exp-footer-note">נתראה על הבמה! 🎤</p>
+    <!-- Sign-off deliberately does not promise the stage: plenty of readers will end the
+         night in a seat, and the fallback right above just spent its whole length telling
+         them that is a good night too. -->
+    <p class="exp-footer-note">{{ t.b57 }}</p>
+    <p class="exp-signature">{{ t.b58 }}</p>
 </main>
+
 {% endblock %}

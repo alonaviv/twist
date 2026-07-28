@@ -10,6 +10,30 @@ main.exp-layout {
 
 @import "config";
 
+/* Where the accent is allowed to appear. It had drifted into decoration — five
+   different accent borders (1px, 2px, 2px dashed, 3px and 4px inline-start rules)
+   meaning five different things — which is what made the page look arbitrary. The
+   rule now is that accent green means "look here", in exactly three forms:
+
+     1. Emphasis in running text — bold accent, no box.
+     2. Interactive — bold accent + underline for inline links, accent fill for
+        buttons.
+     3. Boxed emphasis — soft accent fill + 2px solid accent border. This is the ONLY
+        accent box on the page, used by the two opening cards, the callouts inside
+        steps, and the closing fallback.
+
+   Asides (.exp-note) get a deliberately muted version of form 3 — same hue, roughly half
+   strength — so they belong to the system without competing with a real accent box.
+
+   The checkout-flow diagram is the one place with its own colour pair — --exp-warn for the
+   half you sprint through, --exp-calm for the half you don't. It is comparing two things
+   to each other, not flagging one for attention, so the accent has no business in it.
+
+   Two accent marks sit outside these forms because they label rather than decorate: the
+   rule on .exp-guide-head (the single "the guide starts here" break) and the .exp-step-num
+   circles. Everything else structural stays neutral — step cards use --exp-border — so the
+   accent never competes with itself. */
+
 .exp-layout {
     // Same palette as the People's Choice page, so the two pages read as one family.
     --exp-bg-top: #2a3a5a;
@@ -21,11 +45,17 @@ main.exp-layout {
     --exp-accent: #{$primary-color};
     --exp-accent-soft: rgba(0, 197, 117, 0.16);
     --exp-warn: #{$third-color};
+    // Only used by the checkout-flow diagram, as the counterpart to --exp-warn.
+    --exp-calm: #6ec6ff;
     --exp-border: rgba(255, 255, 255, 0.15);
     --exp-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+    --exp-width: 680px;
+    // Tracked as vars so the hero can bleed past them to the screen edges.
+    --exp-pad-x: 1.25rem;
+    --exp-pad-top: 1.5rem;
 
     min-height: 100vh;
-    padding: 1.5rem 1.25rem 4rem;
+    padding: var(--exp-pad-top) var(--exp-pad-x) 4rem;
     background: radial-gradient(circle at top, var(--exp-bg-top), var(--exp-bg-bottom) 60%);
     color: var(--exp-text-primary);
     font-family: "Heebo", "Roboto", sans-serif;
@@ -66,137 +96,160 @@ main.exp-layout {
     fill: var(--exp-accent);
 }
 
-.exp-ic-danger {
-    stroke: #ff6b6b;
-}
-
-/* ---------- Hero ---------- */
+/* ---------- Hero: full-bleed photo, tagline over it ---------- */
 
 .exp-hero {
+    position: relative;
+    // Bleeds past the layout padding to the screen edges. Small bottom margin because the
+    // mask already fades the last stretch of the banner out — the transparent tail reads
+    // as space, so a full gap on top of it left the intro stranded.
+    margin: calc(var(--exp-pad-top) * -1) calc(var(--exp-pad-x) * -1) 0.75rem;
+    // No min-height: the content sets the height, so there is never leftover
+    // photo above the tagline.
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    overflow: hidden;
     text-align: center;
-    margin: 1.25rem auto 2rem;
-    max-width: 680px;
 }
 
+.exp-hero-media {
+    position: absolute;
+    inset: 0;
+    background-color: #0d141f;
+    background-image: url("../img/main/stage-mic.jpg");
+    // The file itself is cropped to the mic and its bokeh, so plain centring works
+    // at any container shape.
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+
+    // Dissolve the photo into the page rather than ending it on an edge. The scrim used
+    // to finish on --exp-bg-bottom, but the page directly below the hero is still near
+    // --exp-bg-top, so the two met on a visible line. Masking sidesteps colour-matching
+    // entirely: the photo fades to nothing and whatever the page gradient is doing behind
+    // it shows through. The mask takes the ::after scrim with it, so both fade together.
+    // The fade starts late and runs short: held higher up it ate the photo and left the
+    // headline sitting on a large field of empty page blue.
+    -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 88%, transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 0%, #000 88%, transparent 100%);
+
+    // Scrim: light at the top so the photo stays a photo, deeper lower down so the logo
+    // and headline hold up against it.
+    &::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+            to bottom,
+            rgba(13, 20, 31, 0.25) 0%,
+            rgba(13, 20, 31, 0.2) 35%,
+            rgba(13, 20, 31, 0.6) 100%
+        );
+    }
+}
+
+.exp-hero-content {
+    position: relative;
+    z-index: 1;
+    max-width: var(--exp-width);
+    // Top padding stands in for the logo that used to sit in the flow here, so the
+    // photo still gets room to read before the text starts. Don't trim this to close the
+    // gap below the hero — that gap is .exp-hero's bottom margin; cutting here just
+    // shortens the banner and crowds the headline up against the logo.
+    padding: 5.5rem var(--exp-pad-x) 1.75rem;
+}
+
+// Parked in the corner: centred, it landed straight on the microphone head.
+// Physical `right`, not inset-inline-start: logical properties flip with the page
+// direction, so the logo and the language toggle swapped sides together and collided. The
+// logo lives on the right and the toggle on the left in both languages.
 .exp-logo-wrapper {
-    margin-bottom: 1.25rem;
-    display: flex;
-    justify-content: center;
+    position: absolute;
+    z-index: 2;
+    top: 0.9rem;
+    right: 0.9rem;
 }
 
 .exp-logo {
-    max-width: 110px;
+    max-width: 56px;
     height: auto;
-    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+    filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.6));
 }
 
-.exp-hero-eyebrow {
-    text-transform: uppercase;
-    letter-spacing: 0.25rem;
-    color: var(--exp-accent);
-    font-size: 0.78rem;
+// Always the left corner, mirroring the logo's fixed right one — see the note there.
+// A ghost pill rather than a filled button on purpose: it is the one control on the page
+// that is not part of getting a ticket, so it should be findable without competing with
+// the CTAs below.
+.exp-lang-toggle {
+    position: absolute;
+    z-index: 2;
+    top: 1rem;
+    left: 1rem;
+    padding: 0.3rem 0.85rem;
+    border-radius: 999px;
+    border: 1.5px solid rgba(255, 255, 255, 0.55);
+    background: rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(4px);
+    color: #fff;
+    font-size: 0.85rem;
     font-weight: 600;
-    margin-bottom: 0.6rem;
+    line-height: 1.4;
+    // The label is always in the language it switches to, so it must not inherit the
+    // page's direction.
+    direction: ltr;
+    unicode-bidi: isolate;
+
+    &:hover {
+        border-color: #fff;
+        background: rgba(0, 0, 0, 0.5);
+    }
 }
 
+// Carries the whole question, not a slogan, so it runs longer than a headline would.
 .exp-hero h1 {
-    font-size: clamp(1.9rem, 7vw, 2.9rem);
-    line-height: 1.2;
+    font-size: clamp(1.6rem, 6vw, 2.3rem);
+    line-height: 1.15;
     margin-bottom: 0.75rem;
+    text-shadow: 0 4px 18px rgba(0, 0, 0, 0.7);
 }
 
-.exp-hero-description {
-    color: var(--exp-text-secondary);
-    font-size: 1.05rem;
+/* ---------- Intro: want, why, and the turn ---------- */
+
+.exp-intro {
+    // Narrower than the cards below on purpose: centred text only reads as centred at a
+    // short measure. At the full 680px the lines break at arbitrary points and the block
+    // looks lopsided rather than balanced.
     max-width: 34rem;
-    margin: 0 auto;
-}
+    margin: 0 auto 1.5rem;
+    text-align: center;
+    text-wrap: balance;
 
-.exp-stat-strip {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 0.6rem;
-    margin-top: 1.5rem;
-}
-
-.exp-stat {
-    flex: 1 1 8.5rem;
-    max-width: 12rem;
-    padding: 0.7rem 0.6rem;
-    border-radius: 1rem;
-    background: var(--exp-card);
-    border: 1px solid var(--exp-border);
-    box-shadow: var(--exp-shadow);
-    display: flex;
-    flex-direction: column;
-    gap: 0.15rem;
-}
-
-.exp-stat-value {
-    font-size: 1.15rem;
-    font-weight: 700;
-    color: var(--exp-accent);
-    line-height: 1.3;
-}
-
-.exp-stat-label {
-    font-size: 0.82rem;
-    color: var(--exp-text-secondary);
-    line-height: 1.35;
-}
-
-/* ---------- The one big takeaway ---------- */
-
-.exp-headline-card {
-    max-width: 680px;
-    margin: 0 auto 2.5rem;
-    padding: 1.1rem 1.25rem;
-    border-radius: 1.25rem;
-    background: var(--exp-accent-soft);
-    border: 2px solid var(--exp-accent);
-    box-shadow: 0 4px 16px rgba(0, 197, 117, 0.2);
-    display: flex;
-    align-items: center;
-    gap: 0.9rem;
-}
-
-.exp-headline-emoji {
-    font-size: 2rem;
-    line-height: 1;
-    flex-shrink: 0;
-    animation: exp-zap 2.4s infinite ease-in-out;
-}
-
-@keyframes exp-zap {
-    0%,
-    100% {
-        transform: scale(1) rotate(0deg);
+    // The lede. Bigger than body copy because it is the one line that has to make someone
+    // want this before they are asked to work for it.
+    p {
+        font-size: 1.25rem;
+        line-height: 1.6;
     }
 
-    8% {
-        transform: scale(1.18) rotate(-8deg);
-    }
-
-    16% {
-        transform: scale(1) rotate(0deg);
-    }
-}
-
-.exp-headline-text {
-    font-size: 1.05rem;
-
-    strong {
-        color: var(--exp-accent);
+    // The pivot into the two cards. Bigger than the lede and accent-coloured, so the good
+    // news outweighs the scarcity line it answers rather than just contrasting with it.
+    .exp-intro-turn {
+        margin-top: 1.1rem;
+        font-size: 1.4rem;
         font-weight: 700;
+        line-height: 1.4;
+        color: var(--exp-accent);
     }
 }
 
-/* ---------- Tips ---------- */
+/* ---------- The two things you should know ----------
+   Numbered and visually parallel, so the "יש 2 דברים" promise above is kept on sight
+   rather than only on reading. */
 
-.exp-tips {
-    max-width: 680px;
-    margin: 0 auto;
+.exp-things {
+    max-width: var(--exp-width);
+    margin: 0 auto 1.75rem;
     padding: 0;
     list-style: none;
     display: flex;
@@ -204,60 +257,156 @@ main.exp-layout {
     gap: 1rem;
 }
 
-.exp-tip {
+// Both cards share one look on purpose: the two messages are equally load-bearing (the
+// rule change and the reader's own effort), so neither card should read as the sidekick.
+.exp-thing {
+    padding: 1.25rem;
+    border-radius: 1.25rem;
+    background: var(--exp-accent-soft);
+    border: 2px solid var(--exp-accent);
+    box-shadow: 0 4px 16px rgba(0, 197, 117, 0.2);
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0 0.9rem;
+    align-items: start;
+}
+
+// Identical on both cards on purpose: if the markers differ, they read as two kinds of
+// badge rather than as 1 and 2 of one list. The card fill carries the emphasis instead.
+.exp-thing-num {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 999px;
+    background: var(--exp-accent);
+    color: #fff;
+    font-size: 1.05rem;
+    font-weight: 700;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.exp-thing-body {
+    h2 {
+        font-size: 1.3rem;
+        line-height: 1.3;
+        margin-bottom: 0.5rem;
+    }
+
+    p {
+        font-size: 1.02rem;
+        margin-bottom: 0.5rem;
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+    }
+
+    strong {
+        color: var(--exp-accent);
+        font-weight: 700;
+    }
+}
+
+/* ---------- The guide ---------- */
+
+.exp-guide {
+    max-width: var(--exp-width);
+    margin: 0 auto 2rem;
+}
+
+// Marks "the guide starts here" — the one break in the page that needs to be
+// unmistakable, since everything above led up to it and everything below is the guide.
+.exp-guide-head {
+    margin-bottom: 0.9rem;
+    padding-inline-start: 0.25rem;
+    border-inline-start: 4px solid var(--exp-accent);
+    padding-block: 0.1rem;
+
+    h2 {
+        font-size: 1.4rem;
+        line-height: 1.25;
+        padding-inline-start: 0.5rem;
+    }
+}
+
+.exp-guide-eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.2rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--exp-text-secondary);
+    padding-inline-start: 0.5rem;
+}
+
+.exp-steps {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+// Number and icon are the two flanking columns, so they mirror each other: same box, same
+// top alignment, one at each end of the card. In this RTL layout the first named column
+// resolves to the right, so "art body num" puts the icon on the right.
+.exp-step {
     position: relative;
-    padding: 1.25rem 1.25rem 1.25rem 1.25rem;
-    border-radius: 1.1rem;
+    padding: 1.25rem;
+    // One radius scale: containers 1.25rem, blocks inside them 0.9rem, notes 0.6rem.
+    border-radius: 1.25rem;
     background: var(--exp-card);
     border: 1px solid var(--exp-border);
     box-shadow: var(--exp-shadow);
     display: grid;
-    grid-template-columns: auto 1fr;
-    grid-template-areas:
-        "art body"
-        "art body";
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas: "art body num";
     gap: 0 1rem;
-    transition: transform 0.2s ease, background 0.2s ease;
 
-    &:hover {
-        transform: translateY(-2px);
-        background: var(--exp-card-strong);
-    }
-
-    &.exp-tip--highlight {
-        background: var(--exp-accent-soft);
-        border-color: var(--exp-accent);
+    // Sits outside the numbered run, so it drops the number column entirely rather than
+    // leaving an empty gutter where the numeral would have been.
+    &.exp-step--extra {
+        grid-template-columns: auto 1fr;
+        grid-template-areas: "art body";
+        margin-top: 1rem;
     }
 }
 
-.exp-tip-number {
-    position: absolute;
-    top: -0.7rem;
-    inset-inline-start: -0.5rem;
-    width: 2.1rem;
-    height: 2.1rem;
-    border-radius: 50%;
-    background: var(--exp-accent);
-    color: #fff;
-    font-weight: 700;
-    font-size: 1.05rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-}
-
-.exp-tip-art {
+.exp-step-art {
     grid-area: art;
     width: 3.4rem;
     height: 3.4rem;
     flex-shrink: 0;
 }
 
-.exp-tip-body {
+// Built to match the icon opposite it as closely as a numeral can: identical box, and the
+// same soft-fill-plus-accent-outline treatment the icons use (a circle is one of the icon
+// shapes already), at the same visual stroke weight. Full opacity, since the icons are —
+// a dimmed numeral read as lighter than its counterpart rather than symmetrical with it.
+.exp-step-num {
+    grid-area: num;
+    width: 3.4rem;
+    height: 3.4rem;
+    border-radius: 50%;
+    background: var(--exp-accent-soft);
+    border: 3px solid var(--exp-accent);
+    color: var(--exp-accent);
+    font-size: 1.55rem;
+    font-weight: 700;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+}
+
+.exp-step-body {
     grid-area: body;
 
-    h2 {
+    h3 {
         font-size: 1.2rem;
         line-height: 1.35;
         margin-bottom: 0.4rem;
@@ -277,17 +426,78 @@ main.exp-layout {
         color: var(--exp-accent);
         font-weight: 700;
     }
+
+    // Inline links inside body copy. Underlined because the accent colour alone is
+    // already how every <strong> on the page looks — without the rule they would not
+    // read as clickable.
+    p > a {
+        color: var(--exp-accent);
+        text-decoration: underline;
+        text-underline-offset: 0.2em;
+    }
 }
 
-.exp-tip-note {
-    font-size: 0.9rem;
-    color: var(--exp-text-secondary);
-    border-inline-start: 3px solid var(--exp-border);
-    padding-inline-start: 0.7rem;
+// Secondary, not faded: these carry real information (what the error means, where the
+// link lives) and a reader should be able to take them in without effort. A tinted panel
+// sets them apart from the body copy by grouping rather than by dimming, so the text can
+// stay at near-full contrast.
+.exp-note {
+    font-size: 0.94rem;
+    color: var(--exp-text-primary);
+    // A muted version of the accent rather than plain neutral grey: fully neutral, the
+    // notes read as washed-out next to everything around them. Same hue as the accent
+    // boxes at roughly half strength, so a note is legibly part of the system and still
+    // unmistakably the quieter tier.
+    background: rgba(0, 197, 117, 0.09);
+    border-inline-start: 3px solid rgba(0, 197, 117, 0.55);
+    // Flat against the accent rule, rounded on the far side. Logical corners so this
+    // holds in RTL, where the rule sits on the right.
+    border-start-start-radius: 0;
+    border-end-start-radius: 0;
+    border-start-end-radius: 0.6rem;
+    border-end-end-radius: 0.6rem;
+    padding: 0.6rem 0.8rem;
 
     strong {
+        color: var(--exp-accent);
+    }
+
+    // The reader's own objection, quoted. Deliberately NOT the accent green every other
+    // <strong> uses — this is a different voice, not an emphasised fact, so it gets its
+    // own line and reads as something said rather than something stressed.
+    .exp-quote {
+        display: block;
+        margin-bottom: 0.3rem;
+        font-size: 1.05rem;
+        font-weight: 700;
         color: var(--exp-text-primary);
     }
+}
+
+/* ---------- Inline callout (the refresh instruction) ---------- */
+
+.exp-callout {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin: 0.9rem 0 0.6rem;
+    padding: 0.8rem 0.9rem;
+    border-radius: 0.9rem;
+    // The one accent box, same as .exp-thing and .exp-fallback.
+    background: var(--exp-accent-soft);
+    border: 2px solid var(--exp-accent);
+
+    p {
+        font-size: 0.98rem;
+        font-weight: 600;
+        margin: 0;
+    }
+}
+
+.exp-callout-emoji {
+    font-size: 1.6rem;
+    line-height: 1;
+    flex-shrink: 0;
 }
 
 /* ---------- Checkout flow diagram ---------- */
@@ -310,12 +520,18 @@ main.exp-layout {
     flex-direction: column;
     gap: 0.1rem;
 
+    // The diagram runs on its own two-colour pair, urgent vs calm, and deliberately uses
+    // neither the accent nor plain neutral. Accent green was wrong twice over: it put a
+    // full-strength accent box directly above the green-tinted note, and it means "look
+    // here" on a step that explicitly needs no attention. Dropping to neutral fixed the
+    // clash but read as unstyled. Blue carries "relaxed" on its own and collides with
+    // nothing else on the page.
     &.exp-flow-step--fast {
         border-color: var(--exp-warn);
     }
 
     &.exp-flow-step--calm {
-        border-color: var(--exp-accent);
+        border-color: var(--exp-calm);
     }
 }
 
@@ -339,7 +555,7 @@ main.exp-layout {
     }
 
     .exp-flow-step--calm & {
-        color: var(--exp-accent);
+        color: var(--exp-calm);
         font-weight: 600;
     }
 }
@@ -373,17 +589,48 @@ main.exp-layout {
     &:active {
         transform: translateY(0);
     }
+
+    // Secondary actions, so the practice run stays the loudest button on the page.
+    &.exp-cta--ghost {
+        background: transparent;
+        border: 2px solid var(--exp-accent);
+        color: var(--exp-accent);
+        box-shadow: none;
+    }
+
+    // WhatsApp green at exactly its brand hue (142°), darkened ~15%. Straight #25D366 is
+    // their light-background colour and glared as the highest-luminance thing on a dark
+    // navy page; #128C7E fixed the glare but is from their teal family and stopped reading
+    // as WhatsApp at all. Holding the hue and moving only the lightness keeps the colour
+    // recognisable while letting it sit on this background. Deliberately not the site
+    // accent: two near-identical but mismatched greens looked worse than either alone.
+    &.exp-cta--whatsapp {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.55rem;
+        background: #1fb256;
+        color: #fff;
+    }
+}
+
+// Inherits the button's text colour via currentColor, so the glyph always matches the
+// label rather than fighting the background.
+.exp-cta-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    flex-shrink: 0;
 }
 
 /* ---------- Fallback (audience tickets) ---------- */
 
 .exp-fallback {
-    max-width: 680px;
-    margin: 1.75rem auto 0;
+    max-width: var(--exp-width);
+    margin: 1rem auto 0;
     padding: 1.4rem 1.25rem;
     border-radius: 1.25rem;
-    background: var(--exp-card-strong);
-    border: 2px dashed var(--exp-accent);
+    // Accent box, closing the page the way the two opening cards start it.
+    background: var(--exp-accent-soft);
+    border: 2px solid var(--exp-accent);
     display: flex;
     align-items: flex-start;
     gap: 1rem;
@@ -409,34 +656,131 @@ main.exp-layout {
             margin-bottom: 0;
         }
     }
+
+    // Accent, same as inside .exp-thing — the other accent box with inline emphasis. Only
+    // the boxed raffle panel below inverts; inline <strong> keeps the page-wide treatment.
+    strong {
+        color: var(--exp-accent);
+        font-weight: 700;
+    }
 }
 
+// Emphasis inside an accent box has to invert. Everything around this line is already
+// accent-tinted, so more accent would vanish into it — the contrast has to come from
+// value instead. The raffle is the single most appealing thing an audience ticket buys,
+// and this block only works if that lands.
+.exp-fallback-star {
+    margin: 0.7rem 0 0.6rem;
+    padding: 0.75rem 0.9rem;
+    border-radius: 0.9rem;
+    background: rgba(0, 0, 0, 0.3);
+
+    p {
+        margin: 0 0 0.5rem;
+        font-size: 1.02rem;
+        font-weight: 600;
+    }
+
+    // Both routes share one treatment: they are alternatives, not a headline and a
+    // footnote, so nothing here distinguishes them beyond their own emoji.
+    ul {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 0.45rem;
+    }
+
+    li {
+        display: flex;
+        align-items: baseline;
+        gap: 0.5rem;
+        font-size: 0.98rem;
+    }
+
+    .exp-fallback-star-emoji {
+        font-size: 1.15rem;
+        line-height: 1;
+        flex-shrink: 0;
+    }
+
+    // Optical correction, not a layout fix. 🎤 is a tall narrow glyph centred in a square
+    // em box, so it carries far more side bearing than the die — with an identical gap it
+    // still looked further from its text.
+    .exp-fallback-star-emoji--tight {
+        margin-inline-end: -0.22rem;
+    }
+
+    strong {
+        color: var(--exp-accent);
+        font-weight: 700;
+    }
+}
+
+// The last thing on the page, so it has to land rather than trail off. At body size in
+// secondary grey it read as a caption someone forgot to delete; it is now sized and
+// weighted like a closing line and given room to sit in.
 .exp-footer-note {
     text-align: center;
-    color: var(--exp-text-secondary);
-    font-size: 1rem;
-    margin-top: 2rem;
+    color: var(--exp-accent);
+    font-size: clamp(1.4rem, 5vw, 1.8rem);
+    font-weight: 700;
+    line-height: 1.3;
+    margin-top: 2.75rem;
+}
+
+// Still a step below the sign-off above it — that line is the message, this is who it is
+// from — but at full contrast and close to body size, so it reads as a signature rather
+// than as small print.
+.exp-signature {
+    text-align: center;
+    color: var(--exp-text-primary);
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-top: 0.6rem;
 }
 
 /* ---------- Small screens (most readers arrive from WhatsApp) ---------- */
 
 @media (max-width: 480px) {
     .exp-layout {
-        padding: 1.25rem 0.9rem 3rem;
+        --exp-pad-x: 0.9rem;
+        --exp-pad-top: 1.25rem;
+
+        padding-bottom: 3rem;
     }
 
-    .exp-tip {
-        grid-template-columns: 1fr;
+    // Number and icon keep flanking each other, but on their own row above the text —
+    // three columns leaves too little measure for Hebrew at phone widths.
+    .exp-step {
+        grid-template-columns: auto 1fr;
         grid-template-areas:
-            "art"
-            "body";
+            "art num"
+            "body body";
         gap: 0.5rem;
         padding: 1.4rem 1rem 1.15rem;
+
+        &.exp-step--extra {
+            grid-template-areas:
+                "art art"
+                "body body";
+        }
     }
 
-    .exp-tip-art {
+    .exp-step-art {
         width: 2.9rem;
         height: 2.9rem;
+    }
+
+    .exp-step-num {
+        justify-self: end;
+    }
+
+    .exp-step-num {
+        width: 2.9rem;
+        height: 2.9rem;
+        font-size: 1.35rem;
     }
 
     .exp-flow {
