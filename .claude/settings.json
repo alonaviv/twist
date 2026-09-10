@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '{\"systemMessage\":\"Run the dev server with: /dev-server start   (also: status, stop, restart, logs)\",\"hookSpecificOutput\":{\"hookEventName\":\"SessionStart\",\"additionalContext\":\"Start the twist Django dev server with the dev-server skill (/dev-server start) when the work needs the app running.\"}}'",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}

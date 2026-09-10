@@ -138,3 +138,6 @@ meta_audience_whametrics.csv
 /jmeter/*.jtl
 /jmeter/*_report/
 /jmeter/results-tree
+
+# Personal Claude Code overrides (skills and project settings are tracked)
+.claude/settings.local.json

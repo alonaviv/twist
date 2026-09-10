@@ -64,9 +64,9 @@ A session is: `ssds`, `ssd`, `claude`, work, `ssdk`.
 
 Everything else is automatic. The docker stack comes back on boot with the database
 intact, and the django container runs livereload and the sass watchers, so template and
-`.scss` edits refresh the browser on their own. Starting `claude` in `~/twist` also
-starts the django server and prints its URL — on every new or resumed session, and only
-if it isn't already running.
+`.scss` edits refresh the browser on their own. Start the django server from inside
+`claude` with `/dev-server start`, which prints the URL (`status`, `stop`, `restart` and
+`logs` work too).
 
 Without claude, or to get a TTY for interactive `ipdb`, start the server yourself with
 `./run-dev.sh`.
