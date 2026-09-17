@@ -1,4 +1,5 @@
 import logging
+import os
 import re
 from difflib import SequenceMatcher
 from django.dispatch import receiver
@@ -6,6 +7,7 @@ from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.contrib.postgres.fields import CITextField
 from django.core.exceptions import ValidationError
+from django.core.files.base import File
 from django.db.models import (
     CASCADE,
     PROTECT,
@@ -79,6 +81,79 @@ class Celebration(Model):
     customer_name = CharField(max_length=100)
     phone_number = CharField(max_length=15, null=True, blank=True)
     celebrating = TextField()
+
+
+def event_date_slug(event_name):
+    """
+    'Open Mic - Babu Bar - 21.9.25' -> '21-9-25' (same convention as the setlist CSV filenames).
+    Falls back to a slug of the whole name.
+    """
+    if not event_name:
+        return 'unknown-event'
+    date_part = event_name.split('-')[-1].strip()
+    slug = re.sub(r'[^\w.-]+', '-', date_part).replace('.', '-').strip('-')
+    return slug or 'unknown-event'
+
+
+def filming_opt_out_photo_path(instance, filename):
+    return os.path.join('no_filming', event_date_slug(instance.event_name), os.path.basename(filename))
+
+
+class FilmingOptOut(Model):
+    """
+    Permanent record of people who checked "Don't post videos of me".
+    Singers are wiped on every DB reset, so this is snapshotted from them right before the wipe
+    (see the reset_db command). The selfie file is copied so it does not depend on the singer's file.
+    """
+    full_name = CharField(max_length=150)
+    is_audience = BooleanField(default=False)
+    event_name = CharField(max_length=100, blank=True, default='')
+    event_sku = CharField(max_length=20, blank=True, default='')
+    phone_number = CharField(max_length=15, null=True, blank=True)
+    photo = ImageField(upload_to=filming_opt_out_photo_path, blank=True, null=True)
+    recorded_at = DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Filming opt-out"
+        verbose_name_plural = "Filming opt-outs"
+        ordering = ('-recorded_at', 'full_name')
+
+    def __str__(self):
+        return f"{self.full_name} ({self.event_name or 'unknown event'})"
+
+    @classmethod
+    def snapshot(cls):
+        """
+        Record every current non-superuser who asked not to be filmed. Returns the number of records created.
+        Safe to call more than once for the same evening: a person is recorded once per event.
+        """
+        last_order = TicketOrder.objects.filter(is_freebie=False).order_by('id').last()
+        event_name = last_order.event_name if last_order else ''
+        event_sku = getattr(config, 'EVENT_SKU', '') or ''
+
+        created = 0
+        for singer in Singer.objects.filter(is_superuser=False, no_image_upload=True).order_by('id'):
+            full_name = singer.get_full_name() or singer.username
+            if cls.objects.filter(full_name=full_name, event_name=event_name, event_sku=event_sku).exists():
+                continue
+
+            opt_out = cls(
+                full_name=full_name,
+                is_audience=singer.is_audience,
+                event_name=event_name,
+                event_sku=event_sku,
+                phone_number=singer.ticket_order.phone_number if singer.ticket_order else None,
+            )
+            if singer.selfie:
+                try:
+                    with singer.selfie.open('rb') as selfie_file:
+                        opt_out.photo.save(os.path.basename(singer.selfie.name), File(selfie_file), save=False)
+                except (FileNotFoundError, ValueError):
+                    logger.warning("Selfie file missing for %s; recording opt-out without a photo", full_name)
+            opt_out.save()
+            created += 1
+
+        return created
 
 
 class Singer(AbstractUser):
