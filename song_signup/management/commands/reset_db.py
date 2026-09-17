@@ -1,4 +1,3 @@
-from django.core.files.base import File
 from django.core.management.base import BaseCommand, CommandError
 from constance import config
 
@@ -43,13 +42,8 @@ class Command(BaseCommand):
                 phone_number=singer.ticket_order.phone_number if singer.ticket_order else None,
             )
             if singer.selfie:
-                try:
-                    with singer.selfie.open('rb') as selfie_file:
-                        opt_out.photo.save(singer.selfie.name.rsplit('/', 1)[-1], File(selfie_file), save=False)
-                except (FileNotFoundError, ValueError):
-                    opt_out.photo_missing = True
-                    self.stderr.write(f"Selfie file missing for {opt_out.full_name}; "
-                                      f"recording opt-out without a photo")
+                # Point at the same stored file - no read, no write, so nothing here can fail.
+                opt_out.photo = singer.selfie.name
             opt_out.save()
             num_recorded += 1
 

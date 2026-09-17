@@ -1,5 +1,4 @@
 import logging
-import os
 import re
 from difflib import SequenceMatcher
 from django.dispatch import receiver
@@ -82,37 +81,19 @@ class Celebration(Model):
     celebrating = TextField()
 
 
-def event_date_slug(event_date):
-    """
-    '21.9.25' -> '21-9-25' (same convention as the setlist CSV filenames).
-    Also tolerates a compound name like 'Open Mic - Babu Bar - 21.9.25' by taking the last '-'-separated part.
-    """
-    if not event_date:
-        return 'unknown-event'
-    date_part = event_date.split('-')[-1].strip()
-    slug = re.sub(r'[^\w.-]+', '-', date_part).replace('.', '-').strip('-')
-    return slug or 'unknown-event'
-
-
-def filming_opt_out_photo_path(instance, filename):
-    return os.path.join('no_filming', event_date_slug(instance.event_date), os.path.basename(filename))
-
-
 class FilmingOptOut(Model):
     """
     Permanent record of people who checked "Don't post videos of me".
-    Singers are wiped on every DB reset, so reset_db copies them here right before the wipe.
-    The selfie is copied (not referenced) so it does not depend on the singer row being deleted.
+    Singers are wiped on every DB reset, so reset_db copies the relevant ones here right before the wipe.
+    'photo' points at the same file Singer.selfie used (not a copy) - Django doesn't delete files off disk
+    when a model row is deleted, so this keeps working as long as media/selfies/ itself is never cleaned up.
     """
     full_name = CharField(max_length=150)
     is_audience = BooleanField(default=False)
     event_date = CharField(max_length=100, blank=True, default='')
     event_sku = CharField(max_length=20, blank=True, default='')
     phone_number = CharField(max_length=15, null=True, blank=True)
-    photo = ImageField(upload_to=filming_opt_out_photo_path, blank=True, null=True)
-    # True only when the singer had a selfie but copying it failed (file missing/unreadable on disk).
-    # False for people who simply never uploaded a selfie - that's normal, not a failure.
-    photo_missing = BooleanField(default=False)
+    photo = ImageField(upload_to='selfies/', blank=True, null=True)
     recorded_at = DateTimeField(auto_now_add=True)
 
     class Meta:

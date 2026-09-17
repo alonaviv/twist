@@ -136,9 +136,10 @@ and choose a different SSH port number (not 22).
 
 ## People who don't want to be filmed
 Anyone who checks "Don't post videos of me" at login is recorded permanently in **Filming opt-outs** in the admin
-(name, ticket type, event, phone, and a copy of their selfie) the moment the DB is reset — both from the admin
+(name, ticket type, event, phone, their photo) the moment the DB is reset — both from the admin
 "Reset Database" button and from `./manage.py reset_db`. Filter by event and open it while editing videos.
-Photos are copied to `media/no_filming/<event-date>/`, independent of the singer's original selfie.
+The photo field points at the same file the singer's selfie used rather than copying it, so it depends on
+`media/selfies/` never being cleaned up (fine as long as the server is backed up).
 
 The event date comes from `PEOPLES_CHOICE_EVENT_DATE` in config (same field the People's Choice page uses,
 e.g. `'21.9.25'`). Reset refuses to run at all if it isn't set — nothing gets deleted — so set it before
