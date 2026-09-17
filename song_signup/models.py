@@ -81,6 +81,33 @@ class Celebration(Model):
     celebrating = TextField()
 
 
+class FilmingOptOut(Model):
+    """
+    Permanent record of people who checked "Don't post videos of me".
+    Singers are wiped on every DB reset, so reset_db copies the relevant ones here right before the wipe.
+    'photo' points at the same file Singer.selfie used (not a copy) - Django doesn't delete files off disk
+    when a model row is deleted, so this keeps working as long as media/selfies/ itself is never cleaned up.
+    """
+    full_name = CharField(max_length=150)
+    is_audience = BooleanField(default=False)
+    event_date = CharField(max_length=100, blank=True, default='')
+    event_sku = CharField(max_length=20, blank=True, default='')
+    phone_number = CharField(max_length=15, null=True, blank=True)
+    photo = ImageField(upload_to='selfies/', blank=True, null=True)
+    # "Song Name (Musical)" entries, one per performed song, in performance order. Covers both their own
+    # songs and ones they joined as a partner. Blank if they never got up (or the raffle never called them).
+    songs_performed = TextField(blank=True, default='')
+    recorded_at = DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Filming opt-out"
+        verbose_name_plural = "Filming opt-outs"
+        ordering = ('-recorded_at', 'full_name')
+
+    def __str__(self):
+        return f"{self.full_name} ({self.event_date or 'unknown event'})"
+
+
 class Singer(AbstractUser):
     """
     Used for both audience and singer users. Can't create a base class due to django limitation with AbstractUser,

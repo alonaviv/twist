@@ -134,6 +134,20 @@ and choose a different SSH port number (not 22).
 3. Connect to django container with `docker exec -it twist-django-1  /bin/bash`
 4. Run `./manage.py import_group_songs` to import from the path above. Can also pass in a custom path.
 
+## People who don't want to be filmed
+Anyone who checks "Don't post videos of me" at login is recorded permanently in **Filming opt-outs** in the admin
+(name, ticket type, event, phone, their photo) the moment the DB is reset — both from the admin
+"Reset Database" button and from `./manage.py reset_db`. Filter by event and open it while editing videos.
+The photo field points at the same file the singer's selfie used rather than copying it, so it depends on
+`media/selfies/` never being cleaned up (fine as long as the server is backed up).
+
+The event date comes from `PEOPLES_CHOICE_EVENT_DATE` in config (same field the People's Choice page uses,
+e.g. `'21.9.25'`). Reset refuses to run at all if it isn't set — nothing gets deleted — so set it before
+resetting, same as you already do for People's Choice.
+
+Each record also lists what that person sang that night (own songs and any they partnered on), so you
+know what to look for while scrubbing footage.
+
 ## Loading DB backup file db live DB
 1. Download DB backup from server to twist/db_backups:
 ```sh
@@ -197,3 +211,5 @@ To change the test, edit `gen_money_time.py` and run `python3 gen_money_time.py`
 
 
 
+rsync -avz --ignore-existing ssaw:~/db_backups/complete_evenings/ db_backups/
+rsync -avz --ignore-existing  ssaw:~/media/selfies/ media/selfies/

@@ -10,7 +10,9 @@ from contextlib import redirect_stdout
 import constance
 from constance import config
 from django.contrib.auth import login as auth_login, logout as auth_logout
+from django.contrib import messages
 from django.core.management import call_command
+from django.core.management.base import CommandError
 from django.db import transaction
 from django.db.utils import IntegrityError
 from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
@@ -854,7 +856,14 @@ def reset_database(request):
     else:
         call_command('dbbackup')
 
-    call_command('reset_db')
+    try:
+        call_command('reset_db')
+    except CommandError as e:
+        # The admin button is the only way in, so the reason has to reach the page - with DEBUG off
+        # an uncaught CommandError is a blank 500 and the operator learns nothing.
+        messages.error(request, str(e))
+        return redirect('admin/song_signup/songrequest')
+
     disable_flag('CAN_SIGNUP')
     disable_flag('STARTED')
     config.PASSCODE = ''

@@ -105,6 +105,7 @@ class TestSingerModel(SongRequestTestCase):
 
 
 class TestTicketOrderModel(TestCase):
+    @override_config(PEOPLES_CHOICE_EVENT_DATE="21.9.25")
     def test_save_customers(self):
         singer_order = create_order(3, SING_SKU, order_id=4321)
         audience_order = create_order(2, ATTN_SKU, order_id=4321)
