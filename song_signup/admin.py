@@ -7,7 +7,7 @@ from django.core.exceptions import ValidationError
 from constance import config
 
 from .models import (SongLyrics, SongRequest, Singer, GroupSongRequest, TicketOrder,
-                     CurrentGroupSong, TriviaQuestion, TriviaResponse, Celebration
+                     CurrentGroupSong, TriviaQuestion, TriviaResponse, Celebration, FilmingOptOut
 )
 from .forms import SongRequestForm
 from .tasks import get_lyrics
@@ -356,7 +356,7 @@ class SongRequestAdmin(admin.ModelAdmin):
 class SingerAdmin(admin.ModelAdmin):
     list_display = ['username', 'date_joined', 'is_active', 'no_image_upload', 'ticket_order',
                     'is_audience', 'selfie_preview', 'get_songs', 'raffle_winner', 'raffle_participant']
-    list_filter =['is_audience']
+    list_filter = ['is_audience', 'no_image_upload']
 
     def selfie_preview(self, obj):
         if obj.selfie:
@@ -366,6 +366,33 @@ class SingerAdmin(admin.ModelAdmin):
     def get_songs(self, obj):
         return [str(song.song_name) for song in obj.all_songs]
     get_songs.short_description = 'Songs'
+
+
+@admin.register(FilmingOptOut)
+class FilmingOptOutAdmin(admin.ModelAdmin):
+    """
+    Everyone who ever checked "Don't post videos of me", with their photo, grouped by event.
+    Filled automatically on every DB reset. Open this while editing videos.
+    """
+    list_display = ['photo_preview', 'full_name', 'ticket_type', 'event_date', 'phone_number', 'recorded_at']
+    list_filter = ['event_date', 'is_audience']
+    search_fields = ['full_name', 'event_date', 'phone_number']
+    list_per_page = 200
+    readonly_fields = ['photo_preview', 'recorded_at']
+    fields = ['full_name', 'is_audience', 'event_date', 'event_sku', 'phone_number', 'photo', 'photo_preview',
+              'recorded_at']
+
+    def photo_preview(self, obj):
+        if obj.photo:
+            return mark_safe(f'<a href="{obj.photo.url}" target="_blank">'
+                             f'<img src="{obj.photo.url}" style="height: 200px; width: auto;" /></a>')
+        return 'No photo'
+    photo_preview.short_description = 'Photo'
+
+    def ticket_type(self, obj):
+        return 'Audience' if obj.is_audience else 'Singer'
+    ticket_type.short_description = 'Ticket'
+    ticket_type.admin_order_field = 'is_audience'
 
 
 @admin.register(SongLyrics)
