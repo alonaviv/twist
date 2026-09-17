@@ -3,7 +3,7 @@ from django.core.management.base import BaseCommand
 from constance import config
 
 from song_signup.models import (SongRequest, Singer, CurrentGroupSong, GroupSongRequest, Celebration,
-                                FilmingOptOut, TicketOrder)
+                                FilmingOptOut)
 
 
 class Command(BaseCommand):
@@ -23,9 +23,8 @@ class Command(BaseCommand):
         Celebration.objects.all().delete()
 
     def _record_filming_opt_outs(self):
-        # The freebie order's event_name is just a placeholder ('FREEBIE-ORDER'), so use the last real order.
-        last_order = TicketOrder.objects.filter(is_freebie=False).order_by('id').last()
-        event_name = last_order.event_name if last_order else ''
+        # Same field the People's Choice page uses; it's the only place the plain event date lives in config.
+        event_date = getattr(config, 'PEOPLES_CHOICE_EVENT_DATE', '') or ''
         event_sku = getattr(config, 'EVENT_SKU', '') or ''
 
         num_recorded = 0
@@ -33,7 +32,7 @@ class Command(BaseCommand):
             opt_out = FilmingOptOut(
                 full_name=singer.get_full_name() or singer.username,
                 is_audience=singer.is_audience,
-                event_name=event_name,
+                event_date=event_date,
                 event_sku=event_sku,
                 phone_number=singer.ticket_order.phone_number if singer.ticket_order else None,
             )

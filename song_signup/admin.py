@@ -119,39 +119,184 @@ class NotYetPerformedFilter(admin.SimpleListFilter):
 
     def lookups(self, request, model_admin):
         return (
-            ('not_performed', 'Not Performed'),
-            ('all', 'All'),
+            ('standby', 'Standby'),
+            ('not_scheduled', 'All Songs'),
         )
 
     def queryset(self, request, queryset):
-        value = self.value()
-        if value == 'all':
-            return queryset
-        return queryset.filter(performance_time__isnull=True)
+        if self.value() == 'standby':
+            return queryset.filter(standby=True)
+        elif self.value() == 'not_scheduled':
+            return queryset.all()
+        else: # "Setlist"
+            return queryset.filter(performance_time=None, position__isnull=False)
 
     def choices(self, changelist):
+        """
+        Change the default filter to be called "setlist"
+        """
+        yield {
+            'selected': self.value() is None,
+            'query_string': changelist.get_query_string(remove=[self.parameter_name]),
+            'display': 'Setlist',
+        }
         for lookup, title in self.lookup_choices:
             yield {
-                'selected': self.value() == lookup if self.value() is not None else lookup == 'not_performed',
+                'selected': self.value() == lookup,
                 'query_string': changelist.get_query_string({self.parameter_name: lookup}),
                 'display': title,
             }
 
 
+@admin.register(GroupSongRequest)
+class GroupSongRequestAdmin(admin.ModelAdmin):
+    list_display = (
+        'display_id', 'lyrics', 'song_name', 'musical', 'suggested_by', 'type', 'default_lyrics', 'found_music',
+        'get_request_time', 'get_performance_time'
+    )
+    list_filter = ('type',)
+    list_editable = ('default_lyrics', 'found_music')
+    actions = [prepare_group_song, force_group_lyrics_refresh]
+    change_list_template = "admin/group_song_request_changelist.html"
+
+    def display_id(self, obj):
+        return obj.id
+    display_id.short_description = "#"
+
+    def changelist_view(self, request, extra_context=None):
+        extra_context = extra_context or {}
+        current_group_song = CurrentGroupSong.objects.first()
+        if current_group_song:
+            extra_context['group_song'] = current_group_song.group_song.song_name
+            extra_context['is_active'] = current_group_song.is_active
+
+        return super().changelist_view(request, extra_context=extra_context)
+
+    def get_request_time(self, obj):
+        return obj.request_time.astimezone(timezone.get_current_timezone()).strftime("%H:%M %p")
+
+    get_request_time.short_description = 'Request Time'
+    get_request_time.admin_order_field = 'request_time'
+
+    def get_performance_time(self, obj):
+        if obj.performance_time:
+            return obj.performance_time.astimezone(timezone.get_current_timezone()).strftime("%H:%M %p")
+
+        else:
+            return None
+
+    get_performance_time.short_description = 'Performance Time'
+    get_performance_time.admin_order_field = 'performance_time'
+
+    def lyrics(self, obj):
+        return mark_safe(f'<a href="{reverse("group_lyrics", args=(obj.id,))}">Lyrics</a>')
+
+    lyrics.short_description = "Lyrics"
+
+    ordering = ['request_time']
+
+    class Media:
+        js = ["js/admin-reload.js"]
+
+
 @admin.register(SongRequest)
 class SongRequestAdmin(admin.ModelAdmin):
-    form = SongRequestForm
-    list_display = ['display_position', 'song_name', 'musical', 'singer', 'get_partners', 'get_initial_signup',
-                    'was_performed', 'get_performance_time', 'skipped', 'standby', 'spotlight', 'is_peoples_choice',
-                    'allows_filming', 'lyrics', 'default_lyrics', 'get_to_alon']
-    list_filter = [NotYetPerformedFilter, 'skipped', 'standby', 'spotlight', 'is_peoples_choice']
-    search_fields = ['song_name', 'musical', 'singer__first_name', 'singer__last_name']
-    actions = [set_solo_performed, set_solo_not_performed, set_solo_skipped, set_solo_unskipped, spotlight,
-              set_standby, unset_standby, force_lyrics_refresh]
+    list_display = (
+        'display_position', 'get_skipped', 'get_peoples_choice_sash', 'lyrics', 'get_singer', 'get_song', 'get_musical', 'get_partners', 'get_notes', 'get_to_alon',
+        'default_lyrics', 'found_music', 'allows_filming', 'get_performance_time', 'get_request_time', 'get_initial_signup',
+    )
+    list_filter = (NotYetPerformedFilter,)
+    list_editable = ('default_lyrics', 'found_music')
+    actions = [set_solo_performed, set_solo_not_performed, set_solo_skipped, set_solo_unskipped,
+               spotlight, set_standby, unset_standby, force_lyrics_refresh]
+    ordering = ['position']
+    change_list_template = "admin/song_request_changelist.html"
     list_per_page = 500
+    form = SongRequestForm
+
+    def get_skipped(self, obj):
+        if obj.skipped:
+            return mark_safe('<img src="/static/img/admin/forward.png" style="height: 16px;" />')
+    get_skipped.short_description = 'S'
+
+    def get_peoples_choice_sash(self, obj):
+        if obj.is_peoples_choice:
+            return mark_safe('<img src="/static/peoples_choice/img/sash.png" alt="People\'s Choice" style="height: 30px;" />')
+        return ''
+    get_peoples_choice_sash.short_description = 'P'
+
+    def changelist_view(self, request, extra_context=None):
+        extra_context = extra_context or {}
+        extra_context['new_singers_num'] = Singer.ordering.new_singers_num() + Singer.ordering.new_raffle_winners_num()
+        extra_context['singers_num'] = len(Singer.ordering.active_singers()) + len(Singer.ordering.active_raffle_winners())
+        extra_context['raffle_participants'] = len(Singer.ordering.active_raffle_participants())
+        extra_context['group_songs_performed'] = GroupSongRequest.objects.num_performed()
+        extra_context['group_songs_quota'] = config.EXPECTED_NUM_SONGS - len(
+            Singer.ordering.active_singers()) - len(Singer.ordering.active_raffle_winners()) - config.TARGET_REPEAT_SINGERS
+        extra_context['solo_songs_quota'] = extra_context['singers_num'] + config.TARGET_REPEAT_SINGERS
+        extra_context['solo_songs_performed'] = SongRequest.objects.num_performed()
+        extra_context['total_songs_performed'] = extra_context['group_songs_performed'] + extra_context['solo_songs_performed']
+        extra_context['total_songs_quota'] = config.EXPECTED_NUM_SONGS
+
+
+        current_group_song = CurrentGroupSong.objects.first()
+        if current_group_song:
+            extra_context['group_song'] = current_group_song.group_song.song_name
+            extra_context['is_active'] = current_group_song.is_active
+
+        active_question = TriviaQuestion.objects.filter(is_active=True).first()
+        if active_question:
+            extra_context['trivia_question'] = active_question
+
+        spotlight_song = SongRequest.objects.get_spotlight()
+        if spotlight_song:
+            extra_context['spotlight'] = spotlight_song
+
+        return super().changelist_view(request, extra_context=extra_context)
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def get_request_time(self, obj):
+        return obj.request_time.astimezone(timezone.get_current_timezone()).strftime("%H:%M %p")
+
+    get_request_time.short_description = 'Request Time'
+    get_request_time.admin_order_field = 'request_time'
+
+    def get_singer(self, obj):
+        return format_html(
+            '<div style="width: 100px; white-space: normal; word-wrap: break-word;">{}</div>',
+            obj.singer
+        )
+    get_singer.short_description = 'Singer'
+
+    def get_song(self, obj):
+        return format_html(
+            '<div style="width: 100px; white-space: normal; word-wrap: break-word;">{}</div>',
+            obj.song_name
+        )
+    get_song.short_description = 'Song'
+
+    def get_musical(self, obj):
+        return format_html(
+            '<div style="width: 70px; white-space: normal; word-wrap: break-word;">{}</div>',
+            obj.musical
+        )
+    get_musical.short_description = 'Musical'
+
+    def get_notes(self, obj):
+        return format_html(
+            '<div style="width: 120px; white-space: normal; word-wrap: break-word;">{}</div>',
+            obj.notes or ''
+        )
+    get_notes.short_description = 'Notes'
 
     def get_to_alon(self, obj):
-        return obj.to_alon
+        return format_html(
+            '<div style="width: 120px; white-space: normal; word-wrap: break-word;">{}</div>',
+            obj.to_alon or ''
+        )
+
     get_to_alon.short_description = 'To Alon'
 
     def get_partners(self, obj):
@@ -229,12 +374,12 @@ class FilmingOptOutAdmin(admin.ModelAdmin):
     Everyone who ever checked "Don't post videos of me", with their photo, grouped by event.
     Filled automatically on every DB reset. Open this while editing videos.
     """
-    list_display = ['photo_preview', 'full_name', 'ticket_type', 'event_name', 'phone_number', 'recorded_at']
-    list_filter = ['event_name', 'is_audience']
-    search_fields = ['full_name', 'event_name', 'phone_number']
+    list_display = ['photo_preview', 'full_name', 'ticket_type', 'event_date', 'phone_number', 'recorded_at']
+    list_filter = ['event_date', 'is_audience']
+    search_fields = ['full_name', 'event_date', 'phone_number']
     list_per_page = 200
     readonly_fields = ['photo_preview', 'recorded_at']
-    fields = ['full_name', 'is_audience', 'event_name', 'event_sku', 'phone_number', 'photo', 'photo_preview',
+    fields = ['full_name', 'is_audience', 'event_date', 'event_sku', 'phone_number', 'photo', 'photo_preview',
               'recorded_at']
 
     def photo_preview(self, obj):
@@ -300,36 +445,86 @@ class CurrentGroupSongAdmin(admin.ModelAdmin):
 class TriviaQuestionAdmin(admin.ModelAdmin):
     list_display = ['id', 'get_question', 'image_preview', 'get_answer_text', 'get_answer', 'notes', 'get_winner']
     actions = [activate_question]
+    change_list_template = "admin/trivia_question_changelist.html"
 
     def get_question(self, obj):
         return str(obj)
-    get_question.short_description = 'Question'
+    get_question.short_description = "Question"
 
-    def image_preview(self, obj):
-        if obj.image:
-            return mark_safe(f'<img src="{obj.image.url}" width="100" />')
-    image_preview.short_description = 'Image'
-
-    def get_answer_text(self, obj):
-        return obj.answer_text
-    get_answer_text.short_description = 'Answer Text'
+    def get_winner(self, obj):
+        return obj.winner
+    get_winner.short_description = "Winner"
 
     def get_answer(self, obj):
         return obj.get_answer_display()
-    get_answer.short_description = 'Answer'
+    get_answer.short_description = "Answer #"
 
-    def get_winner(self, obj):
-        winner = obj.winner
-        return str(winner) if winner else None
-    get_winner.short_description = 'Winner'
+    def get_answer_text(self, obj):
+        return obj.answer_text
+    get_answer_text.short_description = "Answer"
 
+    def image_preview(self, obj):
+        if obj.image:
+            return mark_safe(f'<img src="{obj.image.url}" width="50" height="50" />')
+    image_preview.short_description = 'Image'
+
+    def changelist_view(self, request, extra_context=None):
+        extra_context = extra_context or {}
+        active_question = TriviaQuestion.objects.filter(is_active=True).first()
+        if active_question:
+            extra_context['active_question'] = active_question
+            extra_context['winner'] = active_question.winner
+
+        return super().changelist_view(request, extra_context=extra_context)
+
+    class Media:
+        js = ["js/admin-reload.js"]
+
+from django.contrib import admin
+from .models import TriviaResponse
+
+class IsCorrectFilter(admin.SimpleListFilter):
+    title = 'Right answer?'
+    parameter_name = 'is_correct'
+
+    def lookups(self, request, model_admin):
+        return (
+            ('correct', 'Correct Answers'),
+            ('incorrect', 'Wrong Answers'),
+        )
+
+    def queryset(self, request, queryset):
+        value = self.value()
+        correct = []
+        incorrect = []
+
+        for response in queryset.all():
+            if response.is_correct:
+                correct.append(response.id)
+            else:
+                incorrect.append(response.id)
+        if value == 'correct':
+            return queryset.filter(pk__in=correct)
+        elif value == 'incorrect':
+            return queryset.filter(pk__in=incorrect)
 
 @admin.register(TriviaResponse)
 class TriviaResponseAdmin(admin.ModelAdmin):
-    list_display = ['user', 'question', 'choice', 'timestamp']
+    list_display = ['user', 'question', 'choice', 'get_timestamp', 'is_correct']
+    list_filter = ['question', IsCorrectFilter]
+
+    def is_correct(self, obj):
+        return obj.is_correct
+    is_correct.short_description = "Right answer?"
+    is_correct.boolean = True
+
+    def get_timestamp(self, obj):
+        return obj.timestamp.astimezone(timezone.get_current_timezone()).strftime("%H:%M:%-S.%f")
+
+    get_timestamp.short_description = 'Timestamp'
+    get_timestamp.admin_order_field = 'timestamp'
 
 
 @admin.register(Celebration)
 class CelebrationAdmin(admin.ModelAdmin):
-    list_display = ['customer_name', 'event_date', 'event_sku', 'celebrating', 'phone_number']
-    list_filter = ['event_sku']
+    list_display = ['order_id', 'event_date', 'customer_name', 'phone_number', 'celebrating']

@@ -7,7 +7,7 @@ from django.core.management import call_command
 from django.test import TestCase
 
 from song_signup.models import (
-    Singer, TicketOrder, FilmingOptOut, SING_SKU, ATTN_SKU, event_date_slug, filming_opt_out_photo_path
+    Singer, FilmingOptOut, SING_SKU, ATTN_SKU, event_date_slug, filming_opt_out_photo_path
 )
 from song_signup.tests.utils_for_tests import create_order
 
@@ -31,14 +31,17 @@ def _create_person(name, order, is_audience=False, opt_out=False, with_selfie=Fa
 
 
 class TestEventDateSlug(TestCase):
-    def test_slug_from_event_name(self):
-        self.assertEqual(event_date_slug('Open Mic - Babu Bar - 21.9.25'), '21-9-25')
-        self.assertEqual(event_date_slug('Test Event'), 'Test-Event')
+    def test_slug_from_plain_date(self):
+        self.assertEqual(event_date_slug('21.9.25'), '21-9-25')
         self.assertEqual(event_date_slug(''), 'unknown-event')
         self.assertEqual(event_date_slug(None), 'unknown-event')
 
+    def test_slug_tolerates_a_compound_name(self):
+        # Not the normal input anymore (config.PEOPLES_CHOICE_EVENT_DATE is just the date), but harmless if given one.
+        self.assertEqual(event_date_slug('Open Mic - Babu Bar - 21.9.25'), '21-9-25')
+
     def test_photo_path_uses_event_folder(self):
-        opt_out = FilmingOptOut(full_name='A B', event_name='Open Mic - Babu Bar - 21.9.25')
+        opt_out = FilmingOptOut(full_name='A B', event_date='21.9.25')
         self.assertEqual(filming_opt_out_photo_path(opt_out, '/tmp/selfies/a_b.png'),
                          os.path.join('no_filming', '21-9-25', 'a_b.png'))
 
@@ -56,7 +59,7 @@ class TestFilmingOptOutSnapshot(TestCase):
             if singer.selfie:
                 singer.selfie.delete(save=False)
 
-    @override_config(EVENT_SKU='EVT123')
+    @override_config(EVENT_SKU='EVT123', PEOPLES_CHOICE_EVENT_DATE='21.9.25')
     def test_reset_records_opt_outs_and_copies_photo(self):
         opted_out_singer = _create_person('Opted Singer', self.singer_order, opt_out=True, with_selfie=True)
         original_selfie_path = opted_out_singer.selfie.path
@@ -70,11 +73,11 @@ class TestFilmingOptOutSnapshot(TestCase):
 
         singer_record = FilmingOptOut.objects.get(full_name='Opted Singer')
         self.assertFalse(singer_record.is_audience)
-        self.assertEqual(singer_record.event_name, 'Test Event')
+        self.assertEqual(singer_record.event_date, '21.9.25')
         self.assertEqual(singer_record.event_sku, 'EVT123')
         self.assertTrue(singer_record.photo)
         self.assertNotEqual(singer_record.photo.path, original_selfie_path)
-        self.assertIn(os.path.join('no_filming', 'Test-Event'), singer_record.photo.path)
+        self.assertIn(os.path.join('no_filming', '21-9-25'), singer_record.photo.path)
         self.assertTrue(filecmp.cmp(TEST_IMG_PATH, singer_record.photo.path))
 
         audience_record = FilmingOptOut.objects.get(full_name='Opted Audience')
@@ -88,14 +91,16 @@ class TestFilmingOptOutSnapshot(TestCase):
         call_command('reset_db')
         self.assertEqual(FilmingOptOut.objects.count(), 0)
 
-    def test_freebie_order_is_not_used_as_event_name(self):
-        freebie = TicketOrder.objects.create(order_id=999999, event_sku='EVT123', event_name='FREEBIE-ORDER',
-                                             num_tickets=-1, customer_name='FREEBIE_ORDER',
-                                             ticket_type=SING_SKU, is_freebie=True)
-        _create_person('Free Singer', freebie, opt_out=True)
+    def test_reset_with_no_peoples_choice_date_set_falls_back_to_unknown_event(self):
+        # PEOPLES_CHOICE_EVENT_DATE defaults to '' until someone sets it for the event.
+        _create_person('Opted Singer', self.singer_order, opt_out=True)
         call_command('reset_db')
-        self.assertEqual(FilmingOptOut.objects.get(full_name='Free Singer').event_name, 'Test Event')
+        record = FilmingOptOut.objects.get(full_name='Opted Singer')
+        self.assertEqual(record.event_date, '')
+        # The record itself is still saved with an empty date; only the photo folder falls back.
+        self.assertEqual(event_date_slug(record.event_date), 'unknown-event')
 
+    @override_config(PEOPLES_CHOICE_EVENT_DATE='21.9.25')
     def test_records_survive_a_second_reset(self):
         _create_person('Opted Singer', self.singer_order, opt_out=True, with_selfie=True)
         call_command('reset_db')

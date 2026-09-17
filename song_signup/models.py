@@ -82,20 +82,20 @@ class Celebration(Model):
     celebrating = TextField()
 
 
-def event_date_slug(event_name):
+def event_date_slug(event_date):
     """
-    'Open Mic - Babu Bar - 21.9.25' -> '21-9-25' (same convention as the setlist CSV filenames).
-    Falls back to a slug of the whole name.
+    '21.9.25' -> '21-9-25' (same convention as the setlist CSV filenames).
+    Also tolerates a compound name like 'Open Mic - Babu Bar - 21.9.25' by taking the last '-'-separated part.
     """
-    if not event_name:
+    if not event_date:
         return 'unknown-event'
-    date_part = event_name.split('-')[-1].strip()
+    date_part = event_date.split('-')[-1].strip()
     slug = re.sub(r'[^\w.-]+', '-', date_part).replace('.', '-').strip('-')
     return slug or 'unknown-event'
 
 
 def filming_opt_out_photo_path(instance, filename):
-    return os.path.join('no_filming', event_date_slug(instance.event_name), os.path.basename(filename))
+    return os.path.join('no_filming', event_date_slug(instance.event_date), os.path.basename(filename))
 
 
 class FilmingOptOut(Model):
@@ -106,7 +106,7 @@ class FilmingOptOut(Model):
     """
     full_name = CharField(max_length=150)
     is_audience = BooleanField(default=False)
-    event_name = CharField(max_length=100, blank=True, default='')
+    event_date = CharField(max_length=100, blank=True, default='')
     event_sku = CharField(max_length=20, blank=True, default='')
     phone_number = CharField(max_length=15, null=True, blank=True)
     photo = ImageField(upload_to=filming_opt_out_photo_path, blank=True, null=True)
@@ -118,7 +118,7 @@ class FilmingOptOut(Model):
         ordering = ('-recorded_at', 'full_name')
 
     def __str__(self):
-        return f"{self.full_name} ({self.event_name or 'unknown event'})"
+        return f"{self.full_name} ({self.event_date or 'unknown event'})"
 
 
 class Singer(AbstractUser):
