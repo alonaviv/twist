@@ -374,18 +374,13 @@ class FilmingOptOutAdmin(admin.ModelAdmin):
     Everyone who ever checked "Don't post videos of me", with their photo, grouped by event.
     Filled automatically on every DB reset. Open this while editing videos.
     """
-    list_display = ['photo_preview', 'full_name', 'ticket_type', 'get_songs_performed', 'event_date',
-                    'phone_number', 'recorded_at']
+    list_display = ['photo_preview', 'full_name', 'ticket_type', 'event_date', 'phone_number', 'recorded_at']
     list_filter = ['event_date', 'is_audience']
-    search_fields = ['full_name', 'event_date', 'phone_number', 'songs_performed']
+    search_fields = ['full_name', 'event_date', 'phone_number']
     list_per_page = 200
     readonly_fields = ['photo_preview', 'recorded_at']
     fields = ['full_name', 'is_audience', 'event_date', 'event_sku', 'phone_number', 'photo', 'photo_preview',
-              'songs_performed', 'recorded_at']
-
-    def get_songs_performed(self, obj):
-        return obj.songs_performed or '-'
-    get_songs_performed.short_description = 'Songs'
+              'recorded_at']
 
     def photo_preview(self, obj):
         if obj.photo:

@@ -34,16 +34,12 @@ class Command(BaseCommand):
 
         num_recorded = 0
         for singer in Singer.objects.filter(is_superuser=False, no_image_upload=True).order_by('id'):
-            performed_songs = singer.all_songs.filter(performance_time__isnull=False).order_by('performance_time')
-            songs_performed = '; '.join(f"{song.song_name} ({song.musical})" for song in performed_songs)
-
             opt_out = FilmingOptOut(
                 full_name=singer.get_full_name() or singer.username,
                 is_audience=singer.is_audience,
                 event_date=event_date,
                 event_sku=event_sku,
                 phone_number=singer.ticket_order.phone_number if singer.ticket_order else None,
-                songs_performed=songs_performed,
             )
             if singer.selfie:
                 # Point at the same stored file - no read, no write, so nothing here can fail.

@@ -145,9 +145,6 @@ The event date comes from `PEOPLES_CHOICE_EVENT_DATE` in config (same field the 
 e.g. `'21.9.25'`). Reset refuses to run at all if it isn't set — nothing gets deleted — so set it before
 resetting, same as you already do for People's Choice.
 
-Each record also lists what that person sang that night (own songs and any they partnered on), so you
-know what to look for while scrubbing footage.
-
 ## Loading DB backup file db live DB
 1. Download DB backup from server to twist/db_backups:
 ```sh
