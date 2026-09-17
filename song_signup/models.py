@@ -110,6 +110,9 @@ class FilmingOptOut(Model):
     event_sku = CharField(max_length=20, blank=True, default='')
     phone_number = CharField(max_length=15, null=True, blank=True)
     photo = ImageField(upload_to=filming_opt_out_photo_path, blank=True, null=True)
+    # True only when the singer had a selfie but copying it failed (file missing/unreadable on disk).
+    # False for people who simply never uploaded a selfie - that's normal, not a failure.
+    photo_missing = BooleanField(default=False)
     recorded_at = DateTimeField(auto_now_add=True)
 
     class Meta:

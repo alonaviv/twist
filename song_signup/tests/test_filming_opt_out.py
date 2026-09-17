@@ -87,6 +87,26 @@ class TestFilmingOptOutSnapshot(TestCase):
 
         self.assertFalse(FilmingOptOut.objects.filter(full_name='Happy Singer').exists())
 
+    @override_config(EVENT_SKU='EVT123', PEOPLES_CHOICE_EVENT_DATE='21.9.25')
+    def test_photo_missing_flag_set_when_selfie_file_cannot_be_copied(self):
+        opted_out_singer = _create_person('Opted Singer', self.singer_order, opt_out=True, with_selfie=True)
+        # Simulate the selfie file having vanished from disk while the DB still references it.
+        os.remove(opted_out_singer.selfie.path)
+
+        call_command('reset_db')
+
+        record = FilmingOptOut.objects.get(full_name='Opted Singer')
+        self.assertTrue(record.photo_missing)
+        self.assertFalse(record.photo)
+
+    @override_config(PEOPLES_CHOICE_EVENT_DATE='21.9.25')
+    def test_photo_missing_flag_stays_false_when_no_selfie_was_ever_uploaded(self):
+        _create_person('Opted Singer', self.singer_order, opt_out=True, with_selfie=False)
+        call_command('reset_db')
+        record = FilmingOptOut.objects.get(full_name='Opted Singer')
+        self.assertFalse(record.photo_missing)
+        self.assertFalse(record.photo)
+
     @override_config(PEOPLES_CHOICE_EVENT_DATE='21.9.25')
     def test_reset_without_opt_outs_records_nothing(self):
         _create_person('Happy Singer', self.singer_order, with_selfie=True)

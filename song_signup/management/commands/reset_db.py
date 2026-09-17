@@ -47,6 +47,7 @@ class Command(BaseCommand):
                     with singer.selfie.open('rb') as selfie_file:
                         opt_out.photo.save(singer.selfie.name.rsplit('/', 1)[-1], File(selfie_file), save=False)
                 except (FileNotFoundError, ValueError):
+                    opt_out.photo_missing = True
                     self.stderr.write(f"Selfie file missing for {opt_out.full_name}; "
                                       f"recording opt-out without a photo")
             opt_out.save()
