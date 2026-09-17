@@ -4,6 +4,7 @@ import os
 from constance.test import override_config
 from django.core.files import File
 from django.core.management import call_command
+from django.core.management.base import CommandError
 from django.test import TestCase
 
 from song_signup.models import (
@@ -86,19 +87,21 @@ class TestFilmingOptOutSnapshot(TestCase):
 
         self.assertFalse(FilmingOptOut.objects.filter(full_name='Happy Singer').exists())
 
+    @override_config(PEOPLES_CHOICE_EVENT_DATE='21.9.25')
     def test_reset_without_opt_outs_records_nothing(self):
         _create_person('Happy Singer', self.singer_order, with_selfie=True)
         call_command('reset_db')
         self.assertEqual(FilmingOptOut.objects.count(), 0)
 
-    def test_reset_with_no_peoples_choice_date_set_falls_back_to_unknown_event(self):
+    def test_reset_refuses_and_changes_nothing_when_event_date_not_set(self):
         # PEOPLES_CHOICE_EVENT_DATE defaults to '' until someone sets it for the event.
-        _create_person('Opted Singer', self.singer_order, opt_out=True)
-        call_command('reset_db')
-        record = FilmingOptOut.objects.get(full_name='Opted Singer')
-        self.assertEqual(record.event_date, '')
-        # The record itself is still saved with an empty date; only the photo folder falls back.
-        self.assertEqual(event_date_slug(record.event_date), 'unknown-event')
+        opted_out_singer = _create_person('Opted Singer', self.singer_order, opt_out=True)
+
+        with self.assertRaises(CommandError):
+            call_command('reset_db')
+
+        self.assertEqual(FilmingOptOut.objects.count(), 0)
+        self.assertTrue(Singer.objects.filter(pk=opted_out_singer.pk).exists())
 
     @override_config(PEOPLES_CHOICE_EVENT_DATE='21.9.25')
     def test_records_survive_a_second_reset(self):

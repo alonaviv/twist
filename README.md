@@ -140,6 +140,10 @@ Anyone who checks "Don't post videos of me" at login is recorded permanently in 
 "Reset Database" button and from `./manage.py reset_db`. Filter by event and open it while editing videos.
 Photos are copied to `media/no_filming/<event-date>/`, independent of the singer's original selfie.
 
+The event date comes from `PEOPLES_CHOICE_EVENT_DATE` in config (same field the People's Choice page uses,
+e.g. `'21.9.25'`). Reset refuses to run at all if it isn't set — nothing gets deleted — so set it before
+resetting, same as you already do for People's Choice.
+
 ## Loading DB backup file db live DB
 1. Download DB backup from server to twist/db_backups:
 ```sh

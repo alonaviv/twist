@@ -1,5 +1,5 @@
 from django.core.files.base import File
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from constance import config
 
 from song_signup.models import (SongRequest, Singer, CurrentGroupSong, GroupSongRequest, Celebration,
@@ -8,10 +8,18 @@ from song_signup.models import (SongRequest, Singer, CurrentGroupSong, GroupSong
 
 class Command(BaseCommand):
     help = ('Removes all non superusers and all song requests from the database. '
-            'People who asked not to be filmed are recorded in FilmingOptOut first.')
+            'People who asked not to be filmed are recorded in FilmingOptOut first. '
+            "Refuses to run if PEOPLES_CHOICE_EVENT_DATE isn't set.")
 
     def handle(self, *args, **options):
-        self._record_filming_opt_outs()
+        event_date = getattr(config, 'PEOPLES_CHOICE_EVENT_DATE', '') or ''
+        if not event_date:
+            raise CommandError(
+                "PEOPLES_CHOICE_EVENT_DATE is not set in config. Set it (e.g. '21.9.25') before resetting - "
+                "it's needed to file tonight's filming opt-outs under the right event. Nothing was reset."
+            )
+
+        self._record_filming_opt_outs(event_date)
 
         SongRequest.objects.all().delete()
         Singer.objects.filter(is_superuser=False).delete()
@@ -22,9 +30,7 @@ class Command(BaseCommand):
         GroupSongRequest.objects.update(suggested_by='-', performance_time=None)
         Celebration.objects.all().delete()
 
-    def _record_filming_opt_outs(self):
-        # Same field the People's Choice page uses; it's the only place the plain event date lives in config.
-        event_date = getattr(config, 'PEOPLES_CHOICE_EVENT_DATE', '') or ''
+    def _record_filming_opt_outs(self, event_date):
         event_sku = getattr(config, 'EVENT_SKU', '') or ''
 
         num_recorded = 0
