@@ -6,7 +6,9 @@ from django.core.management import call_command
 from django.core.management.base import CommandError
 from django.test import TestCase
 
-from song_signup.models import Singer, FilmingOptOut, SING_SKU, ATTN_SKU
+from django.utils import timezone
+
+from song_signup.models import Singer, SongRequest, FilmingOptOut, SING_SKU, ATTN_SKU
 from song_signup.tests.utils_for_tests import create_order
 
 TEST_IMG_PATH = 'song_signup/tests/test_img.png'
@@ -68,6 +70,42 @@ class TestFilmingOptOutSnapshot(TestCase):
         self.assertFalse(audience_record.photo)
 
         self.assertFalse(FilmingOptOut.objects.filter(full_name='Happy Singer').exists())
+
+    @override_config(EVENT_SKU='EVT123', PEOPLES_CHOICE_EVENT_DATE='21.9.25')
+    def test_songs_performed_lists_both_own_and_partner_songs_in_order(self):
+        opted_out_singer = _create_person('Opted Singer', self.singer_order, opt_out=True)
+        other_singer = _create_person('Other Singer', self.singer_order)
+
+        second_song = SongRequest.objects.create(
+            song_name='Second Song', musical='Hamilton', singer=opted_out_singer,
+            performance_time=timezone.now()
+        )
+        first_song = SongRequest.objects.create(
+            song_name='First Song', musical='Wicked', singer=opted_out_singer,
+            performance_time=timezone.now() - timezone.timedelta(minutes=30)
+        )
+        partner_song = SongRequest.objects.create(
+            song_name='Partner Song', musical='Rent', singer=other_singer,
+            performance_time=timezone.now() - timezone.timedelta(minutes=15)
+        )
+        partner_song.partners.add(opted_out_singer)
+        # Not performed yet - should not show up.
+        SongRequest.objects.create(song_name='Unsung Song', musical='Cats', singer=opted_out_singer)
+
+        call_command('reset_db')
+
+        record = FilmingOptOut.objects.get(full_name='Opted Singer')
+        self.assertEqual(
+            record.songs_performed,
+            'First Song (Wicked); Partner Song (Rent); Second Song (Hamilton)'
+        )
+
+    @override_config(PEOPLES_CHOICE_EVENT_DATE='21.9.25')
+    def test_songs_performed_blank_when_nothing_was_performed(self):
+        _create_person('Opted Singer', self.singer_order, opt_out=True)
+        call_command('reset_db')
+        record = FilmingOptOut.objects.get(full_name='Opted Singer')
+        self.assertEqual(record.songs_performed, '')
 
     @override_config(PEOPLES_CHOICE_EVENT_DATE='21.9.25')
     def test_reset_without_opt_outs_records_nothing(self):
