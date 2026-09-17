@@ -7,7 +7,6 @@ from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.contrib.postgres.fields import CITextField
 from django.core.exceptions import ValidationError
-from django.core.files.base import File
 from django.db.models import (
     CASCADE,
     PROTECT,
@@ -102,8 +101,8 @@ def filming_opt_out_photo_path(instance, filename):
 class FilmingOptOut(Model):
     """
     Permanent record of people who checked "Don't post videos of me".
-    Singers are wiped on every DB reset, so this is snapshotted from them right before the wipe
-    (see the reset_db command). The selfie file is copied so it does not depend on the singer's file.
+    Singers are wiped on every DB reset, so reset_db copies them here right before the wipe.
+    The selfie is copied (not referenced) so it does not depend on the singer row being deleted.
     """
     full_name = CharField(max_length=150)
     is_audience = BooleanField(default=False)
@@ -120,40 +119,6 @@ class FilmingOptOut(Model):
 
     def __str__(self):
         return f"{self.full_name} ({self.event_name or 'unknown event'})"
-
-    @classmethod
-    def snapshot(cls):
-        """
-        Record every current non-superuser who asked not to be filmed. Returns the number of records created.
-        Safe to call more than once for the same evening: a person is recorded once per event.
-        """
-        last_order = TicketOrder.objects.filter(is_freebie=False).order_by('id').last()
-        event_name = last_order.event_name if last_order else ''
-        event_sku = getattr(config, 'EVENT_SKU', '') or ''
-
-        created = 0
-        for singer in Singer.objects.filter(is_superuser=False, no_image_upload=True).order_by('id'):
-            full_name = singer.get_full_name() or singer.username
-            if cls.objects.filter(full_name=full_name, event_name=event_name, event_sku=event_sku).exists():
-                continue
-
-            opt_out = cls(
-                full_name=full_name,
-                is_audience=singer.is_audience,
-                event_name=event_name,
-                event_sku=event_sku,
-                phone_number=singer.ticket_order.phone_number if singer.ticket_order else None,
-            )
-            if singer.selfie:
-                try:
-                    with singer.selfie.open('rb') as selfie_file:
-                        opt_out.photo.save(os.path.basename(singer.selfie.name), File(selfie_file), save=False)
-                except (FileNotFoundError, ValueError):
-                    logger.warning("Selfie file missing for %s; recording opt-out without a photo", full_name)
-            opt_out.save()
-            created += 1
-
-        return created
 
 
 class Singer(AbstractUser):

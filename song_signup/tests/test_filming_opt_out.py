@@ -88,13 +88,6 @@ class TestFilmingOptOutSnapshot(TestCase):
         call_command('reset_db')
         self.assertEqual(FilmingOptOut.objects.count(), 0)
 
-    @override_config(EVENT_SKU='EVT123')
-    def test_snapshot_is_idempotent_within_an_event(self):
-        _create_person('Opted Singer', self.singer_order, opt_out=True)
-        self.assertEqual(FilmingOptOut.snapshot(), 1)
-        self.assertEqual(FilmingOptOut.snapshot(), 0)
-        self.assertEqual(FilmingOptOut.objects.count(), 1)
-
     def test_freebie_order_is_not_used_as_event_name(self):
         freebie = TicketOrder.objects.create(order_id=999999, event_sku='EVT123', event_name='FREEBIE-ORDER',
                                              num_tickets=-1, customer_name='FREEBIE_ORDER',

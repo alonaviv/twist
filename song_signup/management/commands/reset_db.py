@@ -1,6 +1,9 @@
+from django.core.files.base import File
 from django.core.management.base import BaseCommand
+from constance import config
+
 from song_signup.models import (SongRequest, Singer, CurrentGroupSong, GroupSongRequest, Celebration,
-                                FilmingOptOut)
+                                FilmingOptOut, TicketOrder)
 
 
 class Command(BaseCommand):
@@ -8,8 +11,7 @@ class Command(BaseCommand):
             'People who asked not to be filmed are recorded in FilmingOptOut first.')
 
     def handle(self, *args, **options):
-        num_opt_outs = FilmingOptOut.snapshot()
-        self.stdout.write(f"Recorded {num_opt_outs} filming opt-out(s)")
+        self._record_filming_opt_outs()
 
         SongRequest.objects.all().delete()
         Singer.objects.filter(is_superuser=False).delete()
@@ -19,3 +21,30 @@ class Command(BaseCommand):
         GroupSongRequest.objects.filter(type='USER').delete()
         GroupSongRequest.objects.update(suggested_by='-', performance_time=None)
         Celebration.objects.all().delete()
+
+    def _record_filming_opt_outs(self):
+        # The freebie order's event_name is just a placeholder ('FREEBIE-ORDER'), so use the last real order.
+        last_order = TicketOrder.objects.filter(is_freebie=False).order_by('id').last()
+        event_name = last_order.event_name if last_order else ''
+        event_sku = getattr(config, 'EVENT_SKU', '') or ''
+
+        num_recorded = 0
+        for singer in Singer.objects.filter(is_superuser=False, no_image_upload=True).order_by('id'):
+            opt_out = FilmingOptOut(
+                full_name=singer.get_full_name() or singer.username,
+                is_audience=singer.is_audience,
+                event_name=event_name,
+                event_sku=event_sku,
+                phone_number=singer.ticket_order.phone_number if singer.ticket_order else None,
+            )
+            if singer.selfie:
+                try:
+                    with singer.selfie.open('rb') as selfie_file:
+                        opt_out.photo.save(singer.selfie.name.rsplit('/', 1)[-1], File(selfie_file), save=False)
+                except (FileNotFoundError, ValueError):
+                    self.stderr.write(f"Selfie file missing for {opt_out.full_name}; "
+                                      f"recording opt-out without a photo")
+            opt_out.save()
+            num_recorded += 1
+
+        self.stdout.write(f"Recorded {num_recorded} filming opt-out(s)")
