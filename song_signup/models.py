@@ -94,6 +94,9 @@ class FilmingOptOut(Model):
     event_sku = CharField(max_length=20, blank=True, default='')
     phone_number = CharField(max_length=15, null=True, blank=True)
     photo = ImageField(upload_to='selfies/', blank=True, null=True)
+    # "Song Name (Musical)" entries, one per performed song, in performance order. Covers both their own
+    # songs and ones they joined as a partner. Blank if they never got up (or the raffle never called them).
+    songs_performed = TextField(blank=True, default='')
     recorded_at = DateTimeField(auto_now_add=True)
 
     class Meta:
