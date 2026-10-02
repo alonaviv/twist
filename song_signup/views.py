@@ -920,12 +920,28 @@ def stop_boho(request):
     return redirect('admin/song_signup/songrequest')
 
 
+@superuser_required('login')
+def start_oktoberfest(request):
+    enable_flag('OKTOBERFEST')
+    return redirect('admin/song_signup/songrequest')
+
+
+@superuser_required('login')
+def stop_oktoberfest(request):
+    disable_flag('OKTOBERFEST')
+    return redirect('admin/song_signup/songrequest')
+
+
 def evening_started(request):
     return JsonResponse({"started": flag_enabled('STARTED')})
 
 
 def boho_started(request):
     return JsonResponse({"boho": flag_enabled('BOHO')})
+
+
+def oktoberfest_started(request):
+    return JsonResponse({"oktoberfest": config.OKTOBERFEST and flag_enabled('OKTOBERFEST')})
 
 
 @api_view(["PUT"])

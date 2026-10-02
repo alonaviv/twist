@@ -21,6 +21,16 @@
                         <a href="{% url 'start_boho' %}">Start Boho</a>
                     {% endif %}
                 </li>
+                {% if config.OKTOBERFEST %}
+                <li>
+                    {% flag_enabled 'OKTOBERFEST' as oktoberfest %}
+                    {% if oktoberfest %}
+                        <a href="{% url 'stop_oktoberfest' %}">Stop Oktoberfest</a>
+                    {% else %}
+                        <a href="{% url 'start_oktoberfest' %}">Start Oktoberfest</a>
+                    {% endif %}
+                </li>
+                {% endif %}
             <li>
                 <a href="{% url 'recalculate_priorities' %}">Recalulate</a>
             </li>

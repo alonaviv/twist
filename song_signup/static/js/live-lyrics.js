@@ -7,6 +7,7 @@ const logo_img = document.getElementById("logo-img");
 const passcodeWrapper = document.getElementById("passcode-reveal-wrapper");
 const passcodeReveal = document.getElementById("passcode-reveal");
 const bohoWrapper = document.getElementById("boho-wrapper")
+const oktoberfestWrapper = document.getElementById("oktoberfest-wrapper");
 const questionText = document.querySelector(".question-text.live-lyrics-trivia");
 const questionImage = document.getElementById("question-image-lyrics");
 const triviaQuestionsWrapper = document.querySelector(".trivia-questions-wrapper.live-lyrics-trivia");
@@ -27,6 +28,7 @@ let fireworksRunning = false;
 const rafflePhaseNumber = document.getElementById("raffle-phase-number");
 let currentSong = '';
 let showPasscode = false;
+let showOktoberfest = false;
 let activeRaffleWinner = false;
 let slotAnimationRunning = false;
 let slotAnimationCompleted = false;
@@ -42,6 +44,7 @@ if (!/Android|iPhone/i.test(navigator.userAgent)) {
     logo.classList.add('screen');
     if (isSuperuser) {
         showPasscode = true;
+        showOktoberfest = true;
     }
 }
 
@@ -105,6 +108,12 @@ async function populateLyrics() {
     const eveningStarted = (await startedRes.json()).started;
     const bohoRes = await fetch("/boho_started");
     const boho = (await bohoRes.json()).boho;
+    if (showOktoberfest) {
+        const oktoberfestRes = await fetch("/oktoberfest_started");
+        const oktoberfest = (await oktoberfestRes.json()).oktoberfest;
+        // An overlay on top of the page, which keeps updating behind it. Boho Days shows through it.
+        oktoberfestWrapper.classList.toggle('displayed', oktoberfest && !boho);
+    }
     const questionRes = await fetch("/get_active_question");
     const question = await questionRes.json();
     const raffleParticipantsRes = await fetch("/get_raffle_participants");

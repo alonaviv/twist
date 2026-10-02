@@ -112,6 +112,99 @@
     }
 }
 
+#oktoberfest-wrapper {
+    display: none;
+
+    &.displayed {
+        position: fixed;
+        inset: 0;
+        z-index: 2000;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 3vh;
+        // Bottom padding keeps the subtitle clear of projectors that cut off the bottom of the screen
+        padding: 9vh 0 12vh;
+        box-sizing: border-box;
+        background-color: white;
+    }
+
+    // Bavarian lozenges: a checkerboard turned on its corner and flattened
+    &::before {
+        content: "";
+        position: absolute;
+        inset: -100%;
+        z-index: -2;
+        background: conic-gradient($oktoberfest-sky 25%, white 0 50%, $oktoberfest-sky 0 75%, white 0) 0 0 / 13vh 13vh;
+        transform: scaleY(0.6) rotate(45deg);
+    }
+
+    // Darkens the edges so the logo and banner stand out from the pattern
+    &::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        background: radial-gradient(ellipse at center, rgba($oktoberfest-blue, 0) 30%, rgba($oktoberfest-blue, 0.75) 100%);
+    }
+
+    // Pennant garland: alternating blue and gold triangles hanging from a rope
+    #oktoberfest-bunting {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 9vh;
+        background:
+            linear-gradient($oktoberfest-brown, $oktoberfest-brown) 0 1vh / 100% 0.5vh no-repeat,
+            conic-gradient(from -25deg at 50% 100%, $oktoberfest-blue 50deg, transparent 0) 0 1vh / 16vh 8vh repeat-x,
+            conic-gradient(from -25deg at 50% 100%, $oktoberfest-gold 50deg, transparent 0) 8vh 1vh / 16vh 8vh repeat-x;
+        filter: drop-shadow(0 0.6vh 0.6vh rgba(0, 0, 0, 0.35));
+    }
+
+    #oktoberfest-logo {
+        height: 46vh;
+        max-width: 90vw;
+        object-fit: contain;
+        filter: drop-shadow(0 1.5vh 3vh rgba(0, 0, 0, 0.5));
+    }
+
+    #oktoberfest-banner {
+        filter: drop-shadow(0 1vh 1.5vh rgba(0, 0, 0, 0.45));
+    }
+
+    // A beer-coloured ribbon with notched ends
+    #oktoberfest-title {
+        margin: 0;
+        padding: 0.5vh 14vh 2vh;
+        background: linear-gradient($oktoberfest-foam 0 12%, $oktoberfest-gold 30%, $oktoberfest-amber 100%);
+        clip-path: polygon(0 0, 100% 0, calc(100% - 6vh) 50%, 100% 100%, 0 100%, 6vh 50%);
+        color: $oktoberfest-brown;
+        font-family: "Grenze Gotisch", serif;
+        font-weight: 700;
+        font-size: 13vh;
+        line-height: 1.1;
+        text-shadow: 0 0.3vh 0 rgba(255, 255, 255, 0.4);
+    }
+
+    // A solid plaque so the subtitle reads over the busy pattern on any projector
+    #oktoberfest-subtitle {
+        margin: -1vh 0 0;
+        padding: 0.3vh 5vh 0.8vh;
+        background-color: $oktoberfest-blue;
+        border: 0.5vh solid $oktoberfest-gold;
+        border-radius: 1.5vh;
+        box-shadow: 0 1vh 1.5vh rgba(0, 0, 0, 0.45);
+        color: white;
+        font-family: "Grenze Gotisch", serif;
+        font-weight: 700;
+        font-size: 6.5vh;
+        letter-spacing: 0.3vh;
+    }
+}
+
 .drink-highlight {
     color: white;
     background-color: $primary-color;
@@ -136,6 +229,12 @@
         // content: "\e0b3"; // For beer icon
         // transform: rotate(30deg) scaleX(-1); // For beer icon
     }
+}
+
+#lyrics-wrapper.oktoberfest .drink-highlight::before {
+    content: "\e0b3";
+    rotate: none;
+    transform: rotate(30deg) scaleX(-1);
 }
 
 #lyrics-wrapper {

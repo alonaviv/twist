@@ -2705,6 +2705,73 @@ main.exp-layout {
       padding: 0;
       object-fit: contain; }
 
+#oktoberfest-wrapper {
+  display: none; }
+  #oktoberfest-wrapper.displayed {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3vh;
+    padding: 9vh 0 12vh;
+    box-sizing: border-box;
+    background-color: white; }
+  #oktoberfest-wrapper::before {
+    content: "";
+    position: absolute;
+    inset: -100%;
+    z-index: -2;
+    background: conic-gradient(#5aaee6 25%, white 0 50%, #5aaee6 0 75%, white 0) 0 0/13vh 13vh;
+    transform: scaleY(0.6) rotate(45deg); }
+  #oktoberfest-wrapper::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: radial-gradient(ellipse at center, rgba(10, 79, 150, 0) 30%, rgba(10, 79, 150, 0.75) 100%); }
+  #oktoberfest-wrapper #oktoberfest-bunting {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 9vh;
+    background: linear-gradient(#4a2c12, #4a2c12) 0 1vh/100% 0.5vh no-repeat, conic-gradient(from -25deg at 50% 100%, #0a4f96 50deg, transparent 0) 0 1vh/16vh 8vh repeat-x, conic-gradient(from -25deg at 50% 100%, #f2b01e 50deg, transparent 0) 8vh 1vh/16vh 8vh repeat-x;
+    filter: drop-shadow(0 0.6vh 0.6vh rgba(0, 0, 0, 0.35)); }
+  #oktoberfest-wrapper #oktoberfest-logo {
+    height: 46vh;
+    max-width: 90vw;
+    object-fit: contain;
+    filter: drop-shadow(0 1.5vh 3vh rgba(0, 0, 0, 0.5)); }
+  #oktoberfest-wrapper #oktoberfest-banner {
+    filter: drop-shadow(0 1vh 1.5vh rgba(0, 0, 0, 0.45)); }
+  #oktoberfest-wrapper #oktoberfest-title {
+    margin: 0;
+    padding: 0.5vh 14vh 2vh;
+    background: linear-gradient(#fff6dc 0 12%, #f2b01e 30%, #d27a0c 100%);
+    clip-path: polygon(0 0, 100% 0, calc(100% - 6vh) 50%, 100% 100%, 0 100%, 6vh 50%);
+    color: #4a2c12;
+    font-family: "Grenze Gotisch", serif;
+    font-weight: 700;
+    font-size: 13vh;
+    line-height: 1.1;
+    text-shadow: 0 0.3vh 0 rgba(255, 255, 255, 0.4); }
+  #oktoberfest-wrapper #oktoberfest-subtitle {
+    margin: -1vh 0 0;
+    padding: 0.3vh 5vh 0.8vh;
+    background-color: #0a4f96;
+    border: 0.5vh solid #f2b01e;
+    border-radius: 1.5vh;
+    box-shadow: 0 1vh 1.5vh rgba(0, 0, 0, 0.45);
+    color: white;
+    font-family: "Grenze Gotisch", serif;
+    font-weight: 700;
+    font-size: 6.5vh;
+    letter-spacing: 0.3vh; }
+
 .drink-highlight {
   color: white;
   background-color: #00C575;
@@ -2725,6 +2792,11 @@ main.exp-layout {
     top: -30%;
     left: -25%;
     rotate: 30deg; }
+
+#lyrics-wrapper.oktoberfest .drink-highlight::before {
+  content: "\e0b3";
+  rotate: none;
+  transform: rotate(30deg) scaleX(-1); }
 
 #lyrics-wrapper {
   min-height: 100vh;

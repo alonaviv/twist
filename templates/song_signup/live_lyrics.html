@@ -23,7 +23,18 @@
         </div>
     </div>
 </div>
-<div id="lyrics-wrapper">
+{% if config.OKTOBERFEST %}
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Grenze+Gotisch:wght@700&display=swap">
+{% endif %}
+<div id="oktoberfest-wrapper">
+    <div id="oktoberfest-bunting"></div>
+    <img id="oktoberfest-logo" src="{% bwt_big_logo %}" alt="Oktoberfest">
+    <div id="oktoberfest-banner">
+        <p id="oktoberfest-title">Oktoberfest</p>
+    </div>
+    <p id="oktoberfest-subtitle">Time to play!</p>
+</div>
+<div id="lyrics-wrapper"{% if config.OKTOBERFEST %} class="oktoberfest"{% endif %}>
     <div class="container">
         <div class="center">
             <div id="lyrics-text"></div>
