@@ -26,7 +26,8 @@
 {% if config.OKTOBERFEST %}
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Grenze+Gotisch:wght@700&display=swap">
 {% endif %}
-<div id="oktoberfest-wrapper">
+{# hidden keeps it out of sight even for browsers holding a main.css cached from before it existed #}
+<div id="oktoberfest-wrapper" hidden>
     <div id="oktoberfest-bunting"></div>
     <img id="oktoberfest-logo" src="{% bwt_big_logo %}" alt="Oktoberfest">
     <div id="oktoberfest-banner">
