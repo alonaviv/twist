@@ -327,6 +327,7 @@ class SongRequest(Model):
     spotlight = BooleanField(default=False)
     standby = BooleanField(default=False) # If song is out of the regular ordering, waiting to be spotlighted
     is_peoples_choice = BooleanField(default=False)
+    coronation_done = BooleanField(default=False)  # The live lyrics coronation screen was ended for this song
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -505,3 +506,20 @@ class TriviaResponse(Model):
     @property
     def is_correct(self):
         return self.question.answer is self.choice
+
+
+class Reaction(Model):
+    """
+    One emoji or one text sent from a phone during a people's choice song, shown once on the live lyrics screen.
+    """
+    TEXT_MAX_LENGTH = 40
+
+    song = ForeignKey(SongRequest, on_delete=CASCADE, related_name='reactions')
+    user = ForeignKey(Singer, on_delete=CASCADE, related_name='reactions')
+    emoji = CharField(max_length=16, blank=True, default='')
+    text = CharField(max_length=TEXT_MAX_LENGTH, blank=True, default='')
+    created_at = DateTimeField(auto_now_add=True)
+    displayed_at = DateTimeField(default=None, null=True, blank=True)
+
+    def __str__(self):
+        return self.emoji or self.text

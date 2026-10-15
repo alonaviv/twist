@@ -1,0 +1,273 @@
+// People's choice reactions: the phone window that sends them, and the lanes that show them on the live lyrics screen
+
+// Phone window: full screen like trivia, but below it (trivia is 200). Bright and flat like the rest of the
+// app, in the sash's pink.
+$reactions-pink: #f976ae;
+$reactions-pink-light: #fdafd1;
+$reactions-ink: #2a0628;
+
+#reactions-wrapper {
+    position: fixed;
+    inset: 0;
+    z-index: 150;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3.5vh;
+    padding: 5vh 5vw 4vh;
+    text-align: center;
+    background-color: $reactions-pink;
+    color: $reactions-ink;
+    // Slides up and fades in like the trivia overlay
+    opacity: 0;
+    transform: translateY(100vh);
+    transition: opacity 1s ease, transform 1s linear;
+
+    &.active {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    #reactions-close {
+        position: absolute;
+        top: 1.5vh;
+        right: 4vw;
+        border: none;
+        background: none;
+        color: $reactions-ink;
+        font-size: 2.6rem;
+        line-height: 1;
+        cursor: pointer;
+    }
+
+    #reactions-sash {
+        height: 14vh;
+        margin-bottom: -2vh;
+        filter: drop-shadow(0 0.6vh 0.8vh rgba($reactions-ink, 0.35));
+    }
+
+    // Glam script, in the spirit of Legally Blonde: white with a hot-pink drop
+    #reactions-title {
+        color: white;
+        font-family: "Pacifico", cursive;
+        font-weight: normal;
+        font-size: 2.8rem;
+        line-height: 1.3;
+        text-shadow:
+            3px 3px 0 #d6247a,
+            0 4px 12px rgba($reactions-ink, 0.3);
+    }
+
+    #reactions-subtitle {
+        margin-top: -1.5vh;
+        font-weight: 500;
+        font-size: 1.2rem;
+    }
+
+    #reactions-emojis {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 4vw;
+    }
+
+    .reactions-emoji {
+        position: relative;
+        width: 25vw;
+        height: 25vw;
+        border: none;
+        border-radius: 10px;
+        background-color: white;
+        box-shadow: 0 4px 0 rgba($reactions-ink, 0.15);
+        font-size: 11vw;
+        line-height: 1;
+        cursor: pointer;
+        touch-action: manipulation;  // No double-tap zoom when tapping fast
+
+        &:active {
+            background-color: $reactions-pink-light;
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 rgba($reactions-ink, 0.15);
+        }
+    }
+
+    // The tapped emoji floats up from its button, so a tap feels sent
+    .reactions-pop {
+        position: absolute;
+        left: 50%;
+        top: 0;
+        pointer-events: none;
+        animation: reactions-pop 0.9s ease-out forwards;
+    }
+
+    #reactions-text-form {
+        display: flex;
+        gap: 3vw;
+        width: 100%;
+
+        #reactions-text-field {
+            position: relative;
+            flex: 1;
+            min-width: 0;
+
+            #reactions-text {
+                width: 100%;
+                padding: 12px 52px 12px 12px;
+                border: none;
+                border-radius: 10px;
+                font-family: "Roboto", sans-serif;
+                font-size: 16px;  // 16px stops iPhones zooming in on focus
+            }
+
+            #reactions-text-count {
+                position: absolute;
+                right: 12px;
+                top: 50%;
+                transform: translateY(-50%);
+                color: #888;
+                font-size: 0.8rem;
+                pointer-events: none;
+            }
+        }
+
+        #reactions-send {
+            padding: 12px 6vw;
+            border: none;
+            border-radius: 10px;
+            background-color: $dark-bg;
+            color: $reactions-pink-light;
+            font-family: "Roboto", sans-serif;
+            font-weight: 500;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    }
+
+    #reactions-sent {
+        opacity: 0;
+        font-weight: 700;
+
+        &.shown {
+            animation: reactions-sent 1.5s ease-out;
+        }
+    }
+}
+
+@keyframes reactions-pop {
+    from {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+    to {
+        opacity: 0;
+        transform: translate(calc(-50% + var(--drift)), -20vh);
+    }
+}
+
+@keyframes reactions-sent {
+    0%, 70% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+// Live lyrics lanes: one on each side of the centred lyrics, above the coronation overlay (150) and the
+// top-left logo (300). reaction-lane.js hides them while trivia or the raffle is on screen.
+.reaction-lane {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    width: 18vw;
+    z-index: 310;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+#reaction-lane-left {
+    left: 0;
+}
+
+#reaction-lane-right {
+    right: 0;
+}
+
+.reaction-float {
+    position: absolute;
+    z-index: 1;
+    // Above the strip that some projectors cut off
+    bottom: 12vh;
+    font-size: 10vh;
+    animation: reaction-float 6s linear forwards;
+}
+
+@keyframes reaction-float {
+    0% {
+        opacity: 0;
+        transform: translate(0, 0) scale(0.6);
+    }
+    10% {
+        opacity: 1;
+        transform: translate(0, -10vh) scale(1);
+    }
+    // Fully visible until close to the top, then fades out just below it
+    85% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+        transform: translate(var(--drift), -76vh) scale(1.1);
+    }
+}
+
+// Texts drift up the lane slowly, so they can be read on the way, always in front of the emojis
+.reaction-bubble {
+    position: absolute;
+    z-index: 2;
+    bottom: 12vh;
+    left: 50%;
+    width: max-content;
+    max-width: 16vw;
+    padding: 1.2vh 1.5vw;
+    border-radius: 3vh;
+    background-color: white;
+    // drop-shadow rather than box-shadow, so the tail gets the shadow too
+    filter: drop-shadow(0 0.8vh 1.5vh rgba(0, 0, 0, 0.4));
+    color: #2a0628;
+    font-family: "Heebo", sans-serif;
+    font-weight: 600;
+    font-size: 3.5vh;
+    line-height: 1.25;
+    text-align: center;
+    overflow-wrap: anywhere;
+    animation: reaction-bubble 14s linear forwards;
+
+    // The speech bubble's tail, pointing down from its lower left
+    &::after {
+        content: "";
+        position: absolute;
+        bottom: -2.2vh;
+        left: 20%;
+        border-style: solid;
+        border-width: 2.4vh 2.4vh 0 0;
+        border-color: white transparent transparent transparent;
+    }
+}
+
+@keyframes reaction-bubble {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, 0) scale(0.8);
+    }
+    6% {
+        opacity: 1;
+        transform: translate(-50%, -4vh) scale(1);
+    }
+    85% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -75vh) scale(1);
+    }
+}

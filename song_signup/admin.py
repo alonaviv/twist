@@ -7,10 +7,11 @@ from django.core.exceptions import ValidationError
 from constance import config
 
 from .models import (SongLyrics, SongRequest, Singer, GroupSongRequest, TicketOrder,
-                     CurrentGroupSong, TriviaQuestion, TriviaResponse, Celebration, FilmingOptOut
+                     CurrentGroupSong, TriviaQuestion, TriviaResponse, Celebration, FilmingOptOut, Reaction
 )
 from .forms import SongRequestForm
 from .tasks import get_lyrics
+from .views import _get_peoples_choice_song_in_coronation
 
 def set_solo_performed(modeladmin, request, queryset):
     for song in queryset:
@@ -48,6 +49,20 @@ set_solo_skipped.short_description = 'Mark song as skipped'
 set_solo_skipped.allowed_permissions = ['change']
 set_solo_unskipped.short_description = 'Mark song as unskipped'
 set_solo_unskipped.allowed_permissions = ['change']
+
+
+def set_peoples_choice(modeladmin, request, queryset):
+    queryset.update(is_peoples_choice=True)
+
+
+def unset_peoples_choice(modeladmin, request, queryset):
+    queryset.update(is_peoples_choice=False)
+
+
+set_peoples_choice.short_description = "Mark as people's choice"
+set_peoples_choice.allowed_permissions = ['change']
+unset_peoples_choice.short_description = "Unmark people's choice"
+unset_peoples_choice.allowed_permissions = ['change']
 
 def spotlight(modeladmin, request, queryset):
     if queryset.count() != 1:
@@ -208,7 +223,7 @@ class SongRequestAdmin(admin.ModelAdmin):
     list_filter = (NotYetPerformedFilter,)
     list_editable = ('default_lyrics', 'found_music')
     actions = [set_solo_performed, set_solo_not_performed, set_solo_skipped, set_solo_unskipped,
-               spotlight, set_standby, unset_standby, force_lyrics_refresh]
+               set_peoples_choice, unset_peoples_choice, spotlight, set_standby, unset_standby, force_lyrics_refresh]
     ordering = ['position']
     change_list_template = "admin/song_request_changelist.html"
     list_per_page = 500
@@ -251,6 +266,8 @@ class SongRequestAdmin(admin.ModelAdmin):
         spotlight_song = SongRequest.objects.get_spotlight()
         if spotlight_song:
             extra_context['spotlight'] = spotlight_song
+
+        extra_context['coronation_song'] = _get_peoples_choice_song_in_coronation()
 
         return super().changelist_view(request, extra_context=extra_context)
 
@@ -536,3 +553,29 @@ class TriviaResponseAdmin(admin.ModelAdmin):
 @admin.register(Celebration)
 class CelebrationAdmin(admin.ModelAdmin):
     list_display = ['order_id', 'event_date', 'customer_name', 'phone_number', 'celebrating']
+
+
+class TextsOnlyFilter(admin.SimpleListFilter):
+    title = 'Type'
+    parameter_name = 'type'
+
+    def lookups(self, request, model_admin):
+        return (('texts', 'Texts only'),)
+
+    def queryset(self, request, queryset):
+        if self.value() == 'texts':
+            return queryset.exclude(text='')
+        return queryset
+
+
+@admin.register(Reaction)
+class ReactionAdmin(admin.ModelAdmin):
+    list_display = ['song', 'user', 'emoji', 'text', 'created_at', 'displayed_at']
+    list_filter = [('song', admin.RelatedOnlyFieldListFilter), TextsOnlyFilter]
+    ordering = ['-created_at']
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False

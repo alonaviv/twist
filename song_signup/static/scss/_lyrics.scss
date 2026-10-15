@@ -205,6 +205,155 @@
     }
 }
 
+// Above the lyrics, below trivia and the raffle (200) and the top-left logo (300)
+#coronation-wrapper {
+    display: none;
+
+    &.displayed {
+        position: fixed;
+        inset: 0;
+        z-index: 150;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        // Bottom padding keeps the song name clear of projectors that cut off the bottom of the screen
+        padding: 6vh 22vw 12vh;
+        box-sizing: border-box;
+        text-align: center;
+        background: radial-gradient(ellipse at center, #5a1050 0%, #2a0628 70%, #12010f 100%);
+    }
+
+    // A slow golden glow behind the sash
+    &::before {
+        content: "";
+        position: absolute;
+        inset: -50%;
+        z-index: -1;
+        background: repeating-conic-gradient(rgba($raffle-color, 0.07) 0 10deg, transparent 10deg 20deg);
+        animation: coronation-rays 40s linear infinite;
+    }
+
+    #coronation-fireworks {
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+    }
+
+    #coronation-sash {
+        height: 38vh;
+        object-fit: contain;
+        filter: drop-shadow(0 1.5vh 3vh rgba(0, 0, 0, 0.6));
+        animation: coronation-sash-in 1.6s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+    }
+
+    p {
+        margin: 0;
+        line-height: 1.1;
+    }
+
+    // The sash's pink, so the singer stands apart from the white banner text
+    #coronation-names {
+        margin-top: 3vh;
+        color: #ff9ad5;
+        font-family: "Anton", "Heebo", sans-serif;
+        font-size: 10vh;
+        text-shadow:
+            0 0.4vh 0 #2a0628,
+            0.3vh 0 0 #2a0628,
+            -0.3vh 0 0 #2a0628,
+            0 -0.3vh 0 #2a0628,
+            0 0.8vh 2.5vh rgba(0, 0, 0, 0.7);
+        animation: coronation-rise 0.9s ease-out 1.2s both;
+    }
+
+    // A solid banner so it reads over the rays on any projector
+    #coronation-title {
+        margin-top: 2vh;
+        padding: 0.6vh 5vh 1vh;
+        background-color: $banner-color;
+        border: 0.5vh solid $raffle-color;
+        border-radius: 1.5vh;
+        box-shadow: 0 1vh 2vh rgba(0, 0, 0, 0.5);
+        color: white;
+        font-family: "Anton", sans-serif;
+        font-size: 7vh;
+        letter-spacing: 0.3vh;
+        text-shadow: 0 0.4vh 0 rgba(0, 0, 0, 0.35);
+        animation: coronation-pop 0.8s cubic-bezier(0.2, 0.9, 0.3, 1.4) 2s both;
+    }
+
+    #coronation-song {
+        margin-top: 3.5vh;
+        color: $raffle-color;
+        font-family: "Playfair Display", "Heebo", serif;
+        font-style: italic;
+        font-weight: 900;
+        font-size: 8.5vh;
+        // A dark outline keeps the gold crisp over the background
+        text-shadow:
+            0 0.4vh 0 #2a0628,
+            0.3vh 0 0 #2a0628,
+            -0.3vh 0 0 #2a0628,
+            0 -0.3vh 0 #2a0628,
+            0 1vh 2.5vh rgba(0, 0, 0, 0.7);
+        animation: coronation-rise 0.9s ease-out 2.8s both;
+    }
+
+    #coronation-musical {
+        margin-top: 1.5vh;
+        color: white;
+        font-family: "Heebo", sans-serif;
+        font-weight: 600;
+        font-size: 4vh;
+        letter-spacing: 0.6vh;
+        text-transform: uppercase;
+        text-shadow: 0 0.4vh 1.5vh rgba(0, 0, 0, 0.7);
+        animation: coronation-rise 0.9s ease-out 3.3s both;
+    }
+}
+
+@keyframes coronation-rays {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes coronation-sash-in {
+    from {
+        opacity: 0;
+        transform: translateY(-60vh) rotate(-35deg) scale(0.6);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@keyframes coronation-rise {
+    from {
+        opacity: 0;
+        transform: translateY(4vh);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@keyframes coronation-pop {
+    from {
+        opacity: 0;
+        transform: scale(0.3);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
 .drink-highlight {
     color: white;
     background-color: $primary-color;

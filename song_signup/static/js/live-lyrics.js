@@ -8,6 +8,12 @@ const passcodeWrapper = document.getElementById("passcode-reveal-wrapper");
 const passcodeReveal = document.getElementById("passcode-reveal");
 const bohoWrapper = document.getElementById("boho-wrapper")
 const oktoberfestWrapper = document.getElementById("oktoberfest-wrapper");
+const coronationWrapper = document.getElementById("coronation-wrapper");
+const coronationFireworksContainer = document.getElementById("coronation-fireworks");
+const coronationNames = document.getElementById("coronation-names");
+const coronationTitle = document.getElementById("coronation-title");
+const coronationSong = document.getElementById("coronation-song");
+const coronationMusical = document.getElementById("coronation-musical");
 const questionText = document.querySelector(".question-text.live-lyrics-trivia");
 const questionImage = document.getElementById("question-image-lyrics");
 const triviaQuestionsWrapper = document.querySelector(".trivia-questions-wrapper.live-lyrics-trivia");
@@ -29,6 +35,8 @@ const rafflePhaseNumber = document.getElementById("raffle-phase-number");
 let currentSong = '';
 let showPasscode = false;
 let showOktoberfest = false;
+let showCoronation = false;
+let coronationFireworks = null;
 let activeRaffleWinner = false;
 let slotAnimationRunning = false;
 let slotAnimationCompleted = false;
@@ -45,6 +53,7 @@ if (!/Android|iPhone/i.test(navigator.userAgent)) {
     if (isSuperuser) {
         showPasscode = true;
         showOktoberfest = true;
+        showCoronation = true;
     }
 }
 
@@ -113,6 +122,10 @@ async function populateLyrics() {
         const oktoberfest = (await oktoberfestRes.json()).oktoberfest;
         // An overlay on top of the page, which keeps updating behind it. Boho Days shows through it.
         oktoberfestWrapper.classList.toggle('displayed', oktoberfest && !boho);
+    }
+    if (showCoronation) {
+        const coronationRes = await fetch("/coronation_started");
+        updateCoronation((await coronationRes.json()).coronation);
     }
     const questionRes = await fetch("/get_active_question");
     const question = await questionRes.json();
@@ -379,6 +392,46 @@ function runSlotMachineAnimation(participants) {
 
     // Start animation
     animateSlot();
+}
+
+// An overlay on top of the page, which keeps updating behind it. Its CSS entry animations replay each time it appears.
+function updateCoronation(coronation) {
+    const show = coronation !== null;
+    if (show) {
+        // textContent, since names and song titles are typed in by singers
+        coronationNames.textContent = coronation.singers;
+        coronationTitle.textContent = coronation.plural ? "are the PEOPLE'S CHOICE!" : "is the PEOPLE'S CHOICE!";
+        coronationSong.textContent = coronation.song_name;
+        coronationMusical.textContent = coronation.musical;
+    }
+    const wasShown = coronationWrapper.classList.contains('displayed');
+    coronationWrapper.classList.toggle('displayed', show);
+    // After it's displayed, so the fireworks canvas gets the overlay's size
+    if (show && !wasShown) {
+        startCoronationFireworks();
+    } else if (!show && wasShown && coronationFireworks) {
+        coronationFireworks.stop();
+    }
+}
+
+// Fireworks run for as long as the coronation is showing
+function startCoronationFireworks() {
+    if (typeof Fireworks === "undefined" || !Fireworks || !Fireworks.default) {
+        return;
+    }
+    if (!coronationFireworks) {
+        coronationFireworks = new Fireworks.default(coronationFireworksContainer, {
+            autoresize: true,
+            opacity: 0.9,
+            particles: 220,
+            explosion: 9,
+            intensity: 50,
+            traceLength: 3,
+            hue: { min: 0, max: 360 },
+            brightness: { min: 60, max: 90 },
+        });
+    }
+    coronationFireworks.start();
 }
 
 function startFireworksOnce() {

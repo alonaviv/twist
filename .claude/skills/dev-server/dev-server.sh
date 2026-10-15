@@ -9,10 +9,13 @@ CONTAINER=twist-django-1
 COMPOSE="$PROJECT/docker-compose.dev.yml"
 LOG="$PROJECT/twist-logs/runserver.log"
 
-# The dev URL follows the elastic IP, which local_settings.py already tracks for livereload.
+# The public IP changes on every stop/start, so ask EC2's instance metadata for the current one.
 dev_url() {
-    local ip
-    ip=$(grep -oP "LIVERELOAD_HOST\s*=\s*'\K[^']+" "$PROJECT/twist/local_settings.py" 2>/dev/null)
+    local token ip
+    token=$(curl -s --max-time 2 -X PUT http://169.254.169.254/latest/api/token \
+        -H "X-aws-ec2-metadata-token-ttl-seconds: 60")
+    ip=$(curl -s --max-time 2 -H "X-aws-ec2-metadata-token: $token" \
+        http://169.254.169.254/latest/meta-data/public-ipv4)
     [ -n "$ip" ] || ip=$(hostname -I | awk '{print $1}')
     echo "http://$ip:8000/"
 }

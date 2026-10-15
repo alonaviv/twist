@@ -6,6 +6,7 @@ import time
 import csv
 import io
 from contextlib import redirect_stdout
+from datetime import timedelta
 
 import constance
 from constance import config
@@ -18,6 +19,7 @@ from django.db.utils import IntegrityError
 from django.http import JsonResponse, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.urls import reverse
+from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from flags.state import enable_flag, disable_flag, flag_disabled, flag_enabled
 from openpyxl import load_workbook
@@ -43,7 +45,8 @@ from .models import (
     CurrentGroupSong,
     TriviaQuestion,
     TriviaResponse,
-    Celebration
+    Celebration,
+    Reaction,
 )
 from .serializers import (
     SongSuggestionSerializer,
@@ -60,6 +63,9 @@ from .serializers import (
 from twist.utils import format_commas
 
 logger = logging.getLogger(__name__)
+
+REACTION_FEED_WINDOW = timedelta(seconds=10)  # Older reactions are never shown, so the screen never lags behind
+REACTION_FEED_LIMIT = 30  # Reactions handed to the screen per poll
 
 class TwistApiException(Exception):
     pass
@@ -452,6 +458,26 @@ def _get_current_song():
         return curr_group_song.group_song, True
     else:
         return SongRequest.objects.get_spotlight() or SongRequest.objects.current_song(), False
+
+
+def _get_current_peoples_choice_song():
+    """
+    The current solo song if it's a people's choice song, else None. Reactions are live exactly while this returns a song.
+    """
+    current, is_group_song = _get_current_song()
+    if current and not is_group_song and current.is_peoples_choice:
+        return current
+    return None
+
+
+def _get_peoples_choice_song_in_coronation():
+    """
+    The current people's choice song while its coronation screen is showing (until End Coronation), else None.
+    """
+    song = _get_current_peoples_choice_song()
+    if song and not song.coronation_done:
+        return song
+    return None
 
 
 @api_view(["GET"])
@@ -942,6 +968,61 @@ def boho_started(request):
 
 def oktoberfest_started(request):
     return JsonResponse({"oktoberfest": config.OKTOBERFEST and flag_enabled('OKTOBERFEST')})
+
+
+@superuser_required('login')
+def end_coronation(request):
+    song = _get_peoples_choice_song_in_coronation()
+    if song:
+        song.coronation_done = True
+        song.save(update_fields=['coronation_done'])
+    return redirect('admin/song_signup/songrequest')
+
+
+def coronation_started(request):
+    song = _get_peoples_choice_song_in_coronation()
+    if not song:
+        return JsonResponse({"coronation": None})
+
+    coronation = SongRequestLineupSerializer(song).data
+    coronation['plural'] = song.partners.exists()
+    return JsonResponse({"coronation": coronation})
+
+
+def reactions_state(request):
+    return JsonResponse({"open": _get_current_peoples_choice_song() is not None})
+
+
+@api_view(["POST"])
+@bwt_login_required('login')
+def send_reaction(request):
+    song = _get_current_peoples_choice_song()
+    if not song:
+        return Response({}, status=status.HTTP_200_OK)
+
+    emojis = request.data.get('emojis') or {}
+    texts = request.data.get('texts') or []
+    Reaction.objects.bulk_create(
+        [Reaction(song=song, user=request.user, emoji=emoji) for emoji, count in emojis.items() for _ in range(count)]
+        + [Reaction(song=song, user=request.user, text=text) for text in texts]
+    )
+
+    return Response({}, status=status.HTTP_200_OK)
+
+
+@superuser_required('login')
+def reaction_feed(request):
+    song = _get_current_peoples_choice_song()
+    if not song:
+        return JsonResponse({"reactions": []})
+
+    reactions = list(Reaction.objects.filter(
+        song=song, displayed_at__isnull=True, created_at__gt=timezone.now() - REACTION_FEED_WINDOW
+    ).order_by('created_at', 'id')[:REACTION_FEED_LIMIT])
+    Reaction.objects.filter(pk__in=[reaction.pk for reaction in reactions]).update(displayed_at=timezone.now())
+
+    return JsonResponse({"reactions": [{"content": reaction.text or reaction.emoji, "is_text": bool(reaction.text)}
+                                       for reaction in reactions]})
 
 
 @api_view(["PUT"])

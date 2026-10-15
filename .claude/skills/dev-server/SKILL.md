@@ -23,9 +23,9 @@ the start); report those lines back rather than paraphrasing them.
 
 ## Notes
 
-- The dev URL follows the box's elastic IP, which `twist/local_settings.py`
-  already tracks for livereload. The script reads it from there — don't
-  hardcode an IP.
+- The box's public IP changes on every stop/start. The script looks up the
+  current one from EC2's instance metadata each time — don't hardcode an IP or
+  trust `LIVERELOAD_HOST` in `twist/local_settings.py`.
 - `start` waits up to 30s for the docker stack on a cold boot (the EC2 box gets
   stopped between sessions, and sshd answers before docker finishes). If the
   stack is genuinely down it tells you the `docker compose up -d` to run.

@@ -60,7 +60,35 @@
                 </div>
             </div>
         </div>
-        {% block content %} 
+        {% if request.user.is_authenticated and not request.user.is_superuser %}
+        {# Shown by reactions-phone.js while a people's choice song is live #}
+        <div id="reactions-wrapper" class="hidden">
+            <button type="button" id="reactions-close" aria-label="Close">&times;</button>
+            <img id="reactions-sash" src="{% static 'img/coronation-sash.png' %}" alt="">
+            <h2 id="reactions-title">People's Choice</h2>
+            <p id="reactions-subtitle">Send some love to the stage!</p>
+            <div id="reactions-emojis">
+                <button type="button" class="reactions-emoji" data-emoji="&#x1F44F;">&#x1F44F;</button>
+                <button type="button" class="reactions-emoji" data-emoji="&#x1F525;">&#x1F525;</button>
+                <button type="button" class="reactions-emoji" data-emoji="&#x1F60D;">&#x1F60D;</button>
+                <button type="button" class="reactions-emoji" data-emoji="&#x1F389;">&#x1F389;</button>
+                {# U+FE0F makes devices draw the red emoji heart rather than a grey text heart #}
+                <button type="button" class="reactions-emoji" data-emoji="&#x2764;&#xFE0F;">&#x2764;&#xFE0F;</button>
+                <button type="button" class="reactions-emoji" data-emoji="&#x1F496;">&#x1F496;</button>
+            </div>
+            <form id="reactions-text-form" autocomplete="off">
+                {% csrf_token %}
+                <div id="reactions-text-field">
+                    <input type="text" id="reactions-text" maxlength="40" dir="auto" placeholder="Say something...">
+                    <span id="reactions-text-count">0/40</span>
+                </div>
+                <button type="submit" id="reactions-send">Send</button>
+            </form>
+            <p id="reactions-sent">Sent!</p>
+        </div>
+        <script type="module" src="{% static "js/reactions-phone.js" %}"></script>
+        {% endif %}
+        {% block content %}
         
         {% endblock %}
         {% endwith %}

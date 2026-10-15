@@ -35,6 +35,17 @@
     </div>
     <p id="oktoberfest-subtitle">Time to play!</p>
 </div>
+{# Shown by live-lyrics.js while the current people's choice song's coronation is running #}
+<div id="coronation-wrapper" hidden>
+    <div id="coronation-fireworks"></div>
+    <img id="coronation-sash" src="{% static 'img/coronation-sash.png' %}" alt="">
+    <p id="coronation-names" dir="auto"></p>
+    <p id="coronation-title"></p>
+    <p id="coronation-song" dir="auto"></p>
+    <p id="coronation-musical" dir="auto"></p>
+</div>
+<div id="reaction-lane-left" class="reaction-lane"></div>
+<div id="reaction-lane-right" class="reaction-lane"></div>
 <div id="lyrics-wrapper"{% if config.OKTOBERFEST %} class="oktoberfest"{% endif %}>
     <div class="container">
         <div class="center">
@@ -100,6 +111,7 @@ crossorigin="anonymous"></script>
 <script type="module" src="{% static "js/demo-live-lyrics.js" %}"></script>
 {% else %}
 <script type="module" src="{% static "js/live-lyrics.js" %}"></script>
+<script type="module" src="{% static "js/reaction-lane.js" %}"></script>
 {% endif %}
 
 {% endblock %}
