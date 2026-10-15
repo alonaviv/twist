@@ -1,3 +1,4 @@
+from django.utils import timezone
 from freezegun import freeze_time
 from song_signup.models import SongRequest, Singer
 from song_signup.tests.utils_for_tests import (
@@ -52,7 +53,8 @@ class TestSongRequestManager(SongRequestTestCase):
     def test_spotlight_manual(self):
         with freeze_time(time_to_freeze=TEST_START_TIME) as frozen_time:
             create_singers(3)
-            song1, song2, song3 = add_songs_to_singers(3, 1)
+            # A tick between songs, so the lineup orders them by request time rather than by an arbitrary tie-break
+            song1, song2, song3 = add_songs_to_singers(3, 1, frozen_time=frozen_time)
             Singer.ordering.calculate_positions()
             song1.refresh_from_db()
             song2.refresh_from_db()
@@ -77,5 +79,5 @@ class TestSongRequestManager(SongRequestTestCase):
             SongRequest.objects.remove_spotlight()
             song3.refresh_from_db()
             self.assertFalse(song3.spotlight)
-            self.assertEqual(song3.performance_time, TEST_START_TIME)
+            self.assertEqual(song3.performance_time, timezone.now())
             self.assertIsNone(song3.position)
