@@ -3,6 +3,7 @@ from django.core.management import call_command
 from django.test import Client, TestCase
 from django.urls import reverse
 from django.utils import timezone
+from flags.state import disable_flag, enable_flag
 from freezegun import freeze_time
 
 from song_signup.models import Reaction, Singer, SongRequest
@@ -22,6 +23,7 @@ class CoronationTestCase(TestCase):
     self.admin the live lyrics screen and admin page.
     """
     def setUp(self):
+        enable_flag('STARTED')
         create_singers(3, num_songs=1)
         self.audience = login_audience(self)
         self.admin = Client()
@@ -99,6 +101,18 @@ class TestCoronation(CoronationTestCase):
         mark_peoples_choice(2)
         set_skipped(1, 1)
         self.assertEqual(self.coronation()['singers'], 'User_2 Last_name')
+
+    def test_only_while_evening_started(self):
+        mark_peoples_choice(1)
+        disable_flag('STARTED')
+        self.assertIsNone(self.coronation())
+        self.assertFalse(self.reactions_open())
+        self.send(emojis={'👏': 1})
+        self.assertFalse(Reaction.objects.exists())
+        self.assertNotIn('End Coronation', self.admin_page())
+        enable_flag('STARTED')
+        self.assertIsNotNone(self.coronation())
+        self.assertTrue(self.reactions_open())
 
     def test_end_coronation(self):
         mark_peoples_choice(1)
@@ -286,6 +300,7 @@ class TestNothingLive(TestCase):
     updates the lyrics, so they must answer cleanly in every state, including when nothing is current.
     """
     def setUp(self):
+        enable_flag('STARTED')
         self.admin = Client()
         self.admin.force_login(Singer.objects.create_superuser(username='admin', password='admin'))
 

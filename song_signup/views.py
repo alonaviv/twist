@@ -462,8 +462,11 @@ def _get_current_song():
 
 def _get_current_peoples_choice_song():
     """
-    The current solo song if it's a people's choice song, else None. Reactions are live exactly while this returns a song.
+    The current solo song if it's a people's choice song and the evening has started, else None. Reactions are live
+    exactly while this returns a song.
     """
+    if not flag_enabled('STARTED'):
+        return None
     current, is_group_song = _get_current_song()
     if current and not is_group_song and current.is_peoples_choice:
         return current
