@@ -53,6 +53,15 @@ blind spot when deciding the duplicate mark. It needs the same singer to submit 
 Fix: check "does this singer already have it" with `filter(..., singer=current_user).exists()`, and find the other
 singer with `.exclude(singer=current_user).first()`, in both views.
 
+## A refresh before opening empties a typed song
+
+A song the singer typed into the form lives only in the page, so refreshing the signup page empties the form. A
+song chosen from the People's Choice list comes back after a refresh (`restoreMyChoice`), because the server keeps
+the choice. A singer who typed their own song and refreshes just before signup opens has to type it again at go
+time.
+
+Fix: keep the typed song and musical in `sessionStorage` and refill an empty form from it on load.
+
 ## The Edit button shows a light focus ring after the song form closes
 
 When the song form popup closes, the browser returns focus to the Edit button that opened it, and Chrome draws its
