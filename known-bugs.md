@@ -53,6 +53,16 @@ blind spot when deciding the duplicate mark. It needs the same singer to submit 
 Fix: check "does this singer already have it" with `filter(..., singer=current_user).exists()`, and find the other
 singer with `.exclude(singer=current_user).first()`, in both views.
 
+## Two singers submitting the same song in the same instant are both left unmarked
+
+`add_song_request` looks for an existing copy of the song and then creates the new one, with nothing holding other
+requests off in between. When two singers submit the same song within the same split second, each request looks
+before the other has created its copy, so neither is marked as a duplicate and neither singer sees the duplicate
+song popup. Both songs go into the lineup, and Shani sees the song twice. It needs the same song in two forms at the
+same moment: the few seconds in which two singers can choose the same People's Choice song, or two singers typing
+the same song. The stress test (`jmeter/gen_money_time.py`) shows it when two singers in the burst submit the same
+new song.
+
 ## A refresh before opening empties a typed song
 
 A song the singer typed into the form lives only in the page, so refreshing the signup page empties the form. A

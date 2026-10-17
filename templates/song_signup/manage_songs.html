@@ -29,7 +29,8 @@
 
 {% include "partials/_footer.html"  %}
 
-<script type="module" src="{% static "js/manage-songs.js" %}"></script>
+{# ?v= makes browsers fetch this file again instead of a cached copy: bump it whenever the file changes #}
+<script type="module" src="{% static "js/manage-songs.js" %}?v=20261017"></script>
 <script src="{% static "js/navbar.js" %}"></script>
         
 {% endblock %}

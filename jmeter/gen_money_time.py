@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
 Generates money-time.jmx — a JMeter 5.6 plan that reproduces the BWT "money time":
-  * 40 singers logging in and submitting a song at the SAME instant (rendezvous)
+  * 40 singers waiting on the signup page, choosing People's Choice songs, then submitting at the SAME instant
+    (rendezvous), some of them as duplicates of another singer's song or with a partner who is already taken
   * 60 audience members loading the room and polling
   * everyone then polls the live endpoints at the real browser cadence
   * pass/fail benchmarks via a per-request response-time SLA + HTTP-200 assertion
@@ -16,7 +17,8 @@ against any tier without editing.  See README block printed at the bottom.
 # base.js getQuestion @0.5s (every logged-in page): /get_active_question  (always 200, {} when no trivia)
 #   -> when a trivia question is active it ALSO polls /get_selected_answer @0.5s; that 404s with no
 #      active trivia, so it is NOT part of money-time. Run a separate trivia scenario for that peak.
-# add-song.js checkDisableSignup @0.5s: /signup_disabled -- ONLY while on the /add_song page (brief)
+# add-song.js on the signup page, where singers wait before signup opens: /signup_disabled @0.5s, and the People's
+#   Choice list /peoples-choice/list_song_suggestions/<sku> @5s (one JSON with every suggestion of the event)
 # reactions-phone.js @4s (every logged-in page): /reactions_state; while it says open, the phone also
 #   POSTs /send_reaction @1s with the taps and texts since the last send. Reactions only open while the
 #   current song is people's choice, so mark one in the admin during the run to exercise the sending.
@@ -148,6 +150,15 @@ def json_extractor(refname, path, default):
   <stringProp name="JSONPostProcessor.defaultValues">{default}</stringProp>
 </JSONPostProcessor>''', [])
 
+def json_extractor_all(refname, path):
+    # Every match, as refname_1, refname_2, ... and refname_matchNr
+    return (f'''<JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract all {refname}" enabled="true">
+  <stringProp name="JSONPostProcessor.referenceNames">{refname}</stringProp>
+  <stringProp name="JSONPostProcessor.jsonPathExprs">{esc(path)}</stringProp>
+  <stringProp name="JSONPostProcessor.match_numbers">-1</stringProp>
+  <stringProp name="JSONPostProcessor.defaultValues">NOT_FOUND</stringProp>
+</JSONPostProcessor>''', [])
+
 def json_request(method, path, body, headers):
     hdrs = ""
     for k, v in headers:
@@ -201,6 +212,12 @@ def jsr223_assertion(name, script):
   <stringProp name="scriptLanguage">groovy</stringProp>
   <stringProp name="script">{esc(script)}</stringProp>
 </JSR223Assertion>''', [])
+
+def jsr223_postprocessor(name, script):
+    return (f'''<JSR223PostProcessor guiclass="TestBeanGUI" testclass="JSR223PostProcessor" testname="{name}" enabled="true">
+  <stringProp name="scriptLanguage">groovy</stringProp>
+  <stringProp name="script">{esc(script)}</stringProp>
+</JSR223PostProcessor>''', [])
 
 def setup_thread_group(body):
     tg = '''<SetupThreadGroup guiclass="SetupThreadGroupGui" testclass="SetupThreadGroup" testname="Preflight checks (config + one login)" enabled="true">
@@ -259,6 +276,13 @@ def preflight():
             ("no-upload", "on"),
             ("csrfmiddlewaretoken", "${csrf}"),
         ], [csrf_cookie_extractor(), login_ok]),
+        # The People's Choice list the singers choose from, as big as a real event's
+        loop_controller("Create People's Choice suggestions", "${PC_SUGGESTIONS}", [
+            json_request("POST", "/peoples-choice/create_song_suggestion",
+                         '{"song_name": "LT ${RUN_ID} ${__counter(FALSE,)}", "musical": "Loadtest Musical", '
+                         '"event_sku": "${PC_SKU}"}',
+                         [("X-CSRFToken", "${csrf}"), ("Content-Type", "application/json")]),
+        ]),
         get("/add_song", [csrf_extractor()]),
         post("/add_song_request", [
             ("song-name", "${PREFLIGHT_SONG}"),
@@ -287,6 +311,21 @@ def sync_timer():
   <intProp name="groupSize">0</intProp>
   <longProp name="timeoutInMs">30000</longProp>
 </SyncTimer>''', [])
+
+def half_second_timer():
+    # The signup page's own cadence (add-song.js SIGNUP_POLL_MS)
+    return ('''<UniformRandomTimer guiclass="UniformRandomTimerGui" testclass="UniformRandomTimer" testname="Signup page poll interval" enabled="true">
+  <stringProp name="ConstantTimer.delay">450</stringProp>
+  <stringProp name="RandomTimer.range">100</stringProp>
+</UniformRandomTimer>''', [])
+
+def rendezvous():
+    # A zero-length pause carrying the sync timer, so both kinds of signup POST below it fire together
+    return ('''<TestAction guiclass="TestActionGui" testclass="TestAction" testname="Rendezvous" enabled="true">
+  <intProp name="ActionProcessor.action">1</intProp>
+  <intProp name="ActionProcessor.target">0</intProp>
+  <stringProp name="ActionProcessor.duration">0</stringProp>
+</TestAction>''', [sync_timer()])
 
 def pause_timer():
     # Attached to one sampler => one pause per loop iteration (the poll interval).
@@ -343,11 +382,49 @@ def login_chain(ticket_type, first_name):
     ]
 
 def singer_once_only():
-    # 1) log in (clustered via ramp)  2) warm up on /home polling like a real waiting crowd
-    # 3) open /add_song & poll signup_disabled  4) RENDEZVOUS -> all submit a short name at once
-    # 5) edit the name to the real song afterwards (manage_songs -> get_current_songs -> update_song)
-    warmup = loop_controller("Warm-up polling on /home (before the burst)",
-                             "${WARMUP_LOOPS}", poll_batch(SINGER_POLLS))
+    # 1) log in (clustered via ramp)  2) open /add_song, load the People's Choice list and choose a song from it
+    # 3) wait on the page polling like the real page  4) RENDEZVOUS -> all submit at once; every PARTNER_EVERY-th
+    # singer adds a partner from a small shared pool (some get rejected)  5) edit to a real song afterwards
+    # (manage_songs -> update_song), which is also what "I'll pick another song" does after a duplicate.
+    # Every DUP_EVERY-th singer chooses the previous singer's list song, taking the choice over as a second tap does,
+    # and submits the preflight's song, which exists before the burst, so the duplicate marking runs. (Two singers
+    # submitting the same new song in the same instant both go unmarked, see known-bugs.md.)
+    pick = jsr223_postprocessor("Pick this singer's song (a duplicate for every DUP_EVERY-th)", (
+        'def n = ctx.getThreadNum() + 1\n'
+        'def dup = n % (vars.get("DUP_EVERY") as int) == 0 && n > 1\n'
+        'def i = dup ? n - 1 : n\n'
+        'def count = (vars.get("pc_id_matchNr") ?: "0") as int\n'
+        'if (count > 0) { i = ((i - 1) % count) + 1 }\n'
+        'vars.put("pick_id", vars.get("pc_id_" + i) ?: "PICK_NOT_FOUND")\n'
+        'vars.put("pick_song", dup ? vars.get("PREFLIGHT_SONG") : (vars.get("pc_song_" + i) ?: "PICK_NOT_FOUND"))\n'
+        'vars.put("pick_musical", dup ? vars.get("PREFLIGHT_MUSICAL") : (vars.get("pc_musical_" + i) ?: "PICK_NOT_FOUND"))'
+    ))
+    partner = jsr223_postprocessor("Pick a partner from a pool of 6 (shared, so some are taken)", (
+        'def ids = new groovy.json.JsonSlurper().parseText(prev.getResponseDataAsString())*.id\n'
+        'def n = ctx.getThreadNum() + 1\n'
+        'vars.put("partner_id", ids ? ids[(n % 6) % ids.size()].toString() : "")'
+    ))
+    list_path = "/peoples-choice/list_song_suggestions/${PC_SKU}"
+    first_list = get(list_path, [json_extractor_all("pc_id", "$[*].id"),
+                                 json_extractor_all("pc_song", "$[*].song_name"),
+                                 json_extractor_all("pc_musical", "$[*].musical"), pick])
+    choose_body = '{"chosen_by": "Loadsinger ${RUN_ID}n${__threadNum}", "in_app": true}'
+    wait_on_page = loop_controller("WaitOnSignupPage", "${SIGNUP_WAIT}", [
+        get("/signup_disabled", [half_second_timer()]),
+        get("/get_active_question"),
+        if_controller("Every 10th tick (5s): the People's Choice list",
+                      '${__groovy((vars.get("__jm__WaitOnSignupPage__idx") as int) % 10 == 9)}', [get(list_path)]),
+        if_controller("Every 8th tick (4s): reactions state",
+                      '${__groovy((vars.get("__jm__WaitOnSignupPage__idx") as int) % 8 == 7)}',
+                      [get("/reactions_state")]),
+    ])
+    partner_singer = '(ctx.getThreadNum() + 1) % (vars.get("PARTNER_EVERY") as int) == 0'
+    signup_fields = [
+        ("song-name", "${pick_song}"),
+        ("musical", "${pick_musical}"),
+        ("notes", "loadtest"),
+        ("csrfmiddlewaretoken", "${csrf}"),
+    ]
     # Rename to a REAL song from songs.csv (distinct per thread) so SongRequest.save() re-fires
     # get_lyrics -> exa.ai actually searches for real lyrics. ${song}/${musical} come from the CSV.
     edit_body = (
@@ -355,24 +432,26 @@ def singer_once_only():
         '"musical": "${musical}", "notes": "loadtest", "partners": []}'
     )
     body = login_chain("singer", "Loadsinger") + [
-        warmup,
         get("/add_song", [csrf_extractor()]),
-        get("/signup_disabled"),
-        sync_timer(),
-        # the simultaneous burst: short name typed fast ("ready, set, go")
-        post("/add_song_request", [
-            ("song-name", "${__threadNum}"),
-            ("musical", "Loadtest Musical"),
-            ("notes", "loadtest"),
-            ("csrfmiddlewaretoken", "${csrf}"),
-        ]),
+        first_list,
+        json_request("POST", "/peoples-choice/choose_song_suggestion/${pick_id}/", choose_body,
+                     [("X-CSRFToken", "${csrf}"), ("Content-Type", "application/json")]),
+        wait_on_page,
+        if_controller("Partner singers: load the partner options", "${__groovy(" + partner_singer + ")}",
+                      [get("/get_possible_partners", [partner])]),
+        rendezvous(),
+        # the simultaneous burst
+        if_controller("Signup with a partner", "${__groovy(" + partner_singer + ")}",
+                      [post("/add_song_request", signup_fields + [("partners", "${partner_id}")])]),
+        if_controller("Signup without a partner", "${__groovy(!(" + partner_singer + "))}",
+                      [post("/add_song_request", signup_fields)]),
         # ...then edit to the real song name (staggered, as each singer finishes)
         get("/manage_songs"),
         get("/get_current_songs", [json_extractor("songid", "$[0].id", "SONGID_NOT_FOUND")]),
         json_request("PUT", "/update_song", edit_body,
                  [("X-CSRFToken", "${csrf}"), ("Content-Type", "application/json")]),
     ]
-    return ('<OnceOnlyController guiclass="OnceOnlyControllerGui" testclass="OnceOnlyController" testname="Login + warm-up + simultaneous signup + edit (once per user)" enabled="true"/>', body)
+    return ('<OnceOnlyController guiclass="OnceOnlyControllerGui" testclass="OnceOnlyController" testname="Login + signup page + simultaneous signup + edit (once per user)" enabled="true"/>', body)
 
 def audience_once_only():
     return ('<OnceOnlyController guiclass="OnceOnlyControllerGui" testclass="OnceOnlyController" testname="Login (once per user)" enabled="true"/>',
@@ -408,15 +487,19 @@ def build():
         ("PASSCODE",      "${__P(passcode,dev)}"),
         ("FREEBIE",       "${__P(freebie,123456)}"),
         ("DURATION",      "${__P(duration,300)}"),
-        ("WARMUP_LOOPS",  "${__P(warmup,8)}"),
+        ("SIGNUP_WAIT",   "${__P(signup_wait,120)}"),
+        ("PC_SKU",        "${__P(pc_sku,LOADTEST)}"),
+        ("PC_SUGGESTIONS", "${__P(pc_suggestions,130)}"),
+        ("DUP_EVERY",     "${__P(dup_every,5)}"),
+        ("PARTNER_EVERY", "${__P(partner_every,4)}"),
         ("POLL_INTERVAL", "${__P(poll_interval,1000)}"),
         ("SLA_MS",        "${__P(sla,2000)}"),
         ("REACT_PCT",     "${__P(react_pct,100)}"),
         ("RUN_ID",        "${__P(run_id,run${__time(YMDHMS)})}"),
         ("SONGS_CSV",     "${__P(songs_csv,songs.csv)}"),
-        # After RUN_ID, which its default uses. Name a people's choice suggestion here to make the first song
-        # people's choice from the start
-        ("PREFLIGHT_SONG",    "${__P(preflight_song,preflight ${RUN_ID})}"),
+        # Name a people's choice suggestion here to make the first song people's choice from the start. Every
+        # DUP_EVERY-th singer signs up with this song too, as a duplicate.
+        ("PREFLIGHT_SONG",    "${__P(preflight_song,Preflight Song)}"),
         ("PREFLIGHT_MUSICAL", "${__P(preflight_musical,Preflight Musical)}"),
     ])
 
@@ -446,6 +529,8 @@ def build():
         "  - Constance PASSCODE        = dev\n"
         "  - Constance EVENT_SKU       = LOADTEST   (any non-empty value; required to open the app)\n"
         "  - Constance FREEBIE_TICKET  = 123456     (must match the hardcoded order-id below)\n"
+        "  - Constance PEOPLES_CHOICE_EVENT_SKU = LOADTEST and PEOPLES_CHOICE_EVENT_DATE = any date, so the signup\n"
+        "    page shows the list (the plan creates the LOADTEST suggestions itself, -Jpc_suggestions of them)\n"
         "  - Enable feature flag CAN_SIGNUP\n"
         "These match the hardcoded defaults in this plan, so you can just hit Run with no -J flags.\n"
         "Override any of them with -Jpasscode= -Jfreebie= etc. if you change the event.\n"
@@ -454,9 +539,13 @@ def build():
         "  jmeter -n -t money-time.jmx -Jrun_id=$(date +%s) -l result.jtl -e -o report\n"
         "  python3 verdict.py result.jtl        # PASS/FAIL vs SLA\n"
         "\n"
-        "FLOW per singer: login (clustered via ramp) -> warm up polling on /home (-Jwarmup loops) ->\n"
-        "  open /add_song -> RENDEZVOUS (all 40 wait) -> POST /add_song_request with a short name typed\n"
-        "  fast ('ready set go') -> then edit to the real name (manage_songs/get_current_songs/update_song).\n"
+        "FLOW per singer: login (clustered via ramp) -> open /add_song, load the People's Choice list and choose a\n"
+        "  song from it -> wait on the page polling /signup_disabled every 0.5s and the list every 5s (-Jsignup_wait\n"
+        "  ticks of 0.5s) -> RENDEZVOUS (all 40 wait) -> POST /add_song_request with the chosen song; every\n"
+        "  -Jdup_every-th singer takes over the previous singer's choice and signs up with the preflight's song (a\n"
+        "  duplicate), and every -Jpartner_every-th adds a\n"
+        "  partner from a shared pool of 6 (some get rejected) -> then edit to a real song\n"
+        "  (manage_songs/get_current_songs/update_song), as 'I'll pick another song' does.\n"
         "Audience just log in and poll. Everyone checks /reactions_state every ~4s and, while the current song\n"
         "is people's choice, POSTs /send_reaction every ~1s (mark a song in the admin during the run). Trivia: /get_active_question is always polled; /get_selected_answer\n"
         "only fires during an ACTIVE trivia round (404s otherwise) so it is a separate scenario, not money-time.\n"
@@ -464,12 +553,14 @@ def build():
         "get_lyrics celery task -> exa.ai really searches. So ~40 real lyric fetches per run (uses Exa quota).\n"
         "Keep songs.csv next to the jmx (scp it to bwt-stress too); override path with -Jsongs_csv=.\n"
         "\n"
-        "KNOBS: -Jsingers=40 -Jaudience=60 -Jduration=300 -Jramp=1 -Jwarmup=8 -Jsla=2000 -Jpoll_interval=1000\n"
+        "KNOBS: -Jsingers=40 -Jaudience=60 -Jduration=300 -Jramp=1 -Jsignup_wait=120 -Jsla=2000 -Jpoll_interval=1000\n"
+        "       -Jpc_sku=LOADTEST -Jpc_suggestions=130 -Jdup_every=5 -Jpartner_every=4\n"
         "       -Jreact_pct=100 (percent of seconds a phone sends a reaction while they're open)\n"
         "       -Jpreflight_song= -Jpreflight_musical= (the first song; a people's choice suggestion makes it one)\n"
         "       -Jhost=broadwaywithatwist.xyz -Jrun_id=<unique each run, avoids 'already logged in'>\n"
         "Run the laptop only as a small functional check (e.g. -Jsingers=5 -Jaudience=5 -Jduration=30);\n"
-        "do the real 100-user tier benchmark from the bwt-stress EC2 box (in-region). Reset the DB when done."
+        "do the real 100-user tier benchmark from the bwt-stress EC2 box (in-region). Reset the DB when done, and\n"
+        "delete the LOADTEST People's Choice suggestions."
     )
     testplan = f'''<TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="BWT Money Time" enabled="true">
   <stringProp name="TestPlan.comments">{comments}</stringProp>

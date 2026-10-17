@@ -196,9 +196,10 @@
     };
 </script>
 
+{# ?v= makes browsers fetch this file again instead of a cached copy: bump it whenever the file changes #}
 <script
     type="module"
-    src="{% static 'peoples_choice/js/audience_suggestions.js' %}"
+    src="{% static 'peoples_choice/js/audience_suggestions.js' %}?v=20261017"
 ></script>
 {% else %}
 <main class="pc-layout">

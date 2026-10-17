@@ -8,6 +8,8 @@ BEFORE RUNNING, configure a throwaway event from OUTSIDE (browser admin / People
   - Constance PASSCODE        = dev
   - Constance EVENT_SKU       = LOADTEST   (any non-empty value; required to open the app)
   - Constance FREEBIE_TICKET  = 123456     (must match the hardcoded order-id below)
+  - Constance PEOPLES_CHOICE_EVENT_SKU = LOADTEST and PEOPLES_CHOICE_EVENT_DATE = any date, so the signup
+    page shows the list (the plan creates the LOADTEST suggestions itself, -Jpc_suggestions of them)
   - Enable feature flag CAN_SIGNUP
 These match the hardcoded defaults in this plan, so you can just hit Run with no -J flags.
 Override any of them with -Jpasscode= -Jfreebie= etc. if you change the event.
@@ -16,9 +18,13 @@ RUN (headless, with HTML dashboard + pass/fail):
   jmeter -n -t money-time.jmx -Jrun_id=$(date +%s) -l result.jtl -e -o report
   python3 verdict.py result.jtl        # PASS/FAIL vs SLA
 
-FLOW per singer: login (clustered via ramp) -&gt; warm up polling on /home (-Jwarmup loops) -&gt;
-  open /add_song -&gt; RENDEZVOUS (all 40 wait) -&gt; POST /add_song_request with a short name typed
-  fast ('ready set go') -&gt; then edit to the real name (manage_songs/get_current_songs/update_song).
+FLOW per singer: login (clustered via ramp) -&gt; open /add_song, load the People's Choice list and choose a
+  song from it -&gt; wait on the page polling /signup_disabled every 0.5s and the list every 5s (-Jsignup_wait
+  ticks of 0.5s) -&gt; RENDEZVOUS (all 40 wait) -&gt; POST /add_song_request with the chosen song; every
+  -Jdup_every-th singer takes over the previous singer's choice and signs up with the preflight's song (a
+  duplicate), and every -Jpartner_every-th adds a
+  partner from a shared pool of 6 (some get rejected) -&gt; then edit to a real song
+  (manage_songs/get_current_songs/update_song), as 'I'll pick another song' does.
 Audience just log in and poll. Everyone checks /reactions_state every ~4s and, while the current song
 is people's choice, POSTs /send_reaction every ~1s (mark a song in the admin during the run). Trivia: /get_active_question is always polled; /get_selected_answer
 only fires during an ACTIVE trivia round (404s otherwise) so it is a separate scenario, not money-time.
@@ -26,12 +32,14 @@ LYRICS/EXA: the edit renames to a real song from songs.csv (distinct per singer)
 get_lyrics celery task -&gt; exa.ai really searches. So ~40 real lyric fetches per run (uses Exa quota).
 Keep songs.csv next to the jmx (scp it to bwt-stress too); override path with -Jsongs_csv=.
 
-KNOBS: -Jsingers=40 -Jaudience=60 -Jduration=300 -Jramp=1 -Jwarmup=8 -Jsla=2000 -Jpoll_interval=1000
+KNOBS: -Jsingers=40 -Jaudience=60 -Jduration=300 -Jramp=1 -Jsignup_wait=120 -Jsla=2000 -Jpoll_interval=1000
+       -Jpc_sku=LOADTEST -Jpc_suggestions=130 -Jdup_every=5 -Jpartner_every=4
        -Jreact_pct=100 (percent of seconds a phone sends a reaction while they're open)
        -Jpreflight_song= -Jpreflight_musical= (the first song; a people's choice suggestion makes it one)
        -Jhost=broadwaywithatwist.xyz -Jrun_id=&lt;unique each run, avoids 'already logged in'&gt;
 Run the laptop only as a small functional check (e.g. -Jsingers=5 -Jaudience=5 -Jduration=30);
-do the real 100-user tier benchmark from the bwt-stress EC2 box (in-region). Reset the DB when done.</stringProp>
+do the real 100-user tier benchmark from the bwt-stress EC2 box (in-region). Reset the DB when done, and
+delete the LOADTEST People's Choice suggestions.</stringProp>
   <boolProp name="TestPlan.functional_mode">false</boolProp>
   <boolProp name="TestPlan.tearDown_on_shutdown">true</boolProp>
   <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
@@ -65,9 +73,25 @@ do the real 100-user tier benchmark from the bwt-stress EC2 box (in-region). Res
   <stringProp name="Argument.name">DURATION</stringProp>
   <stringProp name="Argument.value">${__P(duration,300)}</stringProp>
   <stringProp name="Argument.metadata">=</stringProp>
-</elementProp><elementProp name="WARMUP_LOOPS" elementType="Argument">
-  <stringProp name="Argument.name">WARMUP_LOOPS</stringProp>
-  <stringProp name="Argument.value">${__P(warmup,8)}</stringProp>
+</elementProp><elementProp name="SIGNUP_WAIT" elementType="Argument">
+  <stringProp name="Argument.name">SIGNUP_WAIT</stringProp>
+  <stringProp name="Argument.value">${__P(signup_wait,120)}</stringProp>
+  <stringProp name="Argument.metadata">=</stringProp>
+</elementProp><elementProp name="PC_SKU" elementType="Argument">
+  <stringProp name="Argument.name">PC_SKU</stringProp>
+  <stringProp name="Argument.value">${__P(pc_sku,LOADTEST)}</stringProp>
+  <stringProp name="Argument.metadata">=</stringProp>
+</elementProp><elementProp name="PC_SUGGESTIONS" elementType="Argument">
+  <stringProp name="Argument.name">PC_SUGGESTIONS</stringProp>
+  <stringProp name="Argument.value">${__P(pc_suggestions,130)}</stringProp>
+  <stringProp name="Argument.metadata">=</stringProp>
+</elementProp><elementProp name="DUP_EVERY" elementType="Argument">
+  <stringProp name="Argument.name">DUP_EVERY</stringProp>
+  <stringProp name="Argument.value">${__P(dup_every,5)}</stringProp>
+  <stringProp name="Argument.metadata">=</stringProp>
+</elementProp><elementProp name="PARTNER_EVERY" elementType="Argument">
+  <stringProp name="Argument.name">PARTNER_EVERY</stringProp>
+  <stringProp name="Argument.value">${__P(partner_every,4)}</stringProp>
   <stringProp name="Argument.metadata">=</stringProp>
 </elementProp><elementProp name="POLL_INTERVAL" elementType="Argument">
   <stringProp name="Argument.name">POLL_INTERVAL</stringProp>
@@ -91,7 +115,7 @@ do the real 100-user tier benchmark from the bwt-stress EC2 box (in-region). Res
   <stringProp name="Argument.metadata">=</stringProp>
 </elementProp><elementProp name="PREFLIGHT_SONG" elementType="Argument">
   <stringProp name="Argument.name">PREFLIGHT_SONG</stringProp>
-  <stringProp name="Argument.value">${__P(preflight_song,preflight ${RUN_ID})}</stringProp>
+  <stringProp name="Argument.value">${__P(preflight_song,Preflight Song)}</stringProp>
   <stringProp name="Argument.metadata">=</stringProp>
 </elementProp><elementProp name="PREFLIGHT_MUSICAL" elementType="Argument">
   <stringProp name="Argument.name">PREFLIGHT_MUSICAL</stringProp>
@@ -247,6 +271,33 @@ if (code == &quot;403&quot;) {
 </JSR223Assertion>
 <hashTree/>
 </hashTree>
+<LoopController guiclass="LoopControlPanel" testclass="LoopController" testname="Create People's Choice suggestions" enabled="true">
+  <boolProp name="LoopController.continue_forever">false</boolProp>
+  <stringProp name="LoopController.loops">${PC_SUGGESTIONS}</stringProp>
+</LoopController>
+<hashTree>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST /peoples-choice/create_song_suggestion" enabled="true">
+  <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+  <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments">
+    <elementProp name="" elementType="HTTPArgument">
+      <boolProp name="HTTPArgument.always_encode">false</boolProp>
+      <stringProp name="Argument.value">{&quot;song_name&quot;: &quot;LT ${RUN_ID} ${__counter(FALSE,)}&quot;, &quot;musical&quot;: &quot;Loadtest Musical&quot;, &quot;event_sku&quot;: &quot;${PC_SKU}&quot;}</stringProp>
+      <stringProp name="Argument.metadata">=</stringProp>
+    </elementProp>
+  </collectionProp></elementProp>
+  <stringProp name="HTTPSampler.path">/peoples-choice/create_song_suggestion</stringProp>
+  <stringProp name="HTTPSampler.method">POST</stringProp>
+  <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+  <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+  <stringProp name="HTTPSampler.contentEncoding">UTF-8</stringProp>
+</HTTPSamplerProxy>
+<hashTree>
+<HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="JSON + CSRF headers" enabled="true">
+  <collectionProp name="HeaderManager.headers"><elementProp name="" elementType="Header"><stringProp name="Header.name">X-CSRFToken</stringProp><stringProp name="Header.value">${csrf}</stringProp></elementProp><elementProp name="" elementType="Header"><stringProp name="Header.name">Content-Type</stringProp><stringProp name="Header.value">application/json</stringProp></elementProp></collectionProp>
+</HeaderManager>
+<hashTree/>
+</hashTree>
+</hashTree>
 <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /add_song" enabled="true">
   <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
   <stringProp name="HTTPSampler.path">/add_song</stringProp>
@@ -336,7 +387,7 @@ if (code != &quot;200&quot;) {
   <stringProp name="shareMode">shareMode.all</stringProp>
 </CSVDataSet>
 <hashTree/>
-<OnceOnlyController guiclass="OnceOnlyControllerGui" testclass="OnceOnlyController" testname="Login + warm-up + simultaneous signup + edit (once per user)" enabled="true"/>
+<OnceOnlyController guiclass="OnceOnlyControllerGui" testclass="OnceOnlyController" testname="Login + signup page + simultaneous signup + edit (once per user)" enabled="true"/>
 <hashTree>
 <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /login" enabled="true">
   <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
@@ -426,66 +477,6 @@ if (code != &quot;200&quot;) {
   <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
 </HTTPSamplerProxy>
 <hashTree/>
-<LoopController guiclass="LoopControlPanel" testclass="LoopController" testname="Warm-up polling on /home (before the burst)" enabled="true">
-  <boolProp name="LoopController.continue_forever">false</boolProp>
-  <stringProp name="LoopController.loops">${WARMUP_LOOPS}</stringProp>
-</LoopController>
-<hashTree>
-<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /evening_started" enabled="true">
-  <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
-  <stringProp name="HTTPSampler.path">/evening_started</stringProp>
-  <stringProp name="HTTPSampler.method">GET</stringProp>
-  <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
-  <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
-</HTTPSamplerProxy>
-<hashTree>
-<UniformRandomTimer guiclass="UniformRandomTimerGui" testclass="UniformRandomTimer" testname="Poll interval" enabled="true">
-  <stringProp name="ConstantTimer.delay">${POLL_INTERVAL}</stringProp>
-  <stringProp name="RandomTimer.range">200</stringProp>
-</UniformRandomTimer>
-<hashTree/>
-</hashTree>
-<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /next_singer" enabled="true">
-  <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
-  <stringProp name="HTTPSampler.path">/next_singer</stringProp>
-  <stringProp name="HTTPSampler.method">GET</stringProp>
-  <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
-  <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
-</HTTPSamplerProxy>
-<hashTree/>
-<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /spotlight_data" enabled="true">
-  <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
-  <stringProp name="HTTPSampler.path">/spotlight_data</stringProp>
-  <stringProp name="HTTPSampler.method">GET</stringProp>
-  <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
-  <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
-</HTTPSamplerProxy>
-<hashTree/>
-<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /dashboard_data" enabled="true">
-  <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
-  <stringProp name="HTTPSampler.path">/dashboard_data</stringProp>
-  <stringProp name="HTTPSampler.method">GET</stringProp>
-  <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
-  <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
-</HTTPSamplerProxy>
-<hashTree/>
-<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /get_active_question" enabled="true">
-  <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
-  <stringProp name="HTTPSampler.path">/get_active_question</stringProp>
-  <stringProp name="HTTPSampler.method">GET</stringProp>
-  <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
-  <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
-</HTTPSamplerProxy>
-<hashTree/>
-<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /get_active_question" enabled="true">
-  <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
-  <stringProp name="HTTPSampler.path">/get_active_question</stringProp>
-  <stringProp name="HTTPSampler.method">GET</stringProp>
-  <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
-  <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
-</HTTPSamplerProxy>
-<hashTree/>
-</hashTree>
 <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /add_song" enabled="true">
   <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
   <stringProp name="HTTPSampler.path">/add_song</stringProp>
@@ -504,6 +495,74 @@ if (code != &quot;200&quot;) {
 </RegexExtractor>
 <hashTree/>
 </hashTree>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /peoples-choice/list_song_suggestions/${PC_SKU}" enabled="true">
+  <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
+  <stringProp name="HTTPSampler.path">/peoples-choice/list_song_suggestions/${PC_SKU}</stringProp>
+  <stringProp name="HTTPSampler.method">GET</stringProp>
+  <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+  <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+</HTTPSamplerProxy>
+<hashTree>
+<JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract all pc_id" enabled="true">
+  <stringProp name="JSONPostProcessor.referenceNames">pc_id</stringProp>
+  <stringProp name="JSONPostProcessor.jsonPathExprs">$[*].id</stringProp>
+  <stringProp name="JSONPostProcessor.match_numbers">-1</stringProp>
+  <stringProp name="JSONPostProcessor.defaultValues">NOT_FOUND</stringProp>
+</JSONPostProcessor>
+<hashTree/>
+<JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract all pc_song" enabled="true">
+  <stringProp name="JSONPostProcessor.referenceNames">pc_song</stringProp>
+  <stringProp name="JSONPostProcessor.jsonPathExprs">$[*].song_name</stringProp>
+  <stringProp name="JSONPostProcessor.match_numbers">-1</stringProp>
+  <stringProp name="JSONPostProcessor.defaultValues">NOT_FOUND</stringProp>
+</JSONPostProcessor>
+<hashTree/>
+<JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract all pc_musical" enabled="true">
+  <stringProp name="JSONPostProcessor.referenceNames">pc_musical</stringProp>
+  <stringProp name="JSONPostProcessor.jsonPathExprs">$[*].musical</stringProp>
+  <stringProp name="JSONPostProcessor.match_numbers">-1</stringProp>
+  <stringProp name="JSONPostProcessor.defaultValues">NOT_FOUND</stringProp>
+</JSONPostProcessor>
+<hashTree/>
+<JSR223PostProcessor guiclass="TestBeanGUI" testclass="JSR223PostProcessor" testname="Pick this singer's song (a duplicate for every DUP_EVERY-th)" enabled="true">
+  <stringProp name="scriptLanguage">groovy</stringProp>
+  <stringProp name="script">def n = ctx.getThreadNum() + 1
+def dup = n % (vars.get(&quot;DUP_EVERY&quot;) as int) == 0 &amp;&amp; n &gt; 1
+def i = dup ? n - 1 : n
+def count = (vars.get(&quot;pc_id_matchNr&quot;) ?: &quot;0&quot;) as int
+if (count &gt; 0) { i = ((i - 1) % count) + 1 }
+vars.put(&quot;pick_id&quot;, vars.get(&quot;pc_id_&quot; + i) ?: &quot;PICK_NOT_FOUND&quot;)
+vars.put(&quot;pick_song&quot;, dup ? vars.get(&quot;PREFLIGHT_SONG&quot;) : (vars.get(&quot;pc_song_&quot; + i) ?: &quot;PICK_NOT_FOUND&quot;))
+vars.put(&quot;pick_musical&quot;, dup ? vars.get(&quot;PREFLIGHT_MUSICAL&quot;) : (vars.get(&quot;pc_musical_&quot; + i) ?: &quot;PICK_NOT_FOUND&quot;))</stringProp>
+</JSR223PostProcessor>
+<hashTree/>
+</hashTree>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST /peoples-choice/choose_song_suggestion/${pick_id}/" enabled="true">
+  <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+  <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments">
+    <elementProp name="" elementType="HTTPArgument">
+      <boolProp name="HTTPArgument.always_encode">false</boolProp>
+      <stringProp name="Argument.value">{&quot;chosen_by&quot;: &quot;Loadsinger ${RUN_ID}n${__threadNum}&quot;, &quot;in_app&quot;: true}</stringProp>
+      <stringProp name="Argument.metadata">=</stringProp>
+    </elementProp>
+  </collectionProp></elementProp>
+  <stringProp name="HTTPSampler.path">/peoples-choice/choose_song_suggestion/${pick_id}/</stringProp>
+  <stringProp name="HTTPSampler.method">POST</stringProp>
+  <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+  <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+  <stringProp name="HTTPSampler.contentEncoding">UTF-8</stringProp>
+</HTTPSamplerProxy>
+<hashTree>
+<HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="JSON + CSRF headers" enabled="true">
+  <collectionProp name="HeaderManager.headers"><elementProp name="" elementType="Header"><stringProp name="Header.name">X-CSRFToken</stringProp><stringProp name="Header.value">${csrf}</stringProp></elementProp><elementProp name="" elementType="Header"><stringProp name="Header.name">Content-Type</stringProp><stringProp name="Header.value">application/json</stringProp></elementProp></collectionProp>
+</HeaderManager>
+<hashTree/>
+</hashTree>
+<LoopController guiclass="LoopControlPanel" testclass="LoopController" testname="WaitOnSignupPage" enabled="true">
+  <boolProp name="LoopController.continue_forever">false</boolProp>
+  <stringProp name="LoopController.loops">${SIGNUP_WAIT}</stringProp>
+</LoopController>
+<hashTree>
 <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /signup_disabled" enabled="true">
   <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
   <stringProp name="HTTPSampler.path">/signup_disabled</stringProp>
@@ -511,22 +570,150 @@ if (code != &quot;200&quot;) {
   <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
   <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
 </HTTPSamplerProxy>
+<hashTree>
+<UniformRandomTimer guiclass="UniformRandomTimerGui" testclass="UniformRandomTimer" testname="Signup page poll interval" enabled="true">
+  <stringProp name="ConstantTimer.delay">450</stringProp>
+  <stringProp name="RandomTimer.range">100</stringProp>
+</UniformRandomTimer>
 <hashTree/>
+</hashTree>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /get_active_question" enabled="true">
+  <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
+  <stringProp name="HTTPSampler.path">/get_active_question</stringProp>
+  <stringProp name="HTTPSampler.method">GET</stringProp>
+  <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+  <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+</HTTPSamplerProxy>
+<hashTree/>
+<IfController guiclass="IfControllerPanel" testclass="IfController" testname="Every 10th tick (5s): the People's Choice list" enabled="true">
+  <stringProp name="IfController.condition">${__groovy((vars.get(&quot;__jm__WaitOnSignupPage__idx&quot;) as int) % 10 == 9)}</stringProp>
+  <boolProp name="IfController.evaluateAll">false</boolProp>
+  <boolProp name="IfController.useExpression">true</boolProp>
+</IfController>
+<hashTree>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /peoples-choice/list_song_suggestions/${PC_SKU}" enabled="true">
+  <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
+  <stringProp name="HTTPSampler.path">/peoples-choice/list_song_suggestions/${PC_SKU}</stringProp>
+  <stringProp name="HTTPSampler.method">GET</stringProp>
+  <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+  <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+</HTTPSamplerProxy>
+<hashTree/>
+</hashTree>
+<IfController guiclass="IfControllerPanel" testclass="IfController" testname="Every 8th tick (4s): reactions state" enabled="true">
+  <stringProp name="IfController.condition">${__groovy((vars.get(&quot;__jm__WaitOnSignupPage__idx&quot;) as int) % 8 == 7)}</stringProp>
+  <boolProp name="IfController.evaluateAll">false</boolProp>
+  <boolProp name="IfController.useExpression">true</boolProp>
+</IfController>
+<hashTree>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /reactions_state" enabled="true">
+  <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
+  <stringProp name="HTTPSampler.path">/reactions_state</stringProp>
+  <stringProp name="HTTPSampler.method">GET</stringProp>
+  <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+  <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+</HTTPSamplerProxy>
+<hashTree/>
+</hashTree>
+</hashTree>
+<IfController guiclass="IfControllerPanel" testclass="IfController" testname="Partner singers: load the partner options" enabled="true">
+  <stringProp name="IfController.condition">${__groovy((ctx.getThreadNum() + 1) % (vars.get(&quot;PARTNER_EVERY&quot;) as int) == 0)}</stringProp>
+  <boolProp name="IfController.evaluateAll">false</boolProp>
+  <boolProp name="IfController.useExpression">true</boolProp>
+</IfController>
+<hashTree>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /get_possible_partners" enabled="true">
+  <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
+  <stringProp name="HTTPSampler.path">/get_possible_partners</stringProp>
+  <stringProp name="HTTPSampler.method">GET</stringProp>
+  <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+  <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+</HTTPSamplerProxy>
+<hashTree>
+<JSR223PostProcessor guiclass="TestBeanGUI" testclass="JSR223PostProcessor" testname="Pick a partner from a pool of 6 (shared, so some are taken)" enabled="true">
+  <stringProp name="scriptLanguage">groovy</stringProp>
+  <stringProp name="script">def ids = new groovy.json.JsonSlurper().parseText(prev.getResponseDataAsString())*.id
+def n = ctx.getThreadNum() + 1
+vars.put(&quot;partner_id&quot;, ids ? ids[(n % 6) % ids.size()].toString() : &quot;&quot;)</stringProp>
+</JSR223PostProcessor>
+<hashTree/>
+</hashTree>
+</hashTree>
+<TestAction guiclass="TestActionGui" testclass="TestAction" testname="Rendezvous" enabled="true">
+  <intProp name="ActionProcessor.action">1</intProp>
+  <intProp name="ActionProcessor.target">0</intProp>
+  <stringProp name="ActionProcessor.duration">0</stringProp>
+</TestAction>
+<hashTree>
 <SyncTimer guiclass="TestBeanGUI" testclass="SyncTimer" testname="Rendezvous - all singers submit at once" enabled="true">
   <intProp name="groupSize">0</intProp>
   <longProp name="timeoutInMs">30000</longProp>
 </SyncTimer>
 <hashTree/>
+</hashTree>
+<IfController guiclass="IfControllerPanel" testclass="IfController" testname="Signup with a partner" enabled="true">
+  <stringProp name="IfController.condition">${__groovy((ctx.getThreadNum() + 1) % (vars.get(&quot;PARTNER_EVERY&quot;) as int) == 0)}</stringProp>
+  <boolProp name="IfController.evaluateAll">false</boolProp>
+  <boolProp name="IfController.useExpression">true</boolProp>
+</IfController>
+<hashTree>
 <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST /add_song_request" enabled="true">
   <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"><elementProp name="song-name" elementType="HTTPArgument">
   <boolProp name="HTTPArgument.always_encode">true</boolProp>
-  <stringProp name="Argument.value">${__threadNum}</stringProp>
+  <stringProp name="Argument.value">${pick_song}</stringProp>
   <stringProp name="Argument.metadata">=</stringProp>
   <boolProp name="HTTPArgument.use_equals">true</boolProp>
   <stringProp name="Argument.name">song-name</stringProp>
 </elementProp><elementProp name="musical" elementType="HTTPArgument">
   <boolProp name="HTTPArgument.always_encode">true</boolProp>
-  <stringProp name="Argument.value">Loadtest Musical</stringProp>
+  <stringProp name="Argument.value">${pick_musical}</stringProp>
+  <stringProp name="Argument.metadata">=</stringProp>
+  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+  <stringProp name="Argument.name">musical</stringProp>
+</elementProp><elementProp name="notes" elementType="HTTPArgument">
+  <boolProp name="HTTPArgument.always_encode">true</boolProp>
+  <stringProp name="Argument.value">loadtest</stringProp>
+  <stringProp name="Argument.metadata">=</stringProp>
+  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+  <stringProp name="Argument.name">notes</stringProp>
+</elementProp><elementProp name="csrfmiddlewaretoken" elementType="HTTPArgument">
+  <boolProp name="HTTPArgument.always_encode">true</boolProp>
+  <stringProp name="Argument.value">${csrf}</stringProp>
+  <stringProp name="Argument.metadata">=</stringProp>
+  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+  <stringProp name="Argument.name">csrfmiddlewaretoken</stringProp>
+</elementProp><elementProp name="partners" elementType="HTTPArgument">
+  <boolProp name="HTTPArgument.always_encode">true</boolProp>
+  <stringProp name="Argument.value">${partner_id}</stringProp>
+  <stringProp name="Argument.metadata">=</stringProp>
+  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+  <stringProp name="Argument.name">partners</stringProp>
+</elementProp></collectionProp></elementProp>
+  <stringProp name="HTTPSampler.path">/add_song_request</stringProp>
+  <stringProp name="HTTPSampler.method">POST</stringProp>
+  <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+  <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+  <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
+  <stringProp name="HTTPSampler.contentEncoding">UTF-8</stringProp>
+</HTTPSamplerProxy>
+<hashTree/>
+</hashTree>
+<IfController guiclass="IfControllerPanel" testclass="IfController" testname="Signup without a partner" enabled="true">
+  <stringProp name="IfController.condition">${__groovy(!((ctx.getThreadNum() + 1) % (vars.get(&quot;PARTNER_EVERY&quot;) as int) == 0))}</stringProp>
+  <boolProp name="IfController.evaluateAll">false</boolProp>
+  <boolProp name="IfController.useExpression">true</boolProp>
+</IfController>
+<hashTree>
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST /add_song_request" enabled="true">
+  <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"><elementProp name="song-name" elementType="HTTPArgument">
+  <boolProp name="HTTPArgument.always_encode">true</boolProp>
+  <stringProp name="Argument.value">${pick_song}</stringProp>
+  <stringProp name="Argument.metadata">=</stringProp>
+  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+  <stringProp name="Argument.name">song-name</stringProp>
+</elementProp><elementProp name="musical" elementType="HTTPArgument">
+  <boolProp name="HTTPArgument.always_encode">true</boolProp>
+  <stringProp name="Argument.value">${pick_musical}</stringProp>
   <stringProp name="Argument.metadata">=</stringProp>
   <boolProp name="HTTPArgument.use_equals">true</boolProp>
   <stringProp name="Argument.name">musical</stringProp>
@@ -551,6 +738,7 @@ if (code != &quot;200&quot;) {
   <stringProp name="HTTPSampler.contentEncoding">UTF-8</stringProp>
 </HTTPSamplerProxy>
 <hashTree/>
+</hashTree>
 <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GET /manage_songs" enabled="true">
   <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments"/></elementProp>
   <stringProp name="HTTPSampler.path">/manage_songs</stringProp>
