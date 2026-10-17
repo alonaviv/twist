@@ -156,6 +156,14 @@ def _sanitize_string(name, title=False):
 
 @bwt_login_required('login', singer_only=True)
 def add_song_request(request):
+    """
+    Adds a song for the logged-in singer. The song is created as soon as the request arrives, so the singer's place in
+    line is set by when they sent it, whatever else happens:
+    - A song this singer already has: refused with an error, nothing is created.
+    - A song another singer already has: still created, with that singer's name in duplicate_of, so the page can ask
+      whether to keep it or pick another.
+    - A partner who already used their once-per-night slot: left out of the song and named in partner_warning.
+    """
     current_user = request.user
 
     if request.method == 'POST':
@@ -163,33 +171,34 @@ def add_song_request(request):
         musical = _sanitize_string(request.POST['musical'], title=True)
         notes = request.POST.get('notes')
         partners = request.POST.getlist('partners')
-        approve_duplicate = request.POST.get('approve-duplicate')
 
-        song_request = SongRequest.objects.filter(song_name=song_name, musical=musical).first()
-        if not song_request or approve_duplicate:
-            with transaction.atomic(): # Abort object creation if validation fails
-                # Raffle winner add their songs as standby - to be spotlit when Shani decides.
-                new_song_request = SongRequest.objects.create(song_name=song_name, musical=musical,
-                                                              singer=current_user, notes=notes,
-                                                              standby=current_user.raffle_winner)
-                try:
-                    new_song_request.partners.set(partners) # Runs validation function using signal
-                except ValidationError as e:
-                    return JsonResponse({"error": e.message}, status=400)
+        existing_song = SongRequest.objects.filter(song_name=song_name, musical=musical).first()
+        if existing_song and existing_song.singer == current_user:
+            return JsonResponse({"error": "You already signed up with this song tonight"}, status=400)
 
-            Singer.ordering.calculate_positions()
-            return JsonResponse({
-                'requested_song': new_song_request.song_name,
-            })
+        # Raffle winner add their songs as standby - to be spotlit when Shani decides.
+        new_song_request = SongRequest.objects.create(
+            song_name=song_name, musical=musical, singer=current_user, notes=notes,
+            standby=current_user.raffle_winner,
+            duplicate_of=existing_song.singer.get_full_name() if existing_song else '')
 
-        else:
-            if current_user in song_request.partners.all():
-                return JsonResponse({"error": f"Apparently, {song_request.singer} already signed you up for this song"},
-                                    status=400)
-            elif song_request.singer == current_user:
-                return JsonResponse({"error": "You already signed up with this song tonight"}, status=400)
-            else:
-                return JsonResponse({"duplicate": True}, status=202)
+        # One partner at a time, after the song exists: a partner who already used their slot is left out and
+        # reported, but never costs the singer the song or their place
+        partner_warnings = []
+        for partner in partners:
+            try:
+                with transaction.atomic():
+                    new_song_request.partners.add(partner)  # Runs validation function using signal
+            except ValidationError as e:
+                partner_warnings.append(e.message)
+
+        Singer.ordering.calculate_positions()
+        return JsonResponse({
+            'requested_song': new_song_request.song_name,
+            'song_id': new_song_request.id,
+            'duplicate_of': new_song_request.duplicate_of,
+            'partner_warning': ' '.join(partner_warnings),
+        })
 
 
 @api_view(["GET"])
@@ -256,6 +265,12 @@ def get_lineup(request):
 
 @api_view(["PUT"])
 def update_song(request):
+    """
+    Saves an edit to an existing song, from My Songs or from "I'll pick another song" on the signup page.
+    If any partner already used their once-per-night slot, the whole edit is refused with that error and nothing
+    changes. add_song_request keeps the song and only warns instead, because there the song is new and its creation
+    sets the singer's place; here the song and its place already exist.
+    """
     song_id = request.data['song_id']
     song_name = _sanitize_string(request.data['song_name'], title=True)
     musical = _sanitize_string(request.data['musical'], title=True)
@@ -275,6 +290,11 @@ def update_song(request):
             song_request.found_music = False
             song_request.default_lyrics = False
             song_request.to_alon = None
+        # Only choosing a song can make it a duplicate, so the first singer's song is never marked by their own edits
+        if song_request.song_name != song_name or song_request.musical != musical:
+            other_song = SongRequest.objects.filter(song_name=song_name, musical=musical).first()
+            song_request.duplicate_of = (other_song.singer.get_full_name()
+                                         if other_song and other_song.singer != song_request.singer else '')
         song_request.song_name = song_name
         song_request.musical = musical
         song_request.notes = notes
@@ -303,7 +323,10 @@ def view_suggestions(request):
 
 @bwt_login_required('login', singer_only=True)
 def add_song(request):
-    return render(request, 'song_signup/add_song.html', {'possible_partners': _get_possible_partners(request)})
+    # The People's Choice list shows only while a People's Choice event is configured
+    peoples_choice_sku = config.PEOPLES_CHOICE_EVENT_SKU if config.PEOPLES_CHOICE_EVENT_DATE else ''
+    return render(request, 'song_signup/add_song.html', {'possible_partners': _get_possible_partners(request),
+                                                         'peoples_choice_sku': peoples_choice_sku})
 
 def _get_possible_partners(request):
     # Superusers who are marked as audience are admin-only (e.g. Lee) — exclude them from partner options

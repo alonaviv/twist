@@ -121,13 +121,14 @@ and choose a different SSH port number (not 22).
 1. Run song_signup/tests from pycharm after selecting the docker compose file.
 2. If you get the error `database "test_twist_db" already exists`, delete all volumes with the command `./stop-dev.sh -v`
 3. A better option, without interfering with local server - enter the django container, and type this for a specific 
-   test: `./manage.py test song_signup.tests.test_models.TestSingerModel.test_already_sang` or to run all of them: `./manage.py test song_signup`
+   test: `./manage.py test song_signup.tests.test_models.TestSingerModel.test_already_sang` or to run all of them: `./manage.py test song_signup peoples_choice explanations pub_quiz` (every project app; a bare `./manage.py test` would
+   also pick up the third-party tests in `.venv`)
 
 
 ## Testing with coverage
 1. Start containers with `./start-dev.sh`
 3. Connect to django container with `docker exec -it twist-django-1  /bin/bash`
-4. In container, run `coverage run --source='.' manage.py test song_signup && coverage html --omit=song_signup/tests/interactive_test_real_dbs.py,song_signup/management/*,dev_setup.py,prod_setup.py,twist/asgi.py,twist/wsgi.py,song_signup/tests/*,manage.py,twist/celery.py`
+4. In container, run `coverage run --source='.' manage.py test song_signup peoples_choice explanations pub_quiz && coverage html --omit=song_signup/tests/interactive_test_real_dbs.py,song_signup/management/*,dev_setup.py,prod_setup.py,twist/asgi.py,twist/wsgi.py,song_signup/tests/*,manage.py,twist/celery.py`
 5. Exit container and run `open ./htmlcov/index.html` locally
 
 

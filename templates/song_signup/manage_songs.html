@@ -6,6 +6,15 @@
 
 {% include "partials/_navbar.html" with current="manage-songs" %}
 <main>
+    <dialog id="duplicate-song-popup" class="signup-dialog">
+        <form method="dialog">
+            <p class="duplicate-text"></p>
+            <div class='buttons-wrapper'>
+                <button type="button" class="pick-another">I'll pick another song</button>
+                <button type="button" class="sing-anyway">I still want to sing it</button>
+            </div>
+        </form>
+    </dialog>
     <div id="song-list-wrapper">
         <div class="container">
             <h1>Your Next Songs</h1>

@@ -157,8 +157,8 @@
                 ${chosenRibbon}
                 <div class="pc-card-rank">${rank}</div>
                 <div class="pc-card-body">
-                    <h3 class="pc-card-title">${song.title}</h3>
-                    <p class="pc-card-show">${song.show}</p>
+                    <h3 class="pc-card-title">${song.song_name}</h3>
+                    <p class="pc-card-musical">${song.musical}</p>
                     <div class="pc-card-footer">
                         ${footerButton}
                     </div>

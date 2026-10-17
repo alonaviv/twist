@@ -17,9 +17,17 @@ against any tier without editing.  See README block printed at the bottom.
 #   -> when a trivia question is active it ALSO polls /get_selected_answer @0.5s; that 404s with no
 #      active trivia, so it is NOT part of money-time. Run a separate trivia scenario for that peak.
 # add-song.js checkDisableSignup @0.5s: /signup_disabled -- ONLY while on the /add_song page (brief)
+# reactions-phone.js @4s (every logged-in page): /reactions_state; while it says open, the phone also
+#   POSTs /send_reaction @1s with the taps and texts since the last send. Reactions only open while the
+#   current song is people's choice, so mark one in the admin during the run to exercise the sending.
 SINGER_POLLS = [
     "/evening_started", "/next_singer", "/spotlight_data", "/dashboard_data",
     "/get_active_question", "/get_active_question",   # the 0.5s base poll, doubled
+]
+# live-lyrics.js populateLyrics @1s on the projector, the one screen that matters most
+SCREEN_POLLS = [
+    "/evening_started", "/boho_started", "/oktoberfest_started", "/coronation_started",
+    "/get_active_question", "/get_raffle_participants", "/current_lyrics",
 ]
 AUDIENCE_POLLS = [
     "/evening_started", "/next_singer", "/spotlight_data",
@@ -119,6 +127,13 @@ def csv_dataset(name, filename, variables):
   <stringProp name="shareMode">shareMode.all</stringProp>
 </CSVDataSet>''', [])
 
+def if_controller(name, condition, children):
+    return (f'''<IfController guiclass="IfControllerPanel" testclass="IfController" testname="{name}" enabled="true">
+  <stringProp name="IfController.condition">{esc(condition)}</stringProp>
+  <boolProp name="IfController.evaluateAll">false</boolProp>
+  <boolProp name="IfController.useExpression">true</boolProp>
+</IfController>''', children)
+
 def loop_controller(name, loops_expr, children):
     return (f'''<LoopController guiclass="LoopControlPanel" testclass="LoopController" testname="{name}" enabled="true">
   <boolProp name="LoopController.continue_forever">false</boolProp>
@@ -133,14 +148,14 @@ def json_extractor(refname, path, default):
   <stringProp name="JSONPostProcessor.defaultValues">{default}</stringProp>
 </JSONPostProcessor>''', [])
 
-def put_json(path, body, headers):
+def json_request(method, path, body, headers):
     hdrs = ""
     for k, v in headers:
         hdrs += f'<elementProp name="" elementType="Header"><stringProp name="Header.name">{k}</stringProp><stringProp name="Header.value">{esc(v)}</stringProp></elementProp>'
     hm = (f'''<HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="JSON + CSRF headers" enabled="true">
   <collectionProp name="HeaderManager.headers">{hdrs}</collectionProp>
 </HeaderManager>''', [])
-    return (f'''<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="PUT {path}" enabled="true">
+    return (f'''<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="{method} {path}" enabled="true">
   <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
   <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments">
     <elementProp name="" elementType="HTTPArgument">
@@ -150,7 +165,7 @@ def put_json(path, body, headers):
     </elementProp>
   </collectionProp></elementProp>
   <stringProp name="HTTPSampler.path">{path}</stringProp>
-  <stringProp name="HTTPSampler.method">PUT</stringProp>
+  <stringProp name="HTTPSampler.method">{method}</stringProp>
   <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
   <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
   <stringProp name="HTTPSampler.contentEncoding">UTF-8</stringProp>
@@ -238,7 +253,7 @@ def preflight():
         post("/login", [
             ("ticket-type", "singer"),
             ("first-name", "Preflight"),
-            ("last-name", "Check"),
+            ("last-name", "Check${RUN_ID}"),  # Unique per run, so runs work without a DB reset in between
             ("passcode", "${PASSCODE}"),
             ("order-id", "${FREEBIE}"),
             ("no-upload", "on"),
@@ -246,8 +261,8 @@ def preflight():
         ], [csrf_cookie_extractor(), login_ok]),
         get("/add_song", [csrf_extractor()]),
         post("/add_song_request", [
-            ("song-name", "preflight"),
-            ("musical", "Preflight Musical"),
+            ("song-name", "${PREFLIGHT_SONG}"),
+            ("musical", "${PREFLIGHT_MUSICAL}"),
             ("notes", "preflight"),
             ("csrfmiddlewaretoken", "${csrf}"),
         ], [signup_ok]),
@@ -354,7 +369,7 @@ def singer_once_only():
         # ...then edit to the real song name (staggered, as each singer finishes)
         get("/manage_songs"),
         get("/get_current_songs", [json_extractor("songid", "$[0].id", "SONGID_NOT_FOUND")]),
-        put_json("/update_song", edit_body,
+        json_request("PUT", "/update_song", edit_body,
                  [("X-CSRFToken", "${csrf}"), ("Content-Type", "application/json")]),
     ]
     return ('<OnceOnlyController guiclass="OnceOnlyControllerGui" testclass="OnceOnlyController" testname="Login + warm-up + simultaneous signup + edit (once per user)" enabled="true"/>', body)
@@ -362,6 +377,21 @@ def singer_once_only():
 def audience_once_only():
     return ('<OnceOnlyController guiclass="OnceOnlyControllerGui" testclass="OnceOnlyController" testname="Login (once per user)" enabled="true"/>',
             login_chain("audience", "Loadaudience"))
+
+def reactions():
+    # Every 4th iteration (~4s) check whether reactions are open; while they are, each iteration (~1s) sends with
+    # probability REACT_PCT percent (a phone only sends in a second it was tapped), with a few taps and a text each time
+    send_body = '{"emojis": {"\U0001F44F": 2, "\U0001F525": 1}, "texts": ["lt ${__threadNum}"]}'
+    return [
+        if_controller("Every 4th iteration", "${__groovy(vars.getIteration() % 4 == 1)}", [
+            get("/reactions_state", [json_extractor("reactions_open", "$.open", "false")]),
+        ]),
+        if_controller("While reactions are open, REACT_PCT% of the time",
+                      '${__groovy(vars.get("reactions_open") == "true" && ${__Random(1,100)} <= ${REACT_PCT})}', [
+            json_request("POST", "/send_reaction", send_body,
+                         [("X-CSRFToken", "${csrf}"), ("Content-Type", "application/json")]),
+        ]),
+    ]
 
 def poll_batch(paths):
     out = []
@@ -381,22 +411,33 @@ def build():
         ("WARMUP_LOOPS",  "${__P(warmup,8)}"),
         ("POLL_INTERVAL", "${__P(poll_interval,1000)}"),
         ("SLA_MS",        "${__P(sla,2000)}"),
+        ("REACT_PCT",     "${__P(react_pct,100)}"),
         ("RUN_ID",        "${__P(run_id,run${__time(YMDHMS)})}"),
         ("SONGS_CSV",     "${__P(songs_csv,songs.csv)}"),
+        # After RUN_ID, which its default uses. Name a people's choice suggestion here to make the first song
+        # people's choice from the start
+        ("PREFLIGHT_SONG",    "${__P(preflight_song,preflight ${RUN_ID})}"),
+        ("PREFLIGHT_MUSICAL", "${__P(preflight_musical,Preflight Musical)}"),
     ])
 
     singers = thread_group("Singers (login + simultaneous signup + poll)",
                            "${__P(singers,40)}", "${__P(ramp,1)}",
                            [csv_dataset("Real songs (for lyrics/exa)", "${SONGS_CSV}", "song,musical"),
-                            singer_once_only()] + poll_batch(SINGER_POLLS) +
+                            singer_once_only()] + poll_batch(SINGER_POLLS) + reactions() +
                            [duration_assertion(), code_assertion()])
 
     audience = thread_group("Audience (login + poll)",
                             "${__P(audience,60)}", "${__P(ramp_aud,3)}",
-                            [audience_once_only()] + poll_batch(AUDIENCE_POLLS) +
+                            [audience_once_only()] + poll_batch(AUDIENCE_POLLS) + reactions() +
                             [duration_assertion(), code_assertion()])
 
-    plan_children = [config, http_defaults(), cookie_mgr(), header_mgr(), failure_printer(), preflight(), singers, audience]
+    screen = thread_group("Live lyrics screen (login + poll)", "1", "1",
+                          [('<OnceOnlyController guiclass="OnceOnlyControllerGui" testclass="OnceOnlyController" testname="Login (once)" enabled="true"/>',
+                            login_chain("audience", "Loadscreen"))] + poll_batch(SCREEN_POLLS) +
+                          [duration_assertion(), code_assertion()])
+
+    plan_children = [config, http_defaults(), cookie_mgr(), header_mgr(), failure_printer(), preflight(), singers, audience,
+                     screen]
 
     comments = esc(
         "BWT MONEY-TIME LOAD TEST  (40 singers sign up at once + 60 audience polling = 100 concurrent)\n"
@@ -416,13 +457,16 @@ def build():
         "FLOW per singer: login (clustered via ramp) -> warm up polling on /home (-Jwarmup loops) ->\n"
         "  open /add_song -> RENDEZVOUS (all 40 wait) -> POST /add_song_request with a short name typed\n"
         "  fast ('ready set go') -> then edit to the real name (manage_songs/get_current_songs/update_song).\n"
-        "Audience just log in and poll. Trivia: /get_active_question is always polled; /get_selected_answer\n"
+        "Audience just log in and poll. Everyone checks /reactions_state every ~4s and, while the current song\n"
+        "is people's choice, POSTs /send_reaction every ~1s (mark a song in the admin during the run). Trivia: /get_active_question is always polled; /get_selected_answer\n"
         "only fires during an ACTIVE trivia round (404s otherwise) so it is a separate scenario, not money-time.\n"
         "LYRICS/EXA: the edit renames to a real song from songs.csv (distinct per singer), which re-fires the\n"
         "get_lyrics celery task -> exa.ai really searches. So ~40 real lyric fetches per run (uses Exa quota).\n"
         "Keep songs.csv next to the jmx (scp it to bwt-stress too); override path with -Jsongs_csv=.\n"
         "\n"
         "KNOBS: -Jsingers=40 -Jaudience=60 -Jduration=300 -Jramp=1 -Jwarmup=8 -Jsla=2000 -Jpoll_interval=1000\n"
+        "       -Jreact_pct=100 (percent of seconds a phone sends a reaction while they're open)\n"
+        "       -Jpreflight_song= -Jpreflight_musical= (the first song; a people's choice suggestion makes it one)\n"
         "       -Jhost=broadwaywithatwist.xyz -Jrun_id=<unique each run, avoids 'already logged in'>\n"
         "Run the laptop only as a small functional check (e.g. -Jsingers=5 -Jaudience=5 -Jduration=30);\n"
         "do the real 100-user tier benchmark from the bwt-stress EC2 box (in-region). Reset the DB when done."

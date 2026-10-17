@@ -624,6 +624,20 @@ nav {
           #song-list-wrapper .container ol li .song-wrapper .fa-star {
             margin-right: 3%;
             padding-top: 6px; }
+          #song-list-wrapper .container ol li .song-wrapper .duplicate-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            width: max-content;
+            max-width: 78vw;
+            margin-top: 6px;
+            padding: 3px 10px;
+            border-radius: 12px;
+            background: rgba(0, 0, 0, 0.12);
+            color: #333;
+            font-size: 15px;
+            font-weight: 500;
+            line-height: 1.3; }
           #song-list-wrapper .container ol li .song-wrapper .edit-song-form {
             display: flex;
             width: fit-content;
@@ -665,7 +679,8 @@ nav {
           #song-list-wrapper .container ol li .song-wrapper .song-details {
             display: flex;
             flex-direction: column;
-            width: 100%; }
+            width: 100%;
+            min-width: 0; }
             #song-list-wrapper .container ol li .song-wrapper .song-details .song-name {
               font-weight: 500; }
             #song-list-wrapper .container ol li .song-wrapper .song-details .title {
@@ -982,40 +997,23 @@ nav {
       font-size: 20px;
       font-weight: 500; }
 
+main#signup-main {
+  height: auto;
+  min-height: 92vh; }
+
 #add-song-wrapper {
   background: #00C575;
   color: #000;
-  height: 100%;
+  min-height: 92vh;
   width: 100%;
   padding: 3% 7%;
+  padding-bottom: calc(150px + 4vh);
   position: relative; }
+  #add-song-wrapper > h2 {
+    margin-bottom: 6px; }
   #add-song-wrapper .form-messages {
     color: #c50050;
     padding-top: 0; }
-  #add-song-wrapper #view_suggestions_link {
-    font-weight: 500;
-    text-decoration: underline;
-    font-size: 20px;
-    color: #c51200; }
-  #add-song-wrapper #signups-disabled-text {
-    color: #ffff50;
-    transform: rotate(-15deg) translateX(-50%);
-    position: absolute;
-    width: 70%;
-    left: 50%;
-    top: 10%;
-    font-weight: 500;
-    font-size: 30px;
-    transition: all 2s ease;
-    opacity: 0;
-    pointer-events: none;
-    text-align: center;
-    background: #333333CC;
-    border-radius: 30px;
-    padding: 20px;
-    z-index: 10; }
-    #add-song-wrapper #signups-disabled-text.signups-disabled {
-      opacity: 1; }
   #add-song-wrapper .form-explain {
     font-size: 16px;
     margin-bottom: 5%;
@@ -1025,14 +1023,8 @@ nav {
     list-style-position: inside; }
   #add-song-wrapper form {
     width: 100%; }
-    #add-song-wrapper form #submit-wrapper {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin-bottom: 20px; }
     #add-song-wrapper form .form-control {
-      margin-bottom: 15px;
-      transition: all 2s ease; }
+      margin-bottom: 15px; }
       #add-song-wrapper form .form-control input[type="text"] {
         width: 100%;
         padding: 4px;
@@ -1041,14 +1033,10 @@ nav {
         border-radius: 5px;
         background: #333;
         color: #fff;
-        font-size: 18px;
-        transition: inherit; }
+        font-size: 18px; }
         #add-song-wrapper form .form-control input[type="text"]::placeholder {
           color: #aaa;
           font-size: 18px; }
-      #add-song-wrapper form .form-control input.signups-disabled {
-        background: #666;
-        transition: inherit; }
       #add-song-wrapper form .form-control select {
         margin-top: 10px;
         margin-bottom: 10px;
@@ -1057,12 +1045,225 @@ nav {
         padding: 4px;
         background: #333;
         color: #fff;
-        font-size: 14px;
-        transition: inherit; }
-        #add-song-wrapper form .form-control select .signups-disabled {
-          background: #666; }
+        font-size: 14px; }
 
-#duplicate-song-dialog {
+.signup-sticky {
+  position: sticky;
+  top: 8vh;
+  z-index: 5;
+  margin: 0 -7vw;
+  padding: 8px 7vw;
+  background: #00C575; }
+  .signup-sticky .form-explain {
+    margin: 0 !important; }
+
+.signup-inline-link {
+  padding: 0;
+  border: none;
+  background: none;
+  color: #0645ad;
+  font: inherit;
+  font-weight: 900;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer; }
+
+.signup-song-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #333;
+  color: #fff;
+  border-radius: 10px;
+  padding: 10px 12px; }
+  .signup-song-card .signup-song-text {
+    flex: 1;
+    min-width: 0; }
+  .signup-song-card small {
+    display: block;
+    color: #aaa; }
+  .signup-song-card button {
+    flex-shrink: 0;
+    background: none;
+    border: 1px solid #00C575;
+    color: #00C575;
+    border-radius: 8px;
+    padding: 6px 10px;
+    font: 14px "Roboto", sans-serif;
+    cursor: pointer; }
+
+.signup-pc-panel {
+  margin: 6px -4% 0;
+  padding: 12px 14px 16px;
+  border-radius: 16px;
+  background: #222e44;
+  color: var(--pc-text-primary); }
+  .signup-pc-panel .pc-section-heading {
+    align-items: center;
+    text-align: center;
+    margin-bottom: 10px;
+    gap: 2px; }
+    .signup-pc-panel .pc-section-heading h2 {
+      display: flex;
+      align-items: center;
+      gap: 8px; }
+    .signup-pc-panel .pc-section-heading img {
+      height: 30px; }
+    .signup-pc-panel .pc-section-heading img.signup-crown {
+      height: 32px;
+      filter: drop-shadow(0 0 1.5px rgba(255, 255, 255, 0.9)); }
+  .signup-pc-panel .pc-card-title {
+    font-size: 1.15rem; }
+  .signup-pc-panel .pc-card-musical {
+    font-size: 0.9rem; }
+  .signup-pc-panel .pc-card-footer {
+    padding-top: 0.35rem; }
+  .signup-pc-panel .pc-card-ribbon {
+    right: -0.5rem;
+    top: 0.35rem; }
+  .signup-pc-panel .pc-card--taken .pc-card-rank {
+    visibility: hidden; }
+
+.website-choices-button {
+  margin-top: 6px;
+  padding: 7px 16px;
+  border: 1px solid var(--pc-border);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--pc-text-primary);
+  font: 500 15px "Roboto", sans-serif;
+  cursor: pointer; }
+
+.signup-show-all {
+  width: 100%;
+  height: 40px;
+  margin-top: 10px;
+  border: 1px solid var(--pc-border);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--pc-text-primary);
+  font: 500 15px "Roboto", sans-serif;
+  cursor: pointer; }
+
+#song-form-popup {
+  margin: auto;
+  width: 92%;
+  max-width: 420px;
+  border: none;
+  border-radius: 12px;
+  padding: 18px 16px;
+  background: #00C575; }
+  #song-form-popup .form-explain {
+    margin-top: 0; }
+  #song-form-popup .song-form-done-row {
+    display: flex;
+    justify-content: center;
+    margin-top: 4px; }
+
+#website-choices-popup {
+  margin: auto;
+  width: 90%;
+  max-width: 400px;
+  max-height: 80vh;
+  border-radius: 8px;
+  padding: 18px; }
+  #website-choices-popup h3 {
+    margin-bottom: 4px; }
+  #website-choices-popup p {
+    margin-bottom: 12px;
+    font-size: 14px; }
+  #website-choices-popup ul {
+    list-style: none; }
+  #website-choices-popup li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid #eee; }
+  #website-choices-popup .website-choice-text {
+    flex: 1;
+    min-width: 0;
+    line-height: 1.25; }
+  #website-choices-popup small {
+    display: block;
+    color: #777; }
+  #website-choices-popup li button {
+    flex-shrink: 0;
+    padding: 8px 14px;
+    border: none;
+    border-radius: 8px;
+    background: #333;
+    color: #00C575;
+    font: 500 14px "Roboto", sans-serif;
+    cursor: pointer; }
+  #website-choices-popup .signup-close {
+    width: 100%;
+    margin-top: 6px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    background-color: #f9f9f9;
+    border-radius: 4px;
+    cursor: pointer; }
+
+#signup-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 4vh;
+  z-index: 50;
+  padding: 10px 7%;
+  background: #333;
+  color: #fff;
+  text-align: center;
+  border-bottom: 1px solid #444; }
+
+#signup-button {
+  width: 100%;
+  height: 54px;
+  border: none;
+  border-radius: 10px;
+  font: 900 24px "Roboto", sans-serif;
+  letter-spacing: 2px;
+  color: #fff;
+  background: #c51200;
+  cursor: pointer; }
+  #signup-button:disabled {
+    background: #666;
+    color: #bbb;
+    letter-spacing: 1px;
+    cursor: default; }
+  #signup-button.waiting:disabled {
+    background: #c51200;
+    color: #fff;
+    opacity: 0.45;
+    letter-spacing: 2px; }
+
+#under-button-line {
+  font-size: 13px;
+  color: #ffff50;
+  margin-top: 6px; }
+
+#closed-stamp {
+  position: absolute;
+  left: 50%;
+  top: -9px;
+  white-space: nowrap;
+  padding: 4px 14px;
+  border: 2px solid rgba(255, 255, 80, 0.7);
+  border-radius: 10px;
+  background: rgba(30, 30, 30, 0.85);
+  color: #ffff50;
+  font: 700 16px/1.25 "Roboto", sans-serif;
+  text-align: center;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.45);
+  transform: translateX(-50%) rotate(-4deg);
+  pointer-events: none; }
+  #closed-stamp.lifted {
+    opacity: 0;
+    transform: translate(-50%, -24px) rotate(-10deg) scale(0.9);
+    transition: opacity 0.25s ease-in, transform 0.25s ease-in; }
+
+.signup-dialog {
   border-radius: 8px;
   padding: 20px;
   width: 90%;
@@ -1073,25 +1274,25 @@ nav {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%); }
-  #duplicate-song-dialog form {
+  .signup-dialog form {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center; }
-  #duplicate-song-dialog p {
+  .signup-dialog p {
     margin: 0 0 20px;
     text-align: center; }
-  #duplicate-song-dialog .buttons-wrapper {
+  .signup-dialog .buttons-wrapper {
     display: flex;
     flex-direction: column; }
-    #duplicate-song-dialog .buttons-wrapper button {
+    .signup-dialog .buttons-wrapper button {
       cursor: pointer;
       margin-bottom: 15px;
       padding: 10px 20px;
       border: 1px solid #ddd;
       background-color: #f9f9f9;
       border-radius: 4px; }
-      #duplicate-song-dialog .buttons-wrapper button:hover {
+      .signup-dialog .buttons-wrapper button:hover {
         background-color: #f0f0f0; }
 
 ::backdrop {
@@ -1516,7 +1717,7 @@ main.pc-layout {
   color: var(--pc-text-primary);
   letter-spacing: 0.01em; }
 
-.pc-card-show {
+.pc-card-musical {
   font-size: 1rem;
   color: var(--pc-accent);
   font-weight: 500;

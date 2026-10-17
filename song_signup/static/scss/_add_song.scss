@@ -1,44 +1,27 @@
+// The singer signup page: the People's Choice list is the page, the song form opens in a popup, and a fixed bar
+// holds the SIGNUP button
+
+main#signup-main {
+    height: auto;
+    min-height: 100vh - $navbar-height;
+}
+
 #add-song-wrapper {
     background: $primary-color;
     color: set-text-color($primary-color);
-    height: 100%;
+    min-height: 100vh - $navbar-height;
     width: 100%;
     padding: 3% 7%;
+    padding-bottom: calc(150px + #{$footer-height});
     position: relative;
+
+    > h2 {
+        margin-bottom: 6px;
+    }
 
     .form-messages {
         color: #c50050;
         padding-top: 0;
-    }
-
-    #view_suggestions_link {
-        font-weight: 500;
-        text-decoration: underline;
-        font-size: 20px;
-        color: #c51200;
-    }
-
-    #signups-disabled-text {
-        color: $third-color;
-        transform: rotate(-15deg) translateX(-50%);
-        position: absolute;
-        width: 70%;
-        left: 50%;
-        top: 10%;
-        font-weight: 500;
-        font-size: 30px;
-        transition: all 2s ease;
-        opacity: 0;
-        pointer-events: none;
-        text-align: center;
-        background: #333333CC;
-        border-radius: 30px;
-        padding: 20px;
-        z-index: 10;
-
-        &.signups-disabled{
-            opacity: 1;
-        }
     }
 
     .form-explain {
@@ -54,16 +37,8 @@
     form {
         width: 100%;
 
-        #submit-wrapper {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
         .form-control {
             margin-bottom: 15px;
-            transition: all 2s ease;
 
             input[type="text"] {
                 width: 100%;
@@ -78,17 +53,7 @@
                     color: #aaa;
                     font-size: 18px;
                 }
-                transition: inherit;
-
             }
-
-            input {
-                &.signups-disabled{
-                    background: #666;
-                    transition: inherit;
-                }
-            }
-
 
             select {
                 margin-top: 10px;
@@ -99,19 +64,305 @@
                 background: #333;
                 color: #fff;
                 font-size: 14px;
-                transition: inherit;
-
-                .signups-disabled{
-                    background: #666;
-                }
             }
         }
     }
 }
 
-// Dialog box
+// The song slot (the intro line, or the "Your song" card) stays under the navbar while the list scrolls
+.signup-sticky {
+    position: sticky;
+    top: $navbar-height;
+    z-index: 5;
+    margin: 0 -7vw;  // Full width: the wrapper's side padding is 7% of the page
+    padding: 8px 7vw;
+    background: $primary-color;
 
-#duplicate-song-dialog {
+    .form-explain {
+        margin: 0 !important;
+    }
+}
+
+.signup-inline-link {
+    padding: 0;
+    border: none;
+    background: none;
+    color: #0645ad;
+    font: inherit;
+    font-weight: 900;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    cursor: pointer;
+}
+
+.signup-song-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: $dark-bg;
+    color: #fff;
+    border-radius: 10px;
+    padding: 10px 12px;
+
+    .signup-song-text {
+        flex: 1;
+        min-width: 0;
+    }
+
+    small {
+        display: block;
+        color: #aaa;
+    }
+
+    button {
+        flex-shrink: 0;
+        background: none;
+        border: 1px solid $primary-color;
+        color: $primary-color;
+        border-radius: 8px;
+        padding: 6px 10px;
+        font: 14px "Roboto", sans-serif;
+        cursor: pointer;
+    }
+}
+
+// People's Choice, embedded with the People's Choice site's look and its .pc-* card classes
+.signup-pc-panel {
+    margin: 6px -4% 0;
+    padding: 12px 14px 16px;
+    border-radius: 16px;
+    background: #222e44;
+    color: var(--pc-text-primary);
+
+    .pc-section-heading {
+        align-items: center;
+        text-align: center;
+        margin-bottom: 10px;
+        gap: 2px;
+
+        h2 {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        img {
+            height: 30px;
+        }
+
+        img.signup-crown {
+            height: 32px;
+            filter: drop-shadow(0 0 1.5px rgba(255, 255, 255, 0.9));
+        }
+    }
+
+    .pc-card-title {
+        font-size: 1.15rem;
+    }
+
+    .pc-card-musical {
+        font-size: 0.9rem;
+    }
+
+    .pc-card-footer {
+        padding-top: 0.35rem;
+    }
+
+    .pc-card-ribbon {
+        right: -0.5rem;
+        top: 0.35rem;
+    }
+
+    .pc-card--taken .pc-card-rank {
+        visibility: hidden;
+    }
+}
+
+.website-choices-button {
+    margin-top: 6px;
+    padding: 7px 16px;
+    border: 1px solid var(--pc-border);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--pc-text-primary);
+    font: 500 15px "Roboto", sans-serif;
+    cursor: pointer;
+}
+
+.signup-show-all {
+    width: 100%;
+    height: 40px;
+    margin-top: 10px;
+    border: 1px solid var(--pc-border);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--pc-text-primary);
+    font: 500 15px "Roboto", sans-serif;
+    cursor: pointer;
+}
+
+// The song form, in a popup
+#song-form-popup {
+    margin: auto;
+    width: 92%;
+    max-width: 420px;
+    border: none;
+    border-radius: 12px;
+    padding: 18px 16px;
+    background: $primary-color;
+
+    .form-explain {
+        margin-top: 0;
+    }
+
+    .song-form-done-row {
+        display: flex;
+        justify-content: center;
+        margin-top: 4px;
+    }
+}
+
+// Songs chosen on the People's Choice site
+#website-choices-popup {
+    margin: auto;
+    width: 90%;
+    max-width: 400px;
+    max-height: 80vh;
+    border-radius: 8px;
+    padding: 18px;
+
+    h3 {
+        margin-bottom: 4px;
+    }
+
+    p {
+        margin-bottom: 12px;
+        font-size: 14px;
+    }
+
+    ul {
+        list-style: none;
+    }
+
+    li {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 0;
+        border-bottom: 1px solid #eee;
+    }
+
+    .website-choice-text {
+        flex: 1;
+        min-width: 0;
+        line-height: 1.25;
+    }
+
+    small {
+        display: block;
+        color: #777;
+    }
+
+    li button {
+        flex-shrink: 0;
+        padding: 8px 14px;
+        border: none;
+        border-radius: 8px;
+        background: $dark-bg;
+        color: $primary-color;
+        font: 500 14px "Roboto", sans-serif;
+        cursor: pointer;
+    }
+
+    .signup-close {
+        width: 100%;
+        margin-top: 6px;
+        padding: 10px;
+        border: 1px solid #ddd;
+        background-color: #f9f9f9;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+}
+
+// The bar with the SIGNUP button, above the footer. The whole bar is the tap target, so getting in first is about
+// timing, not aim.
+#signup-bar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: $footer-height;
+    z-index: 50;
+    padding: 10px 7%;
+    background: $dark-bg;
+    color: #fff;
+    text-align: center;
+    border-bottom: 1px solid #444;
+}
+
+#signup-button {
+    width: 100%;
+    height: 54px;
+    border: none;
+    border-radius: 10px;
+    font: 900 24px "Roboto", sans-serif;
+    letter-spacing: 2px;
+    color: #fff;
+    background: $complimentery-secondary;
+    cursor: pointer;
+
+    &:disabled {
+        background: #666;
+        color: #bbb;
+        letter-spacing: 1px;
+        cursor: default;
+    }
+
+    // "waiting" (set by add-song.js): signup is closed but the form has a song. The disabled button keeps its red,
+    // dimmed, so it reads as the SIGNUP button waiting under the stamp, ready to light up when signup opens.
+    &.waiting:disabled {
+        background: $complimentery-secondary;
+        color: #fff;
+        opacity: 0.45;
+        letter-spacing: 2px;
+    }
+}
+
+#under-button-line {
+    font-size: 13px;
+    color: $third-color;
+    margin-top: 6px;
+}
+
+// "Signup isn't open yet!", over the top edge of the button. It pops away faster than anyone can react, and the
+// button works at that same instant, so there is nothing to know and no wait.
+#closed-stamp {
+    position: absolute;
+    left: 50%;
+    top: -9px;
+    white-space: nowrap;
+    padding: 4px 14px;
+    border: 2px solid rgba(255, 255, 80, 0.7);
+    border-radius: 10px;
+    background: rgba(30, 30, 30, 0.85);
+    color: $third-color;
+    font: 700 16px/1.25 "Roboto", sans-serif;
+    text-align: center;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.45);
+    transform: translateX(-50%) rotate(-4deg);
+    pointer-events: none;
+
+    // Only lifting animates; when signup closes again the stamp simply reappears
+    &.lifted {
+        opacity: 0;
+        transform: translate(-50%, -24px) rotate(-10deg) scale(0.9);
+        transition: opacity 0.25s ease-in, transform 0.25s ease-in;
+    }
+}
+
+// Dialogs
+
+.signup-dialog {
     border-radius: 8px;
     padding: 20px;
     width: 90%;

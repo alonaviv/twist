@@ -9,6 +9,7 @@ class SongSuggestion(models.Model):
     votes = models.PositiveIntegerField(default=0)
     chosen = models.BooleanField(default=False)
     chosen_by = models.CharField(max_length=255, blank=True, default='')
+    chosen_in_app = models.BooleanField(default=False)  # Chosen from the signup page tonight, not on this site
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

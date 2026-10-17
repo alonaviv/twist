@@ -3,6 +3,7 @@ import {getCookie, loadWait} from "./utils.js";
 const csrftoken = getCookie('csrftoken');
 
 const songListUl = document.getElementById("song-list");
+const duplicateSongPopup = document.getElementById("duplicate-song-popup");
 
 window.addEventListener("DOMContentLoaded", loadWait(populateSongList));
 
@@ -53,11 +54,15 @@ function setupListeners(parentElement, songId) {
 }
 
 
+// The badge shows only the other singer's first name, so it fits on one line
+const firstName = (fullName) => fullName.split(" ")[0];
+
 function getSongHtml(song, current_user) {
     const res = `
             <div class="song-details">
                 <p class="song-name">${song.song_name}${song.singer.id != current_user.id ? ` (As ${song.singer.first_name} ${song.singer.last_name}'s partner)` : ""}</p>
                 <p class="song-musical">${song.musical}</p>
+        ${song.duplicate_of && song.singer.id === current_user.id ? `<p class="duplicate-badge"><i class="fa-solid fa-user-group"></i> Chosen by ${firstName(song.duplicate_of)} as well</p>` : ""}
 
         ${song.notes ? `<div class="notes">
                     <p><span class="title">Additional requests:</span><br> ${song.notes}</p>
@@ -109,9 +114,10 @@ function toggleNewSongBtn() {
 
 async function displayRenameForm(e) {
     e.preventDefault();
+    openEditForm(e.currentTarget.parentElement, e.currentTarget.dataset.songId);
+}
 
-    const songPK = e.currentTarget.dataset.songId;
-    const songWrapper = e.currentTarget.parentElement;
+async function openEditForm(songWrapper, songPK) {
     let song;
     let possible_partners
 
@@ -207,6 +213,7 @@ async function sendRename(e) {
             songWrapper.innerHTML = getSongHtml(song, current_user);
             setupListeners(songWrapper, song.id);
             toggleNewSongBtn();
+            if (song.duplicate_of) showDuplicateSongPopup(song, songWrapper);
         })
         .catch((error) => {
             formMessages.innerHTML = `<p>${error}<p>`
@@ -214,3 +221,14 @@ async function sendRename(e) {
     
 }
 
+// A saved song another singer already has: sing it anyway, or reopen the edit form to pick another
+function showDuplicateSongPopup(song, songWrapper) {
+    duplicateSongPopup.querySelector(".duplicate-text").innerHTML =
+        `<strong>${song.song_name}</strong> was already chosen by <strong>${song.duplicate_of}</strong>.`;
+    duplicateSongPopup.querySelector(".pick-another").onclick = () => {
+        duplicateSongPopup.close();
+        openEditForm(songWrapper, song.id);
+    };
+    duplicateSongPopup.querySelector(".sing-anyway").onclick = () => duplicateSongPopup.close();
+    duplicateSongPopup.showModal();
+}

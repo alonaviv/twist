@@ -10,26 +10,26 @@ from .serializers import SongSuggestionSerializer
 
 DEV_EVENT_DATE = 'January 5, 2025'
 DEV_SONG_SUGGESTIONS = [
-    {'id': 1, 'title': 'Defying Gravity', 'show': 'Wicked', 'votes': 128},
-    {'id': 2, 'title': 'One Day More', 'show': 'Les Misérables', 'votes': 114},
-    {'id': 3, 'title': 'Wait For It', 'show': 'Hamilton', 'votes': 102},
-    {'id': 4, 'title': "Don't Rain on My Parade", 'show': 'Funny Girl', 'votes': 96},
-    {'id': 5, 'title': 'She Used to Be Mine', 'show': 'Waitress', 'votes': 92},
-    {'id': 6, 'title': 'The Schuyler Sisters', 'show': 'Hamilton', 'votes': 88},
-    {'id': 7, 'title': 'Waving Through a Window', 'show': 'Dear Evan Hansen', 'votes': 86},
-    {'id': 8, 'title': "You'll Be Back", 'show': 'Hamilton', 'votes': 83},
-    {'id': 9, 'title': 'Guns and Ships', 'show': 'Hamilton', 'votes': 79},
-    {'id': 10, 'title': 'Gimme Gimme', 'show': 'Thoroughly Modern Millie', 'votes': 75},
-    {'id': 11, 'title': 'Corner of the Sky', 'show': 'Pippin', 'votes': 74},
-    {'id': 12, 'title': 'Maybe This Time', 'show': 'Cabaret', 'votes': 72},
-    {'id': 13, 'title': 'The Wizard and I', 'show': 'Wicked', 'votes': 68},
-    {'id': 14, 'title': 'My Shot', 'show': 'Hamilton', 'votes': 65},
-    {'id': 15, 'title': 'Losing My Mind', 'show': 'Follies', 'votes': 61},
-    {'id': 16, 'title': 'Satisfied', 'show': 'Hamilton', 'votes': 58},
-    {'id': 17, 'title': 'Astonishing', 'show': 'Little Women', 'votes': 54},
-    {'id': 18, 'title': 'No One Else', 'show': 'Natasha, Pierre & The Great Comet of 1812', 'votes': 51},
-    {'id': 19, 'title': 'Being Alive', 'show': 'Company', 'votes': 48},
-    {'id': 20, 'title': 'I’m Here', 'show': 'The Color Purple', 'votes': 45},
+    {'id': 1, 'song_name': 'Defying Gravity', 'musical': 'Wicked', 'votes': 128},
+    {'id': 2, 'song_name': 'One Day More', 'musical': 'Les Misérables', 'votes': 114},
+    {'id': 3, 'song_name': 'Wait For It', 'musical': 'Hamilton', 'votes': 102},
+    {'id': 4, 'song_name': "Don't Rain on My Parade", 'musical': 'Funny Girl', 'votes': 96},
+    {'id': 5, 'song_name': 'She Used to Be Mine', 'musical': 'Waitress', 'votes': 92},
+    {'id': 6, 'song_name': 'The Schuyler Sisters', 'musical': 'Hamilton', 'votes': 88},
+    {'id': 7, 'song_name': 'Waving Through a Window', 'musical': 'Dear Evan Hansen', 'votes': 86},
+    {'id': 8, 'song_name': "You'll Be Back", 'musical': 'Hamilton', 'votes': 83},
+    {'id': 9, 'song_name': 'Guns and Ships', 'musical': 'Hamilton', 'votes': 79},
+    {'id': 10, 'song_name': 'Gimme Gimme', 'musical': 'Thoroughly Modern Millie', 'votes': 75},
+    {'id': 11, 'song_name': 'Corner of the Sky', 'musical': 'Pippin', 'votes': 74},
+    {'id': 12, 'song_name': 'Maybe This Time', 'musical': 'Cabaret', 'votes': 72},
+    {'id': 13, 'song_name': 'The Wizard and I', 'musical': 'Wicked', 'votes': 68},
+    {'id': 14, 'song_name': 'My Shot', 'musical': 'Hamilton', 'votes': 65},
+    {'id': 15, 'song_name': 'Losing My Mind', 'musical': 'Follies', 'votes': 61},
+    {'id': 16, 'song_name': 'Satisfied', 'musical': 'Hamilton', 'votes': 58},
+    {'id': 17, 'song_name': 'Astonishing', 'musical': 'Little Women', 'votes': 54},
+    {'id': 18, 'song_name': 'No One Else', 'musical': 'Natasha, Pierre & The Great Comet of 1812', 'votes': 51},
+    {'id': 19, 'song_name': 'Being Alive', 'musical': 'Company', 'votes': 48},
+    {'id': 20, 'song_name': 'I’m Here', 'musical': 'The Color Purple', 'votes': 45},
 ]
 
 
@@ -117,8 +117,8 @@ def dev_song_suggestions(_request):
         songs_data = [
             {
                 'id': song['id'],
-                'title': titlecase(song['title']),
-                'show': titlecase(song['show']),
+                'song_name': titlecase(song['song_name']),
+                'musical': titlecase(song['musical']),
                 'votes': song['votes'],
             }
             for song in DEV_SONG_SUGGESTIONS
@@ -135,6 +135,7 @@ def dev_song_suggestions(_request):
 def choose_song_suggestion(request, pk):
     action = request.data.get('action', 'choose')  # 'choose' or 'unchoose'
     chosen_by = request.data.get('chosen_by', '')
+    in_app = bool(request.data.get('in_app'))  # Sent by the signup page; the suggestions site doesn't send it
     
     song = get_object_or_404(SongSuggestion, pk=pk)
     
@@ -150,17 +151,19 @@ def choose_song_suggestion(request, pk):
             chosen=True,
             chosen_by=chosen_by,
             event_sku=song.event_sku
-        ).exclude(pk=pk).update(chosen=False, chosen_by='')
+        ).exclude(pk=pk).update(chosen=False, chosen_by='', chosen_in_app=False)
         
         # Choose this song
         song.chosen = True
         song.chosen_by = chosen_by
+        song.chosen_in_app = in_app
         song.save()
     elif action == 'unchoose':
         # Only unchoose if this song was chosen by the same person
         if song.chosen and song.chosen_by == chosen_by:
             song.chosen = False
             song.chosen_by = ''
+            song.chosen_in_app = False
             song.save()
         elif song.chosen:
             return Response(

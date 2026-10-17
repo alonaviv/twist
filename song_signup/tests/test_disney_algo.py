@@ -8,7 +8,7 @@ from song_signup.tests.utils_for_tests import (
     login, logout, create_audience, get_song, set_standby, unset_standby,
     ExpectedDashboard, assert_dashboards, logout_audience, assert_current_song
 )
-from flags.state import disable_flag
+from flags.state import disable_flag, enable_flag
 
 class TestDisneylandOrdering(SongRequestTestCase):
     def test_active_singers(self):
@@ -826,3 +826,47 @@ class TestDashboard(SongRequestTestCase):
             ExpectedDashboard(singer=2, primary_singer=1, next_song=1, wait_amount=0),
             ExpectedDashboard(singer=3, primary_singer=2, next_song=1, wait_amount=1),
         ])
+
+
+class TestOrderingTieBreak(SongRequestTestCase):
+    """
+    Singers whose times are equal (songs requested in the same instant, or performances in the same instant) line up
+    by id. In each test singer 1 logs in again before the order is read, which makes the database return them last:
+    without the id breaking the tie, they would end up after the others with the same time.
+    """
+    def test_same_request_time(self):
+        with freeze_time(TEST_START_TIME) as frozen_time:
+            create_singers(5)
+            add_songs_to_singer(4, 1)
+            frozen_time.tick()
+            add_songs_to_singers([3, 1, 2], 1)  # The same instant
+            frozen_time.tick()
+            add_songs_to_singer(5, 1)
+        login(1)
+        assert_singers_in_disney(self, [4, 1, 2, 3, 5])
+        assert_song_positions(self, [(4, 1), (1, 1), (2, 1), (3, 1), (5, 1)])
+        disable_flag('CAN_SIGNUP')
+        assert_singers_in_disney(self, [4, 1, 2, 3, 5])
+
+    def test_same_performance_time(self):
+        with freeze_time(TEST_START_TIME) as frozen_time:
+            create_singers(3, num_songs=2)
+            frozen_time.tick()
+            set_performed(2, 1)  # The same instant
+            set_performed(1, 1)
+        login(1)
+        # Singer 3 hasn't sung, then singers 1 and 2 by id
+        assert_singers_in_disney(self, [3, 1, 2])
+        disable_flag('CAN_SIGNUP')
+        assert_singers_in_disney(self, [3, 1, 2])
+
+    def test_performance_time_equal_to_request_time(self):
+        # With signup open, singer 1's performance and singer 2's first request are in the same instant
+        with freeze_time(TEST_START_TIME) as frozen_time:
+            create_singers(2)
+            add_songs_to_singer(1, 2)
+            frozen_time.tick()
+            set_performed(1, 1)
+            add_songs_to_singer(2, 1)
+        login(1)
+        assert_singers_in_disney(self, [1, 2])

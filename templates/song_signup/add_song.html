@@ -1,4 +1,3 @@
-
 {% extends 'base.html' %}
 
 {% load static %}
@@ -7,75 +6,119 @@
 
 {% include "partials/_navbar.html" with current="manage-songs" %}
 
-<main>
-    <dialog id="duplicate-song-dialog">
+<main id="signup-main">
+    <dialog id="duplicate-song-popup" class="signup-dialog">
         <form method="dialog">
-            <p>Sorry, someone already selected this song. Do you want to choose a different one?</p>
+            <p id="duplicate-text"></p>
             <div class='buttons-wrapper'>
-                <button value="reset" class="reset">I'll choose another song</button>
-                <button value="continue" class="continue">I still want to sing it</button>
+                <button type="button" id="pick-another">I'll pick another song</button>
+                <button type="button" id="sing-anyway">I still want to sing it</button>
             </div>
         </form>
     </dialog>
+    <dialog id="info-popup" class="signup-dialog">
+        <form method="dialog">
+            <p id="info-popup-text"></p>
+            <div class='buttons-wrapper'>
+                <button type="button" id="info-popup-ok">OK</button>
+            </div>
+        </form>
+    </dialog>
+    <dialog id="website-choices-popup">
+        <h3>Songs chosen online</h3>
+        <p>Chose a song on the People's Choice site before tonight? Pick it here.</p>
+        <ul id="website-choices-list"></ul>
+        <button type="button" class="signup-close" id="website-choices-close">Close</button>
+    </dialog>
+
     <div id="add-song-wrapper">
-        <div id="signups-disabled-text" {% if can_signup %} {% else %} class="signups-disabled" {% endif %}>
-            <p>Singer signup isn't open yet. We'll let you know!<p>
-        </div>
         <h2>Choose your next song!</h2>
-        <p class="form-explain">Pick literally anything in the Broadway or Disney style (seriously, try us!):</p>
-        <div id="new-song-form-wrapper">
-            <div class="form-messages hidden"></div>
-            <form action="" id="new-song-form" autocomplete="off">
-                {% csrf_token %}
-                <input autocomplete="false" name="hidden" type="text" style="display:none;">
-                <div class="form-control">
-                    <input type="text" name="song-name" id="song-name" placeholder="Song name" required
-                     {% if can_signup %} {% else %} class="signups-disabled" disabled {% endif %}>
-                </div>
-                <div class="form-control">
-                    <input type="text" name="musical" id="musical" placeholder="Where's it from?" required
-                     {% if can_signup %} {% else %} class="signups-disabled" disabled {% endif %}>
-                </div>
-                <div class="form-control">
-                    <input type="text" name="notes" id="notes" placeholder="Additional requests?"
-                     {% if can_signup %} {% else %} class="signups-disabled" disabled {% endif %}>
-                </div>
-                <div class="form-control">
-                    <label for="partners">Select partners:
-                        </label>
-                    <select name="partners" id="partners" multiple
-                     {% if can_signup %} {% else %} class="signups-disabled" disabled {% endif %}>
-                        {% for partner in possible_partners %}
-                        <option value="{{ partner.id }}">
-                            {% if partner.is_superuser %} 
-                            --- {{ partner.first_name }} --- 
-                            {% else %}
-                            {{ partner }}
-                            {% endif %}
-                        </option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="form-control" id="submit-wrapper">
-                        <input type="submit" value="To the stage!" {% if can_signup %} class="btn btn-inverted" {% else %} class=" btn btn-inverted signups-disabled" disabled {% endif %}>
-                </div>
-            </form>
-            <div class="form-explain">
-                A partner is anyone else coming on stage: <br>Your duet partner, backup singers, etc.
-            </div>
-            <div class="form-bullets">
-                <ul>
-                    <li>Both singers and audience can be someone else's partner <strong>once</strong> per evening</li>
-                    <li>Missing a partner? You can always select Alon or Shani!</li>
-                </ul>
+        {# The song slot shows one of the two: the line while the form has no song, the card once it does #}
+        <div class="signup-sticky">
+            <p class="form-explain" id="no-song-line">Sing anything Broadway or Disney:
+                <button type="button" class="signup-inline-link" id="enter-own-song"><i class="fa-solid fa-pen"></i> enter your own song</button>
+                or pick one below.</p>
+            <div class="signup-song-card hidden" id="song-card">
+                <div class="signup-song-text"><small>Your song</small><strong id="song-card-name"></strong> · <span id="song-card-musical"></span></div>
+                <button type="button" id="edit-song">Edit</button>
             </div>
         </div>
+
+        {% if peoples_choice_sku %}
+        <section class="signup-pc-panel">
+            <div class="pc-section-heading">
+                <h2><img src="{% static 'img/coronation-sash.png' %}" alt=""> People's Choice <img class="signup-crown" src="{% static 'img/silver-crown.png' %}" alt=""></h2>
+                <p>Sash + crown + live reactions 😍🔥👏</p>
+                <button type="button" class="website-choices-button" id="website-choices-open"><i class="fa-solid fa-ticket"></i> I chose a song online</button>
+            </div>
+            <div class="pc-card-stack" id="pc-list"></div>
+            <button type="button" class="signup-show-all hidden" id="show-all"></button>
+        </section>
+        {% endif %}
+
+        <dialog id="song-form-popup">
+            <div id="new-song-form-wrapper">
+                <p class="form-explain">Pick literally anything in the Broadway or Disney style (seriously, try us!)</p>
+                <form id="new-song-form" autocomplete="off">
+                    {% csrf_token %}
+                    <input autocomplete="false" name="hidden" type="text" style="display:none;">
+                    <div class="form-control">
+                        <input type="text" name="song-name" placeholder="Song name">
+                    </div>
+                    <div class="form-control">
+                        <input type="text" name="musical" placeholder="Where's it from?">
+                    </div>
+                    <div class="form-control">
+                        <input type="text" name="notes" placeholder="Additional requests?">
+                    </div>
+                    <div class="form-control">
+                        <label for="partners">Select partners:</label>
+                        <select name="partners" id="partners" multiple>
+                            {% for partner in possible_partners %}
+                            <option value="{{ partner.id }}">
+                                {% if partner.is_superuser %}
+                                --- {{ partner.first_name }} ---
+                                {% else %}
+                                {{ partner }}
+                                {% endif %}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </form>
+                <div class="form-explain">
+                    A partner is anyone else coming on stage: <br>Your duet partner, backup singers, etc.
+                </div>
+                <div class="form-bullets">
+                    <ul>
+                        <li>Both singers and audience can be someone else's partner <strong>once</strong> per evening</li>
+                        <li>Missing a partner? You can always select Alon or Shani!</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="song-form-done-row"><button type="button" class="btn btn-inverted" id="song-form-done">Done</button></div>
+        </dialog>
     </div>
 </main>
 
-{% include "partials/_footer.html"  %}
+<div id="signup-bar">
+    <button type="button" id="signup-button">SIGNUP!</button>
+    <p id="under-button-line"></p>
+    {# Rendered already lifted when signup is open, so a page loaded then shows no stamp and no animation #}
+    <div id="closed-stamp"{% if can_signup %} class="lifted"{% endif %}>Signup isn't open yet!</div>
+</div>
 
-<script src="{% static "js/add-song.js" %}"></script>
+{% include "partials/_footer.html" %}
+
+<script type="text/javascript">
+    window.signupConfig = {
+        canSignup: {{ can_signup|yesno:"true,false" }},
+        myName: "{{ request.user.get_full_name|escapejs }}",
+        suggestionsUrl: "{% if peoples_choice_sku %}{% url 'peoples_choice:list_song_suggestions' peoples_choice_sku %}{% endif %}",
+        chooseUrl: "{% url 'peoples_choice:choose_song_suggestion' 0 %}".replace(/0\/$/, ""),
+    };
+</script>
+<script type="module" src="{% static "js/add-song.js" %}"></script>
 <script src="{% static "js/navbar.js" %}"></script>
-        
+
 {% endblock %}

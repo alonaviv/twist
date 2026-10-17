@@ -141,14 +141,15 @@ class DisneylandOrdering(UserManager):
         to the order that they were in before. Basically, we're just taking the existing list and pulling the new
         singers ahead, without changing the internal ordering.
         """
+        # The singer's id breaks ties, so two identical times always come out in the same order
         if flag_enabled('CAN_SIGNUP'):
-            return sorted(self.active_singers(), key=lambda singer: singer.last_performance_time
-                                                                    or singer.first_request_time)
+            return sorted(self.active_singers(), key=lambda singer: (singer.last_performance_time
+                                                                     or singer.first_request_time, singer.pk))
         else:
             all_singers = self.active_singers()
             new_singers, old_singers = [], []
             for singer in all_singers:
                 new_singers.append(singer) if singer.last_performance_time is None else old_singers.append(singer)
 
-            return sorted(new_singers, key=lambda singer: singer.first_request_time) + sorted(old_singers, key=lambda
-                singer: singer.last_performance_time)
+            return (sorted(new_singers, key=lambda singer: (singer.first_request_time, singer.pk))
+                    + sorted(old_singers, key=lambda singer: (singer.last_performance_time, singer.pk)))

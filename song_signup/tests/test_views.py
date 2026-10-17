@@ -1063,6 +1063,85 @@ class TestUpdateSong(SongRequestSerializeTestCase):
         self.assertEqual(song.musical, 'New Musical')
         self.assertListEqual(list(song.partners.all()), [singer2, singer3, audience4])
 
+    def test_update_to_taken_song(self):
+        user = login_singer(self, user_id=1, num_songs=1)
+        [other_singer] = create_singers([2])
+        other_song = SongRequest.objects.create(song_name='Defying Gravity', musical='Wicked', singer=other_singer)
+        song = user.songs.first()
+
+        # Singer 1 edits their song into singer 2's song, typed in lowercase
+        response = self.client.put(reverse('update_song'), {'song_id': song.id, 'song_name': 'defying gravity',
+                                                            'musical': 'wicked', 'partners': []},
+                                   content_type='application/json')
+        # The edit goes through, and the response names singer 2 so the app can show the duplicate popup
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(get_json(response)['duplicate_of'], get_singer_str(2))
+        # Singer 1's song is saved with the new name (title-cased on save) and marked as a duplicate of singer 2's
+        song.refresh_from_db()
+        self.assertEqual(song.song_name, 'Defying Gravity')
+        self.assertEqual(song.duplicate_of, get_singer_str(2))
+        # Singer 2's song is untouched: only the singer who came second is told
+        other_song.refresh_from_db()
+        self.assertEqual(other_song.duplicate_of, '')
+
+    def sign_up_to_taken_song(self):
+        # Singer 1 signs up with singer 2's song, so singer 1's song is marked as a duplicate of singer 2's
+        [other_singer] = create_singers([2])
+        SongRequest.objects.create(song_name='Defying Gravity', musical='Wicked', singer=other_singer)
+        login_singer(self, user_id=1)
+        response = self.client.post(reverse('add_song_request'), {'song-name': ['Defying Gravity'],
+                                                                   'musical': ['Wicked']})
+        song = SongRequest.objects.get(song_name='Defying Gravity', singer__username='user_1')
+        self.assertEqual(get_json(response)['duplicate_of'], get_singer_str(2))
+        return song
+
+    def update(self, song, song_name, musical, notes=''):
+        return self.client.put(reverse('update_song'), {'song_id': song.id, 'song_name': song_name,
+                                                        'musical': musical, 'partners': [], 'notes': notes},
+                               content_type='application/json')
+
+    def test_duplicate_changed_to_free_song_clears_the_mark(self):
+        song = self.sign_up_to_taken_song()
+        response = self.update(song, 'Satisfied', 'Hamilton')
+        self.assertEqual(get_json(response)['duplicate_of'], '')
+        song.refresh_from_db()
+        self.assertEqual(song.duplicate_of, '')
+
+    def test_duplicate_changed_to_another_taken_song_switches_the_mark(self):
+        song = self.sign_up_to_taken_song()
+        [third_singer] = create_singers([3])
+        SongRequest.objects.create(song_name='Satisfied', musical='Hamilton', singer=third_singer)
+        response = self.update(song, 'Satisfied', 'Hamilton')
+        self.assertEqual(get_json(response)['duplicate_of'], get_singer_str(3))
+        song.refresh_from_db()
+        self.assertEqual(song.duplicate_of, get_singer_str(3))
+
+    def test_duplicate_editing_only_notes_keeps_the_mark(self):
+        song = self.sign_up_to_taken_song()
+        response = self.update(song, 'Defying Gravity', 'Wicked', notes='In C')
+        self.assertEqual(get_json(response)['duplicate_of'], get_singer_str(2))
+        song.refresh_from_db()
+        self.assertEqual(song.duplicate_of, get_singer_str(2))
+        self.assertEqual(song.notes, 'In C')
+
+    def test_first_singer_editing_notes_is_not_marked(self):
+        # Singer 1 signed up with their song first; singer 2 signed up with the same song afterwards, so singer 2's is
+        # the duplicate
+        user = login_singer(self, user_id=1, num_songs=1)
+        [other_singer] = create_singers([2])
+        song = user.songs.first()
+        SongRequest.objects.create(song_name=song.song_name, musical=song.musical, singer=other_singer)
+
+        # Singer 1 edits only their notes. The duplicate lookup runs only when the name or musical changes, so it
+        # doesn't run here; if it did, it would find singer 2's copy and wrongly mark singer 1's song, which came first.
+        response = self.update(song, song.song_name, song.musical, notes='In C')
+
+        # Singer 1 isn't told about a duplicate, their song stays unmarked, and the notes are saved
+        self.assertEqual(get_json(response)['duplicate_of'], '')
+        song.refresh_from_db()
+        self.assertEqual(song.duplicate_of, '')
+        self.assertEqual(song.notes, 'In C')
+
     def test_append_partner(self):
         user = login_singer(self, user_id=1, num_songs=1)
         singer2, singer3, singer4 = create_singers([2, 3, 4])
@@ -1630,7 +1709,9 @@ class TestAddSongRequest(TransactionTestCase):
         self.assertFalse(created_song.skipped)
         self.assertEqual(created_song.notes, '')
         self.assertEqual(created_song.partners.count(), 0)
-        self.assertJSONEqual(response.content, {'requested_song': 'Defying Gravity'})
+        self.assertEqual(created_song.duplicate_of, '')
+        self.assertJSONEqual(response.content, {'requested_song': 'Defying Gravity', 'song_id': created_song.id,
+                                                'duplicate_of': '', 'partner_warning': ''})
         self.assertEqual(response.status_code, 200)
 
     def test_all_fields(self):
@@ -1650,7 +1731,8 @@ class TestAddSongRequest(TransactionTestCase):
         self.assertFalse(created_song.skipped)
         self.assertEqual(created_song.notes, 'solo version')
         self.assertEqual(set(created_song.partners.values_list('id', flat=True)), {s2.id, s3.id, s4.id})
-        self.assertJSONEqual(response.content, {'requested_song': 'Defying Gravity'})
+        self.assertJSONEqual(response.content, {'requested_song': 'Defying Gravity', 'song_id': created_song.id,
+                                                'duplicate_of': '', 'partner_warning': ''})
         self.assertEqual(response.status_code, 200)
 
     def test_existing_partner(self):
@@ -1662,11 +1744,13 @@ class TestAddSongRequest(TransactionTestCase):
             'musical': ['wicked'],
             'partners': [str(s2.id), str(s3.id), str(s4.id)]
         })
-        self.assertFalse(song_exists('Defying Gravity'))
-        self.assertEqual(response.status_code, 400)
-        self.assertJSONEqual(response.content,
-                             {'error': f"A person can be selected as partner once per night, "
-                                                      f"and {s4} already used his/her slot."})
+        created_song = SongRequest.objects.get(song_name='Defying Gravity')
+        self.assertEqual(response.status_code, 200)
+        self.assertIsNotNone(created_song.position)
+        self.assertEqual(set(created_song.partners.all()), {s2, s3})
+        self.assertJSONEqual(response.content, {
+            'requested_song': 'Defying Gravity', 'song_id': created_song.id, 'duplicate_of': '',
+            'partner_warning': f"A person can be selected as partner once per night, and {s4} already used his/her slot."})
 
     def test_existing_partner_audience(self):
         user = login_singer(self, user_id=1)
@@ -1678,11 +1762,12 @@ class TestAddSongRequest(TransactionTestCase):
             'musical': ['wicked'],
             'partners': [str(s2.id), str(s3.id), str(s4.id), str(a5.id)]
         })
-        self.assertFalse(song_exists('Defying Gravity'))
-        self.assertEqual(response.status_code, 400)
-        self.assertJSONEqual(response.content,
-                             {'error': f"A person can be selected as partner once per night, "
-                                       f"and {a5} already used his/her slot."})
+        created_song = SongRequest.objects.get(song_name='Defying Gravity')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(set(created_song.partners.all()), {s2, s3, s4})
+        self.assertJSONEqual(response.content, {
+            'requested_song': 'Defying Gravity', 'song_id': created_song.id, 'duplicate_of': '',
+            'partner_warning': f"A person can be selected as partner once per night, and {a5} already used his/her slot."})
 
     def test_superuser_partner(self):
         user = login_singer(self, user_id=1)
@@ -1702,9 +1787,10 @@ class TestAddSongRequest(TransactionTestCase):
             'musical': ['wicked'],
             'partners': [str(s2.id), str(s3.id), str(s4.id)]
         })
-        self.assertTrue(song_exists('defying gravity'))
+        created_song = SongRequest.objects.get(song_name='Defying Gravity')
         self.assertEqual(response.status_code, 200)
-        self.assertJSONEqual(response.content, {'requested_song': 'Defying Gravity'})
+        self.assertJSONEqual(response.content, {'requested_song': 'Defying Gravity', 'song_id': created_song.id,
+                                                'duplicate_of': '', 'partner_warning': ''})
 
     def test_partner_not_found(self):
         user = login_singer(self, user_id=1)
@@ -1713,13 +1799,14 @@ class TestAddSongRequest(TransactionTestCase):
             'musical': ['wicked'],
             'partners': ['2']
         })
-        self.assertFalse(song_exists('defying gravity'))
-        self.assertEqual(response.status_code, 400)
-        self.assertJSONEqual(response.content,
-                             {'error': "Partner with id 2 does not exist. "
-                                 f"Show this to Alon - it seems like a bug.. :("})
+        created_song = SongRequest.objects.get(song_name='Defying Gravity')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(created_song.partners.count(), 0)
+        self.assertJSONEqual(response.content, {
+            'requested_song': 'Defying Gravity', 'song_id': created_song.id, 'duplicate_of': '',
+            'partner_warning': "Partner with id 2 does not exist. Show this to Alon - it seems like a bug.. :("})
 
-    def test_duet_singer_signed(self):
+    def test_duet_partner_signs_up_same_song(self):
         user = login_singer(self, user_id=1)
         singer2, singer3, singer4 = create_singers([2, 3, 4])
         existing_song = SongRequest.objects.create(song_name='Defying Gravity', musical='Wicked', singer=singer2,
@@ -1731,9 +1818,14 @@ class TestAddSongRequest(TransactionTestCase):
             'musical': ['wicked'],
             'notes': ["solo version"],
         })
-        self.assertEqual(response.status_code, 400)
-        self.assertJSONEqual(response.content,
-                             {'error': f'Apparently, {get_singer_str(2)} already signed you up for this song'})
+        own_song = SongRequest.objects.get(singer=user)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(own_song.duplicate_of, get_singer_str(2))
+        self.assertIsNotNone(own_song.position)
+        existing_song.refresh_from_db()
+        self.assertEqual(existing_song.duplicate_of, '')
+        self.assertJSONEqual(response.content, {'requested_song': 'Defying Gravity', 'song_id': own_song.id,
+                                                'duplicate_of': get_singer_str(2), 'partner_warning': ''})
 
     def test_signed_up_twice(self):
         user = login_singer(self, user_id=1)
@@ -1754,39 +1846,218 @@ class TestAddSongRequest(TransactionTestCase):
         self.assertJSONEqual(response.content, {'error': f'You already signed up with this song tonight'})
 
     def test_duplicate_song(self):
-        user = login_singer(self, user_id=1)
-        [other_singer] = create_singers([2])
-        SongRequest.objects.create(song_name='Defying Gravity', musical='Wicked', singer=other_singer,
-                                   notes='Other singer signed up first')
+        # Singer 2 signs up with "Defying Gravity"
+        [singer2] = create_singers([2])
+        singer2_song = SongRequest.objects.create(song_name='Defying Gravity', musical='Wicked', singer=singer2)
 
+        # Then singer 1 signs up with the same song, typed in lowercase
+        singer1 = login_singer(self, user_id=1)
         response = self.client.post(reverse('add_song_request'), {
             'song-name': ["defying gravity"],
             'musical': ['wicked'],
             'notes': ["solo version"]
         })
-        self.assertEqual(response.status_code, 202)
-        self.assertJSONEqual(response.content, {'duplicate': True})
 
-    def test_duplicate_song_approve(self):
-        user = login_singer(self, user_id=1)
-        [other_singer] = create_singers([2])
-        SongRequest.objects.create(song_name='Defying Gravity', musical='Wicked', singer=other_singer,
-                                   notes='Other singer signed up first')
-
-        response = self.client.post(reverse('add_song_request'), {
-            'song-name': ["defying gravity"],
-            'musical': ['wicked'],
-            'notes': ["solo version"],
-            'approve-duplicate': [True]
-        })
-        self.assertEqual(SongRequest.objects.count(), 2)
-        created_song1, created_song2 = SongRequest.objects.all()
-        self.assertEqual(created_song1.song_name, created_song2.song_name, 'Defying Gravity')
-        self.assertEqual(created_song1.musical, created_song2.musical, 'Wicked')
-        self.assertEqual(created_song2.singer.id, user.id)
-        self.assertEqual(created_song1.singer.id, other_singer.id)
-        self.assertJSONEqual(response.content, {'requested_song': 'Defying Gravity'})
+        # Singer 1's song is created anyway, so they get their place in line, and it is marked as a duplicate of
+        # singer 2's
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(SongRequest.objects.count(), 2)
+        singer1_song = SongRequest.objects.get(singer=singer1)
+        self.assertEqual(singer1_song.duplicate_of, get_singer_str(2))
+        self.assertIsNotNone(singer1_song.position)
+        # Singer 2's song is untouched: only the singer who came second is told
+        singer2_song.refresh_from_db()
+        self.assertEqual(singer2_song.duplicate_of, '')
+        # The response names singer 2, so the page can ask singer 1 whether to keep the song or pick another
+        self.assertJSONEqual(response.content, {'requested_song': 'Defying Gravity', 'song_id': singer1_song.id,
+                                                'duplicate_of': get_singer_str(2), 'partner_warning': ''})
+
+class TestAddSongRequestPlaces(TransactionTestCase):
+    """
+    The add endpoint creates the song as soon as the request arrives, so the singer's place never depends on what
+    else happens: duplicates, rejected partners, or both.
+    """
+    def post_song(self, song_name, musical, partners=()):
+        return self.client.post(reverse('add_song_request'), {
+            'song-name': [song_name], 'musical': [musical], 'partners': [str(p.id) for p in partners]})
+
+    def partner_slot_message(self, singer):
+        return f"A person can be selected as partner once per night, and {singer} already used his/her slot."
+
+    def test_every_rejected_partner_is_reported_and_the_rest_are_added(self):
+        user = login_singer(self, user_id=1)
+        s2, s3, s4, s5, s6 = create_singers([2, 3, 4, 5, 6], num_songs=1)
+        add_partners(6, ['3', '5'], 1)  # Singer 6 takes singers 3 and 5 as partners, using up their partner slot
+
+        response = self.post_song('Defying Gravity', 'Wicked', partners=[s3, s2, s5, s4])
+        song = SongRequest.objects.get(singer=user)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(set(song.partners.all()), {s2, s4})
+        self.assertIsNotNone(song.position)
+        self.assertEqual(get_json(response)['partner_warning'],
+                         f"{self.partner_slot_message(s3)} {self.partner_slot_message(s5)}")
+
+    def test_duplicate_and_rejected_partner_together(self):
+        user = login_singer(self, user_id=1)
+        s2, s3, s4 = create_singers([2, 3, 4], num_songs=1)
+        add_partners(2, ['3'], 1)
+        SongRequest.objects.create(song_name='Defying Gravity', musical='Wicked', singer=s4)
+
+        response = self.post_song('Defying Gravity', 'Wicked', partners=[s3])
+        song = SongRequest.objects.get(singer=user)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(song.duplicate_of, get_singer_str(4))
+        self.assertEqual(song.partners.count(), 0)
+        self.assertIsNotNone(song.position)
+        self.assertJSONEqual(response.content, {'requested_song': 'Defying Gravity', 'song_id': song.id,
+                                                'duplicate_of': get_singer_str(4),
+                                                'partner_warning': self.partner_slot_message(s3)})
+
+    def test_duplicate_gets_its_own_place_behind_the_first(self):
+        user = login_singer(self, user_id=1)
+        [s2] = create_singers([2])
+        first = SongRequest.objects.create(song_name='Defying Gravity', musical='Wicked', singer=s2)
+        Singer.ordering.calculate_positions()
+
+        self.post_song('Defying Gravity', 'Wicked')
+        second = SongRequest.objects.get(singer=user)
+        first.refresh_from_db()
+        self.assertEqual((first.position, second.position), (1, 2))
+        self.assertEqual(first.duplicate_of, '')
+        self.assertEqual(second.duplicate_of, get_singer_str(2))
+
+    def test_duplicate_ignores_case_and_spacing(self):
+        login_singer(self, user_id=1)
+        [s2] = create_singers([2])
+        SongRequest.objects.create(song_name='Defying Gravity', musical='Wicked', singer=s2)
+
+        response = self.post_song('DEFYING   gravity', '  wicked ')
+        self.assertEqual(get_json(response)['requested_song'], 'Defying Gravity')
+        self.assertEqual(get_json(response)['duplicate_of'], get_singer_str(2))
+
+    def test_same_song_from_another_musical_is_not_a_duplicate(self):
+        login_singer(self, user_id=1)
+        [s2] = create_singers([2])
+        SongRequest.objects.create(song_name='Defying Gravity', musical='Wicked', singer=s2)
+
+        response = self.post_song('Defying Gravity', 'Wicked The Musical')
+        self.assertEqual(get_json(response)['duplicate_of'], '')
+
+    def test_duplicate_of_a_performed_song(self):
+        # Singer 2 signs up with "Defying Gravity" and performs it
+        [s2] = create_singers([2])
+        SongRequest.objects.create(song_name='Defying Gravity', musical='Wicked', singer=s2,
+                                   performance_time=TEST_START_TIME)
+
+        # Then singer 1 signs up with the same song, and is still told singer 2 chose it
+        login_singer(self, user_id=1)
+        response = self.post_song('Defying Gravity', 'Wicked')
+        self.assertEqual(get_json(response)['duplicate_of'], get_singer_str(2))
+
+    def test_duplicate_names_the_singer_not_the_partners(self):
+        login_singer(self, user_id=1)
+        s2, s3 = create_singers([2, 3])
+        existing = SongRequest.objects.create(song_name='Defying Gravity', musical='Wicked', singer=s2)
+        existing.partners.set([s3])
+
+        response = self.post_song('Defying Gravity', 'Wicked')
+        self.assertEqual(get_json(response)['duplicate_of'], get_singer_str(2))
+
+    def test_own_song_again_creates_nothing(self):
+        login_singer(self, user_id=1)
+        self.post_song('Defying Gravity', 'Wicked')
+        response = self.post_song('defying gravity', 'wicked')
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(SongRequest.objects.count(), 1)
+
+    def test_raffle_winner_song_is_standby_even_as_a_duplicate(self):
+        [winner] = create_audience([5])
+        winner.raffle_winner = True
+        winner.save()
+        self.client.force_login(winner)
+        [s2] = create_singers([2])
+        SongRequest.objects.create(song_name='Defying Gravity', musical='Wicked', singer=s2)
+
+        response = self.post_song('Defying Gravity', 'Wicked')
+        song = SongRequest.objects.get(singer=winner)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(song.standby)
+        self.assertEqual(song.duplicate_of, get_singer_str(2))
+
+    def sign_up(self, singer_id, song_name, musical, partners=()):
+        self.client.force_login(get_singer(singer_id))
+        return self.post_song(song_name, musical, partners=[get_singer(p) for p in partners])
+
+    def assert_lineup(self, expected_songs):
+        # The whole lineup, each song as (singer id, song name), after positions are recalculated as the next signup
+        # or performance would
+        Singer.ordering.calculate_positions()
+        songs = SongRequest.objects.filter(position__isnull=False).order_by('position')
+        self.assertEqual([(song.singer.username, song.song_name) for song in songs],
+                         [(f"user_{singer_id}", song_name) for singer_id, song_name in expected_songs])
+
+    def test_duplicate_singer_keeps_their_place_after_picking_another_song(self):
+        create_singers(5)
+        with freeze_time(TEST_START_TIME) as frozen_time:
+            # Singers 2 and 3 sign up
+            self.sign_up(2, 'Defying Gravity', 'Wicked')
+            frozen_time.tick()
+            self.sign_up(3, 'Satisfied', 'Hamilton')
+            frozen_time.tick()
+            # Singer 1 signs up third, with singer 2's song: it is created anyway, as a duplicate
+            response = self.sign_up(1, 'Defying Gravity', 'Wicked')
+            self.assertEqual(get_json(response)['duplicate_of'], get_singer_str(2))
+            frozen_time.tick()
+            # Singers 4 and 5 sign up while singer 1 is still deciding
+            self.sign_up(4, 'Popular', 'Wicked')
+            frozen_time.tick()
+            self.sign_up(5, 'Memory', 'Cats')
+            frozen_time.tick()
+            # Singer 1 picks another song from the popup
+            self.client.force_login(get_singer(1))
+            response = self.client.put(reverse('update_song'), {
+                'song_id': get_json(response)['song_id'], 'song_name': 'Helpless', 'musical': 'Hamilton',
+                'notes': '', 'partners': []}, content_type='application/json')
+            self.assertEqual(response.status_code, 200)
+
+        # Singer 1 is still third, ahead of singers 4 and 5 who signed up after them
+        self.assert_lineup([(2, 'Defying Gravity'), (3, 'Satisfied'), (1, 'Helpless'), (4, 'Popular'),
+                            (5, 'Memory')])
+
+    def test_singer_with_a_rejected_partner_keeps_their_place_after_fixing_it(self):
+        create_singers(7)
+        with freeze_time(TEST_START_TIME) as frozen_time:
+            # Singer 2 signs up with singer 6 as partner, using up singer 6's partner slot
+            self.sign_up(2, 'Defying Gravity', 'Wicked', partners=[6])
+            frozen_time.tick()
+            self.sign_up(3, 'Satisfied', 'Hamilton')
+            frozen_time.tick()
+            # Singer 1 signs up third, also with singer 6: the song is created without them, with a warning
+            response = self.sign_up(1, 'Helpless', 'Hamilton', partners=[6])
+            self.assertNotEqual(get_json(response)['partner_warning'], '')
+            frozen_time.tick()
+            # Singers 4 and 5 sign up while singer 1 is still sorting out the partner
+            self.sign_up(4, 'Popular', 'Wicked')
+            frozen_time.tick()
+            self.sign_up(5, 'Memory', 'Cats')
+            frozen_time.tick()
+            # Singer 1 edits the song, with singer 7 as partner instead
+            self.client.force_login(get_singer(1))
+            response = self.client.put(reverse('update_song'), {
+                'song_id': get_json(response)['song_id'], 'song_name': 'Helpless', 'musical': 'Hamilton',
+                'notes': '', 'partners': [get_singer(7).id]}, content_type='application/json')
+            self.assertEqual(response.status_code, 200)
+
+        # Singer 1 is still third, ahead of singers 4 and 5 who signed up after them
+        self.assert_lineup([(2, 'Defying Gravity'), (3, 'Satisfied'), (1, 'Helpless'), (4, 'Popular'),
+                            (5, 'Memory')])
+
+    def test_audience_cannot_add_a_song(self):
+        login_audience(self, user_id=5)
+        response = self.post_song('Defying Gravity', 'Wicked')
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(SongRequest.objects.count(), 0)
+
 
 class TestHelpers(TestCase):
     def test_get_current_song(self):

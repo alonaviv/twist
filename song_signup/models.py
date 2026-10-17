@@ -328,6 +328,8 @@ class SongRequest(Model):
     standby = BooleanField(default=False) # If song is out of the regular ordering, waiting to be spotlighted
     is_peoples_choice = BooleanField(default=False)
     coronation_done = BooleanField(default=False)  # The live lyrics coronation screen was ended for this song
+    # Another singer's name when this singer chose a song that singer already had; shown as a badge in My Songs
+    duplicate_of = CharField(max_length=300, blank=True, default='')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
