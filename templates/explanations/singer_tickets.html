@@ -146,7 +146,7 @@
         </div>
     </header>
 
-    <!-- Want, why, and the turn — two lines, so the numbered cards are reachable almost
+    <!-- Want, why, and the turn — two lines, so the good-news card is reachable almost
          without scrolling. The scarcity appears inside the same sentence as its answer
          (כי...אבל), which is the only form it may take above the guide. -->
     <section class="exp-intro" aria-label="Why a singer ticket">
@@ -154,38 +154,19 @@
         <p class="exp-intro-turn">{{ t.b03 }}</p>
     </section>
 
-    <!-- The two things, numbered so the promise above is visibly kept. They are siblings
-         on purpose — a reader should be able to count them without reading them. -->
-    <ol class="exp-things">
-        <li class="exp-thing">
-            <span class="exp-thing-num" aria-hidden="true">1</span>
-            <!-- Payoff in the heading, mechanism in the body: the rule change is the
-                 reason, but "your odds went up" is what has to land on sight. -->
-            <div class="exp-thing-body">
-                <h2>{{ t.b04 }}</h2>
-                <p>{{ t.b05 }}</p>
-            </div>
-        </li>
-
-        <!-- This one also carries what used to be a separate "it is a fair race" block:
-             claiming fairness denies an accusation most readers never made, and reads as
-             policing the regulars, who also read this page. The version that does the same
-             job without either cost is "it is not luck and not a club — it is knowing the
-             moves, and they are all here". -->
-        <!-- The regulars' advantage is experience, and this page levels it by publishing
-             what they know. That reasoning stays ours — saying it out loud would frame
-             them as an in-group, and they read this page too. What carries it instead is
-             "whoever applies all of them": the edge is available to anyone willing to do
-             the work, and it quietly implies most people will not. -->
-        <li class="exp-thing">
-            <span class="exp-thing-num" aria-hidden="true">2</span>
-            <div class="exp-thing-body">
-                <h2>{{ t.b06 }}</h2>
-                <p>{{ t.b07 }}</p>
-                <p>{{ t.b08 }}</p>
-            </div>
-        </li>
-    </ol>
+    <!-- The good news is the guide itself. No "it is a fair race" claim: it denies an
+         accusation most readers never made, and reads as policing the regulars, who also
+         read this page. -->
+    <!-- The regulars' advantage is experience, and this page levels it by publishing
+         what they know. That reasoning stays ours — saying it out loud would frame
+         them as an in-group, and they read this page too. What carries it instead is
+         "whoever applies all of them": the edge is available to anyone willing to do
+         the work, and it quietly implies most people will not. -->
+    <div class="exp-thing">
+        <h2>{{ t.b06 }}</h2>
+        <p>{{ t.b07 }}</p>
+        <p>{{ t.b08 }}</p>
+    </div>
 
     <!-- One flat guide, not three phase-grouped sections: the three-phase split was
          imposing structure the content did not need. Order follows the original WhatsApp

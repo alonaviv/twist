@@ -243,52 +243,17 @@ main.exp-layout {
     }
 }
 
-/* ---------- The two things you should know ----------
-   Numbered and visually parallel, so the "יש 2 דברים" promise above is kept on sight
-   rather than only on reading. */
+/* ---------- The good news: this guide puts the reader ahead ---------- */
 
-.exp-things {
+.exp-thing {
     max-width: var(--exp-width);
     margin: 0 auto 1.75rem;
-    padding: 0;
-    list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-// Both cards share one look on purpose: the two messages are equally load-bearing (the
-// rule change and the reader's own effort), so neither card should read as the sidekick.
-.exp-thing {
     padding: 1.25rem;
     border-radius: 1.25rem;
     background: var(--exp-accent-soft);
     border: 2px solid var(--exp-accent);
     box-shadow: 0 4px 16px rgba(0, 197, 117, 0.2);
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 0 0.9rem;
-    align-items: start;
-}
 
-// Identical on both cards on purpose: if the markers differ, they read as two kinds of
-// badge rather than as 1 and 2 of one list. The card fill carries the emphasis instead.
-.exp-thing-num {
-    width: 2rem;
-    height: 2rem;
-    border-radius: 999px;
-    background: var(--exp-accent);
-    color: #fff;
-    font-size: 1.05rem;
-    font-weight: 700;
-    line-height: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.exp-thing-body {
     h2 {
         font-size: 1.3rem;
         line-height: 1.3;
