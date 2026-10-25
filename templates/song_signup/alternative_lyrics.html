@@ -8,7 +8,11 @@
     <div class="container">   
         <h1> {{ song.song_name }} - {{ song.musical }} </h1>
         {% for lyric in lyrics %}
+        {% if lyric.id %}
         <br/><a href = "{% url 'lyrics_by_id' lyric.id%}">{{ lyric.song_name }} | {{ lyric.artist_name }} | {{ lyric.url }} </a><br/>
+        {% else %}
+        <br/>{{ lyric.song_name }} | {{ lyric.artist_name }} | Custom lyrics<br/>
+        {% endif %}
         {% endfor %}
     </div>
 </div>

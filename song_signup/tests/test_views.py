@@ -11,13 +11,13 @@ from django.core.files import File
 import glob
 import os
 import filecmp
-from song_signup.views import _get_current_song
+from song_signup.views import _get_current_song, _sort_lyrics
 
 
 from song_signup.models import (
     Singer, TicketOrder,
     CurrentGroupSong, GroupSongRequest,
-    SongRequest, TriviaQuestion, SING_SKU, ATTN_SKU
+    SongRequest, SongLyrics, TriviaQuestion, SING_SKU, ATTN_SKU
 )
 from song_signup.tests.utils_for_tests import (
     EVENT_SKU,
@@ -1032,6 +1032,7 @@ class TestUpdateSong(SongRequestSerializeTestCase):
         song = user.songs.first()
         song.found_music = True
         song.default_lyrics = True
+        song.custom_lyrics = "Custom words"
         song.save()
 
         singer2, singer3 = create_singers([2, 3])
@@ -1059,6 +1060,7 @@ class TestUpdateSong(SongRequestSerializeTestCase):
         self.assertEqual(song.notes, "Adding notes")
         self.assertFalse(song.found_music)
         self.assertFalse(song.default_lyrics)
+        self.assertEqual(song.custom_lyrics, '')
         self.assertEqual(song.song_name, 'New Song Name')
         self.assertEqual(song.musical, 'New Musical')
         self.assertListEqual(list(song.partners.all()), [singer2, singer3, audience4])
@@ -1320,6 +1322,7 @@ class TestUpdateSong(SongRequestSerializeTestCase):
         song = get_song(1, 1)
         song.found_music = True
         song.default_lyrics = True
+        song.custom_lyrics = "Custom words"
         song.partners.set([singer2, singer3])
         song.save()
 
@@ -1342,6 +1345,7 @@ class TestUpdateSong(SongRequestSerializeTestCase):
 
         self.assertTrue(song.found_music)
         self.assertTrue(song.default_lyrics)
+        self.assertEqual(song.custom_lyrics, "Custom words")
         self.assertEqual(song.id, original_id)
         self.assertEqual(song.song_name, original_song_name)
         self.assertEqual(song.musical, original_musical if same_musical else "New Musical")
@@ -2096,6 +2100,65 @@ class TestHelpers(TestCase):
         curr, is_group_song = _get_current_song()
         self.assertEqual(curr, song2)
         self.assertFalse(is_group_song)
+
+    def test_sort_lyrics_custom_lyrics(self):
+        create_singers(1)
+        [song] = add_songs_to_singers(1, 1)
+        fetched = SongLyrics.objects.create(song_name=song.song_name, artist_name=song.musical, lyrics="Fetched",
+                                            song_request=song)
+        chosen = SongLyrics.objects.create(song_name="Other", artist_name=song.musical, lyrics="Chosen",
+                                           song_request=song, default=True)
+        self.assertEqual(_sort_lyrics(song), [chosen, fetched])
+
+        song.custom_lyrics = "Custom words"
+        song.save()
+        [custom] = _sort_lyrics(song)
+        self.assertIsNone(custom.id)
+        self.assertEqual(custom.lyrics, "Custom words")
+        self.assertEqual(custom.song_name, song.song_name)
+        self.assertEqual(custom.artist_name, song.musical)
+        self.assertTrue(custom.default)
+
+        # Clearing the custom lyrics goes straight back to the fetched ones, which were kept
+        song.custom_lyrics = ''
+        song.save()
+        self.assertEqual(_sort_lyrics(song), [chosen, fetched])
+
+    def test_lyrics_pages_with_custom_lyrics(self):
+        user = login_singer(self)
+        user.is_superuser = True
+        user.save()
+        create_singers([2])
+        [song] = add_songs_to_singers([2], 1)
+        SongLyrics.objects.create(song_name=song.song_name, artist_name=song.musical, lyrics="Fetched words",
+                                  song_request=song)
+        song.custom_lyrics = "Custom words"
+        song.save()
+
+        response = self.client.get(reverse('lyrics', args=(song.id,)))
+        self.assertContains(response, "Custom words")
+        self.assertNotContains(response, "Fetched words")
+        self.assertNotContains(response, "Make Default")
+
+        response = self.client.get(reverse('alternative_lyrics', args=(song.id,)))
+        self.assertContains(response, "Custom lyrics")
+        self.assertNotContains(response, "lyrics_by_id")
+
+        SongRequest.objects.set_spotlight(song)
+        response = self.client.get(reverse('current_lyrics'))
+        self.assertEqual(get_json(response)['lyrics'], "Custom words")
+
+        group_song = add_current_group_song("group", "song").group_song
+        GroupSongRequest.objects.filter(id=group_song.id).update(custom_lyrics="Group custom words")
+
+        response = self.client.get(reverse('group_lyrics', args=(group_song.id,)))
+        self.assertContains(response, "Group custom words")
+
+        response = self.client.get(reverse('alternative_group_lyrics', args=(group_song.id,)))
+        self.assertContains(response, "Custom lyrics")
+
+        response = self.client.get(reverse('current_lyrics'))
+        self.assertEqual(get_json(response)['lyrics'], "Group custom words")
 
 
 class TestAddSongView(TestViews):

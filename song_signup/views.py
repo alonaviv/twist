@@ -289,6 +289,7 @@ def update_song(request):
         if song_request.song_name != song_name:
             song_request.found_music = False
             song_request.default_lyrics = False
+            song_request.custom_lyrics = ''
             song_request.to_alon = None
         # Only choosing a song can make it a duplicate, so the first singer's song is never marked by their own edits
         if song_request.song_name != song_name or song_request.musical != musical:
@@ -344,8 +345,10 @@ def get_possible_partners(request):
 
 def _sort_lyrics(song: SongRequest | GroupSongRequest):
     """
-    Sort the lyrics based on our best guess of how well they match
-    Tried a few algorithms here but this relatively simple one worked best:
+    Sort the lyrics based on our best guess of how well they match.
+    Custom lyrics set on the song override everything: they come back alone, as an unsaved SongLyrics marked
+    default, and the fetched lyrics stay in the database for when the custom lyrics are cleared.
+    Otherwise, tried a few algorithms here but this relatively simple one worked best:
 
     1) If default is selected order first
     2) Songs with exact name matches
@@ -357,6 +360,10 @@ def _sort_lyrics(song: SongRequest | GroupSongRequest):
     """
     if not song:
         return
+
+    if song.custom_lyrics:
+        return [SongLyrics(song_name=song.song_name, artist_name=song.musical, lyrics=song.custom_lyrics,
+                           default=True)]
 
     lyrics = song.lyrics.order_by('id').all()
 
