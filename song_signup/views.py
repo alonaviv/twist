@@ -1191,6 +1191,7 @@ def _process_tickchak_orders(spreadsheet_file, event_sku, event_date, generate_c
     num_new_ticket_orders = 0
     num_singing_tickets = 0
     num_audience_tickets = 0
+    ticket_orders_seen = set()  # (order_id, ticket_type)
 
     sample_order = TicketOrder.objects.filter(event_sku=event_sku).first()
 
@@ -1224,6 +1225,17 @@ def _process_tickchak_orders(spreadsheet_file, event_sku, event_date, generate_c
         num_ticket_orders += 1
 
         ticket_type = SING_SKU if 'זמר' in ticket_desc else ATTN_SKU
+
+        # The tickchak spreadsheet has a row per ticket title in an order, and there are two singer titles: regular and reserved for
+        # raffle winners. A winner who buys their reserved ticket together with a regular singer ticket gets two singer
+        # rows in one order, and an added audience title would do the same for audience. A ticket order holds one row
+        # per type, so get_or_create would fail on the second row, or, with equal quantities, find the first and drop
+        # the second row's tickets, so that order's last singers couldn't log in.
+        if (order_id, ticket_type) in ticket_orders_seen:
+            raise ValueError(f"Order {order_id} has more than one {'singer' if ticket_type == SING_SKU else 'audience'}"
+                             f" ticket row. Merge them in the spreadsheet into one row with the total number of tickets,"
+                             f" and upload again")
+        ticket_orders_seen.add((order_id, ticket_type))
 
         try:
             ticket_order, created = TicketOrder.objects.get_or_create(

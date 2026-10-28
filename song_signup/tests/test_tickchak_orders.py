@@ -1,8 +1,11 @@
 import os
+from io import BytesIO
 from django.test import TestCase
+from django.urls import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
 from song_signup.models import TicketOrder, SING_SKU, ATTN_SKU
 from song_signup.views import _process_tickchak_orders
+from openpyxl import load_workbook
 from constance import config
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -161,3 +164,72 @@ class TickchakOrdersTest(TestCase):
             result = _process_tickchak_orders(spreadsheet_file, EVENT_SKU, EVENT_DATE, True, False)
         self.assertEqual(config.EVENT_SKU, EVENT_SKU)
         self.assertEqual(config.FREEBIE_TICKET, generated_cheat_code)
+
+    def test_reserved_singer_tickets(self):
+        """A real tickchak spreadsheet with reserved singer tickets, with personal details replaced"""
+        expected_orders = [
+            # Reserved singer tickets only
+            dict(order_id=891121986, num_tickets=1, ticket_type=SING_SKU, customer_name="מאיה כהן",
+                 phone_number="052-1872268"),
+            dict(order_id=891155150, num_tickets=1, ticket_type=SING_SKU, customer_name="Liam King",
+                 phone_number="050-0607804"),
+            # Reserved singer ticket with audience tickets
+            dict(order_id=891123331, num_tickets=1, ticket_type=SING_SKU, customer_name="ליאור פרץ",
+                 phone_number="052-2367338"),
+            dict(order_id=891123331, num_tickets=3, ticket_type=ATTN_SKU, customer_name="ליאור פרץ",
+                 phone_number="052-2367338"),
+            # Regular singer tickets
+            dict(order_id=891121905, num_tickets=2, ticket_type=SING_SKU, customer_name="Ethan Walker",
+                 phone_number="053-2115753"),
+            # Audience tickets
+            dict(order_id=891121978, num_tickets=2, ticket_type=ATTN_SKU, customer_name="עומר ביטון",
+                 phone_number="055-3197138"),
+        ]
+
+        with open(os.path.join(BASE_DIR, "tickchak-orders-reserved.xlsx"), "rb") as f:
+            spreadsheet_file = SimpleUploadedFile("test.xlsx", f.read())
+
+        result = _process_tickchak_orders(spreadsheet_file, EVENT_SKU, EVENT_DATE)
+        self.assertEqual(TicketOrder.objects.count(), 58)
+        self._assert_expected_orders(expected_orders)
+
+        self.assertEqual(result['num_orders'], 57)
+        self.assertEqual(result['num_ticket_orders'], 58)
+        self.assertEqual(result['num_singing_tickets'], 36)
+        self.assertEqual(result['num_audience_tickets'], 53)
+
+        # Reserved singers log in like regular singers, and audience as usual
+        config.PASSCODE = 'dev'
+        for ticket_type, first_name, last_name, order_id in [('singer', 'מאיה', 'כהן', 891121986),
+                                                             ('singer', 'Ethan', 'Walker', 891121905),
+                                                             ('audience', 'עומר', 'ביטון', 891121978)]:
+            with self.subTest(ticket_type=ticket_type, order_id=order_id):
+                response = self.client.post(reverse('login'), {'ticket-type': ticket_type, 'first-name': first_name,
+                                                               'last-name': last_name, 'passcode': 'dev',
+                                                               'order-id': order_id, 'no-upload': 'on'})
+                self.assertEqual(response.status_code, 200)
+                self.client.logout()
+
+    def test_order_with_two_rows_of_a_ticket_type(self):
+        """An order can't hold two rows of the same ticket type, so the upload fails without saving anything"""
+        cases = [
+            # Order 891121905 has 2 regular singer tickets; add a reserved one with the same quantity
+            (891121905, 'כרטיס זמר/ת - משוריין לזוכים!', "Order 891121905 has more than one singer ticket row"),
+            # Order 891121978 has 2 audience tickets; add the same audience row again
+            (891121978, 'כרטיס קהל - שרים מהכיסא!', "Order 891121978 has more than one audience ticket row"),
+        ]
+        for order_id, ticket_desc, error in cases:
+            with self.subTest(ticket_desc=ticket_desc):
+                workbook = load_workbook(os.path.join(BASE_DIR, "tickchak-orders-reserved.xlsx"))
+                worksheet = workbook['כרטיסים']
+                row = next([cell.value for cell in row] for row in worksheet.iter_rows(min_row=2)
+                           if row[0].value == order_id)
+                row[8] = ticket_desc  # כותרת
+                worksheet.append(row)
+                content = BytesIO()
+                workbook.save(content)
+
+                with self.assertRaisesMessage(ValueError, error):
+                    _process_tickchak_orders(SimpleUploadedFile("test.xlsx", content.getvalue()), EVENT_SKU,
+                                             EVENT_DATE)
+                self.assertEqual(TicketOrder.objects.count(), 0)
