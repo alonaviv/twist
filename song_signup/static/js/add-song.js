@@ -9,7 +9,8 @@ const TOP_COUNT = 10;
 const LIST_REFRESH_MS = 5000;
 const SIGNUP_POLL_MS = 500;
 // The form's contents are kept in sessionStorage under this key, so a refresh, or the phone dropping the page while the
-// singer is in another app, doesn't empty it
+// singer is in another app, doesn't empty it. Every use of it is wrapped in try/catch: a browser that blocks storage
+// throws, and the page must still sign up, with a form that just isn't kept.
 const FORM_STORAGE_KEY = "signup-form";
 
 const state = {
@@ -55,7 +56,9 @@ const tappedSuggestion = (e) => {
 };
 // The song is signed up, so the kept form is dropped: the next visit to the page starts empty
 function goHome(songName) {
-    sessionStorage.removeItem(FORM_STORAGE_KEY);
+    try {
+        sessionStorage.removeItem(FORM_STORAGE_KEY);
+    } catch {}
     window.location.replace(`/home?song=${encodeURIComponent(songName)}`);
 }
 
@@ -183,22 +186,26 @@ function renderSongSlot() {
 
 // Called on every edit of the form, and after code fills or empties it
 function saveForm() {
-    sessionStorage.setItem(FORM_STORAGE_KEY, JSON.stringify({
-        songName: songInput.value,
-        musical: musicalInput.value,
-        notes: notesInput.value,
-        partners: Array.from(partnersSelect.selectedOptions).map((option) => option.value),
-    }));
+    try {
+        sessionStorage.setItem(FORM_STORAGE_KEY, JSON.stringify({
+            songName: songInput.value,
+            musical: musicalInput.value,
+            notes: notesInput.value,
+            partners: Array.from(partnersSelect.selectedOptions).map((option) => option.value),
+        }));
+    } catch {}
 }
 
 // Runs on page load, before restoreMyChoice, so the kept form wins over the People's Choice song on the server
 function restoreSavedForm() {
-    const saved = JSON.parse(sessionStorage.getItem(FORM_STORAGE_KEY));
-    if (!saved) return;
-    songInput.value = saved.songName;
-    musicalInput.value = saved.musical;
-    notesInput.value = saved.notes;
-    for (const option of partnersSelect.options) option.selected = saved.partners.includes(option.value);
+    try {
+        const saved = JSON.parse(sessionStorage.getItem(FORM_STORAGE_KEY));
+        if (!saved) return;
+        songInput.value = saved.songName;
+        musicalInput.value = saved.musical;
+        notesInput.value = saved.notes;
+        for (const option of partnersSelect.options) option.selected = saved.partners.includes(option.value);
+    } catch {}
 }
 
 // ---------- The bar ----------
