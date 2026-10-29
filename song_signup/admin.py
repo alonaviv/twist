@@ -1,4 +1,5 @@
 from django.contrib import admin, messages
+from django.db.models.fields import BLANK_CHOICE_DASH
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import format_html
@@ -92,6 +93,26 @@ def unset_standby(modeladmin, request, queryset):
 
 unset_standby.short_description = "Undo standby"
 unset_standby.allowed_permissions = ['change']
+
+
+def swap_places(modeladmin, request, queryset):
+    songs = list(queryset)
+    if len(songs) != 2:
+        messages.error(request, "Select exactly two songs to swap")
+        return
+
+    if any(song.position is None for song in songs):
+        messages.error(request, "Only songs in the setlist can swap places")
+        return
+
+    if any(song.singer.last_performance_time for song in songs):
+        messages.error(request, "Only singers who haven't sung yet can swap places")
+        return
+
+    Singer.ordering.swap_first_cycle_places(songs[0].singer, songs[1].singer)
+
+swap_places.short_description = "Swap places"
+swap_places.allowed_permissions = ['change']
 
 
 def force_lyrics_refresh(modeladmin, request, queryset):
@@ -217,22 +238,53 @@ class GroupSongRequestAdmin(admin.ModelAdmin):
 @admin.register(SongRequest)
 class SongRequestAdmin(admin.ModelAdmin):
     list_display = (
-        'display_position', 'get_skipped', 'get_peoples_choice_sash', 'lyrics', 'get_singer', 'get_song', 'get_musical', 'get_partners', 'get_notes', 'get_to_alon',
+        'display_position', 'get_skipped', 'get_swapped', 'get_peoples_choice_sash', 'lyrics', 'get_singer', 'get_song', 'get_musical', 'get_partners', 'get_notes', 'get_to_alon',
         'default_lyrics', 'found_music', 'allows_filming', 'get_performance_time', 'get_request_time', 'get_initial_signup',
+        'get_swapped_with',
     )
     list_filter = (NotYetPerformedFilter,)
     list_editable = ('default_lyrics', 'found_music')
-    actions = [set_solo_performed, set_solo_not_performed, set_solo_skipped, set_solo_unskipped,
-               set_peoples_choice, unset_peoples_choice, spotlight, set_standby, unset_standby, force_lyrics_refresh]
+    actions = [set_solo_performed, set_solo_skipped, spotlight, swap_places, set_standby,
+               set_solo_not_performed, set_solo_unskipped, unset_standby, set_peoples_choice, unset_peoples_choice,
+               force_lyrics_refresh]
     ordering = ['position']
     change_list_template = "admin/song_request_changelist.html"
     list_per_page = 500
     form = SongRequestForm
 
+    def get_action_choices(self, request, default_choices=BLANK_CHOICE_DASH):
+        """
+        A line between the actions and their undos. Its value is empty, like the default choice, so it runs nothing.
+        """
+        choices = super().get_action_choices(request, default_choices)
+        undos_start = next(i for i, (name, _) in enumerate(choices) if name == 'set_solo_not_performed')
+        choices.insert(undos_start, ('', '──────────'))
+        return choices
+
     def get_skipped(self, obj):
         if obj.skipped:
             return mark_safe('<img src="/static/img/admin/forward.png" style="height: 16px;" />')
     get_skipped.short_description = 'S'
+
+    def _swapped_with(self, obj):
+        """
+        Who this song's singer swapped with, for the swap columns. Only their first cycle song gets it, not their later
+        songs.
+        """
+        singer = obj.singer
+        if singer and singer.swapped_with and obj == singer.first_cycle_song:
+            return singer.swapped_with
+
+    def get_swapped(self, obj):
+        swapped_with = self._swapped_with(obj)
+        if swapped_with:
+            return format_html('<img src="/static/img/admin/swap.png" title="Swapped with {}" style="height: 16px;" />',
+                               swapped_with)
+    get_swapped.short_description = 'W'
+
+    def get_swapped_with(self, obj):
+        return self._swapped_with(obj)
+    get_swapped_with.short_description = 'Swapped With'
 
     def get_peoples_choice_sash(self, obj):
         if obj.is_peoples_choice:
@@ -374,6 +426,8 @@ class SingerAdmin(admin.ModelAdmin):
     list_display = ['username', 'date_joined', 'is_active', 'no_image_upload', 'ticket_order',
                     'is_audience', 'selfie_preview', 'get_songs', 'raffle_winner', 'raffle_participant']
     list_filter = ['is_audience', 'no_image_upload']
+    # Changed only by the Swap places action
+    readonly_fields = ['line_time', 'swapped_with']
 
     def selfie_preview(self, obj):
         if obj.selfie:

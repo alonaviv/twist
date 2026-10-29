@@ -9,6 +9,7 @@ from django.core.exceptions import ValidationError
 from django.db.models import (
     CASCADE,
     PROTECT,
+    SET_NULL,
     BooleanField,
     DateTimeField,
     ForeignKey,
@@ -122,6 +123,12 @@ class Singer(AbstractUser):
     raffle_participant = BooleanField(default=False)
     raffle_winner = BooleanField(default=False)
     active_raffle_winner = BooleanField(default=False) # Show raffle winner animation
+    # Set only while the singer holds another singer's place in the first cycle, after Shani swapped them: that place's
+    # time, which the ordering uses instead of their first request time. Once they sing, their performance time
+    # places them instead.
+    line_time = DateTimeField(null=True, blank=True)
+    # The singer they last swapped places with, shown in the admin song list. Set and cleared together with line_time.
+    swapped_with = ForeignKey('self', on_delete=SET_NULL, null=True, blank=True)
 
     @property
     def is_singer(self):
@@ -163,6 +170,26 @@ class Singer(AbstractUser):
 
         if first_song_request:
             return first_song_request.request_time
+
+    @property
+    def first_cycle_time(self):
+        """
+        The time that places the singer in line until they first sing. It's their first request time, unless Shani
+        swapped them into another singer's place.
+        """
+        return self.line_time or self.first_request_time
+
+    @property
+    def first_cycle_song(self):
+        """
+        The song the singer sings in their first cycle: the first one they performed, or until they sing, their song in
+        the setlist.
+        """
+        performed = self.songs.filter(performance_time__isnull=False)
+        if performed.exists():
+            return performed.earliest('performance_time')
+
+        return self.songs.filter(position__isnull=False).first()
 
     @property
     def last_performance_time(self):

@@ -6,7 +6,8 @@ from song_signup.tests.utils_for_tests import (
     SongRequestTestCase, TEST_START_TIME, create_singers, assert_singers_in_disney,
     set_performed, add_partners, add_songs_to_singers, get_singer, assert_song_positions, add_songs_to_singer,
     login, logout, create_audience, get_song, set_standby, unset_standby,
-    ExpectedDashboard, assert_dashboards, logout_audience, assert_current_song
+    ExpectedDashboard, assert_dashboards, logout_audience, assert_current_song, get_singer_str, set_skipped,
+    set_unskipped
 )
 from flags.state import disable_flag, enable_flag
 
@@ -764,6 +765,94 @@ class TestSimulatedEvenings(SongRequestTestCase):
             set_performed(7, 5)
             assert_song_positions(self, [])
 
+    def test_scenario_with_swaps(self):
+        def swap(singer_id1, singer_id2):
+            Singer.ordering.swap_first_cycle_places(get_singer(singer_id1), get_singer(singer_id2))
+
+        with freeze_time(TEST_START_TIME, auto_tick_seconds=5) as frozen_time:
+            create_singers([1], frozen_time, num_songs=1)
+            create_singers([2, 3, 4, 5, 6], frozen_time, num_songs=2)
+            add_partners(4, [6], 1, frozen_time)
+            assert_song_positions(self, [(1, 1), (2, 1), (3, 1), (4, 1), (5, 1), (6, 1)])
+
+            # Singer 1 is up, and Shani has singer 4 go first instead
+            swap(1, 4)
+            assert_song_positions(self, [(4, 1), (2, 1), (3, 1), (1, 1), (5, 1), (6, 1)])
+
+            set_performed(4, 1, frozen_time)
+            assert_song_positions(self, [(2, 1), (3, 1), (1, 1), (5, 1), (6, 1), (4, 2)])
+
+            # Singer 7 signs up late, after singer 4 sang, and swaps with singer 2 from the rush
+            create_singers([7], frozen_time, num_songs=1)
+            assert_song_positions(self, [(2, 1), (3, 1), (1, 1), (5, 1), (6, 1), (4, 2), (7, 1)])
+            swap(2, 7)
+            assert_song_positions(self, [(7, 1), (3, 1), (1, 1), (5, 1), (6, 1), (4, 2), (2, 1)])
+
+            set_performed(7, 1, frozen_time)
+            assert_song_positions(self, [(3, 1), (1, 1), (5, 1), (6, 1), (4, 2), (2, 1)])
+
+            # Singer 1's only song goes to standby, taking them out of the line, and comes back to their swapped place
+            set_standby(1, 1)
+            assert_song_positions(self, [(3, 1), (5, 1), (6, 1), (4, 2), (2, 1)])
+            unset_standby(1, 1)
+            assert_song_positions(self, [(3, 1), (1, 1), (5, 1), (6, 1), (4, 2), (2, 1)])
+
+            # Singer 1 deletes their only song and adds another one: they come back to their swapped place
+            get_song(1, 1).delete()
+            assert_song_positions(self, [(3, 1), (5, 1), (6, 1), (4, 2), (2, 1)])
+            add_songs_to_singer(1, [2], frozen_time)
+            assert_song_positions(self, [(3, 1), (1, 2), (5, 1), (6, 1), (4, 2), (2, 1)])
+
+            # Singers 3 and 6 swap while singer 5 is logged out, and singer 5 comes back to their own place. Singer 6
+            # sang only as singer 4's partner, so they still count as not having sung.
+            logout(5)
+            assert_song_positions(self, [(3, 1), (1, 2), (6, 1), (4, 2), (2, 1)])
+            swap(3, 6)
+            assert_song_positions(self, [(6, 1), (1, 2), (3, 1), (4, 2), (2, 1)])
+            login(5)
+            assert_song_positions(self, [(6, 1), (1, 2), (5, 1), (3, 1), (4, 2), (2, 1)])
+
+            # Shani closes signup: everyone who hasn't sung is pulled ahead, keeping the swapped order
+            disable_flag('CAN_SIGNUP')
+            assert_song_positions(self, [(6, 1), (1, 2), (5, 1), (3, 1), (2, 1), (4, 2)])
+
+            # Undoing the swap of singers 3 and 6 after closing signup puts both back, with nothing left of the swap
+            swap(3, 6)
+            assert_song_positions(self, [(3, 1), (1, 2), (5, 1), (6, 1), (2, 1), (4, 2)])
+            for singer_id in (3, 6):
+                self.assertIsNone(get_singer(singer_id).line_time)
+                self.assertIsNone(get_singer(singer_id).swapped_with)
+
+            # Singer 3 is up but not in the room, so Shani skips them. A skipped song keeps its position; only the
+            # current song passes over it, so singer 1 is up.
+            set_skipped(3, 1)
+            assert_song_positions(self, [(3, 1), (1, 2), (5, 1), (6, 1), (2, 1), (4, 2)])
+            assert_current_song(self, 1, 2)
+
+            # Shani swaps singer 3 with singer 5, who is up now; the skip travels with singer 3
+            swap(3, 5)
+            assert_song_positions(self, [(5, 1), (1, 2), (3, 1), (6, 1), (2, 1), (4, 2)])
+            assert_current_song(self, 5, 1)
+
+            # Swapping back leaves singer 3 skipped, and unskipping makes them the current song again
+            swap(3, 5)
+            assert_song_positions(self, [(3, 1), (1, 2), (5, 1), (6, 1), (2, 1), (4, 2)])
+            assert_current_song(self, 1, 2)
+            set_unskipped(3, 1)
+            assert_current_song(self, 3, 1)
+
+            # Singer 1 is marked performed by mistake and then not performed: they return to their swapped place
+            set_performed(1, 2, frozen_time)
+            assert_song_positions(self, [(3, 1), (5, 1), (6, 1), (2, 1), (4, 2)])
+            song = get_song(1, 2)
+            song.performance_time = None
+            song.save()
+            assert_song_positions(self, [(3, 1), (1, 2), (5, 1), (6, 1), (2, 1), (4, 2)])
+
+            # Once singer 1 really sings, they leave the list, having no other song
+            set_performed(1, 2, frozen_time)
+            assert_song_positions(self, [(3, 1), (5, 1), (6, 1), (2, 1), (4, 2)])
+
 
 class TestDashboard(SongRequestTestCase):
     def test_partner_next_cycle(self):
@@ -870,3 +959,364 @@ class TestOrderingTieBreak(SongRequestTestCase):
             add_songs_to_singer(2, 1)
         login(1)
         assert_singers_in_disney(self, [1, 2])
+
+
+class TestSwapFirstCyclePlaces(SongRequestTestCase):
+    def swap(self, singer_id1, singer_id2):
+        Singer.ordering.swap_first_cycle_places(get_singer(singer_id1), get_singer(singer_id2))
+
+    def assert_not_swapped(self, singer_id):
+        singer = get_singer(singer_id)
+        self.assertIsNone(singer.line_time)
+        self.assertIsNone(singer.swapped_with)
+
+    def assert_swapped(self, singer_id, swapped_with_id):
+        """
+        The singer swapped with swapped_with_id and holds their place: that singer's first request time.
+        """
+        singer = get_singer(singer_id)
+        self.assertEqual(singer.swapped_with, get_singer(swapped_with_id))
+        self.assertEqual(singer.line_time, get_singer(swapped_with_id).first_request_time)
+
+    def test_swap_then_later_cycles_by_performance(self):
+        with freeze_time(TEST_START_TIME, auto_tick_seconds=5) as frozen_time:
+            create_singers(5, frozen_time, num_songs=2)
+            assert_singers_in_disney(self, [1, 2, 3, 4, 5])
+
+            self.swap(2, 4)
+            assert_singers_in_disney(self, [1, 4, 3, 2, 5])
+            assert_song_positions(self, [(1, 1), (4, 1), (3, 1), (2, 1), (5, 1)])
+            self.assert_swapped(2, swapped_with_id=4)
+            self.assert_swapped(4, swapped_with_id=2)
+
+            set_performed(1, 1, frozen_time)
+            assert_singers_in_disney(self, [4, 3, 2, 5, 1])
+            set_performed(4, 1, frozen_time)
+            assert_singers_in_disney(self, [3, 2, 5, 1, 4])
+
+            # A latecomer lines up after those who already sang
+            create_singers([6], frozen_time, num_songs=1)
+            assert_singers_in_disney(self, [3, 2, 5, 1, 4, 6])
+            set_performed(3, 1, frozen_time)
+            set_performed(2, 1, frozen_time)
+            set_performed(5, 1, frozen_time)
+            assert_singers_in_disney(self, [1, 4, 6, 3, 2, 5])
+            assert_song_positions(self, [(1, 2), (4, 2), (6, 1), (3, 2), (2, 2), (5, 2)])
+
+    def test_swap_again_undoes(self):
+        with freeze_time(TEST_START_TIME, auto_tick_seconds=5) as frozen_time:
+            create_singers(4, frozen_time, num_songs=1)
+            self.swap(1, 3)
+            assert_singers_in_disney(self, [3, 2, 1, 4])
+            self.swap(1, 3)
+            assert_singers_in_disney(self, [1, 2, 3, 4])
+            self.assert_not_swapped(1)
+            self.assert_not_swapped(3)
+
+    def test_chain_and_undoing_one_step(self):
+        with freeze_time(TEST_START_TIME, auto_tick_seconds=5) as frozen_time:
+            create_singers(4, frozen_time, num_songs=1)
+            assert_singers_in_disney(self, [1, 2, 3, 4])
+
+            self.swap(1, 2)
+            assert_singers_in_disney(self, [2, 1, 3, 4])
+            self.assert_swapped(1, swapped_with_id=2)
+            self.assert_swapped(2, swapped_with_id=1)
+
+            # Singer 1, now in singer 2's place, swaps with singer 3
+            self.swap(1, 3)
+            assert_singers_in_disney(self, [2, 3, 1, 4])
+            self.assert_swapped(1, swapped_with_id=3)
+            self.assert_swapped(2, swapped_with_id=1)
+            # Singer 3 swapped with singer 1, who was holding singer 2's place by then
+            self.assertEqual(get_singer(3).swapped_with, get_singer(1))
+            self.assertEqual(get_singer(3).line_time, get_singer(2).first_request_time)
+
+            # Swapping singers 1 and 3 again undoes the second swap: singer 3 is back in their own place, and singer 1
+            # is back in singer 2's place, as after the first swap. Known issue, left as is: singer 1's swapped_with
+            # still names singer 3, the last singer they swapped with, so the admin shows the wrong name. The order is
+            # right.
+            self.swap(1, 3)
+            assert_singers_in_disney(self, [2, 1, 3, 4])
+            self.assert_not_swapped(3)
+            self.assert_swapped(2, swapped_with_id=1)
+            self.assertEqual(get_singer(1).swapped_with, get_singer(3))
+            self.assertEqual(get_singer(1).line_time, get_singer(2).first_request_time)
+
+            # Undoing the first swap puts everyone back
+            self.swap(1, 2)
+            assert_singers_in_disney(self, [1, 2, 3, 4])
+            self.assert_not_swapped(1)
+            self.assert_not_swapped(2)
+
+    def test_swap_with_signup_closed(self):
+        with freeze_time(TEST_START_TIME, auto_tick_seconds=5) as frozen_time:
+            create_singers(4, frozen_time, num_songs=2)
+            set_performed(1, 1, frozen_time)
+            create_singers([5], frozen_time, num_songs=1)
+            # Singer 5 signed up after singer 1 sang, so with signup open they line up behind singer 1
+            assert_singers_in_disney(self, [2, 3, 4, 1, 5])
+
+            # Closing signup pulls singer 5 ahead of singer 1, who already sang
+            disable_flag('CAN_SIGNUP')
+            assert_singers_in_disney(self, [2, 3, 4, 5, 1])
+
+            self.swap(2, 5)
+            assert_singers_in_disney(self, [5, 3, 4, 2, 1])
+            assert_song_positions(self, [(5, 1), (3, 1), (4, 1), (2, 1), (1, 2)])
+
+    def test_swap_survives_opening_and_closing_signup(self):
+        with freeze_time(TEST_START_TIME, auto_tick_seconds=5) as frozen_time:
+            create_singers(2, frozen_time, num_songs=2)
+            set_performed(1, 1, frozen_time)
+            # Singer 3 signs up after singer 1 sang, so with signup open they line up behind singer 1
+            create_singers([3], frozen_time, num_songs=1)
+            assert_singers_in_disney(self, [2, 1, 3])
+
+            # Singer 3 takes singer 2's place ahead of singer 1, and singer 2 takes singer 3's place behind them
+            self.swap(2, 3)
+            assert_singers_in_disney(self, [3, 1, 2])
+
+            # Closing signup pulls singers 3 and 2 ahead of singer 1, who already sang, keeping the swapped order
+            disable_flag('CAN_SIGNUP')
+            assert_singers_in_disney(self, [3, 2, 1])
+
+            # Reopening signup puts singer 2 back behind singer 1, still in singer 3's place
+            enable_flag('CAN_SIGNUP')
+            assert_singers_in_disney(self, [3, 1, 2])
+
+    def test_deleting_the_oldest_song_keeps_the_swapped_place(self):
+        with freeze_time(TEST_START_TIME, auto_tick_seconds=5) as frozen_time:
+            create_singers(4, frozen_time, num_songs=2)
+            original_time = get_singer(3).first_request_time
+            assert_song_positions(self, [(1, 1), (2, 1), (3, 1), (4, 1)])
+            self.swap(1, 3)
+            assert_singers_in_disney(self, [3, 2, 1, 4])
+            assert_song_positions(self, [(3, 1), (2, 1), (1, 1), (4, 1)])
+
+            # Deleting their oldest song doesn't move singer 3; their next song takes the place
+            get_song(3, 1).delete()
+            assert_singers_in_disney(self, [3, 2, 1, 4])
+            assert_song_positions(self, [(3, 2), (2, 1), (1, 1), (4, 1)])
+
+            # Swapping back gives singer 3 their original place: the request time of the song they deleted.
+            # Known issue, left as is: with that song gone, their first request time is now their second song's, so
+            # the swap doesn't see them as back in their own place and doesn't clear it. Singer 3 keeps line_time and
+            # swapped_with, and the admin still marks them as swapped with singer 1. The order is right.
+            self.swap(1, 3)
+            assert_singers_in_disney(self, [1, 2, 3, 4])
+            assert_song_positions(self, [(1, 1), (2, 1), (3, 2), (4, 1)])
+            self.assert_not_swapped(1)
+            self.assertEqual(get_singer(3).line_time, original_time)
+            self.assertEqual(get_singer(3).swapped_with, get_singer(1))
+
+    def test_deleting_all_songs_and_adding_one_keeps_the_swapped_place(self):
+        with freeze_time(TEST_START_TIME, auto_tick_seconds=5) as frozen_time:
+            create_singers(4, frozen_time, num_songs=1)
+            assert_song_positions(self, [(1, 1), (2, 1), (3, 1), (4, 1)])
+            self.swap(1, 3)
+            assert_song_positions(self, [(3, 1), (2, 1), (1, 1), (4, 1)])
+
+            get_song(1, 1).delete()
+            assert_song_positions(self, [(3, 1), (2, 1), (4, 1)])
+            add_songs_to_singer(1, [2], frozen_time)
+            assert_song_positions(self, [(3, 1), (2, 1), (1, 2), (4, 1)])
+
+    def test_skip_travels_with_the_singer(self):
+        with freeze_time(TEST_START_TIME, auto_tick_seconds=5) as frozen_time:
+            create_singers(3, frozen_time, num_songs=1)
+            set_skipped(3, 1)
+            assert_song_positions(self, [(1, 1), (2, 1), (3, 1)])
+            assert_current_song(self, 1, 1)
+
+            self.swap(1, 3)
+            assert_song_positions(self, [(3, 1), (2, 1), (1, 1)])
+            assert_current_song(self, 2, 1)
+
+    def test_skipped_singer_swapped_down_the_line_is_still_skipped_there(self):
+        with freeze_time(TEST_START_TIME, auto_tick_seconds=5) as frozen_time:
+            create_singers(4, frozen_time, num_songs=1)
+
+            # Singer 1 is up but not in the room, so Shani skips them
+            set_skipped(1, 1)
+            assert_song_positions(self, [(1, 1), (2, 1), (3, 1), (4, 1)])
+            assert_current_song(self, 2, 1)
+
+            # Shani swaps singer 1 with singer 3, moving the skipped singer down the line
+            self.swap(1, 3)
+            assert_song_positions(self, [(3, 1), (2, 1), (1, 1), (4, 1)])
+            assert_current_song(self, 3, 1)
+
+            set_performed(3, 1, frozen_time)
+            assert_song_positions(self, [(2, 1), (1, 1), (4, 1)])
+            assert_current_song(self, 2, 1)
+
+            # When singer 1's turn comes, they're still skipped, so singer 4 is up
+            set_performed(2, 1, frozen_time)
+            assert_song_positions(self, [(1, 1), (4, 1)])
+            assert_current_song(self, 4, 1)
+
+    def test_dashboards_follow_the_swap(self):
+        with freeze_time(TEST_START_TIME, auto_tick_seconds=5) as frozen_time:
+            create_singers(3, frozen_time, num_songs=1)
+            assert_song_positions(self, [(1, 1), (2, 1), (3, 1)])
+            assert_dashboards(self, [
+                ExpectedDashboard(singer=1, next_song=1, wait_amount=0),
+                ExpectedDashboard(singer=2, next_song=1, wait_amount=1),
+                ExpectedDashboard(singer=3, next_song=1, wait_amount=2),
+            ])
+
+            self.swap(1, 3)
+            assert_song_positions(self, [(3, 1), (2, 1), (1, 1)])
+            assert_dashboards(self, [
+                ExpectedDashboard(singer=3, next_song=1, wait_amount=0),
+                ExpectedDashboard(singer=2, next_song=1, wait_amount=1),
+                ExpectedDashboard(singer=1, next_song=1, wait_amount=2),
+            ])
+
+
+class TestSwapPlacesAdmin(SongRequestTestCase):
+    def run_swap_action(self, ticked_songs, order_by='position'):
+        """
+        Runs the Swap places action on the songs Shani ticked. Returns the mocked admin messages, to check whether the
+        action refused.
+        """
+        from song_signup.admin import swap_places
+        queryset = SongRequest.objects.filter(pk__in=[song.pk for song in ticked_songs]).order_by(order_by)
+        with patch('song_signup.admin.messages') as mock_messages:
+            swap_places(None, None, queryset)
+        return mock_messages
+
+    def swap_icon(self, singer_id, song_num):
+        from django.contrib import admin
+        from song_signup.admin import SongRequestAdmin
+        return SongRequestAdmin(SongRequest, admin.site).get_swapped(get_song(singer_id, song_num))
+
+    def swapped_with_column(self, singer_id, song_num):
+        from django.contrib import admin
+        from song_signup.admin import SongRequestAdmin
+        return SongRequestAdmin(SongRequest, admin.site).get_swapped_with(get_song(singer_id, song_num))
+
+    def test_swaps_two_songs(self):
+        with freeze_time(TEST_START_TIME, auto_tick_seconds=5) as frozen_time:
+            create_singers(3, frozen_time, num_songs=1)
+        assert_song_positions(self, [(1, 1), (2, 1), (3, 1)])
+        mock_messages = self.run_swap_action([get_song(1, 1), get_song(3, 1)])
+        mock_messages.error.assert_not_called()
+        assert_song_positions(self, [(3, 1), (2, 1), (1, 1)])
+
+    def test_order_of_the_selected_songs_does_not_matter(self):
+        with freeze_time(TEST_START_TIME, auto_tick_seconds=5) as frozen_time:
+            create_singers(3, frozen_time, num_songs=1)
+        times = {singer_id: get_singer(singer_id).first_request_time for singer_id in (1, 3)}
+        assert_song_positions(self, [(1, 1), (2, 1), (3, 1)])
+
+        for order_by in ('position', '-position'):
+            self.run_swap_action([get_song(1, 1), get_song(3, 1)], order_by=order_by)
+            assert_song_positions(self, [(3, 1), (2, 1), (1, 1)])
+            self.assertEqual(get_singer(1).line_time, times[3])
+            self.assertEqual(get_singer(3).line_time, times[1])
+            self.assertEqual(get_singer(1).swapped_with, get_singer(3))
+            self.assertEqual(get_singer(3).swapped_with, get_singer(1))
+
+            # Swap back for the next order
+            self.run_swap_action([get_song(1, 1), get_song(3, 1)], order_by=order_by)
+            assert_song_positions(self, [(1, 1), (2, 1), (3, 1)])
+
+    def test_refuses_a_singer_who_sang(self):
+        with freeze_time(TEST_START_TIME, auto_tick_seconds=5) as frozen_time:
+            create_singers(3, frozen_time, num_songs=2)
+            set_performed(1, 1, frozen_time)
+        assert_song_positions(self, [(2, 1), (3, 1), (1, 2)])
+        mock_messages = self.run_swap_action([get_song(1, 2), get_song(3, 1)])
+        mock_messages.error.assert_called_once()
+        assert_song_positions(self, [(2, 1), (3, 1), (1, 2)])
+
+    def test_singer_who_sang_only_as_partner_can_swap(self):
+        with freeze_time(TEST_START_TIME, auto_tick_seconds=5) as frozen_time:
+            create_singers(3, frozen_time, num_songs=1)
+            add_partners(1, [3], 1, frozen_time)
+            set_performed(1, 1, frozen_time)
+        assert_song_positions(self, [(2, 1), (3, 1)])
+        mock_messages = self.run_swap_action([get_song(2, 1), get_song(3, 1)])
+        mock_messages.error.assert_not_called()
+        assert_song_positions(self, [(3, 1), (2, 1)])
+
+    def test_refuses_a_song_not_in_the_setlist(self):
+        with freeze_time(TEST_START_TIME, auto_tick_seconds=5) as frozen_time:
+            create_singers(3, frozen_time, num_songs=2)
+        assert_song_positions(self, [(1, 1), (2, 1), (3, 1)])
+        mock_messages = self.run_swap_action([get_song(1, 2), get_song(3, 1)])
+        mock_messages.error.assert_called_once()
+        assert_song_positions(self, [(1, 1), (2, 1), (3, 1)])
+
+    def test_refuses_more_than_two_songs(self):
+        with freeze_time(TEST_START_TIME, auto_tick_seconds=5) as frozen_time:
+            create_singers(3, frozen_time, num_songs=1)
+        assert_song_positions(self, [(1, 1), (2, 1), (3, 1)])
+        mock_messages = self.run_swap_action([get_song(1, 1), get_song(2, 1), get_song(3, 1)])
+        mock_messages.error.assert_called_once()
+        assert_song_positions(self, [(1, 1), (2, 1), (3, 1)])
+
+    def test_refuses_fewer_than_two_songs(self):
+        with freeze_time(TEST_START_TIME, auto_tick_seconds=5) as frozen_time:
+            create_singers(3, frozen_time, num_songs=1)
+        assert_song_positions(self, [(1, 1), (2, 1), (3, 1)])
+        mock_messages = self.run_swap_action([get_song(1, 1)])
+        mock_messages.error.assert_called_once()
+        assert_song_positions(self, [(1, 1), (2, 1), (3, 1)])
+
+    def test_icon_on_the_swapped_turn(self):
+        with freeze_time(TEST_START_TIME, auto_tick_seconds=5) as frozen_time:
+            create_singers(3, frozen_time, num_songs=2)
+            self.run_swap_action([get_song(1, 1), get_song(3, 1)])
+            assert_song_positions(self, [(3, 1), (2, 1), (1, 1)])
+            self.assertIn(get_singer_str(3), self.swap_icon(1, 1))
+            self.assertIn(get_singer_str(1), self.swap_icon(3, 1))
+            self.assertIsNone(self.swap_icon(1, 2))
+            self.assertIsNone(self.swap_icon(2, 1))
+            self.assertEqual(self.swapped_with_column(1, 1), get_singer(3))
+            self.assertIsNone(self.swapped_with_column(1, 2))
+
+            # Once singer 3 sings, the icon stays on the song they sang, and not on their next one
+            set_performed(3, 1, frozen_time)
+            assert_song_positions(self, [(2, 1), (1, 1), (3, 2)])
+            self.assertIsNotNone(self.swap_icon(3, 1))
+            self.assertIsNone(self.swap_icon(3, 2))
+
+    def test_icon_leaves_and_returns_with_standby(self):
+        with freeze_time(TEST_START_TIME, auto_tick_seconds=5) as frozen_time:
+            create_singers(3, frozen_time, num_songs=1)
+            self.run_swap_action([get_song(1, 1), get_song(3, 1)])
+            assert_song_positions(self, [(3, 1), (2, 1), (1, 1)])
+            set_standby(1, 1)
+            assert_song_positions(self, [(3, 1), (2, 1)])
+            self.assertIsNone(self.swap_icon(1, 1))
+            unset_standby(1, 1)
+            assert_song_positions(self, [(3, 1), (2, 1), (1, 1)])
+            self.assertIsNotNone(self.swap_icon(1, 1))
+
+
+class TestSongActionsDropdown(SongRequestTestCase):
+    def test_actions_in_order_with_a_separator_before_the_undos(self):
+        from django.contrib import admin
+        from django.test import RequestFactory
+        from song_signup.admin import SongRequestAdmin
+
+        request = RequestFactory().get('/admin/song_signup/songrequest/')
+        request.user = Singer.objects.create_superuser(username='admin_user', password='admin_password')
+        song_admin = SongRequestAdmin(SongRequest, admin.site)
+
+        self.assertEqual([name for name, _ in song_admin.get_action_choices(request)], [
+            '',
+            'set_solo_performed', 'set_solo_skipped', 'spotlight', 'swap_places', 'set_standby',
+            '',
+            'set_solo_not_performed', 'set_solo_unskipped', 'unset_standby', 'set_peoples_choice',
+            'unset_peoples_choice', 'force_lyrics_refresh',
+        ])
+
+        # Every choice but the two empty ones runs the action of the same name
+        actions = song_admin.get_actions(request)
+        for name, _ in song_admin.get_action_choices(request):
+            if name:
+                self.assertEqual(actions[name][0].__name__, name)

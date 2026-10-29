@@ -140,16 +140,39 @@ class DisneylandOrdering(UserManager):
         joined time, and only then singers who have sung, sorted by their last performance time - that is, according
         to the order that they were in before. Basically, we're just taking the existing list and pulling the new
         singers ahead, without changing the internal ordering.
+        Until a singer first sings, their place is their first cycle time: the time of their first request, or the time
+        of the place they hold after Shani swapped them with another singer.
         """
         # The singer's id breaks ties, so two identical times always come out in the same order
         if flag_enabled('CAN_SIGNUP'):
             return sorted(self.active_singers(), key=lambda singer: (singer.last_performance_time
-                                                                     or singer.first_request_time, singer.pk))
+                                                                     or singer.first_cycle_time, singer.pk))
         else:
             all_singers = self.active_singers()
             new_singers, old_singers = [], []
             for singer in all_singers:
                 new_singers.append(singer) if singer.last_performance_time is None else old_singers.append(singer)
 
-            return (sorted(new_singers, key=lambda singer: (singer.first_request_time, singer.pk))
+            return (sorted(new_singers, key=lambda singer: (singer.first_cycle_time, singer.pk))
                     + sorted(old_singers, key=lambda singer: (singer.last_performance_time, singer.pk)))
+
+    def swap_first_cycle_places(self, singer1, singer2):
+        """
+        Swaps the places in line of two singers who haven't sung yet: each takes the other's first cycle time. Swapping
+        the same two again undoes it. A singer who ends up back on their own first request time holds no one else's
+        place, so their line_time and swapped_with are cleared. Their later cycles are placed by when they actually
+        sing, like everyone else's.
+        """
+        time1, time2 = singer1.first_cycle_time, singer2.first_cycle_time
+
+        with transaction.atomic():
+            self._take_place(singer1, singer2, time2)
+            self._take_place(singer2, singer1, time1)
+            self.calculate_positions()
+
+    def _take_place(self, singer, other, new_time):
+        if new_time == singer.first_request_time:
+            singer.line_time, singer.swapped_with = None, None
+        else:
+            singer.line_time, singer.swapped_with = new_time, other
+        singer.save(update_fields=['line_time', 'swapped_with'])
