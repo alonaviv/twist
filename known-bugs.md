@@ -69,3 +69,22 @@ When the song form popup closes, the browser returns focus to the Edit button th
 focus outline around it on the dark card until the singer taps elsewhere. Cosmetic.
 
 Fix: hide the focus outline on `#edit-song` in `song_signup/static/scss/_add_song.scss`.
+
+## A People's Choice song comes back into the form after signing up with it
+
+A People's Choice song the singer chose on the signup page stays chosen by them on the server after they sign up with
+it. When they open the signup page again for another song, `restoreMyChoice` finds the empty form and fills it with
+that song, and SIGNUP answers "You already signed up with this song tonight". The singer taps Edit and types over it.
+Entering any other song (typed, or another list song) then unchooses the first one, so it shows as open on the list
+although it's in the lineup; a singer who picks it gets the duplicate song popup. Its sash and reactions are not
+affected: `SongRequest.is_peoples_choice` matches the song against the suggestion list, not the chosen flag.
+
+Fix: pass the singer's signed-up songs to the page (`json_script` in `add_song.html`), and skip those songs in
+`restoreMyChoice` and `unchooseStaleChoice`. Choosing another list song still moves the choice on the server.
+
+## Notes and partners stay when the singer picks another song
+
+`choose` replaces only the song and musical in the form, so notes and partners entered for one song go along with the
+next People's Choice song the singer picks, unless they open the form and change them.
+
+Fix: clear `notesInput` and the partners selection in `choose`.
