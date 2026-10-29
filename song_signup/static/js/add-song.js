@@ -8,6 +8,9 @@ const csrftoken = getCookie("csrftoken");
 const TOP_COUNT = 10;
 const LIST_REFRESH_MS = 5000;
 const SIGNUP_POLL_MS = 500;
+// The form's contents are kept in sessionStorage under this key, so a refresh, or the phone dropping the page while the
+// singer is in another app, doesn't empty it
+const FORM_STORAGE_KEY = "signup-form";
 
 const state = {
     open: config.canSignup,
@@ -50,7 +53,11 @@ const tappedSuggestion = (e) => {
     const button = e.target.closest("[data-suggestion-id]");
     return button && state.suggestions.find((s) => s.id === Number(button.dataset.suggestionId));
 };
-const goHome = (songName) => window.location.replace(`/home?song=${encodeURIComponent(songName)}`);
+// The song is signed up, so the kept form is dropped: the next visit to the page starts empty
+function goHome(songName) {
+    sessionStorage.removeItem(FORM_STORAGE_KEY);
+    window.location.replace(`/home?song=${encodeURIComponent(songName)}`);
+}
 
 // ---------- People's Choice list ----------
 
@@ -124,6 +131,7 @@ async function postChooseSongSuggestion(suggestion, body) {
 async function choose(suggestion) {
     songInput.value = suggestion.song_name;
     musicalInput.value = suggestion.musical;
+    saveForm();
     state.suggestions.forEach((s) => {
         if (isMyChoice(s)) Object.assign(s, { chosen: false, chosen_by: "", chosen_in_app: false });
     });
@@ -171,6 +179,26 @@ function renderSongSlot() {
     songCard.classList.toggle("hidden", !hasSong());
     document.getElementById("song-card-name").textContent = songInput.value;
     document.getElementById("song-card-musical").textContent = musicalInput.value;
+}
+
+// Called on every edit of the form, and after code fills or empties it
+function saveForm() {
+    sessionStorage.setItem(FORM_STORAGE_KEY, JSON.stringify({
+        songName: songInput.value,
+        musical: musicalInput.value,
+        notes: notesInput.value,
+        partners: Array.from(partnersSelect.selectedOptions).map((option) => option.value),
+    }));
+}
+
+// Runs on page load, before restoreMyChoice, so the kept form wins over the People's Choice song on the server
+function restoreSavedForm() {
+    const saved = JSON.parse(sessionStorage.getItem(FORM_STORAGE_KEY));
+    if (!saved) return;
+    songInput.value = saved.songName;
+    musicalInput.value = saved.musical;
+    notesInput.value = saved.notes;
+    for (const option of partnersSelect.options) option.selected = saved.partners.includes(option.value);
 }
 
 // ---------- The bar ----------
@@ -294,6 +322,7 @@ songFormPopup.addEventListener("close", () => {
     renderBar();
 });
 form.addEventListener("submit", (e) => e.preventDefault());
+form.addEventListener("input", saveForm);
 
 // The People's Choice list and the website choices popup are redrawn often, so each has one listener on the whole list
 // rather than one per button
@@ -319,6 +348,7 @@ document.getElementById("pick-another").addEventListener("click", () => {
     state.changing = true;
     duplicateSongPopup.close();
     form.reset();
+    saveForm();
     renderSongSlot();
     renderBar();
     window.scrollTo({ top: 0 });
@@ -327,6 +357,7 @@ document.getElementById("pick-another").addEventListener("click", () => {
 // saved, so go home. "I'll pick another song" still keeps the singer on the page.
 duplicateSongPopup.addEventListener("cancel", () => goHome(state.signedUpSong.name));
 
+restoreSavedForm();
 renderSongSlot();
 renderBar();
 loadSuggestions().then(restoreMyChoice);
