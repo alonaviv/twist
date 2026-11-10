@@ -113,13 +113,11 @@
 <script type="text/javascript">
     window.signupConfig = {
         canSignup: {{ can_signup|yesno:"true,false" }},
-        myName: "{{ request.user.get_full_name|escapejs }}",
         suggestionsUrl: "{% if peoples_choice_sku %}{% url 'peoples_choice:list_song_suggestions' peoples_choice_sku %}{% endif %}",
-        chooseUrl: "{% url 'peoples_choice:choose_song_suggestion' 0 %}".replace(/0\/$/, ""),
     };
 </script>
 {# ?v= makes browsers fetch this file again instead of a cached copy: bump it whenever the file changes #}
-<script type="module" src="{% static "js/add-song.js" %}?v=20261029"></script>
+<script type="module" src="{% static "js/add-song.js" %}?v=20261111"></script>
 <script src="{% static "js/navbar.js" %}"></script>
 
 {% endblock %}

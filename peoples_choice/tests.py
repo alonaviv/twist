@@ -1,6 +1,9 @@
+from constance.test import override_config
 from rest_framework import status
 from rest_framework.test import APITestCase
 
+from song_signup.models import SongRequest
+from song_signup.tests.utils_for_tests import create_audience, create_singers
 from .models import SongSuggestion
 
 
@@ -50,28 +53,6 @@ class SongSuggestionAPITests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assert_choice(song, chosen_by='Elphaba', in_app=False)
 
-    def test_choose_in_app(self):
-        song = SongSuggestion.objects.create(song_name='Satisfied', musical='Hamilton', event_sku='SKU1')
-        response = self.choose(song, chosen_by='Angelica Schuyler', in_app=True)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertTrue(response.json()['chosen_in_app'])
-        self.assert_choice(song, chosen_by='Angelica Schuyler', in_app=True)
-
-    def test_choosing_another_song_unchooses_the_in_app_choice(self):
-        first = SongSuggestion.objects.create(song_name='Satisfied', musical='Hamilton', event_sku='SKU1')
-        second = SongSuggestion.objects.create(song_name='Helpless', musical='Hamilton', event_sku='SKU1')
-        self.choose(first, chosen_by='Angelica Schuyler', in_app=True)
-        self.choose(second, chosen_by='Angelica Schuyler', in_app=True)
-        self.assert_choice(first, chosen_by='', in_app=False)
-        self.assert_choice(second, chosen_by='Angelica Schuyler', in_app=True)
-
-    def test_choosing_own_song_again_in_app_keeps_it(self):
-        song = SongSuggestion.objects.create(song_name='Satisfied', musical='Hamilton', event_sku='SKU1')
-        self.choose(song, chosen_by='Angelica Schuyler', in_app=True)
-        response = self.choose(song, chosen_by='Angelica Schuyler', in_app=True)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assert_choice(song, chosen_by='Angelica Schuyler', in_app=True)
-
     def test_unchoose_clears_in_app(self):
         song = SongSuggestion.objects.create(song_name='Satisfied', musical='Hamilton', event_sku='SKU1',
                                              chosen=True, chosen_by='Angelica Schuyler', chosen_in_app=True)
@@ -79,18 +60,9 @@ class SongSuggestionAPITests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assert_choice(song, chosen_by='', in_app=False)
 
-    def test_taking_over_a_website_choice_in_app(self):
-        # The singer chose this song on the People's Choice website, typing just "Angelica". In the app, they tap
-        # "That's mine" on it, which chooses it again under their app name. The choice then carries the app name and
-        # is marked in-app, so the app recognises it as theirs (it finds a singer's choice by name).
-        song = SongSuggestion.objects.create(song_name='Satisfied', musical='Hamilton', event_sku='SKU1',
-                                             chosen=True, chosen_by='Angelica')
-        self.choose(song, chosen_by='Angelica Schuyler', in_app=True)
-        self.assert_choice(song, chosen_by='Angelica Schuyler', in_app=True)
-
     def test_choose_without_name_fails(self):
         song = SongSuggestion.objects.create(song_name='Satisfied', musical='Hamilton', event_sku='SKU1')
-        response = self.choose(song, in_app=True)
+        response = self.choose(song)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assert_choice(song, chosen_by='', in_app=False)
 
@@ -101,14 +73,6 @@ class SongSuggestionAPITests(APITestCase):
         response = self.choose(song, chosen_by='Old Deuteronomy')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assert_choice(song, chosen_by='Old Deuteronomy', in_app=False)
-
-    def test_choosing_in_app_unchooses_a_website_choice_under_the_same_name(self):
-        on_site = SongSuggestion.objects.create(song_name='Satisfied', musical='Hamilton', event_sku='SKU1',
-                                                chosen=True, chosen_by='Angelica Schuyler')
-        in_app = SongSuggestion.objects.create(song_name='Helpless', musical='Hamilton', event_sku='SKU1')
-        self.choose(in_app, chosen_by='Angelica Schuyler', in_app=True)
-        self.assert_choice(on_site, chosen_by='', in_app=False)
-        self.assert_choice(in_app, chosen_by='Angelica Schuyler', in_app=True)
 
     def test_choosing_on_site_unchooses_an_in_app_choice_under_the_same_name(self):
         in_app = SongSuggestion.objects.create(song_name='Satisfied', musical='Hamilton', event_sku='SKU1',
@@ -122,17 +86,17 @@ class SongSuggestionAPITests(APITestCase):
         other_event = SongSuggestion.objects.create(song_name='Satisfied', musical='Hamilton', event_sku='SKU2',
                                                     chosen=True, chosen_by='Angelica Schuyler', chosen_in_app=True)
         song = SongSuggestion.objects.create(song_name='Helpless', musical='Hamilton', event_sku='SKU1')
-        self.choose(song, chosen_by='Angelica Schuyler', in_app=True)
+        self.choose(song, chosen_by='Angelica Schuyler')
         self.assert_choice(other_event, chosen_by='Angelica Schuyler', in_app=True)
-        self.assert_choice(song, chosen_by='Angelica Schuyler', in_app=True)
+        self.assert_choice(song, chosen_by='Angelica Schuyler', in_app=False)
 
     def test_unchoosing_leaves_other_names_alone(self):
         someone_else = SongSuggestion.objects.create(song_name='Satisfied', musical='Hamilton', event_sku='SKU1',
                                                      chosen=True, chosen_by='Eliza Hamilton', chosen_in_app=True)
         song = SongSuggestion.objects.create(song_name='Helpless', musical='Hamilton', event_sku='SKU1')
-        self.choose(song, chosen_by='Angelica Schuyler', in_app=True)
+        self.choose(song, chosen_by='Angelica Schuyler')
         self.assert_choice(someone_else, chosen_by='Eliza Hamilton', in_app=True)
-        self.assert_choice(song, chosen_by='Angelica Schuyler', in_app=True)
+        self.assert_choice(song, chosen_by='Angelica Schuyler', in_app=False)
 
     def test_rechoosing_own_song_on_site_clears_in_app(self):
         song = SongSuggestion.objects.create(song_name='Satisfied', musical='Hamilton', event_sku='SKU1',
@@ -181,3 +145,105 @@ class SongSuggestionAPITests(APITestCase):
     def test_list_empty_returns_404(self):
         response = self.client.get(self.list_url.format(sku='NONE'))
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+
+@override_config(PEOPLES_CHOICE_EVENT_SKU='SKU1')
+class AppPeoplesChoiceSelectionTests(APITestCase):
+    def setUp(self):
+        self.singer, = create_singers(1)
+        self.name = self.singer.get_full_name()
+        self.client.force_login(self.singer)
+
+    def suggestion(self, song_name, event_sku='SKU1', chosen_by='', in_app=False):
+        return SongSuggestion.objects.create(song_name=song_name, musical='Hamilton', event_sku=event_sku,
+                                             chosen=bool(chosen_by), chosen_by=chosen_by, chosen_in_app=in_app)
+
+    def set_selection(self, song):
+        return self.client.post(f'/peoples-choice/set_app_peoples_choice_selection/{song.id}/')
+
+    def clear_selection(self):
+        return self.client.post('/peoples-choice/clear_app_peoples_choice_selection/')
+
+    def sign_up(self):
+        SongRequest.objects.create(song_name='Wait For It', musical='Hamilton', singer=self.singer)
+
+    def assert_choice(self, song, chosen_by, in_app):
+        song.refresh_from_db()
+        self.assertEqual((song.chosen, song.chosen_by, song.chosen_in_app), (bool(chosen_by), chosen_by, in_app))
+
+    def test_set_chooses_the_song_in_app(self):
+        song = self.suggestion('Satisfied')
+        response = self.set_selection(song)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assert_choice(song, self.name, in_app=True)
+
+    def test_set_unchooses_her_other_app_choice(self):
+        first = self.suggestion('Satisfied')
+        second = self.suggestion('Helpless')
+        self.set_selection(first)
+        self.set_selection(second)
+        self.assert_choice(first, '', in_app=False)
+        self.assert_choice(second, self.name, in_app=True)
+
+    def test_set_keeps_a_song_someone_else_chose_but_unchooses_her_other_choice(self):
+        mine = self.suggestion('Satisfied', chosen_by=self.name, in_app=True)
+        on_website = self.suggestion('Helpless', chosen_by='Eliza')
+        in_app = self.suggestion('Burn', chosen_by='Eliza Hamilton', in_app=True)
+        self.set_selection(on_website)
+        self.set_selection(in_app)
+        self.assert_choice(mine, '', in_app=False)
+        self.assert_choice(on_website, 'Eliza', in_app=False)
+        self.assert_choice(in_app, 'Eliza Hamilton', in_app=True)
+
+    def test_set_leaves_her_website_choice(self):
+        on_website = self.suggestion('Satisfied', chosen_by=self.name)
+        song = self.suggestion('Helpless')
+        self.set_selection(song)
+        self.assert_choice(on_website, self.name, in_app=False)
+        self.assert_choice(song, self.name, in_app=True)
+
+    def test_set_stays_within_the_event(self):
+        other_event = self.suggestion('Satisfied', event_sku='SKU2', chosen_by=self.name, in_app=True)
+        self.set_selection(self.suggestion('Helpless'))
+        self.assert_choice(other_event, self.name, in_app=True)
+
+    def test_set_with_an_unknown_song_fails(self):
+        response = self.client.post('/peoples-choice/set_app_peoples_choice_selection/999/')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_set_does_nothing_once_she_has_a_song_in_the_lineup(self):
+        # Her first song's choice stays, and a second song gets none
+        signed_up = self.suggestion('Satisfied', chosen_by=self.name, in_app=True)
+        song = self.suggestion('Helpless')
+        self.sign_up()
+        response = self.set_selection(song)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assert_choice(signed_up, self.name, in_app=True)
+        self.assert_choice(song, '', in_app=False)
+
+    def test_clear_unchooses_her_app_choice_only(self):
+        mine = self.suggestion('Satisfied', chosen_by=self.name, in_app=True)
+        on_website = self.suggestion('Helpless', chosen_by=self.name)
+        someone_else = self.suggestion('Burn', chosen_by='Eliza Hamilton', in_app=True)
+        response = self.clear_selection()
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assert_choice(mine, '', in_app=False)
+        self.assert_choice(on_website, self.name, in_app=False)
+        self.assert_choice(someone_else, 'Eliza Hamilton', in_app=True)
+
+    def test_clear_does_nothing_once_she_has_a_song_in_the_lineup(self):
+        signed_up = self.suggestion('Satisfied', chosen_by=self.name, in_app=True)
+        self.sign_up()
+        self.clear_selection()
+        self.assert_choice(signed_up, self.name, in_app=True)
+
+    def test_both_need_a_singer_login(self):
+        song = self.suggestion('Satisfied')
+        self.client.logout()
+        self.assertEqual(self.set_selection(song).status_code, status.HTTP_302_FOUND)
+        self.assertEqual(self.clear_selection().status_code, status.HTTP_302_FOUND)
+        audience, = create_audience(1)
+        self.client.force_login(audience)
+        self.assertEqual(self.set_selection(song).status_code, status.HTTP_302_FOUND)
+        self.assertEqual(self.clear_selection().status_code, status.HTTP_302_FOUND)
+        self.assert_choice(song, '', in_app=False)

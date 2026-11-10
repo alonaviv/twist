@@ -5,6 +5,9 @@ from rest_framework.response import Response
 from titlecase import titlecase
 from constance import config
 
+from song_signup.models import SongRequest
+from song_signup.views import bwt_login_required
+
 from .models import SongSuggestion
 from .serializers import SongSuggestionSerializer
 
@@ -131,11 +134,12 @@ def dev_song_suggestions(_request):
     )
 
 
+# The People's Choice website's endpoint. There is no login: chosen_by is the name typed on the site, and its choices
+# are website choices (chosen_in_app false). The signup page uses the app endpoints below.
 @api_view(['POST'])
 def choose_song_suggestion(request, pk):
     action = request.data.get('action', 'choose')  # 'choose' or 'unchoose'
     chosen_by = request.data.get('chosen_by', '')
-    in_app = bool(request.data.get('in_app'))  # Sent by the signup page; the suggestions site doesn't send it
     
     song = get_object_or_404(SongSuggestion, pk=pk)
     
@@ -156,7 +160,7 @@ def choose_song_suggestion(request, pk):
         # Choose this song
         song.chosen = True
         song.chosen_by = chosen_by
-        song.chosen_in_app = in_app
+        song.chosen_in_app = False
         song.save()
     elif action == 'unchoose':
         # Only unchoose if this song was chosen by the same person
@@ -178,3 +182,48 @@ def choose_song_suggestion(request, pk):
 
     serializer = SongSuggestionSerializer(song)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+# The signup page's endpoints, for what other singers see. When a singer taps "I'll sing this!" (or types a list song),
+# her People's Choice card shows "Chosen by you!" and her "Your song" card shows the song. Both come from her signup
+# form, kept in the browser's sessionStorage, never from here. These endpoints only make every other singer's list show
+# that card at the bottom as "Chosen by <her name>", so they don't pick it too.
+# Whenever her form's song changes, the page calls set with the new list song, which unchooses her previous one, or
+# clear when it's no list song. A song someone else already chose stays theirs.
+# Once she has a song in the lineup, both do nothing. When she comes back to the signup page for a second song, the song
+# she signed up with stays "Chosen by <her name>" for the night, and the second song she picks isn't shown as chosen to
+# anyone else: second songs are rarely sung, so two singers picking the same one is left as a regular duplicate.
+
+def _clear_app_choices(singer, keep_pk=None):
+    SongSuggestion.objects.filter(
+        event_sku=config.PEOPLES_CHOICE_EVENT_SKU, chosen=True, chosen_by=singer.get_full_name(), chosen_in_app=True,
+    ).exclude(pk=keep_pk).update(chosen=False, chosen_by='', chosen_in_app=False)
+
+
+@bwt_login_required('login', singer_only=True)
+@api_view(['POST'])
+def set_app_peoples_choice_selection(request, pk):
+    """Chooses this song for the singer, unless someone else already chose it, and unchooses her other app choices."""
+    try:
+        song = SongSuggestion.objects.get(pk=pk)
+    except SongSuggestion.DoesNotExist:
+        return Response({'error': f"Song suggestion with ID {pk} does not exist"}, status=status.HTTP_400_BAD_REQUEST)
+    # Already signed up: the song she signed up with keeps its choice, and a second song gets none
+    if not SongRequest.objects.filter(singer=request.user).exists():
+        _clear_app_choices(request.user, keep_pk=pk)
+        if not song.chosen:
+            song.chosen = True
+            song.chosen_by = request.user.get_full_name()
+            song.chosen_in_app = True
+            song.save()
+    return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+@bwt_login_required('login', singer_only=True)
+@api_view(['POST'])
+def clear_app_peoples_choice_selection(request):
+    """Unchooses the singer's app choices: her form holds no People's Choice song."""
+    # Already signed up: the song she signed up with keeps its choice, and a second song gets none
+    if not SongRequest.objects.filter(singer=request.user).exists():
+        _clear_app_choices(request.user)
+    return Response(status=status.HTTP_204_NO_CONTENT)

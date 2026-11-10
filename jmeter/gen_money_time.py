@@ -408,7 +408,6 @@ def singer_once_only():
     first_list = get(list_path, [json_extractor_all("pc_id", "$[*].id"),
                                  json_extractor_all("pc_song", "$[*].song_name"),
                                  json_extractor_all("pc_musical", "$[*].musical"), pick])
-    choose_body = '{"chosen_by": "Loadsinger ${RUN_ID}n${__threadNum}", "in_app": true}'
     wait_on_page = loop_controller("WaitOnSignupPage", "${SIGNUP_WAIT}", [
         get("/signup_disabled", [half_second_timer()]),
         get("/get_active_question"),
@@ -434,8 +433,8 @@ def singer_once_only():
     body = login_chain("singer", "Loadsinger") + [
         get("/add_song", [csrf_extractor()]),
         first_list,
-        json_request("POST", "/peoples-choice/choose_song_suggestion/${pick_id}/", choose_body,
-                     [("X-CSRFToken", "${csrf}"), ("Content-Type", "application/json")]),
+        json_request("POST", "/peoples-choice/set_app_peoples_choice_selection/${pick_id}/", "",
+                     [("X-CSRFToken", "${csrf}")]),
         wait_on_page,
         if_controller("Partner singers: load the partner options", "${__groovy(" + partner_singer + ")}",
                       [get("/get_possible_partners", [partner])]),

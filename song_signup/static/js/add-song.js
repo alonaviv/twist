@@ -47,8 +47,9 @@ const escapeHtml = (text) => String(text).replace(/[&<>"]/g, (c) => ({ "&": "&am
 const normalizeForComparing = (text) => text.trim().replace(/\s+/g, " ").toLowerCase();
 const isSameText = (a, b) => normalizeForComparing(a) === normalizeForComparing(b);
 const hasSong = () => songInput.value.trim() && musicalInput.value.trim();
-// A song the current user chose on this page (not one chosen on the People's Choice site under the same name)
-const isMyChoice = (s) => s.chosen && s.chosen_by === config.myName && s.chosen_in_app;
+// A list song is the current user's choice when it's the song in their form. This holds even if the server says someone
+// else chose it, because the server's choices are only there to show other singers which songs are taken.
+const isMyChoice = (s) => isSameText(s.song_name, songInput.value) && isSameText(s.musical, musicalInput.value);
 // The suggestion whose button (anything carrying data-suggestion-id) was tapped, or undefined for a tap elsewhere
 const tappedSuggestion = (e) => {
     const button = e.target.closest("[data-suggestion-id]");
@@ -69,18 +70,6 @@ async function loadSuggestions() {
     const response = await fetch(config.suggestionsUrl);
     state.suggestions = response.ok ? await response.json() : [];  // 404 when the event has no suggestions yet
     renderPeoplesChoice();
-}
-
-// After a reload the form is empty, but the current user's choice survives on the server: bring that song back into
-// the form. Only on page load, so it never undoes a song the singer cleared on purpose.
-function restoreMyChoice() {
-    const chosen = state.suggestions.find(isMyChoice);
-    const formIsEmpty = !songInput.value.trim() && !musicalInput.value.trim();
-    if (!chosen || !formIsEmpty) return;
-    songInput.value = chosen.song_name;
-    musicalInput.value = chosen.musical;
-    renderSongSlot();
-    renderBar();
 }
 
 // One People's Choice card. Its "I'll sing this!" button carries the song's id in data-suggestion-id, for the list's
@@ -111,59 +100,48 @@ function renderPeoplesChoice() {
     const ordered = [...state.suggestions.filter((s) => !s.chosen || isMyChoice(s)),
                      ...state.suggestions.filter((s) => s.chosen && !isMyChoice(s))];
     const shown = state.showAll ? ordered : ordered.slice(0, TOP_COUNT);
-    // Numbers count the songs still open to pick. The current user's choice keeps its number, so choosing doesn't
-    // renumber the songs after it; songs chosen by someone else get none (their empty number circle is hidden).
+    // Numbers count the songs still open to pick. The current user's choice keeps its number, so choosing an open song
+    // doesn't renumber the songs after it; songs chosen by someone else get none (their empty number circle is hidden).
     let rank = 0;
     pcList.innerHTML = shown.map((s) => cardHtml(s, s.chosen && !isMyChoice(s) ? "" : ++rank)).join("");
     showAllButton.textContent = `Show all ${ordered.length} songs`;
     showAllButton.classList.toggle("hidden", state.showAll || ordered.length <= TOP_COUNT);
 }
 
-// Calls the People's Choice choose_song_suggestion endpoint: chooses, or with action "unchoose" unchooses, a song for the
-// current user
-async function postChooseSongSuggestion(suggestion, body) {
-    await fetch(`${config.chooseUrl}${suggestion.id}/`, {
-        method: "POST",
-        headers: { "X-CSRFToken": csrftoken, "Content-Type": "application/json" },
-        body: JSON.stringify({ chosen_by: config.myName, ...body }),
-    });
+// The app's People's Choice endpoints keep the server's choice in step with the form, so the other singers see the song
+// as taken: set chooses the song (and unchooses the user's other app choices), clear unchooses them all. The server
+// leaves a song someone else chose alone, and does nothing once the user has a song in the lineup.
+async function postToServer(url) {
+    await fetch(url, { method: "POST", headers: { "X-CSRFToken": csrftoken } });
 }
+const setAppPeoplesChoiceSelection = (suggestion) =>
+    postToServer(`/peoples-choice/set_app_peoples_choice_selection/${suggestion.id}/`);
+const clearAppPeoplesChoiceSelection = () => postToServer("/peoples-choice/clear_app_peoples_choice_selection/");
 
-// "I'll sing this!" and "That's mine" both choose the song for the current user; the server unchooses their previous
-// choice
+// "I'll sing this!" and "That's mine" both put the song in the form
 async function choose(suggestion) {
     songInput.value = suggestion.song_name;
     musicalInput.value = suggestion.musical;
     saveForm();
-    state.suggestions.forEach((s) => {
-        if (isMyChoice(s)) Object.assign(s, { chosen: false, chosen_by: "", chosen_in_app: false });
-    });
-    Object.assign(suggestion, { chosen: true, chosen_by: config.myName, chosen_in_app: true });
     renderSongSlot();
-    renderPeoplesChoice();
     renderBar();
-    await postChooseSongSuggestion(suggestion, { in_app: true });
+    await setAppPeoplesChoiceSelection(suggestion);
     loadSuggestions();
 }
 
-// Runs whenever the song form popup closes (Done, back gesture or Escape). If the current user chose a People's Choice
-// song on this page but the form now holds a different song (they typed their own instead, or entered another after
-// "I'll pick another song"), it unchooses that People's Choice song so it's open to everyone again. An empty form
-// leaves the choice alone. Choosing a different list song doesn't need this: the server moves the choice itself.
-async function unchooseStaleChoice() {
-    const chosen = state.suggestions.find(isMyChoice);
-    if (!chosen || !hasSong()) return;  // An empty form hasn't chosen anything else yet
-    if (isSameText(chosen.song_name, songInput.value) && isSameText(chosen.musical, musicalInput.value)) return;
-    Object.assign(chosen, { chosen: false, chosen_by: "", chosen_in_app: false });
-    renderPeoplesChoice();
-    await postChooseSongSuggestion(chosen, { action: "unchoose" });
+// Runs whenever the song form popup closes (Done, back gesture or Escape): sets the list song now in the form as the
+// user's choice, or clears their choice when the form holds no list song (a song of their own, or none)
+async function updateAppPeoplesChoiceSelection() {
+    if (!config.suggestionsUrl) return;
+    const myPeoplesChoiceSong = state.suggestions.find(isMyChoice);
+    await (myPeoplesChoiceSong ? setAppPeoplesChoiceSelection(myPeoplesChoiceSong) : clearAppPeoplesChoiceSelection());
     loadSuggestions();
 }
 
 // Each "That's mine" button carries its song's id in data-suggestion-id, for the popup list's click listener (in Events
-// below)
+// below). The song in the user's form isn't listed: it's already theirs.
 function openWebsiteChoicesPopup() {
-    const chosenOnWebsite = state.suggestions.filter((s) => s.chosen && !s.chosen_in_app);
+    const chosenOnWebsite = state.suggestions.filter((s) => s.chosen && !s.chosen_in_app && !isMyChoice(s));
     document.getElementById("website-choices-list").innerHTML = chosenOnWebsite.length
         ? chosenOnWebsite.map((s) => `
             <li>
@@ -196,7 +174,8 @@ function saveForm() {
     } catch {}
 }
 
-// Runs on page load, before restoreMyChoice, so the kept form wins over the People's Choice song on the server
+// Runs on page load. The form comes only from here, never from the server, so a singer back for another song starts
+// with an empty form.
 function restoreSavedForm() {
     try {
         const saved = JSON.parse(sessionStorage.getItem(FORM_STORAGE_KEY));
@@ -324,9 +303,9 @@ document.getElementById("edit-song").addEventListener("click", () => songFormPop
 document.getElementById("song-form-done").addEventListener("click", () => songFormPopup.close());
 // However the popup closes (Done, back gesture, Escape)
 songFormPopup.addEventListener("close", () => {
-    unchooseStaleChoice();
     renderSongSlot();
     renderBar();
+    updateAppPeoplesChoiceSelection();
 });
 form.addEventListener("submit", (e) => e.preventDefault());
 form.addEventListener("input", saveForm);
@@ -357,6 +336,7 @@ document.getElementById("pick-another").addEventListener("click", () => {
     form.reset();
     saveForm();
     renderSongSlot();
+    renderPeoplesChoice();
     renderBar();
     window.scrollTo({ top: 0 });
 });
@@ -367,6 +347,6 @@ duplicateSongPopup.addEventListener("cancel", () => goHome(state.signedUpSong.na
 restoreSavedForm();
 renderSongSlot();
 renderBar();
-loadSuggestions().then(restoreMyChoice);
+loadSuggestions();
 setInterval(loadSuggestions, LIST_REFRESH_MS);
 setInterval(checkSignupOpenState, SIGNUP_POLL_MS);

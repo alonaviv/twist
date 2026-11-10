@@ -537,16 +537,16 @@ vars.put(&quot;pick_musical&quot;, dup ? vars.get(&quot;PREFLIGHT_MUSICAL&quot;)
 </JSR223PostProcessor>
 <hashTree/>
 </hashTree>
-<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST /peoples-choice/choose_song_suggestion/${pick_id}/" enabled="true">
+<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="POST /peoples-choice/set_app_peoples_choice_selection/${pick_id}/" enabled="true">
   <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
   <elementProp name="HTTPsampler.Arguments" elementType="Arguments"><collectionProp name="Arguments.arguments">
     <elementProp name="" elementType="HTTPArgument">
       <boolProp name="HTTPArgument.always_encode">false</boolProp>
-      <stringProp name="Argument.value">{&quot;chosen_by&quot;: &quot;Loadsinger ${RUN_ID}n${__threadNum}&quot;, &quot;in_app&quot;: true}</stringProp>
+      <stringProp name="Argument.value"></stringProp>
       <stringProp name="Argument.metadata">=</stringProp>
     </elementProp>
   </collectionProp></elementProp>
-  <stringProp name="HTTPSampler.path">/peoples-choice/choose_song_suggestion/${pick_id}/</stringProp>
+  <stringProp name="HTTPSampler.path">/peoples-choice/set_app_peoples_choice_selection/${pick_id}/</stringProp>
   <stringProp name="HTTPSampler.method">POST</stringProp>
   <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
   <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
@@ -554,7 +554,7 @@ vars.put(&quot;pick_musical&quot;, dup ? vars.get(&quot;PREFLIGHT_MUSICAL&quot;)
 </HTTPSamplerProxy>
 <hashTree>
 <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="JSON + CSRF headers" enabled="true">
-  <collectionProp name="HeaderManager.headers"><elementProp name="" elementType="Header"><stringProp name="Header.name">X-CSRFToken</stringProp><stringProp name="Header.value">${csrf}</stringProp></elementProp><elementProp name="" elementType="Header"><stringProp name="Header.name">Content-Type</stringProp><stringProp name="Header.value">application/json</stringProp></elementProp></collectionProp>
+  <collectionProp name="HeaderManager.headers"><elementProp name="" elementType="Header"><stringProp name="Header.name">X-CSRFToken</stringProp><stringProp name="Header.value">${csrf}</stringProp></elementProp></collectionProp>
 </HeaderManager>
 <hashTree/>
 </hashTree>
