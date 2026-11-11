@@ -141,3 +141,7 @@ meta_audience_whametrics.csv
 
 # Personal Claude Code overrides (skills and project settings are tracked)
 .claude/settings.local.json
+
+# Working docs, kept locally only
+known-bugs.md
+signup-redesign.md
