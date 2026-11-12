@@ -146,6 +146,17 @@ class SongSuggestionAPITests(APITestCase):
         response = self.client.get(self.list_url.format(sku='NONE'))
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
+    def test_all_lists_every_event_without_who_chose(self):
+        SongSuggestion.objects.create(song_name='Popular', musical='Wicked', event_sku='EVT1', votes=4,
+                                      chosen=True, chosen_by='Dana')
+        SongSuggestion.objects.create(song_name='Satisfied', musical='Hamilton', event_sku='EVT2')
+        response = self.client.get('/peoples-choice/all_song_suggestions')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertEqual([(s['song_name'], s['event_sku'], s['votes'], s['chosen']) for s in data],
+                         [('Popular', 'EVT1', 4, True), ('Satisfied', 'EVT2', 0, False)])
+        self.assertNotIn('chosen_by', data[0])
+
 
 class CurrentEventTests(APITestCase):
     url = '/peoples-choice/current_event'

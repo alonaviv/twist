@@ -101,6 +101,15 @@ def list_song_suggestions(request, event_sku):
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+@api_view(['GET'])
+def all_song_suggestions(_request):
+    """Every event's suggestions, oldest first. Who chose a song is left out."""
+    songs = SongSuggestion.objects.order_by('created_at').values(
+        'song_name', 'musical', 'event_sku', 'votes', 'chosen', 'created_at'
+    )
+    return Response(list(songs))
+
+
 @api_view(['POST'])
 def vote_song_suggestion(request, pk):
     song = get_object_or_404(SongSuggestion, pk=pk)

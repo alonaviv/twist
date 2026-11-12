@@ -2,8 +2,9 @@
 echo -e "\033[0;31mThis will reset all config values. Re-add them now so People's Choice site will keep working.\033[0m"
 # The People's Choice values to re-add, read from the running site before it goes down (there is none on init)
 if [ "$1" != "init" ]; then
-    docker compose -f docker-compose.prod.yml exec -T django python manage.py shell -c \
-        "from constance import config; print('PEOPLES_CHOICE_EVENT_DATE:', config.PEOPLES_CHOICE_EVENT_DATE); print('PEOPLES_CHOICE_EVENT_SKU:', config.PEOPLES_CHOICE_EVENT_SKU)"
+    PEOPLES_CHOICE_VALUES=$(docker compose -f docker-compose.prod.yml exec -T django python manage.py shell -c \
+        "from constance import config; print('PEOPLES_CHOICE_EVENT_DATE:', config.PEOPLES_CHOICE_EVENT_DATE); print('PEOPLES_CHOICE_EVENT_SKU:', config.PEOPLES_CHOICE_EVENT_SKU)")
+    echo "$PEOPLES_CHOICE_VALUES"
 fi
 sudo -u ubuntu git pull
 
@@ -14,4 +15,11 @@ if [ "$1" = "init" ]; then
     INIT=true docker compose -f docker-compose.prod.yml up -d
 else
     docker compose -f docker-compose.prod.yml up -d
+fi
+
+# Repeated once the site is up, where it is not lost in the build output
+if [ "$1" != "init" ]; then
+    echo
+    echo -e "\033[0;31mConfig values were reset. Re-add these in the admin's Config page so People's Choice site will keep working:\033[0m"
+    echo "$PEOPLES_CHOICE_VALUES"
 fi
