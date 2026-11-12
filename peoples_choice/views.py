@@ -75,6 +75,18 @@ def create_song_suggestion(request):
 
 
 @api_view(['GET'])
+def current_event(_request):
+    """The event People's Choice is collecting songs for, as the audience page shows it."""
+    event_date = getattr(config, 'PEOPLES_CHOICE_EVENT_DATE', '')
+    event_sku = getattr(config, 'PEOPLES_CHOICE_EVENT_SKU', '')
+    return Response({
+        'is_active': bool(event_date and event_sku),
+        'event_date': event_date,
+        'event_sku': event_sku,
+    })
+
+
+@api_view(['GET'])
 def list_song_suggestions(request, event_sku):
     songs = SongSuggestion.objects.filter(event_sku=event_sku).order_by(
         '-votes', '-created_at'

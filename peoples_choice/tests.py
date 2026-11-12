@@ -147,6 +147,21 @@ class SongSuggestionAPITests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
 
+class CurrentEventTests(APITestCase):
+    url = '/peoples-choice/current_event'
+
+    @override_config(PEOPLES_CHOICE_EVENT_SKU='SKU1', PEOPLES_CHOICE_EVENT_DATE='23.11.26')
+    def test_active_event(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json(), {'is_active': True, 'event_date': '23.11.26', 'event_sku': 'SKU1'})
+
+    @override_config(PEOPLES_CHOICE_EVENT_SKU='SKU1', PEOPLES_CHOICE_EVENT_DATE='')
+    def test_inactive_without_a_date(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.json(), {'is_active': False, 'event_date': '', 'event_sku': 'SKU1'})
+
+
 @override_config(PEOPLES_CHOICE_EVENT_SKU='SKU1')
 class AppPeoplesChoiceSelectionTests(APITestCase):
     def setUp(self):
